@@ -486,6 +486,7 @@
       {id:"ffmpeg",name:"FFmpeg-Befehl",kind:"ffmpeg",icon:"▸",color:"orange"},
       {id:"notes",name:"Notizen/Wiki",kind:"notes",icon:"◰",color:"green"},
       {id:"calendar",name:"Kalender/ToDo",kind:"calendar",icon:"▣",color:"yellow"},
+      {id:"tasks",name:"Aufgaben",kind:"tasks",icon:"☑",color:"green"},
       {id:"visual",name:"Bildlayout",kind:"visual",icon:"◆",color:"blue"},
       {id:"project",name:"Projekt/Logs",kind:"log",icon:"☷",color:"cyan"},
       {id:"craft",name:"Handwerk",kind:"craft",icon:"▰",color:"orange"},
@@ -494,11 +495,11 @@
 
     const PRESETS = {
       core:["song","genre","prompt","youtube","media","ffmpeg","notes","calendar","visual"],
-      music:["song","genre","prompt","visual","youtube","media","ffmpeg","notes","log"],
+      music:["song","genre","prompt","visual","youtube","media","ffmpeg","notes","project"],
       media:["media","visual","youtube","ffmpeg","prompt","notes","calendar","project","song"],
       project:["project","notes","calendar","tasks","media","prompt","research","ffmpeg","youtube"],
-      craft:["craft","notes","calendar","media","project","research","prompt","youtube","log"],
-      research:["research","notes","prompt","youtube","project","calendar","media","visual","log"],
+      craft:["craft","notes","calendar","media","project","research","prompt","youtube","ffmpeg"],
+      research:["research","notes","prompt","youtube","project","calendar","media","visual","ffmpeg"],
       empty:[]
     };
 
