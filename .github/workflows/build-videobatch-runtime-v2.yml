@@ -1,0 +1,145 @@
+name: Build VideoBatch portable runtime v2
+
+on:
+  pull_request:
+    paths:
+      - runtime-build-request.txt
+      - .github/workflows/build-videobatch-runtime-v2.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_RELEASE_TAG: "20260718"
+  PYTHON_ASSET: "cpython-3.12.13+20260718-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
+  FFMPEG_RELEASE_TAG: "autobuild-2026-05-27-14-06"
+  FFMPEG_ASSET: "ffmpeg-master-latest-linux64-gpl.tar.xz"
+  OUTPUT_BASENAME: "VideoBatch_Runtime_PAYLOAD_CPython_3.12.13_PySide6_6.11.1_Pillow_12.3.0_FFmpeg_linux_x86_64"
+
+jobs:
+  build-runtime:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare build host
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 libgl1 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 \
+            libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0
+          mkdir -p source wheelhouse work runtime/python runtime/bin runtime/licenses output
+
+      - name: Download and verify portable CPython
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -Eeuo pipefail
+          release_json="$(gh api "repos/astral-sh/python-build-standalone/releases/tags/${PYTHON_RELEASE_TAG}")"
+          url="$(jq -r --arg name "$PYTHON_ASSET" '.assets[] | select(.name==$name) | .browser_download_url' <<<"$release_json")"
+          digest="$(jq -r --arg name "$PYTHON_ASSET" '.assets[] | select(.name==$name) | .digest // empty' <<<"$release_json")"
+          test -n "$url"
+          curl --fail --location --retry 5 --retry-all-errors "$url" --output "source/$PYTHON_ASSET"
+          actual="$(sha256sum "source/$PYTHON_ASSET" | awk '{print $1}')"
+          if [[ -n "$digest" && "$digest" != "null" ]]; then test "$actual" = "${digest#sha256:}"; fi
+          printf '%s  %s\n' "$actual" "$PYTHON_ASSET" > source/python.sha256
+          tar -xzf "source/$PYTHON_ASSET" -C work
+          test -x work/python/bin/python3
+          test "$(work/python/bin/python3 -c 'import sys; print(".".join(map(str,sys.version_info[:3])))')" = "3.12.13"
+
+      - name: Download and verify Python wheels
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          download() {
+            local url="$1" name="$2" expected="$3"
+            curl --fail --location --retry 5 --retry-all-errors "$url" --output "wheelhouse/$name"
+            printf '%s  %s\n' "$expected" "wheelhouse/$name" | sha256sum -c -
+          }
+          download "https://files.pythonhosted.org/packages/d8/de/af89d71410c83b10654d86ff9aff2a4f87c30163658f1cc145242e222526/pyside6-6.11.1-cp310-abi3-manylinux_2_34_x86_64.whl" "pyside6-6.11.1-cp310-abi3-manylinux_2_34_x86_64.whl" "b1fc521ba2bb5109425ab8add06bddbdd524abcad06cfa012cc39a22a189feb2"
+          download "https://files.pythonhosted.org/packages/5c/49/0e1237c4400bec7e335d2c4eeb49bc40d9fd88a9ac44ca9083ce1abdc308/pyside6_essentials-6.11.1-cp310-abi3-manylinux_2_34_x86_64.whl" "pyside6_essentials-6.11.1-cp310-abi3-manylinux_2_34_x86_64.whl" "e3ef7027b41e4e55fadb56e3b3257dc8ee92154b639fe67fc4c8e05e9d976c60"
+          download "https://files.pythonhosted.org/packages/dd/62/fb1428a523b2a4541e232aab50d9e789e6b4526f37fd9593452a7ea5b6b3/pyside6_addons-6.11.1-cp310-abi3-manylinux_2_34_x86_64.whl" "pyside6_addons-6.11.1-cp310-abi3-manylinux_2_34_x86_64.whl" "8e6c65fbd73a512d6f72cda8d8277444a85a34dc99dd1dae9c21d35b8671bb1f"
+          download "https://files.pythonhosted.org/packages/c7/9b/e0355d8897b5c150770f1d95718aad17d432fcc9c035c04f3f58427d4693/shiboken6-6.11.1-cp310-abi3-manylinux_2_34_x86_64.whl" "shiboken6-6.11.1-cp310-abi3-manylinux_2_34_x86_64.whl" "9a8bccfafc8805254cabcfa1edfaf55cd52889f4998c91ad0d9a4433fb1bcdbe"
+          download "https://files.pythonhosted.org/packages/84/21/a35af28dcc61f37ed850a2d64c65c701321dfbf25085e469d5559360cbbf/pillow-12.3.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl" "pillow-12.3.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl" "78cb2c6865a35ab8ff8b75fd122f6033b92a62c82801110e48ddd6c936a45d91"
+          sha256sum wheelhouse/*.whl > source/wheels.sha256
+
+      - name: Install and verify GUI runtime
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          work/python/bin/python3 -m pip install --no-index --no-deps --disable-pip-version-check --find-links "$PWD/wheelhouse" wheelhouse/*.whl
+          QT_QPA_PLATFORM=offscreen work/python/bin/python3 - <<'PY'
+          import json, platform, sys
+          import PIL, PySide6, shiboken6
+          from PySide6.QtWidgets import QApplication, QWidget
+          app = QApplication.instance() or QApplication([])
+          widget = QWidget(); widget.setWindowTitle("VideoBatch Runtime Test"); widget.show(); app.processEvents(); widget.close()
+          print(json.dumps({"python": sys.version, "machine": platform.machine(), "pyside6": PySide6.__version__, "pillow": PIL.__version__, "shiboken6": shiboken6.__version__}, indent=2))
+          PY
+          rsync -a --delete work/python/ runtime/python/
+
+      - name: Download and verify FFmpeg and ffprobe
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -Eeuo pipefail
+          release_json="$(gh api "repos/BtbN/FFmpeg-Builds/releases/tags/${FFMPEG_RELEASE_TAG}")"
+          url="$(jq -r --arg name "$FFMPEG_ASSET" '.assets[] | select(.name==$name) | .browser_download_url' <<<"$release_json")"
+          digest="$(jq -r --arg name "$FFMPEG_ASSET" '.assets[] | select(.name==$name) | .digest // empty' <<<"$release_json")"
+          test -n "$url"
+          curl --fail --location --retry 5 --retry-all-errors "$url" --output "source/$FFMPEG_ASSET"
+          actual="$(sha256sum "source/$FFMPEG_ASSET" | awk '{print $1}')"
+          if [[ -n "$digest" && "$digest" != "null" ]]; then test "$actual" = "${digest#sha256:}"; fi
+          printf '%s  %s\n' "$actual" "$FFMPEG_ASSET" > source/ffmpeg.sha256
+          mkdir -p work/ffmpeg
+          tar -xJf "source/$FFMPEG_ASSET" -C work/ffmpeg
+          ffmpeg_path="$(find work/ffmpeg -type f -path '*/bin/ffmpeg' -print -quit)"
+          ffprobe_path="$(find work/ffmpeg -type f -path '*/bin/ffprobe' -print -quit)"
+          test -n "$ffmpeg_path"; test -n "$ffprobe_path"
+          install -m 0755 "$ffmpeg_path" runtime/bin/ffmpeg
+          install -m 0755 "$ffprobe_path" runtime/bin/ffprobe
+          runtime/bin/ffmpeg -version | head -n 3
+          runtime/bin/ffprobe -version | head -n 3
+
+      - name: Create deterministic runtime payload
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cp source/*.sha256 runtime/licenses/
+          cp work/python/LICENSE.txt runtime/licenses/CPYTHON_LICENSE.txt 2>/dev/null || cp work/python/LICENSE runtime/licenses/CPYTHON_LICENSE.txt
+          python3 - <<'PY'
+          import hashlib, json, os, stat, zipfile
+          from pathlib import Path
+          root=Path('runtime'); output=Path('output')/(os.environ['OUTPUT_BASENAME']+'.zip'); fixed=(2026,8,2,0,0,0)
+          records=[]
+          for path in sorted((p for p in root.rglob('*') if p.is_file()),key=lambda p:p.relative_to(root).as_posix()):
+              records.append({'path':path.relative_to(root).as_posix(),'size':path.stat().st_size,'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'mode':oct(path.stat().st_mode&0o777)})
+          manifest={'schema_version':2,'artifact_type':'videobatch-portable-runtime-payload','architecture':'x86_64','platform':'linux-gnu','glibc_minimum':'2.34','python':{'implementation':'CPython','version':'3.12.13','portable':True},'components':{'PySide6':'6.11.1','PySide6_Addons':'6.11.1','PySide6_Essentials':'6.11.1','shiboken6':'6.11.1','Pillow':'12.3.0','FFmpeg':'BtbN autobuild-2026-05-27-14-06'},'files':records}
+          (root/'RUNTIME_TREE_MANIFEST.json').write_text(json.dumps(manifest,ensure_ascii=False,sort_keys=True,indent=2)+'\n',encoding='utf-8')
+          files=sorted((p for p in root.rglob('*') if p.is_file()),key=lambda p:p.relative_to(root).as_posix())
+          with zipfile.ZipFile(output,'w',allowZip64=True,compression=zipfile.ZIP_DEFLATED,compresslevel=6) as z:
+              for path in files:
+                  rel='runtime/'+path.relative_to(root).as_posix(); info=zipfile.ZipInfo(rel,fixed); mode=path.stat().st_mode&0o777; info.external_attr=(stat.S_IFREG|mode)<<16
+                  info.compress_type=zipfile.ZIP_STORED if path.suffix in {'.so','.xz','.gz','.whl','.zip'} or mode&0o111 else zipfile.ZIP_DEFLATED
+                  z.writestr(info,path.read_bytes(),compress_type=info.compress_type,compresslevel=6)
+          digest=hashlib.sha256(output.read_bytes()).hexdigest(); output.with_suffix(output.suffix+'.sha256').write_text(f'{digest}  {output.name}\n',encoding='utf-8')
+          report={'status':'passed','payload':output.name,'sha256':digest,'size':output.stat().st_size,'file_count':len(files),'runtime_tested':True}; output.with_suffix(output.suffix+'.report.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8'); print(json.dumps(report,indent=2))
+          PY
+
+      - name: Upload runtime payload
+        uses: actions/upload-artifact@v4
+        with:
+          name: videobatch-runtime-payload-rc7-v2
+          path: |
+            output/*.zip
+            output/*.sha256
+            output/*.report.json
+          compression-level: 0
+          retention-days: 1
+          if-no-files-found: error
