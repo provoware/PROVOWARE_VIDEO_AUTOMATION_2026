@@ -1,4 +1,4 @@
 VideoBatch Runtime RC7 build request
 Created: 2026-08-02
 Target: Linux x86_64, glibc 2.34+, portable CPython 3.12.13, PySide6 6.11.1, Pillow 12.3.0, FFmpeg/ffprobe.
-Retry: v3 workflow with latest verified FFmpeg release.
+Retry: v3 workflow with verified FFmpeg and deterministic license transport slot.
