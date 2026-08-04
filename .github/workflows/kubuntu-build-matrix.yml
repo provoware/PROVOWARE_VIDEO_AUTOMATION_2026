@@ -141,7 +141,7 @@ jobs:
           cat FFMPEG_TOOLCHAIN.json
 
       - name: Run complete compatibility contract
-        run: ./scripts/kubuntu_matrix_smoke.sh
+        run: bash scripts/kubuntu_matrix_smoke.sh
 
       - name: Write matrix status and collect diagnostics
         if: always()
