@@ -7,6 +7,13 @@
 - [ ] Am Ende nur betroffene Syntax-, Logik-, Ausgabe- und Testpfade validieren.
 - [ ] Stable-Gates erst nach unverändertem Kandidaten in der dokumentierten Reihenfolge ausführen.
 
+## Aktuelle Folge-Iteration · abgeschlossen
+
+- [x] Hilfezentrum um einen klaren Sicherheits-Tipp für gelbe und rote Hinweise ergänzt.
+- [x] Startdialog mit konkreterem Wartetext, Fehlerhinweis und größerem Fenster verbessert.
+- [x] Systemstatus im Hilfezentrum optisch besser als eigener Hinweisblock lesbar gemacht.
+- [x] Relevante Syntax- und Textkatalogprüfung abgeschlossen.
+
 ## Aktuelle RC24-Iteration · abgeschlossen
 
 - [x] zentrale Fehlerauflösung gegen beschädigte Registerdaten absichern

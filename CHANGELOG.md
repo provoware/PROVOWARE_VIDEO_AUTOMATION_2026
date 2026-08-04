@@ -1,3 +1,9 @@
+# Folge-Iteration nach 2.8.3-rc24
+
+- Hilfezentrum ergänzt einen einfachen Sicherheits-Tipp für gelbe und rote Hinweise.
+- Grafischer Startdialog erklärt Wartezustand, automatische Prüfung und Fehlerprotokoll klarer.
+- Systemstatus im Hilfezentrum erhält mehr Innenabstand und wirkt dadurch sichtbarer.
+
 # 2.8.3-rc24
 
 - Zentrale Fehlerauflösung gegen fehlende, unlesbare und unvollständige Registereinträge abgesichert.

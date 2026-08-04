@@ -435,8 +435,8 @@ def gui_main(events: queue.Queue[tuple[str, Any]], sink: EventSink) -> int:
 
     root = tk.Tk()
     root.title("VideoBatch Fast startet")
-    root.geometry("620x250")
-    root.minsize(560, 220)
+    root.geometry("660x280")
+    root.minsize(600, 240)
     root.resizable(False, False)
     try:
         root.attributes("-topmost", True)
@@ -447,12 +447,12 @@ def gui_main(events: queue.Queue[tuple[str, Any]], sink: EventSink) -> int:
     frame = ttk.Frame(root, padding=26)
     frame.pack(fill="both", expand=True)
     ttk.Label(frame, text="VideoBatch Fast", font=("TkDefaultFont", 20, "bold")).pack(anchor="w")
-    ttk.Label(frame, text="Automatischer, selbstheilender Start").pack(anchor="w", pady=(2, 20))
+    ttk.Label(frame, text="Automatischer Start mit sichtbarer Sicherheitsprüfung").pack(anchor="w", pady=(2, 20))
     status = tk.StringVar(value="Start wird vorbereitet …")
     ttk.Label(frame, textvariable=status, font=("TkDefaultFont", 12)).pack(anchor="w")
     progress = ttk.Progressbar(frame, maximum=4, value=0, mode="determinate")
     progress.pack(fill="x", pady=(14, 10))
-    detail = tk.StringVar(value="Keine Eingabe erforderlich.")
+    detail = tk.StringVar(value="Keine Eingabe erforderlich. Probleme werden hier mit nächstem Schritt angezeigt.")
     ttk.Label(frame, textvariable=detail, wraplength=560).pack(anchor="w")
 
     result = {"code": 1}
@@ -467,14 +467,14 @@ def gui_main(events: queue.Queue[tuple[str, Any]], sink: EventSink) -> int:
                     number, message = payload
                     progress["value"] = number
                     status.set(message)
-                    detail.set("VideoBatch erledigt diesen Schritt automatisch.")
+                    detail.set("VideoBatch prüft sicher weiter. Bitte warten, außer hier erscheint eine konkrete Lösung.")
                 elif kind == "done":
                     pid, safe_mode = payload
                     mode = "Sicherer Startmodus" if safe_mode else "Startbereit"
                     if CHECK_ONLY:
                         print(f"BOOTSTRAP_READY pid={pid} mode={'safe' if safe_mode else 'normal'}")
                     status.set(mode)
-                    detail.set("Die Oberfläche ist geöffnet.")
+                    detail.set("Die Oberfläche ist geöffnet. Der Starter schließt sich automatisch.")
                     progress["value"] = 4
                     result["code"] = 0
                     root.update_idletasks()
@@ -482,7 +482,7 @@ def gui_main(events: queue.Queue[tuple[str, Any]], sink: EventSink) -> int:
                     return
                 elif kind == "failed":
                     status.set("Start konnte nicht vollständig repariert werden")
-                    detail.set(f"Technisches Protokoll: {sink.log_path}")
+                    detail.set(f"Start gestoppt. Protokoll für Hilfe und Ursache: {sink.log_path}")
                     progress["value"] = 0
                     root.after(8000, root.destroy)
         except queue.Empty:
