@@ -1,0 +1,68 @@
+name: Prepare cached Kubuntu CI dependencies
+description: Restore verified package caches and install the minimal X11/Wayland test profile.
+
+inputs:
+  os:
+    description: Matrix Ubuntu label used to isolate binary package caches.
+    required: true
+  save-cache:
+    description: Allow this trusted run to publish newly populated caches.
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Define cache scope
+      id: cache-scope
+      shell: bash
+      run: |
+        set -Eeuo pipefail
+        echo "period=$(date -u +%G-W%V)" >> "$GITHUB_OUTPUT"
+
+    - name: Restore Ubuntu package archive
+      id: apt-cache
+      uses: actions/cache/restore@v4
+      with:
+        path: ~/.cache/videobatch/apt/${{ inputs.os }}
+        key: >-
+          videobatch-kubuntu-apt-v1-${{ inputs.os }}-${{ steps.cache-scope.outputs.period }}-${{ hashFiles('ci/kubuntu-apt-packages.txt') }}
+        restore-keys: |
+          videobatch-kubuntu-apt-v1-${{ inputs.os }}-${{ steps.cache-scope.outputs.period }}-
+          videobatch-kubuntu-apt-v1-${{ inputs.os }}-
+
+    - name: Restore Python wheel cache
+      id: pip-cache
+      uses: actions/cache/restore@v4
+      with:
+        path: ~/.cache/pip
+        key: >-
+          videobatch-kubuntu-pip-v1-${{ inputs.os }}-${{ hashFiles('requirements-toolchain.lock') }}
+        restore-keys: |
+          videobatch-kubuntu-pip-v1-${{ inputs.os }}-
+
+    - name: Install and validate dependencies
+      shell: bash
+      run: |
+        set -Eeuo pipefail
+        APT_ARCHIVE_CACHE="$HOME/.cache/videobatch/apt/${{ inputs.os }}" \
+        PIP_CACHE_DIR="$HOME/.cache/pip" \
+        APT_CACHE_HIT="${{ steps.apt-cache.outputs.cache-hit }}" \
+        PIP_CACHE_HIT="${{ steps.pip-cache.outputs.cache-hit }}" \
+        bash scripts/install_kubuntu_ci_dependencies.sh
+
+    - name: Save Ubuntu package archive
+      if: inputs.save-cache == 'true' && steps.apt-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: ~/.cache/videobatch/apt/${{ inputs.os }}
+        key: >-
+          videobatch-kubuntu-apt-v1-${{ inputs.os }}-${{ steps.cache-scope.outputs.period }}-${{ hashFiles('ci/kubuntu-apt-packages.txt') }}
+
+    - name: Save Python wheel cache
+      if: inputs.save-cache == 'true' && steps.pip-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: ~/.cache/pip
+        key: >-
+          videobatch-kubuntu-pip-v1-${{ inputs.os }}-${{ hashFiles('requirements-toolchain.lock') }}
