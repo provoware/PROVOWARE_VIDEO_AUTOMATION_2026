@@ -130,6 +130,12 @@ def test_text_contract_has_no_missing_or_embedded_static_ui_texts() -> None:
     assert manifest["catalog_version"] == SUPPORTED_CATALOG_VERSION
     assert len(manifest["files"]) > 1
     assert text("app.title") == "provoware - videoautomation - 2026"
+    assert text("ui.area_zoom.label") == "Tab-Zoom für Text und Bedienelemente"
+    assert text("ui.settings.global_zoom") == "Globaler Zoom für die ganze Oberfläche"
+    zoom_note = text("ui.settings.zoom_note")
+    assert "ganze Oberfläche" in zoom_note
+    assert "jeweiligen Bereich" in zoom_note
+    assert "Text und Bedienelemente" in zoom_note
 
 
 def test_ffmpeg_capability_parsers_and_required_filters() -> None:
