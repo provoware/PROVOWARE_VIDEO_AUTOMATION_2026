@@ -33,6 +33,14 @@
 - globale Headerstatistik mit Audio-, Bild-, Video- und Auftragszahl sowie Modus, Übergang, Szenenkopplung und Schnellprofil
 - Lösungsdialoge mit dauerhaft erreichbaren Aktionen; lange Erklärungen und technische Details sind scrollbar
 
+## Fortschritt der aktuellen Folge-Iteration
+
+**Fortschritt:** 100 % für diese kleine, gezielt validierte Folge-Iteration.
+
+**Erledigt:** Hilfezentrum erklärt gelbe und rote Hinweise einfacher, der Startdialog nennt Wartezustand und Protokollpfad klarer, und der Systemstatus ist im Hilfezentrum besser hervorgehoben.
+
+**Offen:** Stable-Gates bleiben unverändert offen; keine physische KDE-Abnahme und kein Langzeitrender wurden in dieser Iteration durchgeführt.
+
 ## Sicheres Berechtigungskonzept
 
 VideoBatch arbeitet ohne pauschale Rootrechte, `chmod 777` oder rekursive Besitzänderungen. Schreibziele werden durch reale Schreibproben geprüft. Bei Problemen kann der Nutzer:

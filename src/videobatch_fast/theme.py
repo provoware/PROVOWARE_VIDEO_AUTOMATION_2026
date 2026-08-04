@@ -172,7 +172,7 @@ def apply_theme(root, scale_percent: int = 100, theme_name: str = "neon_gravity"
     style.configure("SectionHeader.TLabel", background=COLORS["panel"], foreground=safe_text_color(COLORS["panel"], COLORS["accent2"]), font=("DejaVu Sans", section, "bold"))
     style.configure("Hint.TLabel", background=COLORS["panel"], foreground=panel_muted)
     style.configure("Muted.TLabel", background=COLORS["panel"], foreground=safe_text_color(COLORS["panel"], COLORS["text_muted"]))
-    style.configure("Status.TLabel", background=COLORS["toolbar"], foreground=safe_text_color(COLORS["toolbar"], COLORS["accent2"]), font=("DejaVu Sans", base, "bold"))
+    style.configure("Status.TLabel", background=COLORS["toolbar"], foreground=safe_text_color(COLORS["toolbar"], COLORS["accent2"]), padding=(8, 5), font=("DejaVu Sans", base, "bold"))
     style.configure("VersionBadge.TLabel", background=COLORS["accent"], foreground=COLORS["accent_text"], padding=(9, 4), font=("DejaVu Sans", max(10, base - 1), "bold"))
     style.configure("StatusPill.TLabel", background=COLORS["selection"], foreground=selected_text, padding=(9, 4), font=("DejaVu Sans", max(10, base - 1), "bold"))
     style.configure("Success.TLabel", background=COLORS["panel"], foreground=COLORS["success"], font=("DejaVu Sans", base, "bold"))

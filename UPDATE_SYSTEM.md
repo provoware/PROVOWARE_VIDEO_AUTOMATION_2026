@@ -25,3 +25,7 @@ Der bestätigte Slot bleibt unverändert. Der inaktive Slot wird aus dem bestät
 ## Downloadökonomie
 
 Der Channel-Index und das signierte Manifest werden zuerst geladen. Danach vergleicht VideoBatch die installierten Komponenten-Hashes. Nur Teilpakete tatsächlich geänderter Komponenten werden geladen. Jede Komponente wird dennoch vollständig ersetzt, wodurch Mischzustände innerhalb einer Komponente ausgeschlossen bleiben.
+
+## Folge-Iteration nach 2.8.3-rc24
+
+Keine Änderung am Updateprotokoll. Die Iteration verbessert nur Hilfe, Startfeedback und Statusdarstellung. A/B-Aktivierung, Stromausfallsicherheit und Downloadökonomie bleiben unverändert.
