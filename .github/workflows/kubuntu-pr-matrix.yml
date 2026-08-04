@@ -1,0 +1,287 @@
+name: Kubuntu compatibility matrix PR validation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/kubuntu-pr-matrix.yml
+      - scripts/**
+      - src/**
+      - tests/**
+      - VERSION.json
+      - pyproject.toml
+      - requirements.lock
+      - requirements-toolchain.lock
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: kubuntu-pr-matrix-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  matrix:
+    name: ${{ matrix.os }} / ${{ matrix.session }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-22.04
+          - ubuntu-24.04
+        session:
+          - x11
+          - wayland
+    runs-on: ${{ matrix.os }}
+    env:
+      XDG_SESSION_TYPE: ${{ matrix.session }}
+      PYTHONDONTWRITEBYTECODE: '1'
+
+    steps:
+      - name: Check out PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Install KDE, Tk and media dependencies
+        run: |
+          set -Eeuo pipefail
+          sudo apt-get update
+          sudo apt-get install -y \
+            python3 python3-tk python3-pip ffmpeg xvfb weston \
+            dbus-x11 plasma-workspace
+          python3 -m pip install --user --requirement requirements-toolchain.lock
+
+      - name: Start deterministic display
+        run: |
+          set -Eeuo pipefail
+          if [[ "${{ matrix.session }}" == x11 ]]; then
+            Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp \
+              >/tmp/xvfb.log 2>&1 &
+            echo "DISPLAY=:99" >> "$GITHUB_ENV"
+          else
+            mkdir -p "$RUNNER_TEMP/xdg"
+            chmod 700 "$RUNNER_TEMP/xdg"
+            XDG_RUNTIME_DIR="$RUNNER_TEMP/xdg" weston \
+              --backend=headless-backend.so \
+              --socket=wayland-vb \
+              --idle-time=0 >/tmp/weston.log 2>&1 &
+            echo "XDG_RUNTIME_DIR=$RUNNER_TEMP/xdg" >> "$GITHUB_ENV"
+            echo "WAYLAND_DISPLAY=wayland-vb" >> "$GITHUB_ENV"
+            Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp \
+              >/tmp/xvfb.log 2>&1 &
+            echo "DISPLAY=:99" >> "$GITHUB_ENV"
+          fi
+          sleep 2
+
+      - name: Provision and attest Ubuntu FFmpeg
+        env:
+          MATRIX_OS: ${{ matrix.os }}
+          MATRIX_SESSION: ${{ matrix.session }}
+        run: |
+          set -Eeuo pipefail
+          FFMPEG_PATH="$(readlink -f "$(command -v ffmpeg)")"
+          FFPROBE_PATH="$(readlink -f "$(command -v ffprobe)")"
+          test -x "$FFMPEG_PATH"
+          test -x "$FFPROBE_PATH"
+
+          FFMPEG_VERSION="$("$FFMPEG_PATH" -version | sed -n '1p')"
+          FFPROBE_VERSION="$("$FFPROBE_PATH" -version | sed -n '1p')"
+          PACKAGE_VERSION="$(dpkg-query -W -f='${Version}' ffmpeg)"
+          FFMPEG_SHA256="$(sha256sum "$FFMPEG_PATH" | awk '{print $1}')"
+          FFPROBE_SHA256="$(sha256sum "$FFPROBE_PATH" | awk '{print $1}')"
+          MEDIA_DIR="$RUNNER_TEMP/ffmpeg-system/bin"
+          mkdir -p "$MEDIA_DIR"
+          ln -sfn "$FFMPEG_PATH" "$MEDIA_DIR/ffmpeg"
+          ln -sfn "$FFPROBE_PATH" "$MEDIA_DIR/ffprobe"
+          echo "VIDEOBATCH_STATIC_MEDIA_DIR=$MEDIA_DIR" >> "$GITHUB_ENV"
+
+          export FFMPEG_PATH FFPROBE_PATH FFMPEG_VERSION FFPROBE_VERSION
+          export PACKAGE_VERSION FFMPEG_SHA256 FFPROBE_SHA256 MEDIA_DIR
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          evidence = {
+              "schema_version": 1,
+              "provider": "ubuntu-apt",
+              "os": os.environ["MATRIX_OS"],
+              "session": os.environ["MATRIX_SESSION"],
+              "package": {
+                  "name": "ffmpeg",
+                  "version": os.environ["PACKAGE_VERSION"],
+              },
+              "media_dir": os.environ["MEDIA_DIR"],
+              "ffmpeg": {
+                  "path": os.environ["FFMPEG_PATH"],
+                  "version": os.environ["FFMPEG_VERSION"],
+                  "sha256": os.environ["FFMPEG_SHA256"],
+              },
+              "ffprobe": {
+                  "path": os.environ["FFPROBE_PATH"],
+                  "version": os.environ["FFPROBE_VERSION"],
+                  "sha256": os.environ["FFPROBE_SHA256"],
+              },
+          }
+          Path("FFMPEG_TOOLCHAIN.json").write_text(
+              json.dumps(evidence, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Run complete compatibility contract
+        run: ./scripts/kubuntu_matrix_smoke.sh
+
+      - name: Write matrix status and collect diagnostics
+        if: always()
+        env:
+          MATRIX_OS: ${{ matrix.os }}
+          MATRIX_SESSION: ${{ matrix.session }}
+          MATRIX_STATUS: ${{ job.status }}
+        run: |
+          set -Eeuo pipefail
+          mkdir -p matrix-logs
+          test ! -f /tmp/xvfb.log || cp /tmp/xvfb.log matrix-logs/xvfb.log
+          test ! -f /tmp/weston.log || cp /tmp/weston.log matrix-logs/weston.log
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          result = {
+              "schema_version": 1,
+              "os": os.environ["MATRIX_OS"],
+              "session": os.environ["MATRIX_SESSION"],
+              "status": os.environ["MATRIX_STATUS"],
+              "run_id": os.environ["GITHUB_RUN_ID"],
+              "commit": os.environ["GITHUB_SHA"],
+          }
+          name = f"matrix-status-{result['os']}-{result['session']}.json"
+          Path(name).write_text(
+              json.dumps(result, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Upload matrix evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-matrix-${{ matrix.os }}-${{ matrix.session }}
+          path: |
+            dist-matrix-a/*
+            FFMPEG_TOOLCHAIN.json
+            RELEASE_LITERAL_HYGIENE.json
+            matrix-status-${{ matrix.os }}-${{ matrix.session }}.json
+            matrix-logs/*
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload machine-readable matrix status
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: matrix-status-${{ matrix.os }}-${{ matrix.session }}
+          path: matrix-status-${{ matrix.os }}-${{ matrix.session }}.json
+          if-no-files-found: error
+          retention-days: 30
+
+  report:
+    name: Consolidate PR matrix result
+    if: always()
+    needs:
+      - matrix
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download matrix status records
+        uses: actions/download-artifact@v4
+        with:
+          pattern: matrix-status-*
+          path: matrix-status
+          merge-multiple: true
+
+      - name: Build consolidated report
+        id: report
+        run: |
+          set -Eeuo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          expected = [
+              ("ubuntu-22.04", "x11"),
+              ("ubuntu-22.04", "wayland"),
+              ("ubuntu-24.04", "x11"),
+              ("ubuntu-24.04", "wayland"),
+          ]
+          records = {}
+          for path in Path("matrix-status").glob("matrix-status-*.json"):
+              record = json.loads(path.read_text(encoding="utf-8"))
+              records[(record.get("os"), record.get("session"))] = record
+
+          results = []
+          for os_name, session in expected:
+              record = records.get((os_name, session), {})
+              results.append(
+                  {
+                      "os": os_name,
+                      "session": session,
+                      "status": record.get("status", "missing"),
+                  }
+              )
+          all_success = all(item["status"] == "success" for item in results)
+          summary = {
+              "schema_version": 1,
+              "status": "passed" if all_success else "failed",
+              "run_id": os.environ["GITHUB_RUN_ID"],
+              "commit": os.environ["GITHUB_SHA"],
+              "results": results,
+          }
+          Path("KUBUNTU_PR_MATRIX_SUMMARY.json").write_text(
+              json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          lines = [
+              "# Kubuntu PR matrix",
+              "",
+              "| System | Sitzung | Ergebnis |",
+              "|---|---|---|",
+          ]
+          for item in results:
+              symbol = "✅" if item["status"] == "success" else "❌"
+              lines.append(
+                  f"| {item['os']} | {item['session']} | "
+                  f"{symbol} `{item['status']}` |"
+              )
+          Path("KUBUNTU_PR_MATRIX_SUMMARY.md").write_text(
+              "\n".join(lines) + "\n",
+              encoding="utf-8",
+          )
+          with Path(os.environ["GITHUB_OUTPUT"]).open(
+              "a", encoding="utf-8"
+          ) as output:
+              output.write(
+                  f"all_success={'true' if all_success else 'false'}\n"
+              )
+          PY
+
+      - name: Upload consolidated report
+        uses: actions/upload-artifact@v4
+        with:
+          name: kubuntu-pr-matrix-summary
+          path: |
+            KUBUNTU_PR_MATRIX_SUMMARY.json
+            KUBUNTU_PR_MATRIX_SUMMARY.md
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Enforce complete success
+        if: steps.report.outputs.all_success != 'true'
+        run: |
+          echo "Not all four Kubuntu combinations passed." >&2
+          exit 1
