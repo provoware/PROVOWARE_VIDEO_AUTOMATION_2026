@@ -7,6 +7,7 @@ from unittest import mock
 
 from videobatch_fast.config import normalize_config
 from videobatch_fast.permission_service import ensure_writable_directory, prepare_install_root
+from videobatch_fast.ui_layout_profiles_mixin import UiLayoutProfilesMixin
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -66,6 +67,38 @@ def test_tabbed_ui_contract_and_menu_are_in_source() -> None:
     assert "ttk.Panedwindow" not in source
 
 
+def test_main_tab_change_saves_and_survives_restart() -> None:
+    class DummyNotebook:
+        def __init__(self, selected: int) -> None:
+            self.selected = selected
+
+        def select(self) -> int:
+            return self.selected
+
+        def index(self, selected: int) -> int:
+            return selected
+
+    class DummyUi(UiLayoutProfilesMixin):
+        def __init__(self, selected: int, restoring: bool = False) -> None:
+            self.config: dict[str, int] = {"active_tab": 0}
+            self.main_notebook = DummyNotebook(selected)
+            self._main_tab_restore_in_progress = restoring
+            self.saved: list[dict[str, int]] = []
+
+        def _save_settings(self) -> None:
+            self.saved.append(dict(self.config))
+
+    ui = DummyUi(3)
+    ui._on_main_tab_changed()
+    assert ui.config["active_tab"] == 3
+    assert ui.saved == [{"active_tab": 3}]
+
+    restarted = DummyUi(ui.saved[-1]["active_tab"], restoring=True)
+    restarted._on_main_tab_changed()
+    assert restarted.config["active_tab"] == 3
+    assert restarted.saved == []
+
+
 def test_large_media_dialog_supports_preview_and_sorting() -> None:
     source = (ROOT / "src/videobatch_fast/media_import_dialog.py").read_text(encoding="utf-8")
     assert "build_preview" in source
@@ -88,4 +121,3 @@ def test_ab_installer_uses_lstat_for_broken_or_inaccessible_symlink(tmp_path: Pa
     assert "gesichert" in message
     conflicts = list(tmp_path.glob(".VideoBatchFast.permission-conflict-*"))
     assert len(conflicts) == 1 and conflicts[0].is_symlink()
-
