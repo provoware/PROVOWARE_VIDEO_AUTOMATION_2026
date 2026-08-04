@@ -2,6 +2,8 @@
 set -Eeuo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 export PYTHONPATH="$ROOT/src" PYTHONDONTWRITEBYTECODE=1
+python3 "$ROOT/scripts/check_release_literal_hygiene.py" \
+  --report "$ROOT/RELEASE_LITERAL_HYGIENE.json"
 python3 -m pytest -q
 "$ROOT/FEHLERLABOR.sh"
 python3 "$ROOT/scripts/check_version_consistency.py"
