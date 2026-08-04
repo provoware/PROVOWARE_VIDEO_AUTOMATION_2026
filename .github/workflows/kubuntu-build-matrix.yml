@@ -48,19 +48,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install KDE/Tk/media test dependencies
-        run: |
-          set -Eeuo pipefail
-          sudo env DEBIAN_FRONTEND=noninteractive \
-            timeout --signal=TERM --kill-after=30s 5m \
-            apt-get -o Acquire::Retries=5 update
-          sudo env DEBIAN_FRONTEND=noninteractive \
-            timeout --signal=TERM --kill-after=30s 12m \
-            apt-get -o Acquire::Retries=5 -o Dpkg::Use-Pty=0 install -y \
-            python3 python3-tk python3-pip ffmpeg xvfb weston \
-            dbus-x11 plasma-workspace
-          timeout --signal=TERM --kill-after=30s 8m \
-            python3 -m pip install --user --requirement requirements-toolchain.lock
+      - name: Prepare cached Kubuntu CI dependencies
+        uses: ./.github/actions/prepare-kubuntu-ci
+        with:
+          os: ${{ matrix.os }}
+          save-cache: 'true'
 
       - name: Start deterministic display
         run: |
@@ -198,6 +190,7 @@ jobs:
           name: videobatch-${{ matrix.os }}-${{ matrix.session }}
           path: |
             dist-matrix-a/*
+            CI_DEPENDENCY_REPORT.json
             KUBUNTU_BUILD_MATRIX.json
             FFMPEG_TOOLCHAIN.json
             matrix-status-${{ matrix.os }}-${{ matrix.session }}.json
