@@ -1,0 +1,10 @@
+# Minimal packages required by the Kubuntu X11/Wayland compatibility contract.
+# Keep this list explicit: full desktop meta-packages are intentionally excluded.
+dbus-x11
+ffmpeg
+python3
+python3-pip
+python3-tk
+python3-venv
+weston
+xvfb
