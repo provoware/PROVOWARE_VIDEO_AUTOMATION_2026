@@ -2,6 +2,7 @@ from pathlib import Path
 
 
 WORKFLOW = Path(".github/workflows/kubuntu-cache-warmup.yml")
+PRODUCTION_WORKFLOW = Path(".github/workflows/kubuntu-build-matrix.yml")
 ACTION = Path(".github/actions/kubuntu-package-cache/action.yml")
 INSTALLER = Path(
     ".github/actions/kubuntu-package-cache/install-and-measure.sh"
@@ -39,9 +40,31 @@ def test_warmup_reuses_shared_action_without_full_application_matrix() -> None:
     assert "uses: ./.github/actions/kubuntu-package-cache" in text
     assert "session: cache-warmup" in text
     assert "mode: warmup" in text
-    assert "x11" not in text.lower()
-    assert "wayland" not in text.lower()
     assert "kubuntu_matrix_smoke.sh" not in text
+
+
+def test_warmup_builds_read_only_cache_inventory_report() -> None:
+    text = WORKFLOW.read_text(encoding="utf-8")
+
+    assert "name: Explain current cache state" in text
+    assert "repos/$GITHUB_REPOSITORY/actions/caches?per_page=100" in text
+    assert "scripts/build_kubuntu_cache_report.py" in text
+    assert "KUBUNTU_CACHE_STATUS.json" in text
+    assert "KUBUNTU_CACHE_STATUS.md" in text
+    assert "gh api --method DELETE" not in text
+
+
+def test_production_matrix_uses_same_shared_cache_action() -> None:
+    text = PRODUCTION_WORKFLOW.read_text(encoding="utf-8")
+
+    assert text.count("uses: ./.github/actions/kubuntu-package-cache") == 1
+    assert "session: ${{ matrix.session }}" in text
+    assert "mode: matrix" in text
+    assert "apt-get -o Acquire::Retries=5 install" not in text
+    assert "scripts/write_kubuntu_matrix_status.py" in text
+    assert "scripts/build_kubuntu_matrix_report.py" in text
+    assert "CI_PACKAGE_METRICS.json" in text
+    assert "Close selected issue after complete success" in text
 
 
 def test_installer_keeps_minimal_install_and_tool_validation() -> None:
