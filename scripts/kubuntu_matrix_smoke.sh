@@ -11,6 +11,7 @@ MEDIA_ARGS=()
 if [[ -n "${VIDEOBATCH_STATIC_MEDIA_DIR:-}" ]]; then MEDIA_ARGS=(--static-media-dir "$VIDEOBATCH_STATIC_MEDIA_DIR"); fi
 python3 "$ROOT/scripts/build_portable_bundle.py" --output-dir "$ROOT/dist-matrix-a" "${MEDIA_ARGS[@]}"
 python3 "$ROOT/scripts/build_portable_bundle.py" --output-dir "$ROOT/dist-matrix-b" "${MEDIA_ARGS[@]}"
-cmp "$ROOT/dist-matrix-a/VideoBatch_Fast_2.8.3-rc14-portable.run" "$ROOT/dist-matrix-b/VideoBatch_Fast_2.8.3-rc14-portable.run"
-"$ROOT/dist-matrix-a/VideoBatch_Fast_2.8.3-rc14.AppDir/AppRun" --portable-verify
-"$ROOT/dist-matrix-a/VideoBatch_Fast_2.8.3-rc14.AppDir/AppRun" --portable-smoke-test
+python3 "$ROOT/scripts/verify_portable_reproducibility.py" \
+  --first "$ROOT/dist-matrix-a" \
+  --second "$ROOT/dist-matrix-b" \
+  --report "$ROOT/dist-matrix-a/KUBUNTU_REPRODUCIBILITY.json"
