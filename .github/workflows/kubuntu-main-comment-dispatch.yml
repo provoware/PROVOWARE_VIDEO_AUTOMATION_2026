@@ -1,0 +1,34 @@
+name: Secure Kubuntu main matrix dispatch
+
+on:
+  issue_comment:
+    types:
+      - created
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: kubuntu-main-comment-dispatch
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    name: Dispatch protected main matrix
+    if: >-
+      github.event.issue.number == 12 &&
+      github.event.comment.body == '/run-kubuntu-main' &&
+      github.event.comment.author_association == 'OWNER'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Dispatch production workflow on main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -Eeuo pipefail
+          gh workflow run kubuntu-build-matrix.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main \
+            -f report_issue=12
