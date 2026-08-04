@@ -3,11 +3,19 @@ from __future__ import annotations
 from tkinter import Canvas, TclError, ttk
 from typing import Callable
 
+WORKFLOW_LAYOUT_MODES = {"two_columns", "wide", "compact"}
+DEFAULT_WORKFLOW_LAYOUT_MODE = "two_columns"
+
+
+def normalize_workflow_layout_mode(value: object) -> str:
+    selected = str(value)
+    return selected if selected in WORKFLOW_LAYOUT_MODES else DEFAULT_WORKFLOW_LAYOUT_MODE
+
 
 class ScrollableWorkflowGrid:
     """Two-column workflow grid that grows vertically instead of clipping widgets."""
 
-    def __init__(self, parent, *, background: str, min_cell_height: int = 285) -> None:
+    def __init__(self, parent, *, background: str, min_cell_height: int = 285, layout_mode: str = DEFAULT_WORKFLOW_LAYOUT_MODE) -> None:
         self.wrapper = ttk.Frame(parent, style="Card.TFrame")
         self.wrapper.pack(fill="both", expand=True)
         self.canvas = Canvas(
@@ -24,9 +32,10 @@ class ScrollableWorkflowGrid:
         self.window_id = self.canvas.create_window((0, 0), window=self.body, anchor="nw")
         self.min_cell_height = min_cell_height
         self.cards: list[ttk.Frame] = []
+        self._card_positions: dict[ttk.Frame, tuple[int, int]] = {}
         self._rows = 0
-        self.body.columnconfigure(0, weight=1, uniform="workflow-columns")
-        self.body.columnconfigure(1, weight=1, uniform="workflow-columns")
+        self.layout_mode = normalize_workflow_layout_mode(layout_mode)
+        self._configure_columns()
         self.body.bind("<Configure>", self._sync_scroll_region, add="+")
         self.canvas.bind("<Configure>", self._sync_width_and_rows, add="+")
         self.canvas.bind("<MouseWheel>", self._wheel, add="+")
@@ -44,6 +53,7 @@ class ScrollableWorkflowGrid:
     ) -> ttk.Frame:
         card = ttk.Frame(self.body, style="WorkflowCard.TFrame", padding=8)
         card.grid(row=row, column=column, sticky="nsew", padx=5, pady=5)
+        self._card_positions[card] = (row, column)
         header = ttk.Frame(card, style="WorkflowCard.TFrame")
         header.pack(fill="x", pady=(0, 6))
         ttk.Label(header, text=title, style="WorkflowTitle.TLabel").pack(anchor="w")
@@ -61,10 +71,15 @@ class ScrollableWorkflowGrid:
                     pass
         self.cards.append(card)
         self._rows = max(self._rows, row + 1)
-        self.body.rowconfigure(row, weight=1, uniform="workflow-rows", minsize=self.min_cell_height)
+        self._apply_card_layout()
         self.bind_scrolling(card)
         self.refresh()
         return card
+
+    def set_layout_mode(self, mode: str) -> None:
+        self.layout_mode = normalize_workflow_layout_mode(mode)
+        self._apply_card_layout()
+        self.refresh()
 
     def bind_scrolling(self, widget) -> None:
         try:
@@ -94,6 +109,29 @@ class ScrollableWorkflowGrid:
         except TclError:
             pass
 
+    def _configure_columns(self) -> None:
+        columns = 1 if self.layout_mode == "wide" else 2
+        for column in range(2):
+            weight = 1 if column < columns else 0
+            self.body.columnconfigure(column, weight=weight, uniform="workflow-columns" if weight else "")
+
+    def _apply_card_layout(self) -> None:
+        previous_rows = self._rows
+        self._configure_columns()
+        for index, card in enumerate(self.cards):
+            original_row, original_column = self._card_positions.get(card, (index // 2, index % 2))
+            if self.layout_mode == "wide":
+                row, column, columnspan = index, 0, 2
+            else:
+                row, column, columnspan = original_row, original_column, 1
+            card.grid_configure(row=row, column=column, columnspan=columnspan, sticky="nsew", padx=5, pady=5)
+        self._rows = len(self.cards) if self.layout_mode == "wide" else max((row for row, _column in self._card_positions.values()), default=-1) + 1
+        for row in range(max(previous_rows, self._rows)):
+            if row < self._rows:
+                self.body.rowconfigure(row, weight=1, uniform="workflow-rows", minsize=self.min_cell_height)
+            else:
+                self.body.rowconfigure(row, weight=0, uniform="", minsize=0)
+
     def _sync_scroll_region(self, _event=None) -> None:
         try:
             self.canvas.configure(scrollregion=self.canvas.bbox("all"))
@@ -105,7 +143,8 @@ class ScrollableWorkflowGrid:
             width = event.width if event is not None else self.canvas.winfo_width()
             height = event.height if event is not None else self.canvas.winfo_height()
             self.canvas.itemconfigure(self.window_id, width=max(1, width))
-            visible_cell = max(self.min_cell_height, (max(600, height) - 24) // 2)
+            divisor = 3 if self.layout_mode == "compact" else 2
+            visible_cell = max(self.min_cell_height, (max(600, height) - 24) // divisor)
             for row in range(self._rows):
                 self.body.rowconfigure(row, minsize=visible_cell)
             self._sync_scroll_region()

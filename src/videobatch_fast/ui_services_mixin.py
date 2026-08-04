@@ -404,6 +404,7 @@ class UiServicesMixin:
             "playlist_shuffle": self.playlist.shuffle,
             "preview_zoom": self.preview_zoom.get(),
             "active_tab": int(self.main_notebook.index(self.main_notebook.select())) if hasattr(self, "main_notebook") else 0,
+            "workflow_layout_mode": self.config.get("workflow_layout_mode", "two_columns"),
             "current_project_file": str(getattr(self, "project_file", "") or ""),
         })
 
