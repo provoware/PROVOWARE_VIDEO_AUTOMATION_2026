@@ -144,7 +144,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           mkdir -p matrix-logs
-          ./scripts/kubuntu_matrix_smoke.sh \
+          bash scripts/kubuntu_matrix_smoke.sh \
             2>&1 | tee matrix-logs/compatibility-contract.log
 
       - name: Write matrix status and collect diagnostics
