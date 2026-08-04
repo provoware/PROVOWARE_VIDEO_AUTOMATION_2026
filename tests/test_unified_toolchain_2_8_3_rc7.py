@@ -16,8 +16,8 @@ import toolchain_common as common  # noqa: E402
 
 RUNTIME = {
     "cffi": "2.0.0",
-    "cryptography": "46.0.4",
-    "pillow": "12.2.0",
+    "cryptography": "50.0.0",
+    "pillow": "12.3.0",
     "pycparser": "3.0",
 }
 QUALITY = {

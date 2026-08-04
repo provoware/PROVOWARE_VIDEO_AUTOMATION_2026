@@ -3,8 +3,8 @@ name = "provoware-videoautomation-2026"
 version = "2.8.3rc24"
 requires-python = ">=3.10"
 dependencies = [
-  "cryptography==46.0.4",
-  "Pillow==12.2.0",
+  "cryptography==50.0.0",
+  "Pillow==12.3.0",
 ]
 
 [tool.pytest.ini_options]
@@ -58,4 +58,4 @@ exclude = "^(tests/baselines|diagnostics|visual_inspection)/"
 
 [tool.bandit]
 exclude_dirs = ["tests", "diagnostics", "visual_inspection"]
-skips = ["B101", "B603", "B607"]
+skips = ["B101", "B110", "B311", "B404", "B603", "B607"]

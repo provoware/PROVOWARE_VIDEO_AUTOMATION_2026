@@ -5,8 +5,8 @@
   "packages": {
     "runtime": {
       "cffi": "2.0.0",
-      "cryptography": "46.0.4",
-      "Pillow": "12.2.0",
+      "cryptography": "50.0.0",
+      "Pillow": "12.3.0",
       "pycparser": "3.0"
     },
     "quality": {

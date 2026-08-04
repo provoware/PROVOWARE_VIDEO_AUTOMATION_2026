@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from tkinter import BOTH, LEFT, RIGHT, X, BooleanVar, Text, Toplevel, ttk
+from tkinter import BOTH, LEFT, RIGHT, X, BooleanVar, Text, Toplevel, messagebox, ttk
 from typing import Iterable
 
 
