@@ -12,7 +12,7 @@ from .text_resources import text
 from .theme import COLORS, apply_theme, available_themes
 from .ui_components import Tooltip
 from .versioning import build_label
-from .workflow_grid import ScrollableWorkflowGrid
+from .workflow_grid import DEFAULT_WORKFLOW_LAYOUT_MODE, ScrollableWorkflowGrid, normalize_workflow_layout_mode
 
 LEGACY_WORKSPACE_CONTRACT_KEY = "ui.workspace_grid.mittiger_hauptarbeitsbereich_flexibles_22_raster"
 
@@ -59,7 +59,8 @@ class UiWorkspaceGridMixin:
 
     def _scrollable_dashboard_body(self, page) -> ScrollableWorkflowGrid:
         """Create the dynamic two-column body used by every main workflow tab."""
-        return ScrollableWorkflowGrid(page, background=COLORS["panel"], min_cell_height=285)
+        mode = normalize_workflow_layout_mode(self.config.get("workflow_layout_mode", DEFAULT_WORKFLOW_LAYOUT_MODE))
+        return ScrollableWorkflowGrid(page, background=COLORS["panel"], min_cell_height=285, layout_mode=mode)
 
     def _workflow_page(self, page, area: str) -> ScrollableWorkflowGrid:
         self._area_header(page, area, text(f"ui.tabs.{area}", area.title()), text(f"ui.tabs.{area}_subtitle", "2×2-Workflow · bei Bedarf nach unten scrollbar"))
@@ -203,6 +204,11 @@ class UiWorkspaceGridMixin:
             view_menu.add_command(label=text(key), command=lambda selected=index: self.main_notebook.select(selected))
         view_menu.add_separator()
         view_menu.add_command(label=text("ui.menu.reset_zoom"), command=self._reset_all_area_zoom)
+        layout_menu = Menu(view_menu, tearoff=False)
+        layout_menu.add_command(label="Workflow: 2 Spalten", command=lambda: self._set_workflow_layout_mode("two_columns"))
+        layout_menu.add_command(label="Workflow: 1 Spalte breit", command=lambda: self._set_workflow_layout_mode("wide"))
+        layout_menu.add_command(label="Workflow: kompakt", command=lambda: self._set_workflow_layout_mode("compact"))
+        view_menu.add_cascade(label="Workflow-Layout", menu=layout_menu)
         view_menu.add_command(label=text("ui.rc22.action.font_smaller"), command=lambda: self._set_global_zoom(self.global_font_scale.get() - 10), accelerator="Ctrl+-")
         view_menu.add_command(label=text("ui.rc22.action.font_larger"), command=lambda: self._set_global_zoom(self.global_font_scale.get() + 10), accelerator="Ctrl++")
         menu.add_cascade(label=text("ui.menu.view"), menu=view_menu)
@@ -237,6 +243,14 @@ class UiWorkspaceGridMixin:
         self.root.bind_all("<Control-minus>", lambda _e: self._set_global_zoom(self.global_font_scale.get() - 10))
         self.root.bind_all("<Control-plus>", lambda _e: self._set_global_zoom(self.global_font_scale.get() + 10))
         self.root.bind_all("<Control-equal>", lambda _e: self._set_global_zoom(self.global_font_scale.get() + 10))
+
+    def _set_workflow_layout_mode(self, mode: str) -> None:
+        selected = normalize_workflow_layout_mode(mode)
+        self.config["workflow_layout_mode"] = selected
+        for grid in getattr(self, "workflow_grids", {}).values():
+            grid.set_layout_mode(selected)
+        self._save_settings()
+        self.guidance_text.set(f"Workflow-Layout aktiviert: {selected}.")
 
     def _build_start_page(self, page) -> None:
         grid = self._workflow_page(page, "start")

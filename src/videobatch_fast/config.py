@@ -11,6 +11,7 @@ from .paths import config_dir, default_output_dir, ensure_app_dirs
 from .project_state import default_project_file
 from .safe_io import atomic_write_json, quarantine_file
 from .quick_modes import QUICK_MODES
+from .workflow_grid import DEFAULT_WORKFLOW_LAYOUT_MODE, WORKFLOW_LAYOUT_MODES
 from .slideshow import SLIDESHOW_MODES, TRANSITION_PRESETS
 from .slideshow_sequence import ORDER_MODES
 
@@ -51,6 +52,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "preview_zoom": 100,
     "active_tab": 0,
     "auto_open_output": True,
+    "workflow_layout_mode": DEFAULT_WORKFLOW_LAYOUT_MODE,
     "current_project_file": str(default_project_file()),
 }
 
@@ -99,6 +101,7 @@ def _normalize_choice_fields(result: dict[str, Any]) -> None:
         "slideshow_order_mode": set(ORDER_MODES),
         "playlist_repeat": {"off", "one", "all"},
         "theme": {"neon_gravity", "acid_paper", "toxic_candy", "ultraviolet"},
+        "workflow_layout_mode": WORKFLOW_LAYOUT_MODES,
     }
     for key, allowed in choices.items():
         result[key] = _enum_value(result.get(key), allowed, str(DEFAULT_CONFIG[key]))

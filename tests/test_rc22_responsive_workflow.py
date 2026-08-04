@@ -67,6 +67,8 @@ def test_rc22_config_preserves_themes_zoom_and_auto_open() -> None:
             "font_scale": 150,
             "area_zoom": {"start": 180, "media": 70},
             "auto_open_output": False,
+            "workflow_layout_mode": "wide",
+            "workspace_layout_profiles": {"root_vertical": 0.5},
         }
     )
     assert result["theme"] == "toxic_candy"
@@ -74,6 +76,9 @@ def test_rc22_config_preserves_themes_zoom_and_auto_open() -> None:
     assert result["area_zoom"]["start"] == 180
     assert result["area_zoom"]["media"] == 70
     assert result["auto_open_output"] is False
+    assert result["workflow_layout_mode"] == "wide"
+    assert "workspace_layout_profiles" not in result
+    assert normalize_config({"workflow_layout_mode": "splitter"})["workflow_layout_mode"] == "two_columns"
 
 
 def test_four_complete_theme_contracts_exist() -> None:
@@ -97,6 +102,11 @@ def test_workspace_source_binds_requested_user_flows() -> None:
     assert "_focus_preparation_assistant" in source
     assert "_open_result_folders" in events
     assert "auto_open_output" in events
+    assert "workflow_layout_mode" in source
+    assert "_set_workflow_layout_mode" in source
+    save_block = (ROOT / "src" / "videobatch_fast" / "ui_services_mixin.py").read_text(encoding="utf-8")
+    assert "workflow_layout_mode" in save_block
+    assert "workspace_layout_profiles" not in save_block
 
 
 def test_scrollable_workflow_grid_grows_and_scrolls() -> None:
@@ -129,6 +139,18 @@ def test_scrollable_workflow_grid_grows_and_scrolls() -> None:
     root.update_idletasks()
     assert grid._rows == 3
     assert len(grid.cards) == 6
+    grid.set_layout_mode("wide")
+    root.update_idletasks()
+    assert grid.layout_mode == "wide"
+    assert grid._rows == 6
+    assert cards[1].grid_info()["row"] == 1
+    assert cards[1].grid_info()["column"] == 0
+    grid.set_layout_mode("compact")
+    root.update_idletasks()
+    assert grid.layout_mode == "compact"
+    assert grid._rows == 3
+    assert cards[1].grid_info()["row"] == 0
+    assert cards[1].grid_info()["column"] == 1
     assert grid.body.winfo_reqheight() > grid.canvas.winfo_height()
     grid.scroll_to_widget(cards[-1])
     root.update_idletasks()
