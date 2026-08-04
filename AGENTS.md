@@ -59,7 +59,10 @@ einer Iteration müssen Kandidat, Umgebung, Zeitpunkt und Ergebnis eindeutig nen
   schreibenden Build-Schritt aktualisieren.
 - Tests und Qualitätsprüfungen verwenden ausschließlich
   `scripts/render_release_docs.py --check` und verändern diese Dateien nicht.
-
+- in jeder Iteration zu aktualisieren: TODO, README (mit Fortschritt in Prozent und erledigte und offene Punkte), UPDATE_SYSTEM, CHANGELOG
+- Optimiere ein Element der Hilfen im Tool
+- Optimiere ein Aspekt der Startroutine , oder ihres Feedbacks zum Nutzer
+- Optimiere und verbessere einen Aspekt des Erscheinungsbildes
 ## Release-Gates
 
 - Registryprüfung
