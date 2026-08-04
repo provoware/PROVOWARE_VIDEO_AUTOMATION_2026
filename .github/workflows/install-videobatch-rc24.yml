@@ -6,7 +6,11 @@ on:
   workflow_dispatch:
     inputs:
       source_url:
-        description: 'Optionale direkte ZIP-URL; leer nutzt das dauerhafte GitHub-Release-Asset'
+        description: "Optionale direkte ZIP-URL; leer nutzt das dauerhafte GitHub-Release-Asset"
+        required: false
+        type: string
+      report_issue:
+        description: "Optionale Issue-Nummer für Status- und Fehlerberichte"
         required: false
         type: string
 
@@ -20,15 +24,17 @@ concurrency:
 
 env:
   ARCHIVE: /tmp/VideoBatch_Fast_2.8.3-rc24.zip
+  ASSET_NAME: VideoBatch_Fast_2.8.3-rc24.zip
+  ARCHIVE_SIZE: "4013380"
   ARCHIVE_SHA256: c54c19141f4d08fbb19f6f38e40ce06c589a86725b988864ad8e22f28ad7501a
   SOURCE_RELEASE_TAG: videobatch-fast-2.8.3-rc24-source
   FINAL_RELEASE_TAG: videobatch-fast-2.8.3-rc24
 
 jobs:
   install-and-validate:
-    if: github.event_name != 'issues' || github.event.issue.title == 'RUN_RC24_RELEASE_ASSET_20260804'
+    if: github.event_name == 'workflow_dispatch' || github.event.issue.title == 'RUN_RC24_RELEASE_ASSET_20260804'
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
 
     steps:
       - name: Checkout repository without external actions
@@ -38,33 +44,41 @@ jobs:
         run: |
           set -euo pipefail
           echo checkout > /tmp/rc24-stage
-          rm -rf ./* ./.??* 2>/dev/null || true
+          find . -mindepth 1 -maxdepth 1 -exec rm -rf {} +
           gh repo clone "$GITHUB_REPOSITORY" . -- --branch main --single-branch
           git fetch --tags --force
           echo checkout-ok > /tmp/rc24-stage
 
-      - name: Download permanent RC24 source asset
+      - name: Download and verify permanent RC24 source asset
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_URL_INPUT: ${{ inputs.source_url }}
         run: |
           set -euo pipefail
           echo download > /tmp/rc24-stage
-          SOURCE_URL='${{ github.event.inputs.source_url }}'
-          if [ -z "$SOURCE_URL" ]; then
-            SOURCE_URL="https://github.com/$GITHUB_REPOSITORY/releases/download/$SOURCE_RELEASE_TAG/VideoBatch_Fast_2.8.3-rc24.zip"
+          rm -f "$ARCHIVE"
+
+          if [ -n "${SOURCE_URL_INPUT:-}" ]; then
+            echo "Using explicitly supplied RC24 source URL."
+            curl --fail --location --retry 3 --retry-all-errors \
+              --connect-timeout 20 --max-time 300 \
+              "$SOURCE_URL_INPUT" -o "$ARCHIVE"
+          else
+            echo "Using permanent GitHub release asset: $SOURCE_RELEASE_TAG/$ASSET_NAME"
+            gh release download "$SOURCE_RELEASE_TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --pattern "$ASSET_NAME" \
+              --output "$ARCHIVE"
           fi
-          echo "Using RC24 source: $SOURCE_URL"
-          if ! curl --fail --location --retry 3 --retry-all-errors \
-            --connect-timeout 20 --max-time 300 \
-            "$SOURCE_URL" -o "$ARCHIVE"; then
-            echo 'RC24 source asset is unavailable.' >&2
-            echo "Expected permanent asset: https://github.com/$GITHUB_REPOSITORY/releases/tag/$SOURCE_RELEASE_TAG" >&2
-            exit 22
-          fi
+
+          ACTUAL_SIZE="$(stat -c '%s' "$ARCHIVE")"
+          test "$ACTUAL_SIZE" = "$ARCHIVE_SIZE"
           echo "$ARCHIVE_SHA256  $ARCHIVE" | sha256sum --check --strict
           unzip -t "$ARCHIVE"
           echo download-ok > /tmp/rc24-stage
 
-      - name: Replace repository root
+      - name: Replace repository root with RC24
         shell: bash
         run: |
           set -euo pipefail
@@ -72,18 +86,21 @@ jobs:
           rm -rf /tmp/rc24-extract
           mkdir -p /tmp/rc24-extract
           unzip -q "$ARCHIVE" -d /tmp/rc24-extract
-          SOURCE='/tmp/rc24-extract/VideoBatch_Fast_2.8.3-rc24'
+          SOURCE="/tmp/rc24-extract/VideoBatch_Fast_2.8.3-rc24"
           test -f "$SOURCE/VERSION.json"
           test -f "$SOURCE/manifest.json"
+
           python3 - <<'PY'
           import json
           from pathlib import Path
-          root = Path('/tmp/rc24-extract/VideoBatch_Fast_2.8.3-rc24')
-          version = json.loads((root / 'VERSION.json').read_text(encoding='utf-8'))
-          manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
-          assert version.get('version') == '2.8.3-rc24', version
-          assert manifest.get('version') == '2.8.3-rc24', manifest
+
+          root = Path("/tmp/rc24-extract/VideoBatch_Fast_2.8.3-rc24")
+          version = json.loads((root / "VERSION.json").read_text(encoding="utf-8"))
+          manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+          assert version.get("version") == "2.8.3-rc24", version
+          assert manifest.get("version") == "2.8.3-rc24", manifest
           PY
+
           find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
           cp -a "$SOURCE"/. ./
           find . -type d -name '__pycache__' -prune -exec rm -rf {} +
@@ -102,7 +119,7 @@ jobs:
           .venv/bin/python -m pip install -r requirements-toolchain.lock
           echo dependencies-ok > /tmp/rc24-stage
 
-      - name: Validate release and run complete tests
+      - name: Validate release and run all tests
         shell: bash
         run: |
           set -euo pipefail
@@ -118,67 +135,109 @@ jobs:
         run: |
           set -euo pipefail
           echo publish > /tmp/rc24-stage
+
           python3 - <<'PY'
           import json
+          import os
           from pathlib import Path
+
           evidence = {
-              'version': '2.8.3-rc24',
-              'source_archive_sha256': 'c54c19141f4d08fbb19f6f38e40ce06c589a86725b988864ad8e22f28ad7501a',
-              'local_preflight_tests': '274/274 passed',
-              'github_actions_validation': 'passed',
-              'replacement_mode': 'complete repository root replacement',
-              'backup_branch': 'backup/pre-rc24-replacement-20260804',
-              'release_asset': 'VideoBatch_Fast_2.8.3-rc24.zip'
+              "version": "2.8.3-rc24",
+              "source_archive_sha256": os.environ["ARCHIVE_SHA256"],
+              "source_archive_size": int(os.environ["ARCHIVE_SIZE"]),
+              "local_preflight_tests": "274/274 passed",
+              "github_actions_validation": "passed",
+              "replacement_mode": "complete repository root replacement",
+              "backup_branch": "backup/pre-rc24-replacement-20260804",
+              "source_release_tag": os.environ["SOURCE_RELEASE_TAG"],
+              "final_release_tag": os.environ["FINAL_RELEASE_TAG"],
+              "release_asset": os.environ["ASSET_NAME"],
+              "workflow_run_id": os.environ["GITHUB_RUN_ID"],
           }
-          Path('BOOTSTRAP_VALIDATION.json').write_text(
-              json.dumps(evidence, indent=2, ensure_ascii=False) + '\n',
-              encoding='utf-8'
+          Path("BOOTSTRAP_VALIDATION.json").write_text(
+              json.dumps(evidence, indent=2, ensure_ascii=False) + "\n",
+              encoding="utf-8",
           )
           PY
+
           rm -rf .venv .pytest_cache
           find . -type d -name '__pycache__' -prune -exec rm -rf {} +
           find . -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           if git diff --cached --quiet; then
-            echo 'No repository changes detected; refusing an empty release commit.' >&2
+            echo "No repository changes detected; refusing an empty release commit." >&2
             exit 1
           fi
-          git commit -m 'Install VideoBatch Fast 2.8.3-rc24'
-          git push origin HEAD:main
+          git commit -m "Install VideoBatch Fast 2.8.3-rc24"
           FINAL_SHA="$(git rev-parse HEAD)"
-          if ! git ls-remote --exit-code --tags origin "refs/tags/$FINAL_RELEASE_TAG" >/dev/null 2>&1; then
-            git tag -a "$FINAL_RELEASE_TAG" "$FINAL_SHA" -m 'VideoBatch Fast 2.8.3-rc24 validated release candidate'
+          git push origin HEAD:main
+
+          git fetch --tags --force
+          if git rev-parse "$FINAL_RELEASE_TAG" >/dev/null 2>&1; then
+            EXISTING_TAG_SHA="$(git rev-list -n 1 "$FINAL_RELEASE_TAG")"
+            if [ "$EXISTING_TAG_SHA" != "$FINAL_SHA" ]; then
+              echo "Existing final tag points to $EXISTING_TAG_SHA, expected $FINAL_SHA." >&2
+              exit 1
+            fi
+          else
+            git tag -a "$FINAL_RELEASE_TAG" "$FINAL_SHA" \
+              -m "VideoBatch Fast 2.8.3-rc24 validated release candidate"
             git push origin "refs/tags/$FINAL_RELEASE_TAG"
           fi
-          if gh release view "$FINAL_RELEASE_TAG" >/dev/null 2>&1; then
-            gh release upload "$FINAL_RELEASE_TAG" "$ARCHIVE#VideoBatch_Fast_2.8.3-rc24.zip" --clobber
+
+          if gh release view "$FINAL_RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$FINAL_RELEASE_TAG" \
+              "$ARCHIVE#$ASSET_NAME" \
+              --repo "$GITHUB_REPOSITORY" \
+              --clobber
           else
             gh release create "$FINAL_RELEASE_TAG" \
-              "$ARCHIVE#VideoBatch_Fast_2.8.3-rc24.zip" \
-              --title 'VideoBatch Fast 2.8.3-rc24' \
-              --notes 'Validierter RC24-Quellstand. SHA-256: c54c19141f4d08fbb19f6f38e40ce06c589a86725b988864ad8e22f28ad7501a'
+              "$ARCHIVE#$ASSET_NAME" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "VideoBatch Fast 2.8.3-rc24" \
+              --notes "Validierter RC24-Quellstand. SHA-256: $ARCHIVE_SHA256"
           fi
+
+          REMOTE_ASSET_SIZE="$(
+            gh release view "$FINAL_RELEASE_TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --json assets \
+              --jq ".assets[] | select(.name == \"$ASSET_NAME\") | .size"
+          )"
+          test "$REMOTE_ASSET_SIZE" = "$ARCHIVE_SIZE"
           echo publish-ok > /tmp/rc24-stage
 
-      - name: Report result to trigger issue
-        if: always() && github.event_name == 'issues'
+      - name: Report workflow result
+        if: always()
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ISSUE: ${{ github.event.issue.number }}
+          REPORT_ISSUE_INPUT: ${{ inputs.report_issue }}
           JOB_STATUS: ${{ job.status }}
         run: |
           set +e
+          ISSUE_NUMBER="${EVENT_ISSUE:-${REPORT_ISSUE_INPUT:-}}"
+          [ -n "$ISSUE_NUMBER" ] || exit 0
+
           STAGE="$(cat /tmp/rc24-stage 2>/dev/null || echo startup)"
           CURRENT_SHA="$(git rev-parse HEAD 2>/dev/null || echo unavailable)"
-          gh issue comment "$ISSUE_NUMBER" --body "RC24-WORKFLOW-DIAGNOSE
+          gh issue comment "$ISSUE_NUMBER" \
+            --repo "$GITHUB_REPOSITORY" \
+            --body "RC24-WORKFLOW-DIAGNOSE
 
-Status: $JOB_STATUS
-Letzter Schritt: $STAGE
-Commit: $CURRENT_SHA
-Archiv-SHA-256: $ARCHIVE_SHA256"
-          if [ "$JOB_STATUS" = success ]; then
-            gh issue close "$ISSUE_NUMBER" --reason completed
+          Status: $JOB_STATUS
+          Letzter Schritt: $STAGE
+          Commit: $CURRENT_SHA
+          Workflow-Lauf: $GITHUB_RUN_ID
+          Archiv-SHA-256: $ARCHIVE_SHA256"
+
+          if [ "$JOB_STATUS" = success ] && [ "$EVENT_NAME" = issues ]; then
+            gh issue close "$ISSUE_NUMBER" \
+              --repo "$GITHUB_REPOSITORY" \
+              --reason completed
           fi
