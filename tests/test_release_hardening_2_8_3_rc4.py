@@ -19,6 +19,8 @@ from videobatch_fast.jobs import build_jobs
 from videobatch_fast.media_library import LibraryItem, sort_paths
 from videobatch_fast.models import BatchOptions, MediaInfo, PairJob
 from videobatch_fast.playlist import AudioPlayer, Playlist
+from videobatch_fast.registry import RegistryError
+from videobatch_fast.ui_components import SolutionDialog
 from videobatch_fast.validation import validate_output_dir, validate_pairs, validate_runtime
 
 
@@ -48,6 +50,26 @@ def test_error_definition_reads_registry_and_falls_back() -> None:
     assert fallback.code == "UNKNOWN"
     assert fallback.severity == "blocking"
     assert fallback.actions == ("open_logs",)
+
+
+def test_error_definition_survives_broken_registry_and_malformed_fields() -> None:
+    with mock.patch("videobatch_fast.error_handling.load_json", side_effect=RegistryError("defekt")):
+        unavailable = error_definition("BROKEN")
+    assert unavailable.cause == "Die genaue Ursache konnte nicht eindeutig bestimmt werden."
+    assert unavailable.actions == ("open_logs",)
+
+    malformed = {"errors": {"E2": {"title": "  ", "severity": "urgent", "actions": "retry"}}}
+    with mock.patch("videobatch_fast.error_handling.load_json", return_value=malformed):
+        normalized = error_definition("E2")
+    assert normalized.title == "Unbekanntes Problem"
+    assert normalized.severity == "blocking"
+    assert normalized.actions == ("open_logs",)
+
+
+def test_solution_dialog_uses_plain_language_severity_badges() -> None:
+    assert SolutionDialog._severity_badge("information") == ("Hinweis", "Status.TLabel")
+    assert SolutionDialog._severity_badge("warning") == ("Warnung", "Warning.TLabel")
+    assert SolutionDialog._severity_badge("blocking") == ("Vorgang gestoppt", "Error.TLabel")
 
 
 def test_build_jobs_rejects_mismatch_and_builds_reserved_outputs(tmp_path: Path) -> None:

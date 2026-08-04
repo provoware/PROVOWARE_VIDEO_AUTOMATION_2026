@@ -1,5 +1,8 @@
 # 2.8.3-rc24
 
+- Zentrale Fehlerauflösung gegen fehlende, unlesbare und unvollständige Registereinträge abgesichert.
+- Unbekannte Schweregrade und ungültige Aktionslisten fallen sicher auf einen gestoppten Vorgang mit Protokollzugriff zurück.
+- Lösungsdialog kennzeichnet Hinweise, Warnungen und gestoppte Vorgänge einheitlich in einfacher Sprache.
 - Absturz beim Anklicken der bereits ausgewählten Bilderliste strukturell behoben.
 - Hauptlisten-Vorschau von unbegrenzten Einzelthreads auf genau einen seriellen Vorschauarbeiter umgestellt.
 - 180-ms-Debounce und Generationstoken verhindern parallele FFmpeg-Prozesse und veraltete Vorschauergebnisse.
