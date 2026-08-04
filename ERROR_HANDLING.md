@@ -1,8 +1,14 @@
-# Fehlerhandling – 2.8.0
+# Fehlerhandling
 
 ## Grundstruktur
 
 Jeder Fehler erklärt Ursache, Auswirkung, automatische Schutzmaßnahme, empfohlene Lösung und sichere Alternative.
+
+Die zentrale Fehlerauflösung bleibt auch dann nutzbar, wenn das Fehlerregister fehlt,
+nicht lesbar oder in einzelnen Feldern beschädigt ist. In diesem Fall wird eine
+vollständige, sichere Standarderklärung mit der Aktion „Protokolle öffnen“ gezeigt.
+Unbekannte Schweregrade werden als blockierend behandelt. Der Lösungsdialog zeigt
+den Zustand in einfacher Sprache als „Hinweis“, „Warnung“ oder „Vorgang gestoppt“.
 
 ## Neue Schutzfälle
 

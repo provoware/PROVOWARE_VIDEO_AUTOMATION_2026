@@ -2,6 +2,8 @@
 
 ## RC24-Iteration
 
+- [x] zentrale Fehlerauflösung gegen beschädigte Registerdaten absichern
+- [x] Schweregrad im Lösungsdialog einheitlich und verständlich anzeigen
 - [x] zweiten Absturzpfad in der bereits ausgewählten Bilderliste identifizieren
 - [x] parallele Vorschauprozesse eliminieren
 - [x] Auswahlereignisse entprellen

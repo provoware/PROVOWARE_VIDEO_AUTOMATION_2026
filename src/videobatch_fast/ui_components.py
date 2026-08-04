@@ -45,7 +45,8 @@ class SolutionDialog:
         outer = ttk.Frame(self.window, padding=18)
         outer.pack(fill=BOTH, expand=True)
         ttk.Label(outer, text=definition.title, style="DialogTitle.TLabel", wraplength=700).pack(anchor="w")
-        ttk.Label(outer, text=f"Fehlercode: {definition.code}", style="Hint.TLabel").pack(anchor="w", pady=(0, 8))
+        severity_label, severity_style = self._severity_badge(definition.severity)
+        ttk.Label(outer, text=f"{severity_label} · Fehlercode: {definition.code}", style=severity_style).pack(anchor="w", pady=(2, 8))
 
         # Explanations can grow, but solution actions must remain reachable at all times.
         body_host = ttk.Frame(outer)
@@ -119,6 +120,14 @@ class SolutionDialog:
     def _run(self, callback: Callable[[], None]) -> None:
         self.window.destroy()
         callback()
+
+    @staticmethod
+    def _severity_badge(severity: str) -> tuple[str, str]:
+        return {
+            "information": ("Hinweis", "Status.TLabel"),
+            "warning": ("Warnung", "Warning.TLabel"),
+            "blocking": ("Vorgang gestoppt", "Error.TLabel"),
+        }.get(severity, ("Vorgang gestoppt", "Error.TLabel"))
 
     @staticmethod
     def _label(action_id: str) -> str:
