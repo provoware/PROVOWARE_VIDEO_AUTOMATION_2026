@@ -151,6 +151,9 @@ def _apply_resource_limits() -> None:
 
 def apply_plugin_sandbox() -> SandboxStatus:
     _apply_resource_limits()
+    # Resolve and activate Seccomp before Landlock denies all filesystem reads.
+    # No plugin code runs until both protection layers are active.
+    _apply_seccomp_deny_dangerous()
     abi = 0
     landlock_message = ""
     try:
@@ -160,7 +163,6 @@ def apply_plugin_sandbox() -> SandboxStatus:
         if os.environ.get("VIDEOBATCH_CHROOT_SANDBOX") != "1":
             raise
         landlock_message = f"Chroot-Dateisystemgrenze aktiv; Landlock optional nicht verfügbar ({exc}), "
-    _apply_seccomp_deny_dangerous()
     return SandboxStatus(True, landlock_message + "Seccomp und Ressourcenlimits aktiv.", abi, True)
 
 
