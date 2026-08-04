@@ -1,13 +1,19 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 398,
+  "file_count": 405,
   "files": [
     {
       "mode": "0o644",
       "path": ".github/workflows/kubuntu-build-matrix.yml",
       "sha256": "bd7878227ed83181f0464e2308f1486db64a6230295306572df5007d65444d0f",
       "size": 14563
+    },
+    {
+      "mode": "0o644",
+      "path": ".gitignore",
+      "sha256": "1053dc9cc8e41715a8c7e891cfcb3eba84b3371e9893273353e9e5411b7c317e",
+      "size": 139
     },
     {
       "mode": "0o644",
@@ -929,9 +935,45 @@
     },
     {
       "mode": "0o644",
+      "path": "resources/texts/application.json",
+      "sha256": "b764eb221db91a240cf4c6da88ec7eac5f67fc6551595b3215035a968801df46",
+      "size": 10174
+    },
+    {
+      "mode": "0o644",
       "path": "resources/texts/de.json",
-      "sha256": "f73c76ddaccb0b399f01f24c8ccebc1f9831f7eff33d9bb55b8b7bc45ec54433",
-      "size": 35817
+      "sha256": "55c1e13dd2e93405afa9909f176556f01b2ee4d7ed9d47a5286b3bdc9a782868",
+      "size": 232
+    },
+    {
+      "mode": "0o644",
+      "path": "resources/texts/ui-foundation.json",
+      "sha256": "04005049f573a8e9b2870fd45267c33498e645c5fb660f19f5822609594d45a8",
+      "size": 5463
+    },
+    {
+      "mode": "0o644",
+      "path": "resources/texts/ui-media.json",
+      "sha256": "866c135536f08933a86fed177612bdb1c42e0a018a4b31aaf85da487700ee87e",
+      "size": 2302
+    },
+    {
+      "mode": "0o644",
+      "path": "resources/texts/ui-rc22.json",
+      "sha256": "d4d692ed20dee81c1bf87f65aa11442e119d864239d2596c1311f59b9709e0cd",
+      "size": 6386
+    },
+    {
+      "mode": "0o644",
+      "path": "resources/texts/ui-slideshow.json",
+      "sha256": "c79323f2d6ad4f4edfa45c2dca527ee23061a93ea89a855b98b1e1ea81c86d8e",
+      "size": 5298
+    },
+    {
+      "mode": "0o644",
+      "path": "resources/texts/ui-workflow.json",
+      "sha256": "d6458cd8357644f0fcd5589dc5ebb9109d04a0d582770ebd299f144455b928f0",
+      "size": 7584
     },
     {
       "mode": "0o644",
@@ -1674,8 +1716,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/text_resources.py",
-      "sha256": "3bec200029cf6bc2aa689c04a6e8602f87636939408a062f16599924f854443a",
-      "size": 5472
+      "sha256": "a1850cd5c6f4d1c65785bbca93af3063a12beeaaaba332582848e0460d1bf435",
+      "size": 6709
     },
     {
       "mode": "0o644",
@@ -2298,8 +2340,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_release_2_8.py",
-      "sha256": "4c6e4fd584e187b4debc3a4a926be9841b818ce2349b208d9d0a107dac10cb73",
-      "size": 8267
+      "sha256": "ea1adcdc0c925c0112d64955403217e28091360cc08bfa5720cb8cfeedf0d723",
+      "size": 8209
     },
     {
       "mode": "0o644",
@@ -2322,8 +2364,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_release_hardening_2_8_3_rc7.py",
-      "sha256": "9fb1237d71a28df10a0bada591612ed7ff84e949b7e0a0a0f981007267805909",
-      "size": 9094
+      "sha256": "8d67c07cd69a2fb9c1a7d5dced2f0b324fbfaeeb4abde6983c633eeea72f0c22",
+      "size": 9400
     },
     {
       "mode": "0o644",

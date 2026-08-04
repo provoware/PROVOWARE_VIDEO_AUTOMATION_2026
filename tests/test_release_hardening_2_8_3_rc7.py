@@ -17,7 +17,7 @@ from videobatch_fast.models import JobResult, MediaInfo, PairJob
 from videobatch_fast.runner_process import ProcessExecution, _ProgressState
 from videobatch_fast.safe_io import atomic_write_json, quarantine_file, read_json
 from videobatch_fast.task_manager import TaskManager
-from videobatch_fast.text_resources import validate_text_resources
+from videobatch_fast.text_resources import SUPPORTED_CATALOG_VERSION, text, validate_text_resources
 from videobatch_fast.verification import verify_output
 
 ROOT = Path(__file__).parents[1]
@@ -126,6 +126,10 @@ def test_task_manager_prevents_duplicate_and_waits() -> None:
 
 def test_text_contract_has_no_missing_or_embedded_static_ui_texts() -> None:
     assert validate_text_resources(ROOT) == []
+    manifest = json.loads((ROOT / "resources" / "texts" / "de.json").read_text(encoding="utf-8"))
+    assert manifest["catalog_version"] == SUPPORTED_CATALOG_VERSION
+    assert len(manifest["files"]) > 1
+    assert text("app.title") == "provoware - videoautomation - 2026"
 
 
 def test_ffmpeg_capability_parsers_and_required_filters() -> None:

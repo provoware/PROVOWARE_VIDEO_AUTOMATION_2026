@@ -9,6 +9,8 @@ from typing import Any
 from .registry import PROJECT_ROOT, RegistryError, load_json
 
 RESOURCE_PATH = "resources/texts/de.json"
+SUPPORTED_SCHEMA_VERSION = 2
+SUPPORTED_CATALOG_VERSION = "1.0"
 _VISIBLE_KEYWORDS = {"text", "title", "message", "label"}
 _MESSAGEBOX_FUNCTIONS = {"showinfo", "showwarning", "showerror", "askyesno", "askokcancel", "askretrycancel"}
 
@@ -19,21 +21,38 @@ class TextResourceError(RuntimeError):
 
 @lru_cache(maxsize=1)
 def _catalog() -> dict[str, str]:
-    raw = load_json(RESOURCE_PATH)
+    manifest = load_json(RESOURCE_PATH)
+    if manifest.get("schema_version") != SUPPORTED_SCHEMA_VERSION:
+        raise TextResourceError("Textkatalog-Schema wird von dieser Programmversion nicht unterstützt.")
+    version = str(manifest.get("catalog_version", ""))
+    if version != SUPPORTED_CATALOG_VERSION:
+        raise TextResourceError(f"Textkatalog-Version wird nicht unterstützt: {version or '-'}")
+    files = manifest.get("files")
+    if not isinstance(files, list) or not files:
+        raise TextResourceError("Textkatalog enthält keine Textdateien.")
     catalog: dict[str, str] = {}
-    for key, value in raw.items():
-        if key == "schema_version":
-            continue
-        if not isinstance(key, str) or not key.strip():
-            raise TextResourceError("Textressource enthält einen ungültigen Schlüssel.")
-        if not isinstance(value, str) or not value.strip():
-            raise TextResourceError(f"Textressource ist leer oder ungültig: {key}")
-        catalog[key] = value
+    for filename in files:
+        if not isinstance(filename, str) or Path(filename).name != filename or not filename.endswith(".json"):
+            raise TextResourceError(f"Textkatalog-Dateiname ist ungültig: {filename}")
+        part = load_json(f"resources/texts/{filename}")
+        if part.get("catalog_version") != version or not isinstance(part.get("texts"), dict):
+            raise TextResourceError(f"Textkatalog-Datei ist nicht kompatibel: {filename}")
+        for key, value in part["texts"].items():
+            if not isinstance(key, str) or not key.strip():
+                raise TextResourceError(f"Textressource enthält einen ungültigen Schlüssel: {filename}")
+            if key in catalog:
+                raise TextResourceError(f"Textschlüssel ist doppelt: {key}")
+            if not isinstance(value, str) or not value.strip():
+                raise TextResourceError(f"Textressource ist leer oder ungültig: {key}")
+            catalog[key] = value
     return catalog
 
 
 def clear_text_cache() -> None:
     _catalog.cache_clear()
+    from .registry import clear_registry_cache
+
+    clear_registry_cache()
 
 
 def text(key: str, fallback: str | None = None, /, **values: Any) -> str:
