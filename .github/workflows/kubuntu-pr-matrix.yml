@@ -132,8 +132,20 @@ jobs:
           )
           PY
 
+      - name: Check hardcoded release literals
+        run: |
+          set -Eeuo pipefail
+          mkdir -p matrix-logs
+          python3 scripts/check_release_literal_hygiene.py \
+            --report RELEASE_LITERAL_HYGIENE.json \
+            2>&1 | tee matrix-logs/release-literal-hygiene.log
+
       - name: Run complete compatibility contract
-        run: ./scripts/kubuntu_matrix_smoke.sh
+        run: |
+          set -Eeuo pipefail
+          mkdir -p matrix-logs
+          bash scripts/kubuntu_matrix_smoke.sh \
+            2>&1 | tee matrix-logs/compatibility-contract.log
 
       - name: Write matrix status and collect diagnostics
         if: always()
