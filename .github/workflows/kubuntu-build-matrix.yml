@@ -2,19 +2,15 @@ name: Kubuntu compatibility matrix
 on:
   workflow_dispatch:
   push:
+    branches: [main]
+    paths:
+      - .github/workflows/kubuntu-build-matrix.yml
     tags: ['v*']
-  issue_comment:
-    types: [created]
 permissions:
   contents: read
   issues: write
 jobs:
   matrix:
-    if: >-
-      github.event_name != 'issue_comment' ||
-      (github.event.issue.number == 12 &&
-       github.event.comment.user.login == github.repository_owner &&
-       contains(github.event.comment.body, 'RUN_KUBUNTU_MATRIX_RC24'))
     strategy:
       fail-fast: false
       matrix:
@@ -65,7 +61,7 @@ jobs:
             KUBUNTU_BUILD_MATRIX.json
           if-no-files-found: warn
       - name: Report matrix result to issue 12
-        if: always() && github.event_name == 'issue_comment'
+        if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
           JOB_STATUS: ${{ job.status }}
