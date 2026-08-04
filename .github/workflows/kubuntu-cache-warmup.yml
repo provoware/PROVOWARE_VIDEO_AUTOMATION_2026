@@ -1,0 +1,234 @@
+name: Weekly Kubuntu package cache warmup
+
+run-name: Kubuntu cache warmup on main (${{ github.event_name }})
+
+on:
+  schedule:
+    - cron: '17 4 * * 1'
+      timezone: Europe/Berlin
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/ci/kubuntu-packages.txt
+      - .github/workflows/kubuntu-cache-warmup.yml
+      - requirements-toolchain.lock
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: kubuntu-cache-warmup-main
+  cancel-in-progress: false
+
+jobs:
+  warmup:
+    if: github.ref == 'refs/heads/main'
+    name: ${{ matrix.os }} package cache
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-22.04
+          - ubuntu-24.04
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+
+      - name: Select this week's cache generation
+        id: cache_epoch
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          echo "week=$(date -u +%G-W%V)" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare cache folders
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p \
+            "$RUNNER_TEMP/apt-archives/partial" \
+            "$RUNNER_TEMP/pip-cache"
+
+      - name: Restore or create Ubuntu package cache
+        id: apt_cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/apt-archives
+          key: apt-v4-${{ matrix.os }}-${{ hashFiles('.github/ci/kubuntu-packages.txt') }}-${{ steps.cache_epoch.outputs.week }}
+          restore-keys: |
+            apt-v4-${{ matrix.os }}-${{ hashFiles('.github/ci/kubuntu-packages.txt') }}-
+            apt-v4-${{ matrix.os }}-
+
+      - name: Restore or create Python package cache
+        id: pip_cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/pip-cache
+          key: pip-v4-${{ matrix.os }}-${{ hashFiles('requirements-toolchain.lock') }}-${{ steps.cache_epoch.outputs.week }}
+          restore-keys: |
+            pip-v4-${{ matrix.os }}-${{ hashFiles('requirements-toolchain.lock') }}-
+            pip-v4-${{ matrix.os }}-
+
+      - name: Refresh package Vorrat and verify tools
+        env:
+          APT_EXACT_HIT: ${{ steps.apt_cache.outputs.cache-hit }}
+          PIP_EXACT_HIT: ${{ steps.pip_cache.outputs.cache-hit }}
+          MATRIX_OS: ${{ matrix.os }}
+          CACHE_WEEK: ${{ steps.cache_epoch.outputs.week }}
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          APT_ARCHIVES="$RUNNER_TEMP/apt-archives"
+          PIP_CACHE_DIR="$RUNNER_TEMP/pip-cache"
+          export PIP_CACHE_DIR
+          mapfile -t packages < <(
+            sed '/^[[:space:]]*#/d; /^[[:space:]]*$/d' \
+              .github/ci/kubuntu-packages.txt
+          )
+          ((${#packages[@]} > 0))
+
+          apt_before="$(du -sb "$APT_ARCHIVES" | awk '{print $1}')"
+          pip_before="$(du -sb "$PIP_CACHE_DIR" | awk '{print $1}')"
+          started="$(date +%s)"
+
+          sudo env DEBIAN_FRONTEND=noninteractive \
+            timeout --signal=TERM --kill-after=30s 5m \
+            apt-get -o Acquire::Retries=5 update
+
+          sudo env DEBIAN_FRONTEND=noninteractive \
+            timeout --signal=TERM --kill-after=30s 15m \
+            apt-get \
+              -o Acquire::Retries=5 \
+              -o Dpkg::Use-Pty=0 \
+              -o Dir::Cache::archives="$APT_ARCHIVES" \
+              install -y --no-install-recommends "${packages[@]}"
+
+          timeout --signal=TERM --kill-after=30s 8m \
+            python3 -m pip install \
+              --user \
+              --requirement requirements-toolchain.lock
+
+          command -v python3 >/dev/null
+          command -v ffmpeg >/dev/null
+          command -v ffprobe >/dev/null
+          command -v Xvfb >/dev/null
+          command -v weston >/dev/null
+          dpkg-query -W plasma-workspace >/dev/null
+
+          sudo chown -R "$(id -u):$(id -g)" \
+            "$APT_ARCHIVES" "$PIP_CACHE_DIR"
+          apt_after="$(du -sb "$APT_ARCHIVES" | awk '{print $1}')"
+          pip_after="$(du -sb "$PIP_CACHE_DIR" | awk '{print $1}')"
+          finished="$(date +%s)"
+
+          export apt_before apt_after pip_before pip_after started finished
+          export REQUESTED_PACKAGE_COUNT="${#packages[@]}"
+
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          apt_before = int(os.environ["apt_before"])
+          apt_after = int(os.environ["apt_after"])
+          pip_before = int(os.environ["pip_before"])
+          pip_after = int(os.environ["pip_after"])
+          apt_exact = os.environ.get("APT_EXACT_HIT") == "true"
+          pip_exact = os.environ.get("PIP_EXACT_HIT") == "true"
+          apt_restored = apt_before > 1024 * 1024
+          pip_restored = pip_before > 1024 * 1024
+
+          def human_size(value: int) -> str:
+              size = float(value)
+              for unit in ("B", "KiB", "MiB", "GiB"):
+                  if size < 1024 or unit == "GiB":
+                      return f"{size:.1f} {unit}"
+                  size /= 1024
+              return f"{value} B"
+
+          def state(exact: bool, restored: bool) -> str:
+              if exact:
+                  return "aktueller Wochenvorrat vorhanden"
+              if restored:
+                  return "älterer Vorrat übernommen und erneuert"
+              return "neuer Vorrat aufgebaut"
+
+          metrics = {
+              "schema_version": 1,
+              "os": os.environ["MATRIX_OS"],
+              "cache_week": os.environ["CACHE_WEEK"],
+              "requested_packages": int(
+                  os.environ["REQUESTED_PACKAGE_COUNT"]
+              ),
+              "apt_exact_hit": apt_exact,
+              "apt_restored": apt_restored,
+              "pip_exact_hit": pip_exact,
+              "pip_restored": pip_restored,
+              "apt_cache_before_bytes": apt_before,
+              "apt_cache_after_bytes": apt_after,
+              "pip_cache_before_bytes": pip_before,
+              "pip_cache_after_bytes": pip_after,
+              "duration_seconds": (
+                  int(os.environ["finished"])
+                  - int(os.environ["started"])
+              ),
+              "verified_tools": [
+                  "python3",
+                  "ffmpeg",
+                  "ffprobe",
+                  "Xvfb",
+                  "weston",
+                  "plasma-workspace",
+              ],
+          }
+          Path("CACHE_WARMUP_METRICS.json").write_text(
+              json.dumps(metrics, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+
+          lines = [
+              "# 🟢 Kubuntu-Paketvorrat ist einsatzbereit",
+              "",
+              f"**System:** {metrics['os']}",
+              f"**Woche:** {metrics['cache_week']}",
+              f"**Zustand:** {state(apt_exact, apt_restored)}",
+              "",
+              "## Einfach erklärt",
+              "",
+              (
+                  "GitHub hat die benötigten KDE-, Anzeige-, Python- und "
+                  "FFmpeg-Pakete kontrolliert vorbereitet. Normale Prüfungen "
+                  "können diesen Vorrat verwenden und müssen die großen "
+                  "Pakete nicht jedes Mal neu vom Ubuntu-Spiegel laden."
+              ),
+              "",
+              f"- Direkte Paketvorgaben: **{metrics['requested_packages']}**",
+              f"- APT-Vorrat vorher: **{human_size(apt_before)}**",
+              f"- APT-Vorrat nachher: **{human_size(apt_after)}**",
+              f"- Python-Vorrat nachher: **{human_size(pip_after)}**",
+              f"- Gesamtdauer: **{metrics['duration_seconds']} Sekunden**",
+              "- Werkzeugprüfung: **bestanden**",
+              "",
+              "**Nutzeraktion:** Keine. Der Vorgang läuft automatisch.",
+          ]
+          with Path(os.environ["GITHUB_STEP_SUMMARY"]).open(
+              "a",
+              encoding="utf-8",
+          ) as output:
+              output.write("\n".join(lines) + "\n")
+          PY
+
+      - name: Upload small warmup report
+        uses: actions/upload-artifact@v4
+        with:
+          name: kubuntu-cache-warmup-${{ matrix.os }}
+          path: CACHE_WARMUP_METRICS.json
+          if-no-files-found: error
+          retention-days: 14
