@@ -7,6 +7,13 @@
 - [ ] Am Ende nur betroffene Syntax-, Logik-, Ausgabe- und Testpfade validieren.
 - [ ] Stable-Gates erst nach unverändertem Kandidaten in der dokumentierten Reihenfolge ausführen.
 
+## Aktuelle Folge-Iteration · Dokumentations- und Bedienstandard abgeschlossen
+
+- [x] `PROJEKTORDNERSTRUKTUR.md` mit Ordnerübersicht, Laienanleitung, Funktionsübersicht und Abhängigkeitsbewertung ergänzt.
+- [x] Hilfezentrum-Texte zu Einsteigerverständlichkeit, Systemstatus und sicheren Alternativen vereinheitlicht.
+- [x] Startfeedback mit klarerem Hinweis auf Hilfetexte und sichere Standardpfade verbessert.
+- [x] README, UPDATE_SYSTEM und CHANGELOG für diese gezielte Dokumentationsiteration aktualisiert.
+
 ## Aktuelle Folge-Iteration · abgeschlossen
 
 - [x] Hilfezentrum um einen klaren Sicherheits-Tipp für gelbe und rote Hinweise ergänzt.

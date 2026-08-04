@@ -1,3 +1,10 @@
+# Folge-Iteration · globale Standards und Laienbedienung
+
+- `PROJEKTORDNERSTRUKTUR.md` als einfache Ordner-, Datei-, Funktions- und Schritt-für-Schritt-Übersicht ergänzt.
+- Mitlieferbare Basisabhängigkeiten und bewusst nicht zu bündelnde Systembestandteile dokumentiert.
+- Hilfezentrum-Texte, Startfeedback und Bereitschaftsstatus stärker auf Laienverständlichkeit, sichere Alternativen und Barrierefreiheit ausgerichtet.
+- README, TODO und UPDATE_SYSTEM passend zur gezielten Dokumentationsiteration aktualisiert.
+
 # Folge-Iteration nach 2.8.3-rc24
 
 - Hilfezentrum ergänzt einen einfachen Sicherheits-Tipp für gelbe und rote Hinweise.

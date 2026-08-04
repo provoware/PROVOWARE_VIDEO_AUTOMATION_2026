@@ -37,7 +37,7 @@
 
 **Fortschritt:** 100 % für diese kleine, gezielt validierte Folge-Iteration.
 
-**Erledigt:** Hilfezentrum erklärt gelbe und rote Hinweise einfacher, der Startdialog nennt Wartezustand und Protokollpfad klarer, und der Systemstatus ist im Hilfezentrum besser hervorgehoben.
+**Erledigt:** Hilfezentrum erklärt gelbe und rote Hinweise einfacher, der Startdialog nennt Wartezustand und Protokollpfad klarer, der Systemstatus ist im Hilfezentrum besser hervorgehoben, und `PROJEKTORDNERSTRUKTUR.md` ergänzt eine laienfreundliche Ordner-, Abhängigkeits- und Funktionsübersicht.
 
 **Offen:** Stable-Gates bleiben unverändert offen; keine physische KDE-Abnahme und kein Langzeitrender wurden in dieser Iteration durchgeführt.
 
@@ -59,3 +59,8 @@ Originaldateien und bestätigte Projektzustände bleiben bei Fehlern unveränder
 3. Modus und Einstellungen wählen oder die Automatik verwenden.
 4. Produktion starten.
 5. Fehlende Angaben werden automatisch ergänzt oder mit direkten Lösungsaktionen abgefragt.
+6. Bei Unsicherheit zuerst `PROJEKTORDNERSTRUKTUR.md` öffnen und die Schritt-für-Schritt-Anleitung nutzen.
+
+## Laienfreundliche Projektübersicht
+
+Die Datei `PROJEKTORDNERSTRUKTUR.md` erklärt Ordner, wichtige Dateien, sichere Startbefehle, Funktionsbereiche, Barrierefreiheitsprinzipien und sinnvoll mitlieferbare Basisabhängigkeiten in einfacher Sprache.
