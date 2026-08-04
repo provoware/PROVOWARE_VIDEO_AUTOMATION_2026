@@ -1,13 +1,14 @@
 name: Install VideoBatch Fast 2.8.3-rc24
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/install-videobatch-rc24.yml'
   issues:
     types: [opened]
   workflow_dispatch:
+    inputs:
+      source_url:
+        description: 'Optionale direkte ZIP-URL; leer nutzt das dauerhafte GitHub-Release-Asset'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -19,13 +20,13 @@ concurrency:
 
 env:
   ARCHIVE: /tmp/VideoBatch_Fast_2.8.3-rc24.zip
-  SOURCE_URL: https://filebin.net/provoware-videobatch-rc24-20260804-9f7c2a/VideoBatch_Fast_2.8.3-rc24.zip
   ARCHIVE_SHA256: c54c19141f4d08fbb19f6f38e40ce06c589a86725b988864ad8e22f28ad7501a
-  RELEASE_TAG: videobatch-fast-2.8.3-rc24
+  SOURCE_RELEASE_TAG: videobatch-fast-2.8.3-rc24-source
+  FINAL_RELEASE_TAG: videobatch-fast-2.8.3-rc24
 
 jobs:
   install-and-validate:
-    if: github.event_name != 'issues' || github.event.issue.title == 'RUN_RC24_DIAG2_20260804'
+    if: github.event_name != 'issues' || github.event.issue.title == 'RUN_RC24_RELEASE_ASSET_20260804'
     runs-on: ubuntu-latest
     timeout-minutes: 40
 
@@ -42,14 +43,23 @@ jobs:
           git fetch --tags --force
           echo checkout-ok > /tmp/rc24-stage
 
-      - name: Download and verify RC24 source
+      - name: Download permanent RC24 source asset
         shell: bash
         run: |
           set -euo pipefail
           echo download > /tmp/rc24-stage
-          curl --fail --location --retry 5 --retry-all-errors \
+          SOURCE_URL='${{ github.event.inputs.source_url }}'
+          if [ -z "$SOURCE_URL" ]; then
+            SOURCE_URL="https://github.com/$GITHUB_REPOSITORY/releases/download/$SOURCE_RELEASE_TAG/VideoBatch_Fast_2.8.3-rc24.zip"
+          fi
+          echo "Using RC24 source: $SOURCE_URL"
+          if ! curl --fail --location --retry 3 --retry-all-errors \
             --connect-timeout 20 --max-time 300 \
-            "$SOURCE_URL" -o "$ARCHIVE"
+            "$SOURCE_URL" -o "$ARCHIVE"; then
+            echo 'RC24 source asset is unavailable.' >&2
+            echo "Expected permanent asset: https://github.com/$GITHUB_REPOSITORY/releases/tag/$SOURCE_RELEASE_TAG" >&2
+            exit 22
+          fi
           echo "$ARCHIVE_SHA256  $ARCHIVE" | sha256sum --check --strict
           unzip -t "$ARCHIVE"
           echo download-ok > /tmp/rc24-stage
@@ -101,7 +111,7 @@ jobs:
           PYTHONPATH=src xvfb-run -a .venv/bin/python -m pytest -q
           echo tests-ok > /tmp/rc24-stage
 
-      - name: Publish final RC24 tree, tag and permanent release asset
+      - name: Publish final RC24 tree, immutable tag and release asset
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -138,21 +148,21 @@ jobs:
           git commit -m 'Install VideoBatch Fast 2.8.3-rc24'
           git push origin HEAD:main
           FINAL_SHA="$(git rev-parse HEAD)"
-          if ! git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" >/dev/null 2>&1; then
-            git tag -a "$RELEASE_TAG" "$FINAL_SHA" -m 'VideoBatch Fast 2.8.3-rc24 validated release candidate'
-            git push origin "refs/tags/$RELEASE_TAG"
+          if ! git ls-remote --exit-code --tags origin "refs/tags/$FINAL_RELEASE_TAG" >/dev/null 2>&1; then
+            git tag -a "$FINAL_RELEASE_TAG" "$FINAL_SHA" -m 'VideoBatch Fast 2.8.3-rc24 validated release candidate'
+            git push origin "refs/tags/$FINAL_RELEASE_TAG"
           fi
-          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            gh release upload "$RELEASE_TAG" "$ARCHIVE#VideoBatch_Fast_2.8.3-rc24.zip" --clobber
+          if gh release view "$FINAL_RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$FINAL_RELEASE_TAG" "$ARCHIVE#VideoBatch_Fast_2.8.3-rc24.zip" --clobber
           else
-            gh release create "$RELEASE_TAG" \
+            gh release create "$FINAL_RELEASE_TAG" \
               "$ARCHIVE#VideoBatch_Fast_2.8.3-rc24.zip" \
               --title 'VideoBatch Fast 2.8.3-rc24' \
               --notes 'Validierter RC24-Quellstand. SHA-256: c54c19141f4d08fbb19f6f38e40ce06c589a86725b988864ad8e22f28ad7501a'
           fi
           echo publish-ok > /tmp/rc24-stage
 
-      - name: Report workflow result to trigger issue
+      - name: Report result to trigger issue
         if: always() && github.event_name == 'issues'
         shell: bash
         env:
