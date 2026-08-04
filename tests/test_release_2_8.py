@@ -12,6 +12,7 @@ from videobatch_fast.plugin_approvals import build_identity, grant_approval
 from videobatch_fast.plugin_permissions import permission_summary
 from videobatch_fast.plugins import PluginCheck
 from videobatch_fast.registry import load_json, validate_registries
+from videobatch_fast.text_resources import text
 from videobatch_fast.versioning import build_label
 from videobatch_fast.visual_approval import sign_visual_approval, verify_visual_approval
 from videobatch_fast.visual_inspection import write_inspection_html, write_inspection_manifest
@@ -142,9 +143,8 @@ class DebugAndArchitectureTests(unittest.TestCase):
         root = Path(__file__).parents[1] / "src" / "videobatch_fast"
         source = (root / "ui_workspace_grid_mixin.py").read_text(encoding="utf-8")
         self.assertIn("ui.workspace_grid.mittiger_hauptarbeitsbereich_flexibles_22_raster", source)
-        texts = json.loads((Path(__file__).parents[1] / "resources" / "texts" / "de.json").read_text(encoding="utf-8"))
-        self.assertTrue(any("flexibles 2×2-Raster" in value for value in texts.values() if isinstance(value, str)))
-        self.assertIn("Profi-Debugging & Profilogging", texts.values())
+        self.assertIn("flexibles 2×2-Raster", text("ui.workspace_grid.mittiger_hauptarbeitsbereich_flexibles_22_raster"))
+        self.assertEqual(text("debug.title"), "Profi-Debugging & Profilogging")
 
 
 if __name__ == "__main__":
