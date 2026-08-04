@@ -37,7 +37,7 @@ jobs:
     timeout-minutes: 45
 
     steps:
-      - name: Repository laden
+      - name: Repository laden und Push-Zugang vorbereiten
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -46,13 +46,14 @@ jobs:
           echo checkout > /tmp/rc24-stage
           find . -mindepth 1 -maxdepth 1 -exec rm -rf {} +
           gh repo clone "$GITHUB_REPOSITORY" . -- --branch main --single-branch
+          gh auth setup-git
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git fetch --tags --force
           echo checkout-ok > /tmp/rc24-stage
 
       - name: ZIP-Anhang ermitteln und herunterladen
         shell: bash
         env:
-          GH_TOKEN: ${{ github.token }}
           SOURCE_URL_INPUT: ${{ inputs.source_url }}
         run: |
           set -euo pipefail
@@ -180,7 +181,12 @@ jobs:
               'source_archive_size': int(os.environ['EXPECTED_SIZE']),
               'source_method': 'GitHub issue attachment',
               'github_actions_validation': 'passed',
-              'tests': '274/274 passed',
+              'tests': {
+                  'total': 274,
+                  'passed': 272,
+                  'skipped': 2,
+                  'failed': 0,
+              },
               'replacement_mode': 'complete repository root replacement',
               'backup_branch': 'backup/pre-direct-rc24-import-20260804',
               'final_release_tag': os.environ['FINAL_TAG'],
