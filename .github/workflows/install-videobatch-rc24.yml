@@ -106,3 +106,4 @@ jobs:
           git push origin HEAD:main
 
 # retrigger: 2026-08-04T11:18:00+02:00
+# merge-trigger: 2026-08-04T11:22:00+02:00
