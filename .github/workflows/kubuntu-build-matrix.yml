@@ -1,0 +1,56 @@
+name: Kubuntu compatibility matrix
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+jobs:
+  matrix:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+        session: [x11, wayland]
+    runs-on: ${{ matrix.os }}
+    env:
+      XDG_SESSION_TYPE: ${{ matrix.session }}
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install KDE/Tk/media test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-tk python3-pip ffmpeg xvfb weston dbus-x11 plasma-workspace
+          python3 -m pip install --user --requirement requirements-toolchain.lock
+      - name: Start deterministic display
+        run: |
+          if [ "${{ matrix.session }}" = x11 ]; then
+            Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
+            echo "DISPLAY=:99" >> "$GITHUB_ENV"
+          else
+            mkdir -p "$RUNNER_TEMP/xdg"; chmod 700 "$RUNNER_TEMP/xdg"
+            XDG_RUNTIME_DIR="$RUNNER_TEMP/xdg" weston --backend=headless-backend.so --socket=wayland-vb --idle-time=0 >/tmp/weston.log 2>&1 &
+            echo "XDG_RUNTIME_DIR=$RUNNER_TEMP/xdg" >> "$GITHUB_ENV"
+            echo "WAYLAND_DISPLAY=wayland-vb" >> "$GITHUB_ENV"
+            Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
+            echo "DISPLAY=:99" >> "$GITHUB_ENV"
+          fi
+      - name: Fetch pinned static FFmpeg
+        run: |
+          URL="https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-08-03-14-02/ffmpeg-master-latest-linux64-gpl.tar.xz"
+          EXPECTED="153dcb657db09fb2418daed3dc07b975d4b8da0cc4e3a570cf2820fdd260db78"
+          curl --fail --location --retry 4 --output "$RUNNER_TEMP/ffmpeg.tar.xz" "$URL"
+          echo "$EXPECTED  $RUNNER_TEMP/ffmpeg.tar.xz" | sha256sum --check --strict
+          mkdir -p "$RUNNER_TEMP/ffmpeg-static"
+          tar -xJf "$RUNNER_TEMP/ffmpeg.tar.xz" -C "$RUNNER_TEMP/ffmpeg-static" --strip-components=1
+          echo "VIDEOBATCH_STATIC_MEDIA_DIR=$RUNNER_TEMP/ffmpeg-static/bin" >> "$GITHUB_ENV"
+      - name: Run complete compatibility contract
+        run: ./scripts/kubuntu_matrix_smoke.sh
+      - name: Upload matrix evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: videobatch-${{ matrix.os }}-${{ matrix.session }}
+          path: |
+            dist-matrix-a/*
+            KUBUNTU_BUILD_MATRIX.json
