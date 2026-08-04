@@ -1,56 +1,275 @@
 name: Kubuntu compatibility matrix
+
 on:
   workflow_dispatch:
   push:
-    tags: ['v*']
+    tags:
+      - 'v*'
+
 permissions:
   contents: read
+  issues: write
+  actions: read
+
+concurrency:
+  group: kubuntu-compatibility-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  REPORT_ISSUE: '12'
+
 jobs:
   matrix:
+    name: ${{ matrix.os }} / ${{ matrix.session }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
-        session: [x11, wayland]
+        os:
+          - ubuntu-22.04
+          - ubuntu-24.04
+        session:
+          - x11
+          - wayland
     runs-on: ${{ matrix.os }}
     env:
       XDG_SESSION_TYPE: ${{ matrix.session }}
       PYTHONDONTWRITEBYTECODE: '1'
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Install KDE/Tk/media test dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y python3 python3-tk python3-pip ffmpeg xvfb weston dbus-x11 plasma-workspace
           python3 -m pip install --user --requirement requirements-toolchain.lock
+
       - name: Start deterministic display
         run: |
           if [ "${{ matrix.session }}" = x11 ]; then
             Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
             echo "DISPLAY=:99" >> "$GITHUB_ENV"
           else
-            mkdir -p "$RUNNER_TEMP/xdg"; chmod 700 "$RUNNER_TEMP/xdg"
-            XDG_RUNTIME_DIR="$RUNNER_TEMP/xdg" weston --backend=headless-backend.so --socket=wayland-vb --idle-time=0 >/tmp/weston.log 2>&1 &
+            mkdir -p "$RUNNER_TEMP/xdg"
+            chmod 700 "$RUNNER_TEMP/xdg"
+            XDG_RUNTIME_DIR="$RUNNER_TEMP/xdg" weston \
+              --backend=headless-backend.so \
+              --socket=wayland-vb \
+              --idle-time=0 >/tmp/weston.log 2>&1 &
             echo "XDG_RUNTIME_DIR=$RUNNER_TEMP/xdg" >> "$GITHUB_ENV"
             echo "WAYLAND_DISPLAY=wayland-vb" >> "$GITHUB_ENV"
             Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
             echo "DISPLAY=:99" >> "$GITHUB_ENV"
           fi
+
       - name: Fetch pinned static FFmpeg
         run: |
           URL="https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-08-03-14-02/ffmpeg-master-latest-linux64-gpl.tar.xz"
           EXPECTED="153dcb657db09fb2418daed3dc07b975d4b8da0cc4e3a570cf2820fdd260db78"
-          curl --fail --location --retry 4 --output "$RUNNER_TEMP/ffmpeg.tar.xz" "$URL"
+          curl --fail --location --retry 4 --retry-all-errors \
+            --output "$RUNNER_TEMP/ffmpeg.tar.xz" "$URL"
           echo "$EXPECTED  $RUNNER_TEMP/ffmpeg.tar.xz" | sha256sum --check --strict
           mkdir -p "$RUNNER_TEMP/ffmpeg-static"
-          tar -xJf "$RUNNER_TEMP/ffmpeg.tar.xz" -C "$RUNNER_TEMP/ffmpeg-static" --strip-components=1
+          tar -xJf "$RUNNER_TEMP/ffmpeg.tar.xz" \
+            -C "$RUNNER_TEMP/ffmpeg-static" \
+            --strip-components=1
           echo "VIDEOBATCH_STATIC_MEDIA_DIR=$RUNNER_TEMP/ffmpeg-static/bin" >> "$GITHUB_ENV"
+
       - name: Run complete compatibility contract
         run: ./scripts/kubuntu_matrix_smoke.sh
+
+      - name: Write matrix status
+        if: always()
+        env:
+          MATRIX_OS: ${{ matrix.os }}
+          MATRIX_SESSION: ${{ matrix.session }}
+          MATRIX_STATUS: ${{ job.status }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          result = {
+              "os": os.environ["MATRIX_OS"],
+              "session": os.environ["MATRIX_SESSION"],
+              "status": os.environ["MATRIX_STATUS"],
+              "run_id": os.environ["GITHUB_RUN_ID"],
+              "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+              "commit": os.environ["GITHUB_SHA"],
+              "workflow": os.environ["GITHUB_WORKFLOW"],
+          }
+          name = f"matrix-status-{result['os']}-{result['session']}.json"
+          Path(name).write_text(
+              json.dumps(result, indent=2, ensure_ascii=False) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
       - name: Upload matrix evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: videobatch-${{ matrix.os }}-${{ matrix.session }}
           path: |
             dist-matrix-a/*
             KUBUNTU_BUILD_MATRIX.json
+            matrix-status-${{ matrix.os }}-${{ matrix.session }}.json
+            /tmp/xvfb.log
+            /tmp/weston.log
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload machine-readable matrix status
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: matrix-status-${{ matrix.os }}-${{ matrix.session }}
+          path: matrix-status-${{ matrix.os }}-${{ matrix.session }}.json
+          if-no-files-found: error
+          retention-days: 30
+
+  report:
+    name: Publish matrix summary
+    if: always()
+    needs:
+      - matrix
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all matrix status records
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: matrix-status-*
+          path: matrix-status
+          merge-multiple: true
+
+      - name: Build final matrix report
+        id: report
+        env:
+          MATRIX_JOB_RESULT: ${{ needs.matrix.result }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          expected = [
+              ("ubuntu-22.04", "x11"),
+              ("ubuntu-22.04", "wayland"),
+              ("ubuntu-24.04", "x11"),
+              ("ubuntu-24.04", "wayland"),
+          ]
+
+          records = {}
+          for path in Path("matrix-status").glob("matrix-status-*.json"):
+              try:
+                  record = json.loads(path.read_text(encoding="utf-8"))
+              except (OSError, json.JSONDecodeError):
+                  continue
+              records[(record.get("os"), record.get("session"))] = record
+
+          rows = []
+          for os_name, session in expected:
+              record = records.get((os_name, session), {})
+              status = record.get("status", "missing")
+              symbol = "✅" if status == "success" else "❌"
+              rows.append(
+                  {
+                      "os": os_name,
+                      "session": session,
+                      "status": status,
+                      "symbol": symbol,
+                  }
+              )
+
+          all_success = all(row["status"] == "success" for row in rows)
+          run_url = (
+              f"https://github.com/{os.environ['GITHUB_REPOSITORY']}"
+              f"/actions/runs/{os.environ['GITHUB_RUN_ID']}"
+          )
+          summary = {
+              "schema_version": 1,
+              "version": "2.8.3-rc24",
+              "status": "passed" if all_success else "failed",
+              "matrix_job_result": os.environ.get("MATRIX_JOB_RESULT", "unknown"),
+              "run_id": os.environ["GITHUB_RUN_ID"],
+              "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+              "run_url": run_url,
+              "commit": os.environ["GITHUB_SHA"],
+              "results": [
+                  {
+                      "os": row["os"],
+                      "session": row["session"],
+                      "status": row["status"],
+                  }
+                  for row in rows
+              ],
+          }
+          Path("KUBUNTU_MATRIX_SUMMARY.json").write_text(
+              json.dumps(summary, indent=2, ensure_ascii=False) + "\n",
+              encoding="utf-8",
+          )
+
+          lines = [
+              "## Kubuntu-Kompatibilitätsmatrix 2.8.3-rc24",
+              "",
+              f"Workflow-Lauf: [{os.environ['GITHUB_RUN_ID']}]({run_url})",
+              f"Commit: `{os.environ['GITHUB_SHA']}`",
+              "",
+              "| System | Sitzung | Ergebnis |",
+              "|---|---|---|",
+          ]
+          lines.extend(
+              f"| {row['os']} | {row['session']} | {row['symbol']} `{row['status']}` |"
+              for row in rows
+          )
+          lines.extend(
+              [
+                  "",
+                  (
+                      "**Gesamtergebnis: bestanden.**"
+                      if all_success
+                      else "**Gesamtergebnis: nicht vollständig bestanden.**"
+                  ),
+                  "",
+                  "Die vollständigen Nachweise liegen 30 Tage als Workflow-Artefakte vor.",
+              ]
+          )
+          Path("KUBUNTU_MATRIX_SUMMARY.md").write_text(
+              "\n".join(lines) + "\n",
+              encoding="utf-8",
+          )
+
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as output:
+              output.write(f"all_success={'true' if all_success else 'false'}\n")
+          PY
+
+      - name: Upload consolidated matrix report
+        uses: actions/upload-artifact@v4
+        with:
+          name: kubuntu-matrix-summary
+          path: |
+            KUBUNTU_MATRIX_SUMMARY.json
+            KUBUNTU_MATRIX_SUMMARY.md
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish result in issue 12
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment "$REPORT_ISSUE" \
+            --repo "$GITHUB_REPOSITORY" \
+            --body-file KUBUNTU_MATRIX_SUMMARY.md
+
+      - name: Close issue after complete success
+        if: steps.report.outputs.all_success == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue close "$REPORT_ISSUE" \
+            --repo "$GITHUB_REPOSITORY" \
+            --reason completed \
+            --comment "Alle vier RC24-Kombinationen wurden erfolgreich validiert."
