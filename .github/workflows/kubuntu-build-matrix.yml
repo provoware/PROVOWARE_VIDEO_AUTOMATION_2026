@@ -77,21 +77,68 @@ jobs:
             echo "DISPLAY=:99" >> "$GITHUB_ENV"
           fi
 
-      - name: Fetch pinned static FFmpeg
+      - name: Provision and attest Ubuntu FFmpeg
+        env:
+          MATRIX_OS: ${{ matrix.os }}
+          MATRIX_SESSION: ${{ matrix.session }}
         run: |
           set -Eeuo pipefail
-          URL="https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-08-03-14-02/ffmpeg-master-latest-linux64-gpl.tar.xz"
-          EXPECTED="153dcb657db09fb2418daed3dc07b975d4b8da0cc4e3a570cf2820fdd260db78"
-          curl --fail --location --retry 4 --retry-all-errors \
-            --output "$RUNNER_TEMP/ffmpeg.tar.xz" "$URL"
-          echo "$EXPECTED  $RUNNER_TEMP/ffmpeg.tar.xz" \
-            | sha256sum --check --strict
-          mkdir -p "$RUNNER_TEMP/ffmpeg-static"
-          tar -xJf "$RUNNER_TEMP/ffmpeg.tar.xz" \
-            -C "$RUNNER_TEMP/ffmpeg-static" \
-            --strip-components=1
-          echo "VIDEOBATCH_STATIC_MEDIA_DIR=$RUNNER_TEMP/ffmpeg-static/bin" \
-            >> "$GITHUB_ENV"
+
+          FFMPEG_PATH="$(readlink -f "$(command -v ffmpeg)")"
+          FFPROBE_PATH="$(readlink -f "$(command -v ffprobe)")"
+          test -x "$FFMPEG_PATH"
+          test -x "$FFPROBE_PATH"
+
+          FFMPEG_VERSION="$("$FFMPEG_PATH" -version | sed -n '1p')"
+          FFPROBE_VERSION="$("$FFPROBE_PATH" -version | sed -n '1p')"
+          PACKAGE_VERSION="$(dpkg-query -W -f='${Version}' ffmpeg)"
+          FFMPEG_SHA256="$(sha256sum "$FFMPEG_PATH" | awk '{print $1}')"
+          FFPROBE_SHA256="$(sha256sum "$FFPROBE_PATH" | awk '{print $1}')"
+
+          MEDIA_DIR="$RUNNER_TEMP/ffmpeg-system/bin"
+          mkdir -p "$MEDIA_DIR"
+          ln -sfn "$FFMPEG_PATH" "$MEDIA_DIR/ffmpeg"
+          ln -sfn "$FFPROBE_PATH" "$MEDIA_DIR/ffprobe"
+
+          "$MEDIA_DIR/ffmpeg" -hide_banner -version >/dev/null
+          "$MEDIA_DIR/ffprobe" -hide_banner -version >/dev/null
+          echo "VIDEOBATCH_STATIC_MEDIA_DIR=$MEDIA_DIR" >> "$GITHUB_ENV"
+
+          export FFMPEG_PATH FFPROBE_PATH FFMPEG_VERSION FFPROBE_VERSION
+          export PACKAGE_VERSION FFMPEG_SHA256 FFPROBE_SHA256 MEDIA_DIR
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          evidence = {
+              "schema_version": 1,
+              "provider": "ubuntu-apt",
+              "os": os.environ["MATRIX_OS"],
+              "session": os.environ["MATRIX_SESSION"],
+              "package": {
+                  "name": "ffmpeg",
+                  "version": os.environ["PACKAGE_VERSION"],
+              },
+              "media_dir": os.environ["MEDIA_DIR"],
+              "ffmpeg": {
+                  "path": os.environ["FFMPEG_PATH"],
+                  "version": os.environ["FFMPEG_VERSION"],
+                  "sha256": os.environ["FFMPEG_SHA256"],
+              },
+              "ffprobe": {
+                  "path": os.environ["FFPROBE_PATH"],
+                  "version": os.environ["FFPROBE_VERSION"],
+                  "sha256": os.environ["FFPROBE_SHA256"],
+              },
+          }
+          Path("FFMPEG_TOOLCHAIN.json").write_text(
+              json.dumps(evidence, indent=2, ensure_ascii=False) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+          cat FFMPEG_TOOLCHAIN.json
 
       - name: Run complete compatibility contract
         run: ./scripts/kubuntu_matrix_smoke.sh
@@ -112,7 +159,16 @@ jobs:
           import os
           from pathlib import Path
 
+          toolchain = {}
+          try:
+              toolchain = json.loads(
+                  Path("FFMPEG_TOOLCHAIN.json").read_text(encoding="utf-8")
+              )
+          except (OSError, json.JSONDecodeError):
+              pass
+
           result = {
+              "schema_version": 2,
               "os": os.environ["MATRIX_OS"],
               "session": os.environ["MATRIX_SESSION"],
               "status": os.environ["MATRIX_STATUS"],
@@ -120,6 +176,7 @@ jobs:
               "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
               "commit": os.environ["GITHUB_SHA"],
               "workflow": os.environ["GITHUB_WORKFLOW"],
+              "media_toolchain": toolchain,
           }
           name = f"matrix-status-{result['os']}-{result['session']}.json"
           Path(name).write_text(
@@ -136,6 +193,7 @@ jobs:
           path: |
             dist-matrix-a/*
             KUBUNTU_BUILD_MATRIX.json
+            FFMPEG_TOOLCHAIN.json
             matrix-status-${{ matrix.os }}-${{ matrix.session }}.json
             matrix-logs/*
           if-no-files-found: warn
@@ -231,6 +289,7 @@ jobs:
                       "session": session,
                       "status": status,
                       "symbol": symbol,
+                      "media_toolchain": record.get("media_toolchain", {}),
                   }
               )
 
@@ -240,7 +299,7 @@ jobs:
               f"/actions/runs/{os.environ['GITHUB_RUN_ID']}"
           )
           summary = {
-              "schema_version": 2,
+              "schema_version": 3,
               "version": version,
               "status": "passed" if all_success else "failed",
               "report_issue": int(os.environ["REPORT_ISSUE"]),
@@ -256,6 +315,7 @@ jobs:
                       "os": row["os"],
                       "session": row["session"],
                       "status": row["status"],
+                      "media_toolchain": row["media_toolchain"],
                   }
                   for row in rows
               ],
@@ -271,17 +331,41 @@ jobs:
               f"Workflow-Lauf: [{os.environ['GITHUB_RUN_ID']}]({run_url})",
               f"Commit: `{os.environ['GITHUB_SHA']}`",
               "",
-              "| System | Sitzung | Ergebnis |",
-              "|---|---|---|",
+              "| System | Sitzung | Ergebnis | FFmpeg-Paket |",
+              "|---|---|---|---|",
           ]
-          lines.extend(
-              f"| {row['os']} | {row['session']} | "
-              f"{row['symbol']} `{row['status']}` |"
-              for row in rows
-          )
+          for row in rows:
+              package = (
+                  row["media_toolchain"].get("package", {}).get(
+                      "version", "nicht ermittelt"
+                  )
+              )
+              lines.append(
+                  f"| {row['os']} | {row['session']} | "
+                  f"{row['symbol']} `{row['status']}` | `{package}` |"
+              )
+
+          lines.extend(["", "### Medienwerkzeug-Nachweise", ""])
+          for row in rows:
+              toolchain = row["media_toolchain"]
+              ffmpeg = toolchain.get("ffmpeg", {})
+              ffprobe = toolchain.get("ffprobe", {})
+              lines.extend(
+                  [
+                      f"**{row['os']} / {row['session']}**",
+                      "",
+                      f"- FFmpeg: `{ffmpeg.get('version', 'nicht ermittelt')}`",
+                      f"- FFmpeg-Pfad: `{ffmpeg.get('path', 'nicht ermittelt')}`",
+                      f"- FFmpeg-SHA-256: `{ffmpeg.get('sha256', 'nicht ermittelt')}`",
+                      f"- ffprobe: `{ffprobe.get('version', 'nicht ermittelt')}`",
+                      f"- ffprobe-Pfad: `{ffprobe.get('path', 'nicht ermittelt')}`",
+                      f"- ffprobe-SHA-256: `{ffprobe.get('sha256', 'nicht ermittelt')}`",
+                      "",
+                  ]
+              )
+
           lines.extend(
               [
-                  "",
                   (
                       "**Gesamtergebnis: bestanden.**"
                       if all_success
