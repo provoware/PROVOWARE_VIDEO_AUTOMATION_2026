@@ -1194,8 +1194,8 @@
     {
       "mode": "0o644",
       "path": "scripts/promote_stable_workspace.py",
-      "sha256": "4de60d82e09839ed90e19d2c794a181ed434314d33238d7bac555790939f2164",
-      "size": 2945
+      "sha256": "08b8e5b0f79dd871350911448b28265d9e45f85b619e709bea28f03394df94b1",
+      "size": 4892
     },
     {
       "mode": "0o644",
@@ -2378,6 +2378,12 @@
       "path": "tests/test_release_hardening_2_8_3_rc7.py",
       "sha256": "8d67c07cd69a2fb9c1a7d5dced2f0b324fbfaeeb4abde6983c633eeea72f0c22",
       "size": 9400
+    },
+    {
+      "mode": "0o644",
+      "path": "tests/test_stable_promotion_guards.py",
+      "sha256": "5c6d290afa570eeb8f3a47565b73c7618e711e129e8afa2666c4e178c11c477c",
+      "size": 1375
     },
     {
       "mode": "0o644",
