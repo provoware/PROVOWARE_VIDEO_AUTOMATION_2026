@@ -29,3 +29,7 @@ Der Channel-Index und das signierte Manifest werden zuerst geladen. Danach vergl
 ## Folge-Iteration nach 2.8.3-rc24
 
 Keine Änderung am Updateprotokoll. Die Iteration verbessert nur Hilfe, Startfeedback und Statusdarstellung. A/B-Aktivierung, Stromausfallsicherheit und Downloadökonomie bleiben unverändert.
+
+## Folge-Iteration · globale Standards und Basisabhängigkeiten
+
+Keine Änderung am A/B-Updateprotokoll. Für das Basisprojekt gelten weiterhin vollständige Projekt-ZIPs als sicherer Hauptweg vor Stable. Mitlieferbar sind feste Python-Laufzeitpakete, öffentliche Schlüssel, Textkataloge, Themes, Referenzdaten und offline vorbereitete Qualitätswerkzeuge. Systemabhängige Bestandteile wie FFmpeg, Display-Server und Desktop-Pakete werden nur nach Plattform-, Lizenz-, Hash- und Rauchtestprüfung gebündelt.
