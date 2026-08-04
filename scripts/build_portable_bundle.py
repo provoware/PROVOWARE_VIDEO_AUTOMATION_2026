@@ -44,7 +44,13 @@ def project_ignore(directory: str, names: list[str]) -> set[str]:
             relative = path.resolve().relative_to(ROOT.resolve()).as_posix()
         except (OSError, ValueError):
             relative = name
-        if relative in EXCLUDE_PROJECT or name in {"__pycache__", ".DS_Store"} or name.endswith(".pyc"):
+        generated_output = "/" not in relative and relative.startswith("dist-")
+        if (
+            relative in EXCLUDE_PROJECT
+            or generated_output
+            or name in {"__pycache__", ".DS_Store"}
+            or name.endswith(".pyc")
+        ):
             ignored.add(name)
     return ignored
 
