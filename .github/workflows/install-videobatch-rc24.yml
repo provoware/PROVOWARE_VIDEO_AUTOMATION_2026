@@ -25,15 +25,22 @@ env:
 
 jobs:
   install-and-validate:
-    if: github.event_name != 'issues' || github.event.issue.title == 'RUN_RC24_DIAG_20260804'
+    if: github.event_name != 'issues' || github.event.issue.title == 'RUN_RC24_DIAG2_20260804'
     runs-on: ubuntu-latest
     timeout-minutes: 40
 
     steps:
-      - name: Checkout bootstrap
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: Checkout repository without external actions
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          echo checkout > /tmp/rc24-stage
+          rm -rf ./* ./.??* 2>/dev/null || true
+          gh repo clone "$GITHUB_REPOSITORY" . -- --branch main --single-branch
+          git fetch --tags --force
+          echo checkout-ok > /tmp/rc24-stage
 
       - name: Download and verify RC24 source
         shell: bash
@@ -154,7 +161,7 @@ jobs:
           JOB_STATUS: ${{ job.status }}
         run: |
           set +e
-          STAGE="$(cat /tmp/rc24-stage 2>/dev/null || echo checkout)"
+          STAGE="$(cat /tmp/rc24-stage 2>/dev/null || echo startup)"
           CURRENT_SHA="$(git rev-parse HEAD 2>/dev/null || echo unavailable)"
           gh issue comment "$ISSUE_NUMBER" --body "RC24-WORKFLOW-DIAGNOSE
 
