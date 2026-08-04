@@ -104,3 +104,5 @@ jobs:
           git add -A
           git commit -m 'Install VideoBatch Fast 2.8.3-rc24'
           git push origin HEAD:main
+
+# retrigger: 2026-08-04T11:18:00+02:00
