@@ -190,12 +190,9 @@ def test_media_dialog_exposes_cache_diagnostics_without_audio_clutter() -> None:
     layout = (ROOT / "src/videobatch_fast/media_dialog_layout.py").read_text(
         encoding="utf-8"
     )
-    dialog = (ROOT / "src/videobatch_fast/preview_cache_dialog.py").read_text(
-        encoding="utf-8"
-    )
 
     assert 'text="Vorschau-Cache"' in layout
     assert "if not dialog.audio" in layout
-    assert 'text="Status aktualisieren"' in dialog
-    assert 'text="Vorschau-Cache leeren"' in dialog
-    assert "Originalmedien" in dialog
+    assert 'text="Status aktualisieren"' in layout
+    assert 'text="Vorschau-Cache leeren"' in layout
+    assert "Originalmedien" in layout
