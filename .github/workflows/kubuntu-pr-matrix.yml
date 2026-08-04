@@ -3,6 +3,7 @@ name: Kubuntu compatibility matrix PR validation
 on:
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened]
     paths:
       - .github/ci/kubuntu-packages.txt
       - .github/workflows/kubuntu-pr-matrix.yml
