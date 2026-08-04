@@ -46,11 +46,22 @@ ACTUAL_SHA256="$(sha256sum "$ZIP_PATH" | awk '{print $1}')"
 unzip -t "$ZIP_PATH" >/dev/null || die "ZIP-Struktur ist beschädigt."
 green "Lokale ZIP vollständig verifiziert."
 
+network_preflight() {
+  if ! getent hosts github.com >/dev/null 2>&1; then
+    die "Kein DNS-/Netzwerkzugriff auf github.com. Führe den Finalizer auf deinem normalen Kubuntu-System mit Internetzugang aus."
+  fi
+}
+
+network_preflight
+
 if ! command -v gh >/dev/null; then
   yellow "GitHub-CLI fehlt. Installationsversuch über apt."
   command -v sudo >/dev/null || die "sudo fehlt. Installiere GitHub CLI manuell: https://cli.github.com/"
-  sudo apt-get update
-  sudo apt-get install -y gh
+  if ! timeout 90s sudo apt-get update; then
+    die "GitHub-CLI konnte nicht installiert werden: Paketserver sind nicht erreichbar."
+  fi
+  timeout 120s sudo apt-get install -y gh \
+    || die "Installation der GitHub-CLI ist fehlgeschlagen."
 fi
 
 gh auth status -h github.com >/dev/null 2>&1 || {
