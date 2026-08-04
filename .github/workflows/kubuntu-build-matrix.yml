@@ -3,10 +3,18 @@ on:
   workflow_dispatch:
   push:
     tags: ['v*']
+  issue_comment:
+    types: [created]
 permissions:
   contents: read
+  issues: write
 jobs:
   matrix:
+    if: >-
+      github.event_name != 'issue_comment' ||
+      (github.event.issue.number == 12 &&
+       github.event.comment.user.login == github.repository_owner &&
+       contains(github.event.comment.body, 'RUN_KUBUNTU_MATRIX_RC24'))
     strategy:
       fail-fast: false
       matrix:
@@ -48,9 +56,25 @@ jobs:
       - name: Run complete compatibility contract
         run: ./scripts/kubuntu_matrix_smoke.sh
       - name: Upload matrix evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: videobatch-${{ matrix.os }}-${{ matrix.session }}
           path: |
             dist-matrix-a/*
             KUBUNTU_BUILD_MATRIX.json
+          if-no-files-found: warn
+      - name: Report matrix result to issue 12
+        if: always() && github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOB_STATUS: ${{ job.status }}
+          MATRIX_OS: ${{ matrix.os }}
+          MATRIX_SESSION: ${{ matrix.session }}
+        run: |
+          gh issue comment 12 --repo "$GITHUB_REPOSITORY" --body "KUBUNTU-MATRIX-RC24
+
+Workflow-Lauf: $GITHUB_RUN_ID
+System: $MATRIX_OS
+Sitzung: $MATRIX_SESSION
+Status: $JOB_STATUS"
