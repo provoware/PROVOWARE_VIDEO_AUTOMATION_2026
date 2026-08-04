@@ -1,0 +1,32 @@
+name: Diagnose RC24 source transfer
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/diagnose-rc24-source.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Download source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL='https://filebin.net/provoware-videobatch-rc24-20260804-9f7c2a/VideoBatch_Fast_2.8.3-rc24.zip'
+          curl --fail --location --retry 3 --retry-all-errors \
+            --connect-timeout 20 --max-time 180 "$URL" -o /tmp/rc24.zip
+      - name: Verify archive identity and structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'c54c19141f4d08fbb19f6f38e40ce06c589a86725b988864ad8e22f28ad7501a  /tmp/rc24.zip' | sha256sum --check --strict
+          unzip -t /tmp/rc24.zip
+          unzip -q /tmp/rc24.zip -d /tmp/rc24
+          test -f /tmp/rc24/VideoBatch_Fast_2.8.3-rc24/VERSION.json
+          test -f /tmp/rc24/VideoBatch_Fast_2.8.3-rc24/manifest.json
