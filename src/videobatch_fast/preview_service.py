@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import fcntl
 import hashlib
 import os
 import subprocess
@@ -14,11 +15,6 @@ from PIL import Image, UnidentifiedImageError
 
 from .paths import cache_dir
 from .probe import ffmpeg_path, probe_media
-
-try:
-    import fcntl
-except ImportError:  # pragma: no cover - Kubuntu/Ubuntu always provides fcntl
-    fcntl = None  # type: ignore[assignment]
 
 
 class PreviewError(RuntimeError):
@@ -36,8 +32,6 @@ PREVIEW_CACHE_LOCK_TIMEOUT_SECONDS = 35.0
 PREVIEW_CACHE_STALE_PARTIAL_SECONDS = 120.0
 _CACHE_KEY_LENGTH = 24
 _CACHE_KEY_CHARS = frozenset("0123456789abcdef")
-_LOCAL_LOCKS: dict[str, threading.Lock] = {}
-_LOCAL_LOCKS_GUARD = threading.Lock()
 
 
 def preview_cache_directory() -> Path:
@@ -55,7 +49,9 @@ def preview_cache_path(source: Path, width: int = 1280) -> Path:
 
 
 def _is_cache_key(value: str) -> bool:
-    return len(value) == _CACHE_KEY_LENGTH and all(character in _CACHE_KEY_CHARS for character in value)
+    return len(value) == _CACHE_KEY_LENGTH and all(
+        character in _CACHE_KEY_CHARS for character in value
+    )
 
 
 def _is_managed_preview(path: Path) -> bool:
@@ -179,12 +175,6 @@ def prune_preview_cache(
     }
 
 
-def _local_lock(lock_path: Path) -> threading.Lock:
-    key = str(lock_path)
-    with _LOCAL_LOCKS_GUARD:
-        return _LOCAL_LOCKS.setdefault(key, threading.Lock())
-
-
 @contextmanager
 def preview_generation_lock(
     target: Path,
@@ -193,22 +183,15 @@ def preview_generation_lock(
 ) -> Iterator[None]:
     """Serialize generation for one cache key across threads and Kubuntu processes."""
     lock_directory = target.parent / PREVIEW_CACHE_LOCK_SUBDIR
-    lock_directory.mkdir(parents=True, exist_ok=True)
     lock_path = lock_directory / f"{target.stem}.lock"
     timeout = max(0.0, float(timeout_seconds))
-
-    if fcntl is None:
-        lock = _local_lock(lock_path)
-        if not lock.acquire(timeout=timeout):
-            raise PreviewError("Die identische Vorschau wird bereits erzeugt. Bitte erneut versuchen.")
-        try:
-            yield
-        finally:
-            lock.release()
-        return
+    try:
+        lock_directory.mkdir(parents=True, exist_ok=True)
+        handle = lock_path.open("a+b")
+    except OSError as exc:
+        raise PreviewError("Die Vorschau-Sperre konnte nicht sicher vorbereitet werden.") from exc
 
     deadline = time.monotonic() + timeout
-    handle = lock_path.open("a+b")
     acquired = False
     try:
         while True:
@@ -222,10 +205,15 @@ def preview_generation_lock(
                         "Die identische Vorschau wird bereits erzeugt. Bitte erneut versuchen."
                     ) from exc
                 time.sleep(0.05)
+            except OSError as exc:
+                raise PreviewError("Die Vorschau-Sperre konnte nicht aktiviert werden.") from exc
         yield
     finally:
         if acquired:
-            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+            try:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+            except OSError:
+                pass
         handle.close()
 
 
