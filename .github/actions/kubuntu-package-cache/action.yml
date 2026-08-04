@@ -1,0 +1,79 @@
+name: Kubuntu package cache setup
+description: Restore weekly package caches and run the repository-owned dependency installer.
+
+inputs:
+  os:
+    description: Ubuntu runner label.
+    required: true
+  session:
+    description: Display session or cache-warmup.
+    required: true
+  mode:
+    description: matrix or warmup.
+    required: false
+    default: matrix
+
+outputs:
+  cache-week:
+    description: ISO week used in the cache key.
+    value: ${{ steps.fingerprint.outputs.week }}
+  apt-exact-hit:
+    description: Exact current-week APT cache hit.
+    value: ${{ steps.apt_cache.outputs.cache-hit }}
+  pip-exact-hit:
+    description: Exact current-week pip cache hit.
+    value: ${{ steps.pip_cache.outputs.cache-hit }}
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve weekly cache fingerprints
+      id: fingerprint
+      shell: bash
+      run: |
+        set -Eeuo pipefail
+        week="$(date -u +%G-W%V)"
+        packages_hash="$(sha256sum .github/ci/kubuntu-packages.txt | awk '{print $1}')"
+        lock_hash="$(sha256sum requirements-toolchain.lock | awk '{print $1}')"
+        echo "week=$week" >> "$GITHUB_OUTPUT"
+        echo "packages_hash=$packages_hash" >> "$GITHUB_OUTPUT"
+        echo "lock_hash=$lock_hash" >> "$GITHUB_OUTPUT"
+
+    - name: Prepare local cache folders
+      shell: bash
+      run: |
+        set -Eeuo pipefail
+        mkdir -p "$RUNNER_TEMP/apt-archives/partial"
+        mkdir -p "$RUNNER_TEMP/pip-cache"
+        mkdir -p matrix-logs
+
+    - name: Restore Ubuntu package cache
+      id: apt_cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ runner.temp }}/apt-archives
+        key: apt-v4-${{ inputs.os }}-${{ steps.fingerprint.outputs.packages_hash }}-${{ steps.fingerprint.outputs.week }}
+        restore-keys: |
+          apt-v4-${{ inputs.os }}-${{ steps.fingerprint.outputs.packages_hash }}-
+          apt-v4-${{ inputs.os }}-
+
+    - name: Restore Python package cache
+      id: pip_cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ runner.temp }}/pip-cache
+        key: pip-v4-${{ inputs.os }}-${{ steps.fingerprint.outputs.lock_hash }}-${{ steps.fingerprint.outputs.week }}
+        restore-keys: |
+          pip-v4-${{ inputs.os }}-${{ steps.fingerprint.outputs.lock_hash }}-
+          pip-v4-${{ inputs.os }}-
+
+    - name: Install, verify, and explain dependencies
+      shell: bash
+      env:
+        APT_CACHE_EXACT_HIT: ${{ steps.apt_cache.outputs.cache-hit }}
+        PIP_CACHE_EXACT_HIT: ${{ steps.pip_cache.outputs.cache-hit }}
+        CACHE_WEEK: ${{ steps.fingerprint.outputs.week }}
+        MATRIX_OS: ${{ inputs.os }}
+        MATRIX_SESSION: ${{ inputs.session }}
+        CI_PACKAGE_MODE: ${{ inputs.mode }}
+      run: bash "${{ github.action_path }}/install-and-measure.sh"

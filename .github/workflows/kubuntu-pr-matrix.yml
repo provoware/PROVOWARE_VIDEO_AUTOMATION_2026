@@ -2,9 +2,12 @@ name: Kubuntu compatibility matrix PR validation
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
+    types: [opened, synchronize, reopened]
     paths:
+      - .github/actions/kubuntu-package-cache/**
+      - .github/ci/kubuntu-packages.txt
+      - .github/workflows/kubuntu-cache-warmup.yml
       - .github/workflows/kubuntu-pr-matrix.yml
       - .github/workflows/kubuntu-build-matrix.yml
       - scripts/**
@@ -47,19 +50,12 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Install KDE, Tk and media dependencies
-        run: |
-          set -Eeuo pipefail
-          sudo env DEBIAN_FRONTEND=noninteractive \
-            timeout --signal=TERM --kill-after=30s 5m \
-            apt-get -o Acquire::Retries=5 update
-          sudo env DEBIAN_FRONTEND=noninteractive \
-            timeout --signal=TERM --kill-after=30s 12m \
-            apt-get -o Acquire::Retries=5 -o Dpkg::Use-Pty=0 install -y \
-            python3 python3-tk python3-pip ffmpeg xvfb weston \
-            dbus-x11 plasma-workspace
-          timeout --signal=TERM --kill-after=30s 8m \
-            python3 -m pip install --user --requirement requirements-toolchain.lock
+      - name: Prepare cached Kubuntu dependencies
+        uses: ./.github/actions/kubuntu-package-cache
+        with:
+          os: ${{ matrix.os }}
+          session: ${{ matrix.session }}
+          mode: matrix
 
       - name: Start deterministic display
         run: |
@@ -163,22 +159,38 @@ jobs:
         run: |
           set -Eeuo pipefail
           mkdir -p matrix-logs
-          test ! -f /tmp/xvfb.log || cp /tmp/xvfb.log matrix-logs/xvfb.log
-          test ! -f /tmp/weston.log || cp /tmp/weston.log matrix-logs/weston.log
+          test ! -f /tmp/xvfb.log || \
+            cp /tmp/xvfb.log matrix-logs/xvfb.log
+          test ! -f /tmp/weston.log || \
+            cp /tmp/weston.log matrix-logs/weston.log
           python3 - <<'PY'
           import json
           import os
           from pathlib import Path
 
+          metrics = {}
+          try:
+              metrics = json.loads(
+                  Path("CI_PACKAGE_METRICS.json").read_text(
+                      encoding="utf-8"
+                  )
+              )
+          except (OSError, json.JSONDecodeError):
+              pass
+
           result = {
-              "schema_version": 1,
+              "schema_version": 4,
               "os": os.environ["MATRIX_OS"],
               "session": os.environ["MATRIX_SESSION"],
               "status": os.environ["MATRIX_STATUS"],
               "run_id": os.environ["GITHUB_RUN_ID"],
+              "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
               "commit": os.environ["GITHUB_SHA"],
+              "package_metrics": metrics,
           }
-          name = f"matrix-status-{result['os']}-{result['session']}.json"
+          name = (
+              f"matrix-status-{result['os']}-{result['session']}.json"
+          )
           Path(name).write_text(
               json.dumps(result, ensure_ascii=False, indent=2) + "\n",
               encoding="utf-8",
@@ -194,6 +206,7 @@ jobs:
             dist-matrix-a/*
             FFMPEG_TOOLCHAIN.json
             RELEASE_LITERAL_HYGIENE.json
+            CI_PACKAGE_METRICS.json
             matrix-status-${{ matrix.os }}-${{ matrix.session }}.json
             matrix-logs/*
           if-no-files-found: warn
@@ -223,7 +236,7 @@ jobs:
           path: matrix-status
           merge-multiple: true
 
-      - name: Build consolidated report
+      - name: Build clear consolidated report
         id: report
         run: |
           set -Eeuo pipefail
@@ -239,7 +252,9 @@ jobs:
               ("ubuntu-24.04", "wayland"),
           ]
           records = {}
-          for path in Path("matrix-status").glob("matrix-status-*.json"):
+          for path in Path("matrix-status").glob(
+              "matrix-status-*.json"
+          ):
               record = json.loads(path.read_text(encoding="utf-8"))
               records[(record.get("os"), record.get("session"))] = record
 
@@ -251,13 +266,20 @@ jobs:
                       "os": os_name,
                       "session": session,
                       "status": record.get("status", "missing"),
+                      "package_metrics": record.get(
+                          "package_metrics", {}
+                      ),
                   }
               )
-          all_success = all(item["status"] == "success" for item in results)
+
+          all_success = all(
+              item["status"] == "success" for item in results
+          )
           summary = {
-              "schema_version": 1,
+              "schema_version": 4,
               "status": "passed" if all_success else "failed",
               "run_id": os.environ["GITHUB_RUN_ID"],
+              "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
               "commit": os.environ["GITHUB_SHA"],
               "results": results,
           }
@@ -265,22 +287,95 @@ jobs:
               json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
               encoding="utf-8",
           )
+
+          light = "🟢" if all_success else "🔴"
           lines = [
-              "# Kubuntu PR matrix",
+              f"# {light} Kubuntu-Prüfung einfach erklärt",
               "",
-              "| System | Sitzung | Ergebnis |",
-              "|---|---|---|",
+              (
+                  "**Gesamtergebnis: Alle vier Kombinationen "
+                  "funktionieren.**"
+                  if all_success
+                  else
+                  "**Gesamtergebnis: Mindestens eine Kombination "
+                  "benötigt Aufmerksamkeit.**"
+              ),
+              "",
+              (
+                  "| System | Anzeigeart | Ergebnis | Paketvorrat | "
+                  "Netzdownload | APT-Dauer |"
+              ),
+              "|---|---|---|---|---:|---:|",
           ]
           for item in results:
-              symbol = "✅" if item["status"] == "success" else "❌"
-              lines.append(
-                  f"| {item['os']} | {item['session']} | "
-                  f"{symbol} `{item['status']}` |"
+              metrics = item["package_metrics"]
+              status = item["status"]
+              symbol = "✅" if status == "success" else "❌"
+              if metrics.get("apt_cache_exact_hit"):
+                  cache = "aktuelle Woche"
+              elif metrics.get("apt_cache_restored"):
+                  cache = "älterer Vorrat"
+              else:
+                  cache = "neu aufgebaut"
+              download = metrics.get(
+                  "download_summary", "nicht ermittelt"
               )
-          Path("KUBUNTU_PR_MATRIX_SUMMARY.md").write_text(
-              "\n".join(lines) + "\n",
-              encoding="utf-8",
+              duration = metrics.get("apt_seconds")
+              duration_text = (
+                  f"{duration} s"
+                  if isinstance(duration, int)
+                  else "nicht ermittelt"
+              )
+              session_name = (
+                  "klassisch (X11)"
+                  if item["session"] == "x11"
+                  else "modern (Wayland)"
+              )
+              lines.append(
+                  f"| {item['os']} | {session_name} | "
+                  f"{symbol} `{status}` | {cache} | "
+                  f"{download} | {duration_text} |"
+              )
+
+          lines.extend(
+              [
+                  "",
+                  "## Was bedeutet das für Laien?",
+                  "",
+                  (
+                      "Die Anwendung wurde auf zwei Ubuntu-Versionen "
+                      "und auf den Anzeigearten X11 und Wayland geprüft. "
+                      "Grün bedeutet, dass Installation, FFmpeg-Nachweis, "
+                      "Tests und reproduzierbarer Portable-Build in allen "
+                      "vier Varianten funktioniert haben."
+                  ),
+                  "",
+                  (
+                      "Der wöchentliche Paketvorrat auf main verhindert, "
+                      "dass jede Prüfung hunderte große KDE- und "
+                      "Medienpakete erneut aus dem Internet laden muss."
+                  ),
+                  "",
+                  (
+                      "**Nächster Schritt:** "
+                      + (
+                          "Keine manuelle Aktion nötig."
+                          if all_success
+                          else
+                          "Die erste rote Tabellenzeile öffnen und deren "
+                          "Logdatei prüfen."
+                      )
+                  ),
+              ]
           )
+          report = "\n".join(lines) + "\n"
+          Path("KUBUNTU_PR_MATRIX_SUMMARY.md").write_text(
+              report, encoding="utf-8"
+          )
+          with Path(os.environ["GITHUB_STEP_SUMMARY"]).open(
+              "a", encoding="utf-8"
+          ) as output:
+              output.write(report)
           with Path(os.environ["GITHUB_OUTPUT"]).open(
               "a", encoding="utf-8"
           ) as output:
@@ -302,5 +397,5 @@ jobs:
       - name: Enforce complete success
         if: steps.report.outputs.all_success != 'true'
         run: |
-          echo "Not all four Kubuntu combinations passed." >&2
+          echo "::error title=Vierfachprüfung unvollständig::Mindestens eine Ubuntu-/Anzeige-Kombination ist fehlgeschlagen. Öffne die rote Tabellenzeile im Bericht."
           exit 1

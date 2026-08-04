@@ -1,0 +1,61 @@
+name: Weekly Kubuntu package cache warmup
+
+run-name: Kubuntu cache warmup on main (${{ github.event_name }})
+
+on:
+  schedule:
+    - cron: '17 4 * * 1'
+      timezone: Europe/Berlin
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/actions/kubuntu-package-cache/**
+      - .github/ci/kubuntu-packages.txt
+      - .github/workflows/kubuntu-cache-warmup.yml
+      - requirements-toolchain.lock
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: kubuntu-cache-warmup-main
+  cancel-in-progress: false
+
+jobs:
+  warmup:
+    if: github.ref == 'refs/heads/main'
+    name: ${{ matrix.os }} package cache
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-22.04
+          - ubuntu-24.04
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+
+      - name: Prepare weekly Kubuntu package cache
+        uses: ./.github/actions/kubuntu-package-cache
+        with:
+          os: ${{ matrix.os }}
+          session: cache-warmup
+          mode: warmup
+
+      - name: Upload small warmup report
+        uses: actions/upload-artifact@v4
+        with:
+          name: kubuntu-cache-warmup-${{ matrix.os }}
+          path: |
+            CI_PACKAGE_METRICS.json
+            matrix-logs/apt-update.log
+            matrix-logs/apt-install.log
+            matrix-logs/dependency-verification.log
+          if-no-files-found: error
+          retention-days: 14
