@@ -2,12 +2,16 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import os
 from pathlib import Path
 import shutil
 import subprocess
 import sys
 import tempfile
+
+from validate_stable_acceptance import manifest_sha256, validate_evidence
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -23,7 +27,12 @@ def run(command: list[str], *, cwd: Path, env: dict[str, str], label: str, timeo
 def main() -> int:
     parser = argparse.ArgumentParser(description="Finalisiert VideoBatch autonom bis zum Stable-ZIP.")
     parser.add_argument("--output", type=Path, default=ROOT / "dist")
+    parser.add_argument("--acceptance-evidence", type=Path, required=True)
     args = parser.parse_args()
+    version = json.loads((ROOT / "VERSION.json").read_text(encoding="utf-8"))
+    candidate = str(version["build"])
+    candidate_hash = manifest_sha256(ROOT / "RELEASE_MANIFEST.json")
+    validate_evidence(args.acceptance_evidence, candidate, candidate_hash)
     env_python = Path(sys.executable).resolve()
     if not env_python.is_file():
         raise RuntimeError("Die verifizierte Qualitätsumgebung ist nicht verfügbar.")
@@ -49,7 +58,12 @@ def main() -> int:
             str(env_python), str(ROOT / "scripts/promote_stable_workspace.py"),
             "--source", str(ROOT), "--destination", str(stable), "--stable-version", "2.8.3",
         ], cwd=ROOT, env=base_env, label="Getrennte Stable-Arbeitskopie erzeugen")
-        stable_env = {**base_env, "PYTHONPATH": str(stable / "src"), "VIDEOBATCH_QUALITY_ALREADY_VERIFIED": "1"}
+        stable_env = {
+            **base_env, "PYTHONPATH": str(stable / "src"), "VIDEOBATCH_QUALITY_ALREADY_VERIFIED": "1",
+            "VIDEOBATCH_ACCEPTANCE_EVIDENCE": str(args.acceptance_evidence.resolve()),
+            "VIDEOBATCH_ACCEPTANCE_CANDIDATE": candidate,
+            "VIDEOBATCH_ACCEPTANCE_MANIFEST_SHA256": candidate_hash,
+        }
 
         rebuild = (
             "import sys; from pathlib import Path; "
@@ -72,7 +86,6 @@ def main() -> int:
     final = args.output / "VideoBatch_Fast_2.8.3.zip"
     if not final.is_file():
         raise RuntimeError("Stable-ZIP wurde trotz grüner Schritte nicht erzeugt.")
-    import hashlib, json
     digest = hashlib.sha256(final.read_bytes()).hexdigest()
     report = {
         "schema_version": 1, "status": "passed", "stable_version": "2.8.3",

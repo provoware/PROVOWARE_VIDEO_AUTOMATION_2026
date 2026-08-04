@@ -1,7 +1,7 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 405,
+  "file_count": 407,
   "files": [
     {
       "mode": "0o644",
@@ -737,6 +737,12 @@
     },
     {
       "mode": "0o644",
+      "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
+      "sha256": "6c4885350afbbed4f57b28c0f06a8f571c1a0be3bb2f7d095b26bc73e20ff200",
+      "size": 1359
+    },
+    {
+      "mode": "0o644",
       "path": "docs/VISUAL_DESKTOP_APPROVAL.md",
       "sha256": "588d7725439c9c07fdc10d74b3e6426790d6d87a7e69286d14acc1eb4f779f67",
       "size": 289
@@ -1128,8 +1134,8 @@
     {
       "mode": "0o644",
       "path": "scripts/finalize_release.py",
-      "sha256": "42c0c5de6af6a13f3c61592cccc1e9e34cd922c84b1d0c3e233b14d7896e07ed",
-      "size": 5127
+      "sha256": "b6c2c8c05f9aee23106a1f6739c05ea0cc26a498cc21570a1ffc7d4de00fbaeb",
+      "size": 5776
     },
     {
       "mode": "0o644",
@@ -1298,6 +1304,12 @@
       "path": "scripts/validate_release_manifest.py",
       "sha256": "4b7cbcad9c18af89129f312af07274ae0439e4c769229710caf3c74a2b2c1e49",
       "size": 2730
+    },
+    {
+      "mode": "0o644",
+      "path": "scripts/validate_stable_acceptance.py",
+      "sha256": "374218e13939a8ce35197c5d1bcb64dbdca698233e3d1dc68e1f8e1dd178e9c2",
+      "size": 5533
     },
     {
       "mode": "0o644",
@@ -1884,8 +1896,8 @@
     {
       "mode": "0o644",
       "path": "stable_release.sh",
-      "sha256": "262ea1473f4fa725c1bc58260519046ba0b6a0406eadf1977ee7406df0eec1e2",
-      "size": 1822
+      "sha256": "61b58374295a38bc4331679a9e5ee6f4d61626d614be82b5b966984336e08372",
+      "size": 3072
     },
     {
       "mode": "0o644",
@@ -2352,8 +2364,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_release_finalization_rc9.py",
-      "sha256": "02781cc786a57ff7ba6ee795a4559602b230cfdb0bddf958042e0e223930680f",
-      "size": 3191
+      "sha256": "71817b8f785aa8acc380bc8a35ac211c8b8dfbab84e0facc1d75d0d6aaed9c66",
+      "size": 5770
     },
     {
       "mode": "0o644",
