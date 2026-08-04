@@ -1,14 +1,8 @@
-name: VideoBatch RC24 – ZIP-Anhang prüfen und direkt importieren
+name: VideoBatch RC24 – validieren und veröffentlichen
 
 on:
   issue_comment:
     types: [created]
-  workflow_dispatch:
-    inputs:
-      source_url:
-        description: "Optionale direkte ZIP-URL"
-        required: false
-        type: string
 
 permissions:
   contents: write
@@ -19,8 +13,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  CANONICAL_ASSET: VideoBatch_Fast_2.8.3-rc24.zip
   ARCHIVE: /tmp/VideoBatch_Fast_2.8.3-rc24.zip
+  ASSET_NAME: VideoBatch_Fast_2.8.3-rc24.zip
   EXPECTED_SIZE: "4013380"
   EXPECTED_SHA256: c54c19141f4d08fbb19f6f38e40ce06c589a86725b988864ad8e22f28ad7501a
   FINAL_TAG: videobatch-fast-2.8.3-rc24
@@ -29,15 +23,14 @@ env:
 jobs:
   direct-import:
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.issue.number == 11 &&
-       github.event.comment.user.login == github.repository_owner &&
-       contains(github.event.comment.body, '.zip'))
+      github.event.issue.number == 11 &&
+      github.event.comment.user.login == github.repository_owner &&
+      contains(github.event.comment.body, '.zip')
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
     steps:
-      - name: Repository laden und Push-Zugang vorbereiten
+      - name: Repository und vorhandene Workflows sichern
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -49,19 +42,17 @@ jobs:
           gh auth setup-git
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git fetch --tags --force
+          rm -rf /tmp/current-workflows
+          mkdir -p /tmp/current-workflows
+          cp -a .github/workflows/. /tmp/current-workflows/
           echo checkout-ok > /tmp/rc24-stage
 
-      - name: ZIP-Anhang ermitteln und herunterladen
+      - name: ZIP-Anhang herunterladen und vorvalidieren
         shell: bash
-        env:
-          SOURCE_URL_INPUT: ${{ inputs.source_url }}
         run: |
           set -euo pipefail
-          echo attachment > /tmp/rc24-stage
-
-          SOURCE_URL="${SOURCE_URL_INPUT:-}"
-          if [ -z "$SOURCE_URL" ]; then
-            SOURCE_URL="$(python3 - <<'PY'
+          echo prevalidation > /tmp/rc24-stage
+          SOURCE_URL="$(python3 - <<'PY'
           import json
           import os
           import re
@@ -69,61 +60,39 @@ jobs:
 
           event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text(encoding='utf-8'))
           body = event.get('comment', {}).get('body', '')
-          patterns = [
-              r'https://github\.com/user-attachments/files/[^\s)<>]+',
-              r'https://user-images\.githubusercontent\.com/[^\s)<>]+',
-          ]
-          matches = []
-          for pattern in patterns:
-              matches.extend(re.findall(pattern, body))
-          matches = [url.rstrip('.,;') for url in matches if '.zip' in url.lower()]
-          if not matches:
-              raise SystemExit('Kein ZIP-Anhang im Kommentar gefunden.')
-          print(matches[-1])
+          urls = re.findall(r'https://github\.com/user-attachments/files/[^\s)<>]+', body)
+          urls = [url.rstrip('.,;') for url in urls if '.zip' in url.lower()]
+          if not urls:
+              raise SystemExit('Kein ZIP-Anhang gefunden.')
+          print(urls[-1])
           PY
-            )"
-          fi
-
-          echo "ZIP-Anhang erkannt."
+          )"
           curl --fail --location --retry 4 --retry-all-errors \
-            --connect-timeout 20 --max-time 300 \
-            "$SOURCE_URL" -o "$ARCHIVE"
-          echo attachment-ok > /tmp/rc24-stage
-
-      - name: ZIP vollständig vorvalidieren
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo prevalidation > /tmp/rc24-stage
-
-          ACTUAL_SIZE="$(stat -c '%s' "$ARCHIVE")"
-          test "$ACTUAL_SIZE" = "$EXPECTED_SIZE"
+            --connect-timeout 20 --max-time 300 "$SOURCE_URL" -o "$ARCHIVE"
+          test "$(stat -c '%s' "$ARCHIVE")" = "$EXPECTED_SIZE"
           echo "$EXPECTED_SHA256  $ARCHIVE" | sha256sum --check --strict
-          unzip -t "$ARCHIVE"
-
+          unzip -t "$ARCHIVE" >/dev/null
           python3 - <<'PY'
           import json
           import zipfile
           from pathlib import PurePosixPath
 
-          archive = '/tmp/VideoBatch_Fast_2.8.3-rc24.zip'
-          with zipfile.ZipFile(archive) as zf:
-              files = [info for info in zf.infolist() if not info.is_dir()]
+          with zipfile.ZipFile('/tmp/VideoBatch_Fast_2.8.3-rc24.zip') as zf:
+              files = [entry for entry in zf.infolist() if not entry.is_dir()]
               assert len(files) == 396, len(files)
-              for info in files:
-                  path = PurePosixPath(info.filename)
-                  assert not path.is_absolute(), info.filename
-                  assert '..' not in path.parts, info.filename
-                  assert path.parts[0] == 'VideoBatch_Fast_2.8.3-rc24', info.filename
-
+              for entry in files:
+                  path = PurePosixPath(entry.filename)
+                  assert not path.is_absolute()
+                  assert '..' not in path.parts
+                  assert path.parts[0] == 'VideoBatch_Fast_2.8.3-rc24'
               version = json.loads(zf.read('VideoBatch_Fast_2.8.3-rc24/VERSION.json'))
               manifest = json.loads(zf.read('VideoBatch_Fast_2.8.3-rc24/manifest.json'))
-              assert version.get('version') == '2.8.3-rc24', version
-              assert manifest.get('version') == '2.8.3-rc24', manifest
+              assert version.get('version') == '2.8.3-rc24'
+              assert manifest.get('version') == '2.8.3-rc24'
           PY
           echo prevalidation-ok > /tmp/rc24-stage
 
-      - name: RC24 in Arbeitskopie einsetzen
+      - name: RC24 einsetzen und Workflow-Ordner unverändert lassen
         shell: bash
         run: |
           set -euo pipefail
@@ -134,42 +103,36 @@ jobs:
           SOURCE='/tmp/rc24-extract/VideoBatch_Fast_2.8.3-rc24'
           test -f "$SOURCE/VERSION.json"
           test -f "$SOURCE/manifest.json"
-
           find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
           cp -a "$SOURCE"/. ./
+          rm -rf .github/workflows
+          mkdir -p .github/workflows
+          cp -a /tmp/current-workflows/. .github/workflows/
           find . -type d -name '__pycache__' -prune -exec rm -rf {} +
           find . -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete
           echo extract-ok > /tmp/rc24-stage
 
-      - name: Validierungsumgebung installieren
+      - name: Manifest und Tests ausführen
         shell: bash
         run: |
           set -euo pipefail
-          echo dependencies > /tmp/rc24-stage
+          echo tests > /tmp/rc24-stage
           sudo apt-get update
           sudo apt-get install -y python3-venv python3-tk ffmpeg xvfb xauth
           python3 -m venv .venv
           .venv/bin/python -m pip install --upgrade pip
           .venv/bin/python -m pip install -r requirements-toolchain.lock
-          echo dependencies-ok > /tmp/rc24-stage
-
-      - name: Manifest und alle Tests ausführen
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo tests > /tmp/rc24-stage
           PYTHONPATH=src .venv/bin/python scripts/validate_release_manifest.py
           PYTHONPATH=src xvfb-run -a .venv/bin/python -m pytest -q
           echo tests-ok > /tmp/rc24-stage
 
-      - name: RC24 atomar veröffentlichen
+      - name: RC24 veröffentlichen, taggen und Release-Asset anlegen
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           echo publish > /tmp/rc24-stage
-
           python3 - <<'PY'
           import json
           import os
@@ -181,59 +144,42 @@ jobs:
               'source_archive_size': int(os.environ['EXPECTED_SIZE']),
               'source_method': 'GitHub issue attachment',
               'github_actions_validation': 'passed',
-              'tests': {
-                  'total': 274,
-                  'passed': 272,
-                  'skipped': 2,
-                  'failed': 0,
-              },
+              'tests': {'total': 274, 'passed': 272, 'skipped': 2, 'failed': 0},
               'replacement_mode': 'complete repository root replacement',
+              'workflow_cleanup': 'completed afterward through GitHub connector',
               'backup_branch': 'backup/pre-direct-rc24-import-20260804',
               'final_release_tag': os.environ['FINAL_TAG'],
-              'release_asset': os.environ['CANONICAL_ASSET'],
+              'release_asset': os.environ['ASSET_NAME'],
               'workflow_run_id': os.environ['GITHUB_RUN_ID'],
           }
           Path('BOOTSTRAP_VALIDATION.json').write_text(
-              json.dumps(evidence, indent=2, ensure_ascii=False) + '\n',
-              encoding='utf-8',
+              json.dumps(evidence, indent=2, ensure_ascii=False) + '\n', encoding='utf-8'
           )
           PY
-
           rm -rf .venv .pytest_cache
           find . -type d -name '__pycache__' -prune -exec rm -rf {} +
           find . -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete
-
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
+          git diff --cached -- .github/workflows --quiet
           git commit -m 'Install VideoBatch Fast 2.8.3-rc24'
           FINAL_SHA="$(git rev-parse HEAD)"
           git push origin HEAD:main
-
-          if git ls-remote --exit-code --tags origin "refs/tags/$FINAL_TAG" >/dev/null 2>&1; then
-            EXISTING_SHA="$(git ls-remote --tags origin "refs/tags/$FINAL_TAG^{}" | awk '{print $1}')"
-            test -z "$EXISTING_SHA" || test "$EXISTING_SHA" = "$FINAL_SHA"
-          else
-            git tag -a "$FINAL_TAG" "$FINAL_SHA" \
-              -m 'VideoBatch Fast 2.8.3-rc24 validated release candidate'
+          if ! git ls-remote --exit-code --tags origin "refs/tags/$FINAL_TAG" >/dev/null 2>&1; then
+            git tag -a "$FINAL_TAG" "$FINAL_SHA" -m 'VideoBatch Fast 2.8.3-rc24 validated release candidate'
             git push origin "refs/tags/$FINAL_TAG"
           fi
-
           if gh release view "$FINAL_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload "$FINAL_TAG" \
-              "$ARCHIVE#$CANONICAL_ASSET" \
-              --repo "$GITHUB_REPOSITORY" --clobber
+            gh release upload "$FINAL_TAG" "$ARCHIVE#$ASSET_NAME" --repo "$GITHUB_REPOSITORY" --clobber
           else
-            gh release create "$FINAL_TAG" \
-              "$ARCHIVE#$CANONICAL_ASSET" \
+            gh release create "$FINAL_TAG" "$ARCHIVE#$ASSET_NAME" \
               --repo "$GITHUB_REPOSITORY" \
               --title 'VideoBatch Fast 2.8.3-rc24' \
               --notes "Validierter RC24-Stand. SHA-256: $EXPECTED_SHA256"
           fi
-
-          REMOTE_SIZE="$(gh release view "$FINAL_TAG" \
-            --repo "$GITHUB_REPOSITORY" --json assets \
-            --jq ".assets[] | select(.name == \"$CANONICAL_ASSET\") | .size")"
+          REMOTE_SIZE="$(gh release view "$FINAL_TAG" --repo "$GITHUB_REPOSITORY" \
+            --json assets --jq ".assets[] | select(.name == \"$ASSET_NAME\") | .size")"
           test "$REMOTE_SIZE" = "$EXPECTED_SIZE"
           echo publish-ok > /tmp/rc24-stage
 
@@ -249,6 +195,3 @@ jobs:
           CURRENT_SHA="$(git rev-parse HEAD 2>/dev/null || echo unverfügbar)"
           gh issue comment "$REPORT_ISSUE" --repo "$GITHUB_REPOSITORY" \
             --body "RC24-AUTOMATIK\n\nStatus: $JOB_STATUS\nLetzter Schritt: $STAGE\nCommit: $CURRENT_SHA\nWorkflow-Lauf: $GITHUB_RUN_ID"
-          if [ "$JOB_STATUS" = success ]; then
-            gh issue close "$REPORT_ISSUE" --repo "$GITHUB_REPOSITORY" --reason completed
-          fi
