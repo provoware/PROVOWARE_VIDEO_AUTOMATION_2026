@@ -32,12 +32,19 @@
 - bereits übernommene Dateien werden in der Liste sichtbar markiert
 - globale Headerstatistik mit Audio-, Bild-, Video- und Auftragszahl sowie Modus, Übergang, Szenenkopplung und Schnellprofil
 - Lösungsdialoge mit dauerhaft erreichbaren Aktionen; lange Erklärungen und technische Details sind scrollbar
+- dauerhafter Thumbnail-Datenträgercache mit 256-MiB-/2.000-Dateien-Grenze, LRU-Bereinigung und atomarer Speicherung
+
+## Dauerhafter Thumbnail-Datenträgercache
+
+Vorschaubilder werden unter dem XDG-Benutzercache gespeichert und bei erneutem Öffnen wiederverwendet. Der Cache wächst nicht unbegrenzt: Standardmäßig gelten maximal 256 MiB und 2.000 PNG-Dateien. Bei Überschreitung werden zuerst die am längsten nicht verwendeten Einträge entfernt. Originalmedien und andere Dateitypen werden niemals gelöscht.
+
+Der Cache-Schlüssel berücksichtigt Quellpfad, Änderungszeit, Dateigröße und gewünschte Breite. Eine geänderte Quelldatei erhält deshalb automatisch eine neue Vorschau. Neue Vorschaubilder werden zunächst als Teil-Datei erzeugt und erst nach erfolgreicher Prüfung atomar unter dem endgültigen Namen veröffentlicht.
 
 ## Fortschritt der aktuellen Folge-Iteration
 
-**Fortschritt:** 100 % für diese kleine, gezielt validierte Folge-Iteration.
+**Fortschritt:** 100 % für den abgegrenzten Punkt „dauerhafter Thumbnail-Datenträgercache“.
 
-**Erledigt:** Hilfezentrum erklärt gelbe und rote Hinweise einfacher, der Startdialog nennt Wartezustand und Protokollpfad klarer, der Systemstatus ist im Hilfezentrum besser hervorgehoben, und `PROJEKTORDNERSTRUKTUR.md` ergänzt eine laienfreundliche Ordner-, Abhängigkeits- und Funktionsübersicht.
+**Erledigt:** persistente Wiederverwendung, Größen- und Dateigrenze, LRU-Bereinigung, Quelländerungs-Erkennung, atomare Speicherung, Fehlerbereinigung, Schutz des aktiven Eintrags, fokussierte Regressionstests und `FAIL_MEMORY_PASS.md`.
 
 **Offen:** Stable-Gates bleiben unverändert offen; keine physische KDE-Abnahme und kein Langzeitrender wurden in dieser Iteration durchgeführt.
 
