@@ -15,6 +15,7 @@ on:
       - .github/ci/kubuntu-packages.txt
       - .github/workflows/kubuntu-cache-warmup.yml
       - requirements-toolchain.lock
+      - scripts/build_kubuntu_cache_report.py
 
 permissions:
   contents: read
@@ -55,7 +56,56 @@ jobs:
           path: |
             CI_PACKAGE_METRICS.json
             matrix-logs/apt-update.log
+            matrix-logs/apt-simulate.log
             matrix-logs/apt-install.log
+            matrix-logs/pip-install.log
             matrix-logs/dependency-verification.log
           if-no-files-found: error
           retention-days: 14
+
+  report:
+    name: Explain current cache state
+    if: always() && github.ref == 'refs/heads/main'
+    needs:
+      - warmup
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out report script
+        uses: actions/checkout@v4
+
+      - name: Download warmup metrics
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: kubuntu-cache-warmup-*
+          path: warmup-metrics
+
+      - name: Read repository cache inventory
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -Eeuo pipefail
+          gh api --paginate \
+            "repos/$GITHUB_REPOSITORY/actions/caches?per_page=100" \
+            --jq '.actions_caches[]' \
+            | jq -s '{actions_caches: .}' > cache-inventory.json
+
+      - name: Build understandable cache report
+        run: |
+          set -Eeuo pipefail
+          python3 scripts/build_kubuntu_cache_report.py \
+            --metrics-dir warmup-metrics \
+            --inventory cache-inventory.json
+
+      - name: Upload cache status report
+        uses: actions/upload-artifact@v4
+        with:
+          name: kubuntu-cache-status
+          path: |
+            KUBUNTU_CACHE_STATUS.json
+            KUBUNTU_CACHE_STATUS.md
+            cache-inventory.json
+          if-no-files-found: error
+          retention-days: 30
