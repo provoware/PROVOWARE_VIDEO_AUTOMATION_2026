@@ -140,7 +140,7 @@ class VideoBatchFastUI(UiResolutionMixin, UiAccessMediaMixin, UiSelectionPreview
     def _apply_bootstrap_status(self) -> None:
         startup_status = os.environ.get("VIDEOBATCH_STARTUP_STATUS", "ready").strip().lower()
         if self.safe_mode:
-            self.status_text.set(text("startup.safe_badge", "Sicherer Startmodus"))
+            self.status_text.set(text("startup.safe_badge", "Aktiv · sicherer Startmodus"))
             self.guidance_text.set(text("startup.safe_mode", "VideoBatch wurde mit einer neutralen Projektumgebung geöffnet."))
             self._event(
                 "STARTUP_SAFE_MODE",
@@ -151,7 +151,7 @@ class VideoBatchFastUI(UiResolutionMixin, UiAccessMediaMixin, UiSelectionPreview
                 detail=os.environ.get("VIDEOBATCH_BOOTSTRAP_LOG", ""),
             )
         elif startup_status in {"warning", "degraded", "blocked"}:
-            self.status_text.set(text("startup.degraded_badge", "Startbereit · Einschränkung"))
+            self.status_text.set(text("startup.degraded_badge", "Aktiv · Start mit Einschränkung"))
             self.guidance_text.set(text("startup.degraded"))
             self._event(
                 "STARTUP_DEGRADED",
@@ -162,7 +162,7 @@ class VideoBatchFastUI(UiResolutionMixin, UiAccessMediaMixin, UiSelectionPreview
                 detail=os.environ.get("VIDEOBATCH_BOOTSTRAP_LOG", ""),
             )
         else:
-            self.status_text.set(text("startup.ready_badge", "Startbereit"))
+            self.status_text.set(text("startup.ready_badge", "Aktiv · startbereit"))
             self.guidance_text.set(text("startup.ready"))
 
     def _poll_focus_requests(self) -> None:
