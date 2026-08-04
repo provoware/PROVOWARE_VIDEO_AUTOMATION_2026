@@ -2,12 +2,16 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import os
 from pathlib import Path
 import shutil
 import subprocess
 import sys
 import tempfile
+
+from promote_stable_workspace import validate_promotion_source
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -24,6 +28,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Finalisiert VideoBatch autonom bis zum Stable-ZIP.")
     parser.add_argument("--output", type=Path, default=ROOT / "dist")
     args = parser.parse_args()
+    rc_version, stable_build = validate_promotion_source(ROOT)
     env_python = Path(sys.executable).resolve()
     if not env_python.is_file():
         raise RuntimeError("Die verifizierte Qualitätsumgebung ist nicht verfügbar.")
@@ -44,10 +49,10 @@ def main() -> int:
 
     args.output.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="videobatch-stable-finalize-") as tmp:
-        stable = Path(tmp) / "VideoBatch_Fast_2.8.3"
+        stable = Path(tmp) / f"VideoBatch_Fast_{stable_build}"
         run([
             str(env_python), str(ROOT / "scripts/promote_stable_workspace.py"),
-            "--source", str(ROOT), "--destination", str(stable), "--stable-version", "2.8.3",
+            "--source", str(ROOT), "--destination", str(stable),
         ], cwd=ROOT, env=base_env, label="Getrennte Stable-Arbeitskopie erzeugen")
         stable_env = {**base_env, "PYTHONPATH": str(stable / "src"), "VIDEOBATCH_QUALITY_ALREADY_VERIFIED": "1"}
 
@@ -69,17 +74,18 @@ def main() -> int:
         run([str(stable / "test.sh")], cwd=stable, env=stable_env, label="Stable vollständig aus Arbeitskopie prüfen")
         run([str(stable / "stable_release.sh"), str(args.output.resolve())], cwd=stable, env=stable_env, label="Deterministisches Stable-ZIP erzeugen")
 
-    final = args.output / "VideoBatch_Fast_2.8.3.zip"
+    final = args.output / f"VideoBatch_Fast_{stable_build}.zip"
     if not final.is_file():
         raise RuntimeError("Stable-ZIP wurde trotz grüner Schritte nicht erzeugt.")
-    import hashlib, json
     digest = hashlib.sha256(final.read_bytes()).hexdigest()
     report = {
-        "schema_version": 1, "status": "passed", "stable_version": "2.8.3",
+        "schema_version": 1, "status": "passed", "product_name": rc_version["name"],
+        "stable_version": stable_build, "stable_build": stable_build, "stable_channel": "stable",
+        "promoted_rc_candidate": rc_version["build"],
         "artifact": str(final), "sha256": digest,
         "gates": ["toolchain", "ruff", "mypy", "bandit", "pip-audit", "tests", "coverage", "visual", "live-desktop", "deterministic-package"],
     }
-    report_path = args.output / "VideoBatch_Fast_2.8.3_FINAL_REPORT.json"
+    report_path = args.output / f"VideoBatch_Fast_{stable_build}_FINAL_REPORT.json"
     report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"\nFINALISIERUNG ABGESCHLOSSEN\nStable: {final}\nSHA-256: {digest}\nBericht: {report_path}")
     return 0

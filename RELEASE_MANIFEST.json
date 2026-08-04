@@ -1,7 +1,7 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 405,
+  "file_count": 406,
   "files": [
     {
       "mode": "0o644",
@@ -1128,8 +1128,8 @@
     {
       "mode": "0o644",
       "path": "scripts/finalize_release.py",
-      "sha256": "42c0c5de6af6a13f3c61592cccc1e9e34cd922c84b1d0c3e233b14d7896e07ed",
-      "size": 5127
+      "sha256": "b025d91ac1b89097abad7d88dde92f2432cf21d9856e8eca71f4965e2e544cec",
+      "size": 5418
     },
     {
       "mode": "0o644",
@@ -1188,8 +1188,8 @@
     {
       "mode": "0o644",
       "path": "scripts/promote_stable_workspace.py",
-      "sha256": "4de60d82e09839ed90e19d2c794a181ed434314d33238d7bac555790939f2164",
-      "size": 2945
+      "sha256": "08b8e5b0f79dd871350911448b28265d9e45f85b619e709bea28f03394df94b1",
+      "size": 4892
     },
     {
       "mode": "0o644",
@@ -2366,6 +2366,12 @@
       "path": "tests/test_release_hardening_2_8_3_rc7.py",
       "sha256": "8d67c07cd69a2fb9c1a7d5dced2f0b324fbfaeeb4abde6983c633eeea72f0c22",
       "size": 9400
+    },
+    {
+      "mode": "0o644",
+      "path": "tests/test_stable_promotion_guards.py",
+      "sha256": "5c6d290afa570eeb8f3a47565b73c7618e711e129e8afa2666c4e178c11c477c",
+      "size": 1375
     },
     {
       "mode": "0o644",
