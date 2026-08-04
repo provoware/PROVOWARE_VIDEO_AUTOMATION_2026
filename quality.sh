@@ -10,9 +10,12 @@ export PYTHONPATH="$ROOT_DIR/src${PYTHONPATH:+:$PYTHONPATH}"
 export PYTHONDONTWRITEBYTECODE=1
 export VIDEOBATCH_DIAGNOSTICS_DIR="$TMP_ROOT/diagnostics"
 export COVERAGE_FILE="$TMP_ROOT/.coverage"
+export MYPY_CACHE_DIR="$TMP_ROOT/mypy-cache"
+export RUFF_CACHE_DIR="$TMP_ROOT/ruff-cache"
 
 python3 "$ROOT_DIR/scripts/toolchain.py" gate --scope quality --run-external --quiet
 "$ENV_PYTHON" "$ROOT_DIR/scripts/validate_version_contract.py"
+"$ENV_PYTHON" "$ROOT_DIR/scripts/render_release_docs.py" --check
 "$ENV_PYTHON" "$ROOT_DIR/scripts/internal_quality_gate.py"
 "$ENV_PYTHON" "$ROOT_DIR/scripts/validate_text_resources.py"
 "$ENV_PYTHON" -m pytest -q -p no:cacheprovider \

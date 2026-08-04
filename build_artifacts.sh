@@ -16,6 +16,7 @@ export VIDEOBATCH_DIAGNOSTICS_DIR="$TMP_ROOT/diagnostics"
 printf 'BUILD-ARTEFAKTE · kontrolliert schreibender Schritt\n'
 python3 "$ROOT_DIR/scripts/toolchain.py" gate --scope quality --quiet
 "$ENV_PYTHON" "$ROOT_DIR/scripts/validate_version_contract.py"
+"$ENV_PYTHON" "$ROOT_DIR/scripts/render_release_docs.py" --write
 "$ENV_PYTHON" "$ROOT_DIR/scripts/analyze_design_reference.py"
 if ! command -v xvfb-run >/dev/null 2>&1; then
   printf '✕ xvfb-run fehlt. Lösung: sudo apt install xvfb\n'

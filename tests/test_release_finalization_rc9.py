@@ -17,6 +17,7 @@ def test_stable_version_contract_is_supported(tmp_path: Path) -> None:
     current_pep = re.search(r'(?m)^version\s*=\s*"([^"]+)"', pyproject_text).group(1)
     for relative in (
         "VERSION.json", "pyproject.toml", "TOOLCHAIN_CONTRACT.json", "VISUAL_INSPECTION_MANIFEST.json",
+        "DEVELOPMENT_STATUS.json",
         "QUALITY_ENVIRONMENT_STATUS.json", "registries/UI_BLUEPRINT.json", "registries/UI_COMPONENT_REGISTRY.json",
         "registries/VISUAL_INSPECTION_REGISTRY.json", "registries/PLUGIN_APPROVAL_REGISTRY.json",
         "registries/VISUAL_REGRESSION_REGISTRY.json", "registries/VISUAL_APPROVAL_REGISTRY.json",

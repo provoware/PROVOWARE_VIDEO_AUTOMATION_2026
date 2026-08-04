@@ -1,6 +1,23 @@
-# VideoBatch Fast 2.8.3-rc24
+<!-- release-status:start -->
+# provoware - videoautomation - 2026 · 2.8.3-rc24
 
-RC21 verbessert den gesamten Nutzerfluss vor Produktionsbeginn. Fehler werden nicht mehr nur beschrieben: VideoBatch bietet direkt ausführbare, reversible Lösungswege an. Fehlende sichere Einstellungen werden automatisch ergänzt; nicht eindeutig lösbare Angaben werden gezielt abgefragt.
+**Kanal:** rc
+**Freigegebener Qualitätsbericht:** `VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT.json`
+
+- 272/272 automatisierte Tests bestanden
+- 82,89 % Zeilenabdeckung
+- 66,80 % Zweigabdeckung
+- 18/18 visuelle Szenarien bestanden
+
+### Offene Stable-Gates
+
+- Ruff 0.16.1
+- MyPy 2.3.0
+- Bandit 1.9.4
+- pip-audit 2.10.1
+- physische KDE-X11-/Wayland-Abnahme
+- Langzeitrender mit großer Medienauswahl und langsamem externem Ziel
+<!-- release-status:end -->
 
 **Ausgabe vor Stable:** immer als vollständiges Projekt-ZIP. Teil- und Onlineupdates bleiben bis nach der Stable-Freigabe ein deaktivierter Nachrelease-Mechanismus.
 
@@ -34,26 +51,3 @@ Originaldateien und bestätigte Projektzustände bleiben bei Fehlern unveränder
 3. Modus und Einstellungen wählen oder die Automatik verwenden.
 4. Produktion starten.
 5. Fehlende Angaben werden automatisch ergänzt oder mit direkten Lösungsaktionen abgefragt.
-
-## Entwicklungsstand
-
-- 253/253 automatisierte Tests bestanden
-- 79 % Gesamt-Coverage mit Branch-Messung
-- 12/12 Anwendungssimulationen bestanden
-- 12/12 Fehlerlabor-Szenarien bestanden
-- 17/17 visuelle Referenzszenarien bestanden
-- 0 Registry-, Architektur- und interne Qualitätsbefunde
-- maximale Funktionskomplexität 29
-
-## Stable-Grenze
-
-Für Stable bleiben reale Läufe der festgelegten Versionen von Ruff, MyPy, Bandit und pip-audit sowie die physische KDE-X11-/Wayland-Abnahme und ein großer Langzeit-Medientest erforderlich.
-## RC22: responsiver Workflow und Großordnerimport
-
-- Ausgabeordner und Live-Statistik direkt im Header
-- sechs Haupt-Tabs mit dynamischem 2×2-Workflowraster
-- vier moderne Themes und separater Bereichszoom
-- blockweises Einlesen sehr großer Medienordner
-- zusammengefasster Vorbereitungsassistent
-- vollständiges Projekt-ZIP als einzige Vorrelease-Ausgabe
-
