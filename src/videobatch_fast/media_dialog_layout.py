@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from tkinter import ttk
 
+from .preview_cache_dialog import show_preview_cache_dialog
+
 
 def build_media_actions(dialog, parent) -> None:
     """Build a two-level action area that remains readable at 1220×760."""
@@ -13,6 +15,12 @@ def build_media_actions(dialog, parent) -> None:
     secondary.grid(row=0, column=0, sticky="ew", pady=(0, 6))
     ttk.Button(secondary, text="Gesammelte Auswahl leeren", command=dialog._clear_collection).pack(side="left")
     ttk.Button(secondary, text="Alle sichtbaren übernehmen", command=dialog._collect_all_visible).pack(side="left", padx=(6, 0))
+    if not dialog.audio:
+        ttk.Button(
+            secondary,
+            text="Vorschau-Cache",
+            command=lambda: show_preview_cache_dialog(dialog.window),
+        ).pack(side="left", padx=(6, 0))
     ttk.Label(secondary, textvariable=dialog.collection_value, style="HeaderHint.TLabel").pack(side="right")
 
     primary = ttk.Frame(shell, style="Toolbar.TFrame")
