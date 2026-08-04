@@ -11,16 +11,24 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: install-videobatch-fast-rc24
   cancel-in-progress: false
 
+env:
+  ARCHIVE: /tmp/VideoBatch_Fast_2.8.3-rc24.zip
+  SOURCE_URL: https://filebin.net/provoware-videobatch-rc24-20260804-9f7c2a/VideoBatch_Fast_2.8.3-rc24.zip
+  ARCHIVE_SHA256: c54c19141f4d08fbb19f6f38e40ce06c589a86725b988864ad8e22f28ad7501a
+  RELEASE_TAG: videobatch-fast-2.8.3-rc24
+
 jobs:
   install-and-validate:
-    if: github.event_name != 'issues' || github.event.issue.title == 'RUN_RC24_INSTALL_ENABLED_20260804'
+    if: github.event_name != 'issues' || github.event.issue.title == 'RUN_RC24_DIAG_20260804'
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 40
+
     steps:
       - name: Checkout bootstrap
         uses: actions/checkout@v4
@@ -31,20 +39,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          URL='https://filebin.net/provoware-videobatch-rc24-20260804-9f7c2a/VideoBatch_Fast_2.8.3-rc24.zip'
-          ARCHIVE='/tmp/VideoBatch_Fast_2.8.3-rc24.zip'
+          echo download > /tmp/rc24-stage
           curl --fail --location --retry 5 --retry-all-errors \
-            --connect-timeout 20 --max-time 300 "$URL" -o "$ARCHIVE"
-          echo 'c54c19141f4d08fbb19f6f38e40ce06c589a86725b988864ad8e22f28ad7501a  /tmp/VideoBatch_Fast_2.8.3-rc24.zip' | sha256sum --check --strict
+            --connect-timeout 20 --max-time 300 \
+            "$SOURCE_URL" -o "$ARCHIVE"
+          echo "$ARCHIVE_SHA256  $ARCHIVE" | sha256sum --check --strict
           unzip -t "$ARCHIVE"
+          echo download-ok > /tmp/rc24-stage
 
       - name: Replace repository root
         shell: bash
         run: |
           set -euo pipefail
+          echo extract > /tmp/rc24-stage
           rm -rf /tmp/rc24-extract
           mkdir -p /tmp/rc24-extract
-          unzip -q /tmp/VideoBatch_Fast_2.8.3-rc24.zip -d /tmp/rc24-extract
+          unzip -q "$ARCHIVE" -d /tmp/rc24-extract
           SOURCE='/tmp/rc24-extract/VideoBatch_Fast_2.8.3-rc24'
           test -f "$SOURCE/VERSION.json"
           test -f "$SOURCE/manifest.json"
@@ -61,28 +71,36 @@ jobs:
           cp -a "$SOURCE"/. ./
           find . -type d -name '__pycache__' -prune -exec rm -rf {} +
           find . -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete
+          echo extract-ok > /tmp/rc24-stage
 
       - name: Install validation environment
         shell: bash
         run: |
           set -euo pipefail
+          echo dependencies > /tmp/rc24-stage
           sudo apt-get update
           sudo apt-get install -y python3-venv python3-tk ffmpeg xvfb xauth
           python3 -m venv .venv
           .venv/bin/python -m pip install --upgrade pip
           .venv/bin/python -m pip install -r requirements-toolchain.lock
+          echo dependencies-ok > /tmp/rc24-stage
 
       - name: Validate release and run complete tests
         shell: bash
         run: |
           set -euo pipefail
+          echo tests > /tmp/rc24-stage
           PYTHONPATH=src .venv/bin/python scripts/validate_release_manifest.py
           PYTHONPATH=src xvfb-run -a .venv/bin/python -m pytest -q
+          echo tests-ok > /tmp/rc24-stage
 
-      - name: Record evidence and publish final RC24 tree
+      - name: Publish final RC24 tree, tag and permanent release asset
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          echo publish > /tmp/rc24-stage
           python3 - <<'PY'
           import json
           from pathlib import Path
@@ -92,7 +110,8 @@ jobs:
               'local_preflight_tests': '274/274 passed',
               'github_actions_validation': 'passed',
               'replacement_mode': 'complete repository root replacement',
-              'backup_branch': 'backup/pre-rc24-replacement-20260804'
+              'backup_branch': 'backup/pre-rc24-replacement-20260804',
+              'release_asset': 'VideoBatch_Fast_2.8.3-rc24.zip'
           }
           Path('BOOTSTRAP_VALIDATION.json').write_text(
               json.dumps(evidence, indent=2, ensure_ascii=False) + '\n',
@@ -112,10 +131,37 @@ jobs:
           git commit -m 'Install VideoBatch Fast 2.8.3-rc24'
           git push origin HEAD:main
           FINAL_SHA="$(git rev-parse HEAD)"
-          TAG='videobatch-fast-2.8.3-rc24'
-          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
-            echo "Release tag $TAG already exists; leaving it unchanged."
+          if ! git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" >/dev/null 2>&1; then
+            git tag -a "$RELEASE_TAG" "$FINAL_SHA" -m 'VideoBatch Fast 2.8.3-rc24 validated release candidate'
+            git push origin "refs/tags/$RELEASE_TAG"
+          fi
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "$ARCHIVE#VideoBatch_Fast_2.8.3-rc24.zip" --clobber
           else
-            git tag -a "$TAG" "$FINAL_SHA" -m 'VideoBatch Fast 2.8.3-rc24 validated release candidate'
-            git push origin "refs/tags/$TAG"
+            gh release create "$RELEASE_TAG" \
+              "$ARCHIVE#VideoBatch_Fast_2.8.3-rc24.zip" \
+              --title 'VideoBatch Fast 2.8.3-rc24' \
+              --notes 'Validierter RC24-Quellstand. SHA-256: c54c19141f4d08fbb19f6f38e40ce06c589a86725b988864ad8e22f28ad7501a'
+          fi
+          echo publish-ok > /tmp/rc24-stage
+
+      - name: Report workflow result to trigger issue
+        if: always() && github.event_name == 'issues'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          set +e
+          STAGE="$(cat /tmp/rc24-stage 2>/dev/null || echo checkout)"
+          CURRENT_SHA="$(git rev-parse HEAD 2>/dev/null || echo unavailable)"
+          gh issue comment "$ISSUE_NUMBER" --body "RC24-WORKFLOW-DIAGNOSE
+
+Status: $JOB_STATUS
+Letzter Schritt: $STAGE
+Commit: $CURRENT_SHA
+Archiv-SHA-256: $ARCHIVE_SHA256"
+          if [ "$JOB_STATUS" = success ]; then
+            gh issue close "$ISSUE_NUMBER" --reason completed
           fi
