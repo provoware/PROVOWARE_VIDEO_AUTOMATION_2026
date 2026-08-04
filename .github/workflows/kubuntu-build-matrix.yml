@@ -1,7 +1,16 @@
 name: Kubuntu compatibility matrix
 
+run-name: >-
+  Kubuntu matrix ${{ github.ref_name }} → issue #${{ github.event_name == 'workflow_dispatch' && inputs.report_issue || '12' }}
+
 on:
   workflow_dispatch:
+    inputs:
+      report_issue:
+        description: Issue number for the automatic result report
+        required: false
+        default: '12'
+        type: string
   push:
     tags:
       - 'v*'
@@ -16,7 +25,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  REPORT_ISSUE: '12'
+  REPORT_ISSUE: ${{ github.event_name == 'workflow_dispatch' && inputs.report_issue || '12' }}
 
 jobs:
   matrix:
@@ -40,14 +49,19 @@ jobs:
 
       - name: Install KDE/Tk/media test dependencies
         run: |
+          set -Eeuo pipefail
           sudo apt-get update
-          sudo apt-get install -y python3 python3-tk python3-pip ffmpeg xvfb weston dbus-x11 plasma-workspace
+          sudo apt-get install -y \
+            python3 python3-tk python3-pip ffmpeg xvfb weston \
+            dbus-x11 plasma-workspace
           python3 -m pip install --user --requirement requirements-toolchain.lock
 
       - name: Start deterministic display
         run: |
+          set -Eeuo pipefail
           if [ "${{ matrix.session }}" = x11 ]; then
-            Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
+            Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp \
+              >/tmp/xvfb.log 2>&1 &
             echo "DISPLAY=:99" >> "$GITHUB_ENV"
           else
             mkdir -p "$RUNNER_TEMP/xdg"
@@ -58,33 +72,41 @@ jobs:
               --idle-time=0 >/tmp/weston.log 2>&1 &
             echo "XDG_RUNTIME_DIR=$RUNNER_TEMP/xdg" >> "$GITHUB_ENV"
             echo "WAYLAND_DISPLAY=wayland-vb" >> "$GITHUB_ENV"
-            Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
+            Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp \
+              >/tmp/xvfb.log 2>&1 &
             echo "DISPLAY=:99" >> "$GITHUB_ENV"
           fi
 
       - name: Fetch pinned static FFmpeg
         run: |
+          set -Eeuo pipefail
           URL="https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-08-03-14-02/ffmpeg-master-latest-linux64-gpl.tar.xz"
           EXPECTED="153dcb657db09fb2418daed3dc07b975d4b8da0cc4e3a570cf2820fdd260db78"
           curl --fail --location --retry 4 --retry-all-errors \
             --output "$RUNNER_TEMP/ffmpeg.tar.xz" "$URL"
-          echo "$EXPECTED  $RUNNER_TEMP/ffmpeg.tar.xz" | sha256sum --check --strict
+          echo "$EXPECTED  $RUNNER_TEMP/ffmpeg.tar.xz" \
+            | sha256sum --check --strict
           mkdir -p "$RUNNER_TEMP/ffmpeg-static"
           tar -xJf "$RUNNER_TEMP/ffmpeg.tar.xz" \
             -C "$RUNNER_TEMP/ffmpeg-static" \
             --strip-components=1
-          echo "VIDEOBATCH_STATIC_MEDIA_DIR=$RUNNER_TEMP/ffmpeg-static/bin" >> "$GITHUB_ENV"
+          echo "VIDEOBATCH_STATIC_MEDIA_DIR=$RUNNER_TEMP/ffmpeg-static/bin" \
+            >> "$GITHUB_ENV"
 
       - name: Run complete compatibility contract
         run: ./scripts/kubuntu_matrix_smoke.sh
 
-      - name: Write matrix status
+      - name: Write matrix status and collect diagnostics
         if: always()
         env:
           MATRIX_OS: ${{ matrix.os }}
           MATRIX_SESSION: ${{ matrix.session }}
           MATRIX_STATUS: ${{ job.status }}
         run: |
+          set -Eeuo pipefail
+          mkdir -p matrix-logs
+          test ! -f /tmp/xvfb.log || cp /tmp/xvfb.log matrix-logs/xvfb.log
+          test ! -f /tmp/weston.log || cp /tmp/weston.log matrix-logs/weston.log
           python3 - <<'PY'
           import json
           import os
@@ -115,8 +137,7 @@ jobs:
             dist-matrix-a/*
             KUBUNTU_BUILD_MATRIX.json
             matrix-status-${{ matrix.os }}-${{ matrix.session }}.json
-            /tmp/xvfb.log
-            /tmp/weston.log
+            matrix-logs/*
           if-no-files-found: warn
           retention-days: 30
 
@@ -137,6 +158,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate report issue target
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -Eeuo pipefail
+          [[ "$REPORT_ISSUE" =~ ^[1-9][0-9]*$ ]] || {
+            echo "::error::Invalid report issue number: $REPORT_ISSUE"
+            exit 1
+          }
+          gh issue view "$REPORT_ISSUE" \
+            --repo "$GITHUB_REPOSITORY" \
+            --json number,state,title >/dev/null
+
       - name: Download all matrix status records
         continue-on-error: true
         uses: actions/download-artifact@v4
@@ -150,6 +186,7 @@ jobs:
         env:
           MATRIX_JOB_RESULT: ${{ needs.matrix.result }}
         run: |
+          set -Eeuo pipefail
           python3 - <<'PY'
           import json
           import os
@@ -161,6 +198,19 @@ jobs:
               ("ubuntu-24.04", "x11"),
               ("ubuntu-24.04", "wayland"),
           ]
+
+          version = "unknown"
+          try:
+              version_data = json.loads(
+                  Path("VERSION.json").read_text(encoding="utf-8")
+              )
+              version = str(
+                  version_data.get("version")
+                  or version_data.get("build")
+                  or "unknown"
+              )
+          except (OSError, json.JSONDecodeError, TypeError):
+              pass
 
           records = {}
           for path in Path("matrix-status").glob("matrix-status-*.json"):
@@ -190,10 +240,13 @@ jobs:
               f"/actions/runs/{os.environ['GITHUB_RUN_ID']}"
           )
           summary = {
-              "schema_version": 1,
-              "version": "2.8.3-rc24",
+              "schema_version": 2,
+              "version": version,
               "status": "passed" if all_success else "failed",
-              "matrix_job_result": os.environ.get("MATRIX_JOB_RESULT", "unknown"),
+              "report_issue": int(os.environ["REPORT_ISSUE"]),
+              "matrix_job_result": os.environ.get(
+                  "MATRIX_JOB_RESULT", "unknown"
+              ),
               "run_id": os.environ["GITHUB_RUN_ID"],
               "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
               "run_url": run_url,
@@ -213,7 +266,7 @@ jobs:
           )
 
           lines = [
-              "## Kubuntu-Kompatibilitätsmatrix 2.8.3-rc24",
+              f"## Kubuntu-Kompatibilitätsmatrix {version}",
               "",
               f"Workflow-Lauf: [{os.environ['GITHUB_RUN_ID']}]({run_url})",
               f"Commit: `{os.environ['GITHUB_SHA']}`",
@@ -222,7 +275,8 @@ jobs:
               "|---|---|---|",
           ]
           lines.extend(
-              f"| {row['os']} | {row['session']} | {row['symbol']} `{row['status']}` |"
+              f"| {row['os']} | {row['session']} | "
+              f"{row['symbol']} `{row['status']}` |"
               for row in rows
           )
           lines.extend(
@@ -234,7 +288,8 @@ jobs:
                       else "**Gesamtergebnis: nicht vollständig bestanden.**"
                   ),
                   "",
-                  "Die vollständigen Nachweise liegen 30 Tage als Workflow-Artefakte vor.",
+                  "Die vollständigen Nachweise liegen 30 Tage als "
+                  "Workflow-Artefakte vor.",
               ]
           )
           Path("KUBUNTU_MATRIX_SUMMARY.md").write_text(
@@ -242,8 +297,13 @@ jobs:
               encoding="utf-8",
           )
 
-          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as output:
-              output.write(f"all_success={'true' if all_success else 'false'}\n")
+          with Path(os.environ["GITHUB_OUTPUT"]).open(
+              "a", encoding="utf-8"
+          ) as output:
+              output.write(
+                  f"all_success={'true' if all_success else 'false'}\n"
+              )
+              output.write(f"version={version}\n")
           PY
 
       - name: Upload consolidated matrix report
@@ -256,7 +316,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Publish result in issue 12
+      - name: Publish result in selected issue
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -264,12 +324,13 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --body-file KUBUNTU_MATRIX_SUMMARY.md
 
-      - name: Close issue after complete success
+      - name: Close selected issue after complete success
         if: steps.report.outputs.all_success == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          MATRIX_VERSION: ${{ steps.report.outputs.version }}
         run: |
           gh issue close "$REPORT_ISSUE" \
             --repo "$GITHUB_REPOSITORY" \
             --reason completed \
-            --comment "Alle vier RC24-Kombinationen wurden erfolgreich validiert."
+            --comment "All four compatibility combinations for ${MATRIX_VERSION} passed."
