@@ -35,6 +35,31 @@
 ./quality.sh          # Ruff, MyPy, Bandit, pip-audit zwingend
 ```
 
+## Kontrollierte Stable-Gate-Iteration
+
+Stable-Gates genau einmal pro unverändertem Kandidaten und in dieser Reihenfolge
+ausführen; nach einer Codeänderung beginnt eine neue Iteration:
+
+1. gesperrte Qualitätsumgebung vorbereiten und belegen,
+2. `./quality.sh` vollständig ausführen,
+3. `./test.sh` in einer echten Display-Umgebung ausführen,
+4. physische KDE-X11-/Wayland-Abnahme dokumentieren,
+5. Langzeitrender mit großer Medienauswahl und langsamem externem Ziel dokumentieren.
+
+Kein offenes, blockiertes oder nur simuliertes Gate als bestanden ausgeben. Berichte
+einer Iteration müssen Kandidat, Umgebung, Zeitpunkt und Ergebnis eindeutig nennen.
+
+## Abgeleitete Projektübersicht
+
+- Produktname, Version, Build und Kanal kommen aus `VERSION.json`.
+- Testzahl und Coverage kommen aus dem in `DEVELOPMENT_STATUS.json` benannten,
+  freigegebenen Qualitätsbericht.
+- Offene Stable-Gates kommen nur aus `DEVELOPMENT_STATUS.json`.
+- `README.md` und `STATUS.md` mit `scripts/render_release_docs.py --write` nur im
+  schreibenden Build-Schritt aktualisieren.
+- Tests und Qualitätsprüfungen verwenden ausschließlich
+  `scripts/render_release_docs.py --check` und verändern diese Dateien nicht.
+
 ## Release-Gates
 
 - Registryprüfung

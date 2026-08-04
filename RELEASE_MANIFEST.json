@@ -1,19 +1,19 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 395,
+  "file_count": 398,
   "files": [
     {
       "mode": "0o644",
       "path": ".github/workflows/kubuntu-build-matrix.yml",
-      "sha256": "c9bd99857743bfe47eeca9f0ccf62310737b68fe60e878237cec9bab0c9145f4",
-      "size": 2482
+      "sha256": "bd7878227ed83181f0464e2308f1486db64a6230295306572df5007d65444d0f",
+      "size": 14563
     },
     {
       "mode": "0o644",
       "path": "AGENTS.md",
-      "sha256": "0889ba729c6bf468bba91aec4206c9c597222f6d04b2e921caf29f5b46b6aa74",
-      "size": 1926
+      "sha256": "e4ad05830a6505e7d0110a2f140e417b941ad67a37b58721341acea51a28d2f6",
+      "size": 3131
     },
     {
       "mode": "0o644",
@@ -26,6 +26,12 @@
       "path": "BEST_PRACTICES.md",
       "sha256": "a611c40b10687a6dbcb64b7a600cbbbffe2c1f5d3ffc5b4676e75c0b2c5e4839",
       "size": 795
+    },
+    {
+      "mode": "0o644",
+      "path": "BOOTSTRAP_VALIDATION.json",
+      "sha256": "2aa0518839675139235ac898769bb6fcaf3115ae2968e6e1476ef7aae794b5c5",
+      "size": 670
     },
     {
       "mode": "0o644",
@@ -180,8 +186,8 @@
     {
       "mode": "0o644",
       "path": "DEVELOPMENT_STATUS.json",
-      "sha256": "e68e9e4548c00697426f279741676daef92b282f67e75c3e914460a358b7d9a9",
-      "size": 513
+      "sha256": "a270750773c24d85b86e072f4c62bd8d0a22d38164459a04b13dd8fbcc6f81ee",
+      "size": 590
     },
     {
       "mode": "0o644",
@@ -468,8 +474,8 @@
     {
       "mode": "0o644",
       "path": "README.md",
-      "sha256": "98c3188464e416b6919920f02515c8dc215b42ac6ce59ff61a91bf6b4d56ab89",
-      "size": 2996
+      "sha256": "f1ab889ae9a9fc6799e874dad7e603aa15d12bb00141dc3103e2303f8e10a44e",
+      "size": 2308
     },
     {
       "mode": "0o644",
@@ -510,8 +516,8 @@
     {
       "mode": "0o644",
       "path": "STATUS.md",
-      "sha256": "694c5f59e9a713e14dd5ff6ad9543cb3639177b70a448a0cd18e7ece2fa42613",
-      "size": 1170
+      "sha256": "c2e34cf6d42e16e3427179f458ca7aeabbf06d66d2d8d65491c7df7a9cbe4be8",
+      "size": 533
     },
     {
       "mode": "0o644",
@@ -604,10 +610,10 @@
       "size": 287
     },
     {
-      "mode": "0o644",
+      "mode": "0o755",
       "path": "build_artifacts.sh",
-      "sha256": "0b1d3c602417857863b6f5b8915669ff8403e88eb9365cf0da62d8b79dd4c149",
-      "size": 1396
+      "sha256": "5df13b0eca6b639b604e2499f4054418b50c804c677267b7806038656b1c059f",
+      "size": 1461
     },
     {
       "mode": "0o644",
@@ -784,10 +790,10 @@
       "size": 727
     },
     {
-      "mode": "0o644",
+      "mode": "0o755",
       "path": "quality.sh",
-      "sha256": "31fb3e9bfc0e023e165f66592e0d441eeb8065b4185999d71f42e8637774dd40",
-      "size": 1349
+      "sha256": "b55a3b43fcee53d2f259b1bcd716b02c47d2f828c67471be841ef37d7743b5df",
+      "size": 1504
     },
     {
       "mode": "0o644",
@@ -1150,6 +1156,12 @@
       "size": 2231
     },
     {
+      "mode": "0o755",
+      "path": "scripts/render_release_docs.py",
+      "sha256": "c1678465394184cdbe6a08cb353d3f9286e8d388a9d1764273689ea39846ec94",
+      "size": 3856
+    },
+    {
       "mode": "0o644",
       "path": "scripts/run_assurance_lab.py",
       "sha256": "c6a29f0770d3bd88e1aade6f682c617c78db45e06585248ad9d555c4114d8825",
@@ -1254,8 +1266,8 @@
     {
       "mode": "0o644",
       "path": "scripts/validate_version_contract.py",
-      "sha256": "55f933059ff7582a8d58388d486491548d92c263343e6d340c7087abdc359f4b",
-      "size": 3647
+      "sha256": "b4319acf0fdd498608c5b8d512e0f919a95ca58c39a8e685291ac93bc306bf55",
+      "size": 3678
     },
     {
       "mode": "0o644",
@@ -1840,10 +1852,10 @@
       "size": 781
     },
     {
-      "mode": "0o644",
+      "mode": "0o755",
       "path": "test.sh",
-      "sha256": "a1919ba26641de54de01ca6e12a6e05eeaba68458d3c8d5aa11a2ceb879ba1aa",
-      "size": 3247
+      "sha256": "579b9e73d94447ef973cda0ee7d43fba11eb7eeb573b5bbd012e6aaae0abaebb",
+      "size": 3402
     },
     {
       "mode": "0o644",
@@ -2291,9 +2303,15 @@
     },
     {
       "mode": "0o644",
+      "path": "tests/test_release_docs.py",
+      "sha256": "714e9708b9fe0fb80e07b00630cfd2cfb15c611ffaf8655caf7c242596c0dba3",
+      "size": 1329
+    },
+    {
+      "mode": "0o644",
       "path": "tests/test_release_finalization_rc9.py",
-      "sha256": "fb2a5615bdf82cc136cad1cb0cf864a180d6db510d04ccea53e8ede82ae7d8b0",
-      "size": 3156
+      "sha256": "02781cc786a57ff7ba6ee795a4559602b230cfdb0bddf958042e0e223930680f",
+      "size": 3191
     },
     {
       "mode": "0o644",

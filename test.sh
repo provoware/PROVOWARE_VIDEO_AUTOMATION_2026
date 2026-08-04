@@ -16,6 +16,8 @@ export XDG_STATE_HOME="$TMP_ROOT/state"
 export XDG_CACHE_HOME="$TMP_ROOT/cache"
 export VIDEOBATCH_DIAGNOSTICS_DIR="$TMP_ROOT/diagnostics"
 export COVERAGE_FILE="$TMP_ROOT/.coverage"
+export MYPY_CACHE_DIR="$TMP_ROOT/mypy-cache"
+export RUFF_CACHE_DIR="$TMP_ROOT/ruff-cache"
 VERSION="$("$ENV_PYTHON" -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["build"])' "$ROOT_DIR/VERSION.json")"
 
 if [[ "$CORE_ONLY" == "0" && "${VIDEOBATCH_QUALITY_ALREADY_VERIFIED:-0}" != "1" ]]; then
@@ -29,6 +31,7 @@ else
 fi
 "$ENV_PYTHON" "$ROOT_DIR/scripts/validate_release_manifest.py"
 "$ENV_PYTHON" "$ROOT_DIR/scripts/validate_version_contract.py"
+"$ENV_PYTHON" "$ROOT_DIR/scripts/render_release_docs.py" --check
 "$ENV_PYTHON" "$ROOT_DIR/scripts/verify_compile_isolated.py"
 "$ENV_PYTHON" "$ROOT_DIR/scripts/validate_registries.py"
 "$ENV_PYTHON" "$ROOT_DIR/scripts/architecture_audit.py"

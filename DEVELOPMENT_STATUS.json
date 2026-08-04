@@ -8,6 +8,7 @@
   "current_todo": "Absturz beim Klick in die ausgewählte Bilderliste vollständig beseitigt",
   "status": "green",
   "stable_ready": false,
+  "approved_quality_report": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT.json",
   "stable_blockers": [
     "Ruff 0.16.1",
     "MyPy 2.3.0",
