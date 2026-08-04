@@ -1,4 +1,4 @@
 cffi==2.0.0; platform_python_implementation != "PyPy"
-cryptography==46.0.4
-Pillow==12.2.0
+cryptography==50.0.0
+Pillow==12.3.0
 pycparser==3.0; platform_python_implementation != "PyPy"
