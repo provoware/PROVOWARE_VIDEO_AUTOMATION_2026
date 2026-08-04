@@ -18,12 +18,15 @@ def signal_ui_ready(*, existing_instance: bool = False) -> Path | None:
     path = ready_marker_from_environment()
     if path is None:
         return None
+    startup_status = os.environ.get("VIDEOBATCH_STARTUP_STATUS", "ready").strip().lower() or "ready"
     payload = {
-        "schema_version": 1,
+        "schema_version": 2,
         "pid": os.getpid(),
         "timestamp_ns": time.time_ns(),
         "safe_mode": os.environ.get("VIDEOBATCH_SAFE_MODE", "0") == "1",
         "existing_instance": bool(existing_instance),
+        "startup_status": startup_status,
+        "report_path": os.environ.get("VIDEOBATCH_STARTUP_REPORT", ""),
     }
     atomic_write_json(path, payload)
     return path
@@ -36,6 +39,6 @@ def read_ready_marker(path: Path) -> dict[str, object] | None:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError):
         return None
-    if not isinstance(data, dict) or data.get("schema_version") != 1:
+    if not isinstance(data, dict) or data.get("schema_version") not in {1, 2}:
         return None
     return data
