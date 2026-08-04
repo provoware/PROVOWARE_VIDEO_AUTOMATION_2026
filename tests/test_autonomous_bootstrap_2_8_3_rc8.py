@@ -92,5 +92,9 @@ def test_launcher_is_noninteractive_and_visible() -> None:
 def test_help_center_replaces_prototype_messages() -> None:
     dashboard = (ROOT / "src" / "videobatch_fast" / "ui_dashboard_project_mixin.py").read_text(encoding="utf-8")
     components = (ROOT / "src" / "videobatch_fast" / "ui_components.py").read_text(encoding="utf-8")
+    texts = (ROOT / "resources" / "texts" / "application.json").read_text(encoding="utf-8")
     assert dashboard.count("command=self._show_help_center") >= 2
     assert "class HelpCenterDialog" in components
+    assert 'text("help_center.solve_body")' in components
+    assert "clipboard_append(self.status_value.get())" in components
+    assert '"help_center.solve_tab": "Problem lösen"' in texts
