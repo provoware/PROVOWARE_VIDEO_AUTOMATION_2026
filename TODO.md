@@ -2,19 +2,32 @@
 
 ## Arbeitsprinzip für Folge-Iterationen
 
-- [ ] Vor jeder Änderung Ziel, Datei, Block, Patchgrund, Risiko und bewusste Nicht-Änderungen dokumentieren.
-- [ ] Danach nur den kleinsten sinnvollen Patch anwenden.
-- [ ] Am Ende nur betroffene Syntax-, Logik-, Ausgabe- und Testpfade validieren.
+- [x] Vor jeder Änderung Ziel, Datei, Block, Patchgrund, Risiko und bewusste Nicht-Änderungen dokumentieren.
+- [x] Danach nur den kleinsten sinnvollen Patch anwenden.
+- [x] Am Ende nur betroffene Syntax-, Logik-, Ausgabe- und Testpfade validieren.
 - [ ] Stable-Gates erst nach unverändertem Kandidaten in der dokumentierten Reihenfolge ausführen.
 
-## Aktuelle Folge-Iteration · Dokumentations- und Bedienstandard abgeschlossen
+## Aktuelle Folge-Iteration · Cache-Diagnose und Schlüssel-Sperre
+
+- [x] `FAIL_MEMORY_PASS.md` und `preview_service.py` zuerst eingelesen.
+- [x] Cachegrenze von 256 MiB auf 1 GiB erhöht; Dateigrenze von 2.000 beibehalten.
+- [x] Statusfunktion für Größe, Anzahl, Grenzwerte, Auslastung, Pfad und letzten Bereinigungslauf ergänzt.
+- [x] kleine Bedienoberfläche direkt in die Bilder-/Videoauswahl integriert.
+- [x] bestätigungspflichtige sichere Leerung nur eigener VideoBatch-Vorschaudateien ergänzt.
+- [x] fremde PNGs und andere Dateien von Bereinigung und Leerung ausgeschlossen.
+- [x] pro Cache-Schlüssel arbeitende Thread-/Kubuntu-Prozesssperre ergänzt.
+- [x] atomare Teil-Datei- und `os.replace`-Speicherung unverändert beibehalten.
+- [x] fokussierte Tests für Status, 1 GiB, Fremddateischutz, Leerung und Parallelität ergänzt.
+- [ ] PR-#46-Kompatibilitätsmatrix vollständig grün abschließen.
+
+## Frühere Folge-Iteration · Dokumentations- und Bedienstandard abgeschlossen
 
 - [x] `PROJEKTORDNERSTRUKTUR.md` mit Ordnerübersicht, Laienanleitung, Funktionsübersicht und Abhängigkeitsbewertung ergänzt.
 - [x] Hilfezentrum-Texte zu Einsteigerverständlichkeit, Systemstatus und sicheren Alternativen vereinheitlicht.
 - [x] Startfeedback mit klarerem Hinweis auf Hilfetexte und sichere Standardpfade verbessert.
 - [x] README, UPDATE_SYSTEM und CHANGELOG für diese gezielte Dokumentationsiteration aktualisiert.
 
-## Aktuelle Folge-Iteration · abgeschlossen
+## Frühere Folge-Iteration · abgeschlossen
 
 - [x] Hilfezentrum um einen klaren Sicherheits-Tipp für gelbe und rote Hinweise ergänzt.
 - [x] Startdialog mit konkreterem Wartetext, Fehlerhinweis und größerem Fenster verbessert.

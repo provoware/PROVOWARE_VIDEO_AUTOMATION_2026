@@ -32,19 +32,39 @@
 - bereits übernommene Dateien werden in der Liste sichtbar markiert
 - globale Headerstatistik mit Audio-, Bild-, Video- und Auftragszahl sowie Modus, Übergang, Szenenkopplung und Schnellprofil
 - Lösungsdialoge mit dauerhaft erreichbaren Aktionen; lange Erklärungen und technische Details sind scrollbar
-- dauerhafter Thumbnail-Datenträgercache mit 256-MiB-/2.000-Dateien-Grenze, LRU-Bereinigung und atomarer Speicherung
+- dauerhafter Thumbnail-Datenträgercache mit 1-GiB-/2.000-Dateien-Grenze, LRU-Bereinigung und atomarer Speicherung
+- Cache-Diagnose direkt in der Medienauswahl mit Größe, Anzahl, Auslastung, Pfad und letzter Bereinigung
+- sichere manuelle Leerung ausschließlich eigener VideoBatch-Vorschaudateien
+- pro Cache-Schlüssel arbeitende Erzeugungssperre gegen doppelte parallele FFmpeg-Berechnungen
 
 ## Dauerhafter Thumbnail-Datenträgercache
 
-Vorschaubilder werden unter dem XDG-Benutzercache gespeichert und bei erneutem Öffnen wiederverwendet. Der Cache wächst nicht unbegrenzt: Standardmäßig gelten maximal 256 MiB und 2.000 PNG-Dateien. Bei Überschreitung werden zuerst die am längsten nicht verwendeten Einträge entfernt. Originalmedien und andere Dateitypen werden niemals gelöscht.
+Vorschaubilder werden unter dem XDG-Benutzercache gespeichert und bei erneutem Öffnen wiederverwendet. Der Cache wächst nicht unbegrenzt: Standardmäßig gelten maximal 1 GiB und 2.000 VideoBatch-PNG-Dateien. Bei Überschreitung werden zuerst die am längsten nicht verwendeten Einträge entfernt. Originalmedien, Projektdateien, fremde PNGs und andere Dateitypen werden niemals gelöscht.
 
 Der Cache-Schlüssel berücksichtigt Quellpfad, Änderungszeit, Dateigröße und gewünschte Breite. Eine geänderte Quelldatei erhält deshalb automatisch eine neue Vorschau. Neue Vorschaubilder werden zunächst als Teil-Datei erzeugt und erst nach erfolgreicher Prüfung atomar unter dem endgültigen Namen veröffentlicht.
 
+### Cache-Diagnose und Bedienung
+
+In der Bilder- und Videoauswahl steht der Schalter **„Vorschau-Cache“** bereit. Der Dialog zeigt:
+
+- aktuelle Anzahl der Vorschaubilder
+- belegten Speicher und 1-GiB-Grenze
+- maximale Dateianzahl
+- prozentuale Auslastung
+- letzten Bereinigungslauf
+- vollständigen Cachepfad
+
+Der Schalter **„Vorschau-Cache leeren“** fordert zuerst eine Bestätigung an. Entfernt werden ausschließlich eindeutig benannte VideoBatch-Vorschaubilder und veraltete eigene Teildateien. Aktuell erzeugte oder verwendete Schlüssel werden über eine kurze Sperrprüfung geschützt. Originalmedien, Projekte und fremde Dateien bleiben unangetastet.
+
+### Parallele Vorschauanfragen
+
+Für jeden Cache-Schlüssel existiert eine eigene Erzeugungssperre. Fordern zwei Threads oder Kubuntu-Prozesse gleichzeitig dieselbe Vorschau an, startet FFmpeg nur einmal. Der wartende Aufruf verwendet anschließend das vollständig erzeugte Cachebild. Unterschiedliche Cache-Schlüssel können weiterhin parallel verarbeitet werden. Das vorhandene atomare Speicherprinzip bleibt unverändert bestehen.
+
 ## Fortschritt der aktuellen Folge-Iteration
 
-**Fortschritt:** 100 % für den abgegrenzten Punkt „dauerhafter Thumbnail-Datenträgercache“.
+**Fortschritt:** 100 % für den abgegrenzten Funktionspatch „Cache-Diagnose, 1 GiB und Schlüssel-Sperre“.
 
-**Erledigt:** persistente Wiederverwendung, Größen- und Dateigrenze, LRU-Bereinigung, Quelländerungs-Erkennung, atomare Speicherung, Fehlerbereinigung, Schutz des aktiven Eintrags, fokussierte Regressionstests und `FAIL_MEMORY_PASS.md`.
+**Erledigt:** Cachegrenze auf 1 GiB erhöht, Statusfunktion ergänzt, Bedienoberfläche in die Medienauswahl integriert, sichere Leerung ergänzt, fremde PNGs zusätzlich geschützt, letzter Bereinigungslauf protokolliert, parallele identische FFmpeg-Erzeugung serialisiert und fokussierte Regressionstests erweitert.
 
 **Offen:** Stable-Gates bleiben unverändert offen; keine physische KDE-Abnahme und kein Langzeitrender wurden in dieser Iteration durchgeführt.
 
@@ -63,10 +83,11 @@ Originaldateien und bestätigte Projektzustände bleiben bei Fehlern unveränder
 
 1. Audios und Medien auswählen.
 2. Auswahlstatistik im Header kontrollieren.
-3. Modus und Einstellungen wählen oder die Automatik verwenden.
-4. Produktion starten.
-5. Fehlende Angaben werden automatisch ergänzt oder mit direkten Lösungsaktionen abgefragt.
-6. Bei Unsicherheit zuerst `PROJEKTORDNERSTRUKTUR.md` öffnen und die Schritt-für-Schritt-Anleitung nutzen.
+3. Bei Bildern und Videos optional **„Vorschau-Cache“** öffnen und Status prüfen.
+4. Modus und Einstellungen wählen oder die Automatik verwenden.
+5. Produktion starten.
+6. Fehlende Angaben werden automatisch ergänzt oder mit direkten Lösungsaktionen abgefragt.
+7. Bei Unsicherheit zuerst `PROJEKTORDNERSTRUKTUR.md` öffnen und die Schritt-für-Schritt-Anleitung nutzen.
 
 ## Laienfreundliche Projektübersicht
 
