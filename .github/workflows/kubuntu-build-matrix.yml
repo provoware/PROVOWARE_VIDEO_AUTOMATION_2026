@@ -46,21 +46,15 @@ jobs:
       PYTHONDONTWRITEBYTECODE: '1'
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out selected revision
+        uses: actions/checkout@v4
 
-      - name: Install KDE/Tk/media test dependencies
-        run: |
-          set -Eeuo pipefail
-          sudo env DEBIAN_FRONTEND=noninteractive \
-            timeout --signal=TERM --kill-after=30s 5m \
-            apt-get -o Acquire::Retries=5 update
-          sudo env DEBIAN_FRONTEND=noninteractive \
-            timeout --signal=TERM --kill-after=30s 12m \
-            apt-get -o Acquire::Retries=5 -o Dpkg::Use-Pty=0 install -y \
-            python3 python3-tk python3-pip ffmpeg xvfb weston \
-            dbus-x11 plasma-workspace
-          timeout --signal=TERM --kill-after=30s 8m \
-            python3 -m pip install --user --requirement requirements-toolchain.lock
+      - name: Prepare cached Kubuntu dependencies
+        uses: ./.github/actions/kubuntu-package-cache
+        with:
+          os: ${{ matrix.os }}
+          session: ${{ matrix.session }}
+          mode: matrix
 
       - name: Start deterministic display
         run: |
@@ -144,8 +138,6 @@ jobs:
           )
           PY
 
-          cat FFMPEG_TOOLCHAIN.json
-
       - name: Run complete compatibility contract
         run: bash scripts/kubuntu_matrix_smoke.sh
 
@@ -160,36 +152,10 @@ jobs:
           mkdir -p matrix-logs
           test ! -f /tmp/xvfb.log || cp /tmp/xvfb.log matrix-logs/xvfb.log
           test ! -f /tmp/weston.log || cp /tmp/weston.log matrix-logs/weston.log
-          python3 - <<'PY'
-          import json
-          import os
-          from pathlib import Path
-
-          toolchain = {}
-          try:
-              toolchain = json.loads(
-                  Path("FFMPEG_TOOLCHAIN.json").read_text(encoding="utf-8")
-              )
-          except (OSError, json.JSONDecodeError):
-              pass
-
-          result = {
-              "schema_version": 2,
-              "os": os.environ["MATRIX_OS"],
-              "session": os.environ["MATRIX_SESSION"],
-              "status": os.environ["MATRIX_STATUS"],
-              "run_id": os.environ["GITHUB_RUN_ID"],
-              "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
-              "commit": os.environ["GITHUB_SHA"],
-              "workflow": os.environ["GITHUB_WORKFLOW"],
-              "media_toolchain": toolchain,
-          }
-          name = f"matrix-status-{result['os']}-{result['session']}.json"
-          Path(name).write_text(
-              json.dumps(result, indent=2, ensure_ascii=False) + "\n",
-              encoding="utf-8",
-          )
-          PY
+          python3 scripts/write_kubuntu_matrix_status.py \
+            --os "$MATRIX_OS" \
+            --session "$MATRIX_SESSION" \
+            --status "$MATRIX_STATUS"
 
       - name: Upload matrix evidence
         if: always()
@@ -200,6 +166,7 @@ jobs:
             dist-matrix-a/*
             KUBUNTU_BUILD_MATRIX.json
             FFMPEG_TOOLCHAIN.json
+            CI_PACKAGE_METRICS.json
             matrix-status-${{ matrix.os }}-${{ matrix.session }}.json
             matrix-logs/*
           if-no-files-found: warn
@@ -222,7 +189,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out reporting scripts
+        uses: actions/checkout@v4
 
       - name: Validate report issue target
         env:
@@ -251,150 +219,10 @@ jobs:
           MATRIX_JOB_RESULT: ${{ needs.matrix.result }}
         run: |
           set -Eeuo pipefail
-          python3 - <<'PY'
-          import json
-          import os
-          from pathlib import Path
-
-          expected = [
-              ("ubuntu-22.04", "x11"),
-              ("ubuntu-22.04", "wayland"),
-              ("ubuntu-24.04", "x11"),
-              ("ubuntu-24.04", "wayland"),
-          ]
-
-          version = "unknown"
-          try:
-              version_data = json.loads(
-                  Path("VERSION.json").read_text(encoding="utf-8")
-              )
-              version = str(
-                  version_data.get("version")
-                  or version_data.get("build")
-                  or "unknown"
-              )
-          except (OSError, json.JSONDecodeError, TypeError):
-              pass
-
-          records = {}
-          for path in Path("matrix-status").glob("matrix-status-*.json"):
-              try:
-                  record = json.loads(path.read_text(encoding="utf-8"))
-              except (OSError, json.JSONDecodeError):
-                  continue
-              records[(record.get("os"), record.get("session"))] = record
-
-          rows = []
-          for os_name, session in expected:
-              record = records.get((os_name, session), {})
-              status = record.get("status", "missing")
-              symbol = "✅" if status == "success" else "❌"
-              rows.append(
-                  {
-                      "os": os_name,
-                      "session": session,
-                      "status": status,
-                      "symbol": symbol,
-                      "media_toolchain": record.get("media_toolchain", {}),
-                  }
-              )
-
-          all_success = all(row["status"] == "success" for row in rows)
-          run_url = (
-              f"https://github.com/{os.environ['GITHUB_REPOSITORY']}"
-              f"/actions/runs/{os.environ['GITHUB_RUN_ID']}"
-          )
-          summary = {
-              "schema_version": 3,
-              "version": version,
-              "status": "passed" if all_success else "failed",
-              "report_issue": int(os.environ["REPORT_ISSUE"]),
-              "matrix_job_result": os.environ.get(
-                  "MATRIX_JOB_RESULT", "unknown"
-              ),
-              "run_id": os.environ["GITHUB_RUN_ID"],
-              "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
-              "run_url": run_url,
-              "commit": os.environ["GITHUB_SHA"],
-              "results": [
-                  {
-                      "os": row["os"],
-                      "session": row["session"],
-                      "status": row["status"],
-                      "media_toolchain": row["media_toolchain"],
-                  }
-                  for row in rows
-              ],
-          }
-          Path("KUBUNTU_MATRIX_SUMMARY.json").write_text(
-              json.dumps(summary, indent=2, ensure_ascii=False) + "\n",
-              encoding="utf-8",
-          )
-
-          lines = [
-              f"## Kubuntu-Kompatibilitätsmatrix {version}",
-              "",
-              f"Workflow-Lauf: [{os.environ['GITHUB_RUN_ID']}]({run_url})",
-              f"Commit: `{os.environ['GITHUB_SHA']}`",
-              "",
-              "| System | Sitzung | Ergebnis | FFmpeg-Paket |",
-              "|---|---|---|---|",
-          ]
-          for row in rows:
-              package = (
-                  row["media_toolchain"].get("package", {}).get(
-                      "version", "nicht ermittelt"
-                  )
-              )
-              lines.append(
-                  f"| {row['os']} | {row['session']} | "
-                  f"{row['symbol']} `{row['status']}` | `{package}` |"
-              )
-
-          lines.extend(["", "### Medienwerkzeug-Nachweise", ""])
-          for row in rows:
-              toolchain = row["media_toolchain"]
-              ffmpeg = toolchain.get("ffmpeg", {})
-              ffprobe = toolchain.get("ffprobe", {})
-              lines.extend(
-                  [
-                      f"**{row['os']} / {row['session']}**",
-                      "",
-                      f"- FFmpeg: `{ffmpeg.get('version', 'nicht ermittelt')}`",
-                      f"- FFmpeg-Pfad: `{ffmpeg.get('path', 'nicht ermittelt')}`",
-                      f"- FFmpeg-SHA-256: `{ffmpeg.get('sha256', 'nicht ermittelt')}`",
-                      f"- ffprobe: `{ffprobe.get('version', 'nicht ermittelt')}`",
-                      f"- ffprobe-Pfad: `{ffprobe.get('path', 'nicht ermittelt')}`",
-                      f"- ffprobe-SHA-256: `{ffprobe.get('sha256', 'nicht ermittelt')}`",
-                      "",
-                  ]
-              )
-
-          lines.extend(
-              [
-                  (
-                      "**Gesamtergebnis: bestanden.**"
-                      if all_success
-                      else "**Gesamtergebnis: nicht vollständig bestanden.**"
-                  ),
-                  "",
-                  "Die vollständigen Nachweise liegen 30 Tage als "
-                  "Workflow-Artefakte vor.",
-              ]
-          )
-          Path("KUBUNTU_MATRIX_SUMMARY.md").write_text(
-              "\n".join(lines) + "\n",
-              encoding="utf-8",
-          )
-
-          with Path(os.environ["GITHUB_OUTPUT"]).open(
-              "a", encoding="utf-8"
-          ) as output:
-              output.write(
-                  f"all_success={'true' if all_success else 'false'}\n"
-              )
-              output.write(f"version={version}\n")
-          PY
+          python3 scripts/build_kubuntu_matrix_report.py \
+            --status-dir matrix-status \
+            --report-issue "$REPORT_ISSUE" \
+            --matrix-job-result "$MATRIX_JOB_RESULT"
 
       - name: Upload consolidated matrix report
         uses: actions/upload-artifact@v4
