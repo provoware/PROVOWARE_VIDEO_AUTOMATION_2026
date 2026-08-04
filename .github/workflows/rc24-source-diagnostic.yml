@@ -1,0 +1,58 @@
+name: RC24 Source Diagnostic
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'RC24_PR_TRIGGER.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      ARCHIVE: /tmp/VideoBatch_Fast_2.8.3-rc24.zip
+      SOURCE_URL: https://filebin.net/provoware-videobatch-rc24-20260804-9f7c2a/VideoBatch_Fast_2.8.3-rc24.zip
+      ARCHIVE_SHA256: c54c19141f4d08fbb19f6f38e40ce06c589a86725b988864ad8e22f28ad7501a
+    steps:
+      - name: Download RC24 archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --retry-all-errors \
+            --connect-timeout 20 --max-time 300 \
+            "$SOURCE_URL" -o "$ARCHIVE"
+
+      - name: Verify archive SHA-256
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "$ARCHIVE_SHA256  $ARCHIVE" | sha256sum --check --strict
+
+      - name: Verify ZIP structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -t "$ARCHIVE"
+
+      - name: Verify RC24 metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/rc24-diagnostic
+          mkdir -p /tmp/rc24-diagnostic
+          unzip -q "$ARCHIVE" -d /tmp/rc24-diagnostic
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path('/tmp/rc24-diagnostic/VideoBatch_Fast_2.8.3-rc24')
+          version = json.loads((root / 'VERSION.json').read_text(encoding='utf-8'))
+          manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
+          assert version.get('version') == '2.8.3-rc24', version
+          assert manifest.get('version') == '2.8.3-rc24', manifest
+          print('RC24 metadata validated')
+          PY
