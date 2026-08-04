@@ -18,6 +18,8 @@ class UiLayoutProfilesMixin:
         except Exception:
             return
         self.config["active_tab"] = selected
+        if not getattr(self, "_main_tab_restore_in_progress", False) and hasattr(self, "_save_settings"):
+            self._save_settings()
 
     def _workspace_layout_context(self) -> tuple[int, int, int]:
         self.root.update_idletasks()

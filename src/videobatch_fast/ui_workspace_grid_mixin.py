@@ -51,11 +51,14 @@ class UiWorkspaceGridMixin:
         self._build_help_page(pages[5])
         self._build_status_bar(shell)
 
+        self._main_tab_restore_in_progress = True
         try:
             selected = min(self.main_notebook.index("end") - 1, max(0, int(self.config.get("active_tab", 0))))
             self.main_notebook.select(selected)
         except Exception:
             pass
+        finally:
+            self._main_tab_restore_in_progress = False
 
     def _scrollable_dashboard_body(self, page) -> ScrollableWorkflowGrid:
         """Create the dynamic two-column body used by every main workflow tab."""
