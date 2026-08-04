@@ -184,6 +184,7 @@ class HelpCenterDialog:
         notebook.pack(fill=BOTH, expand=True)
         notebook.add(self._text_tab(notebook, text("help_center.quick_title"), text("help_center.quick_body")), text=text("help_center.quick_tab"))
         notebook.add(self._text_tab(notebook, text("help_center.status_title"), text("help_center.status_body")), text=text("help_center.status_tab"))
+        notebook.add(self._text_tab(notebook, text("help_center.solve_title"), text("help_center.solve_body")), text=text("help_center.solve_tab"))
         notebook.add(self._text_tab(notebook, text("help_center.errors_title"), text("help_center.errors_body")), text=text("help_center.errors_tab"))
 
         status_box = ttk.LabelFrame(outer, text=text("help_center.system_title"), padding=8)
@@ -194,6 +195,8 @@ class HelpCenterDialog:
         buttons = ttk.Frame(outer)
         buttons.pack(fill=X, pady=(10, 0))
         ttk.Button(buttons, text=text("help_center.refresh"), command=self._refresh).pack(side=LEFT)
+        self.copy_label = StringVar(value=text("help_center.copy_status"))
+        ttk.Button(buttons, textvariable=self.copy_label, command=self._copy_status).pack(side=LEFT, padx=(6, 0))
         ttk.Button(buttons, text=text("help_center.logs"), command=on_open_logs).pack(side=LEFT, padx=(6, 0))
         ttk.Button(buttons, text=text("help_center.manual"), command=on_open_manual).pack(side=LEFT, padx=(6, 0))
         if on_run_fault_lab is not None:
@@ -210,3 +213,9 @@ class HelpCenterDialog:
 
     def _refresh(self) -> None:
         self.status_value.set(self.on_refresh())
+        self.copy_label.set(text("help_center.copy_status"))
+
+    def _copy_status(self) -> None:
+        self.window.clipboard_clear()
+        self.window.clipboard_append(self.status_value.get())
+        self.copy_label.set(text("help_center.status_copied"))
