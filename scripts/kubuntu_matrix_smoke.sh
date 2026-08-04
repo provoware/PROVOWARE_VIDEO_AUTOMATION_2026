@@ -8,7 +8,7 @@ python3 -m pytest -q
 bash "$ROOT/videobatch.sh" fault-lab
 python3 "$ROOT/scripts/validate_version_contract.py"
 python3 "$ROOT/scripts/validate_text_resources.py"
-ffmpeg -hide_banner -loglevel error -f lavfi -i sine=frequency=880:duration=.2 -c:a aac -f null -
+ffmpeg -hide_banner -loglevel error -f lavfi -i sine=frequency=880:duration=0.2 -c:a aac -f null -
 MEDIA_ARGS=()
 if [[ -n "${VIDEOBATCH_STATIC_MEDIA_DIR:-}" ]]; then MEDIA_ARGS=(--static-media-dir "$VIDEOBATCH_STATIC_MEDIA_DIR"); fi
 python3 "$ROOT/scripts/build_portable_bundle.py" --output-dir "$ROOT/dist-matrix-a" "${MEDIA_ARGS[@]}"
