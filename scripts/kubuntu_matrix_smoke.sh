@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
+export PYTHONPATH="$ROOT/src" PYTHONDONTWRITEBYTECODE=1
+python3 -m pytest -q
+"$ROOT/FEHLERLABOR.sh"
+python3 "$ROOT/scripts/check_version_consistency.py"
+python3 "$ROOT/scripts/check_text_resources.py"
+ffmpeg -hide_banner -loglevel error -f lavfi -i sine=frequency=880:duration=.2 -c:a aac -f null -
+MEDIA_ARGS=()
+if [[ -n "${VIDEOBATCH_STATIC_MEDIA_DIR:-}" ]]; then MEDIA_ARGS=(--static-media-dir "$VIDEOBATCH_STATIC_MEDIA_DIR"); fi
+python3 "$ROOT/scripts/build_portable_bundle.py" --output-dir "$ROOT/dist-matrix-a" "${MEDIA_ARGS[@]}"
+python3 "$ROOT/scripts/build_portable_bundle.py" --output-dir "$ROOT/dist-matrix-b" "${MEDIA_ARGS[@]}"
+cmp "$ROOT/dist-matrix-a/VideoBatch_Fast_2.8.3-rc14-portable.run" "$ROOT/dist-matrix-b/VideoBatch_Fast_2.8.3-rc14-portable.run"
+"$ROOT/dist-matrix-a/VideoBatch_Fast_2.8.3-rc14.AppDir/AppRun" --portable-verify
+"$ROOT/dist-matrix-a/VideoBatch_Fast_2.8.3-rc14.AppDir/AppRun" --portable-smoke-test

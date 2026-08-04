@@ -1,0 +1,43 @@
+{
+  "schema_version": 4,
+  "name": "Toxic Candy",
+  "label": "Toxic Candy",
+  "colors": {
+    "background_main": "#071A19",
+    "background_surface": "#0D2927",
+    "background_elevated": "#173B37",
+    "background_preview": "#020807",
+    "background_toolbar": "#0B2220",
+    "text_primary": "#F7FFF7",
+    "text_secondary": "#D7F6E9",
+    "text_muted": "#AED4C7",
+    "border_default": "#36BFA6",
+    "border_subtle": "#256B60",
+    "border_focus": "#F6FF4B",
+    "action_primary": "#F6FF4B",
+    "action_primary_text": "#111700",
+    "action_secondary": "#21514B",
+    "status_success": "#5CFF85",
+    "status_information": "#48E5FF",
+    "status_active": "#FF6BD6",
+    "status_warning": "#FFD166",
+    "status_attention": "#FF9F43",
+    "status_error": "#FF6685",
+    "state_selected": "#276C64",
+    "state_hover": "#1D504A",
+    "state_disabled": "#6D8B84",
+    "tile_gold": "#D9E630",
+    "tile_magenta": "#D83AA6",
+    "tile_green": "#32B567",
+    "tile_blue": "#2DA8C7"
+  },
+  "metrics": {
+    "base_font": 12,
+    "title_font": 27,
+    "section_font": 16,
+    "row_height": 37,
+    "button_padding_x": 12,
+    "button_padding_y": 8,
+    "card_padding": 9
+  }
+}

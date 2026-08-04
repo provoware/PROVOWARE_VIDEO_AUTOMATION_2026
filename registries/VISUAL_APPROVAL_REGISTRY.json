@@ -1,0 +1,47 @@
+{
+  "schema_version": 2,
+  "id": "visual-desktop-approval-contract",
+  "version": "2.8.3-rc24",
+  "algorithm": "ed25519",
+  "storage": {
+    "manifest": "VISUAL_INSPECTION_MANIFEST.json",
+    "private_key_scope": "user_state_only",
+    "private_key_mode": "0600",
+    "private_key_must_not_be_packaged": true,
+    "encrypted_archive_format": "provoware-key-archive",
+    "encrypted_archive_cipher": "AES-256-GCM",
+    "encrypted_archive_kdf": "scrypt"
+  },
+  "required_payload_fields": [
+    "build_id",
+    "reviewer",
+    "approved_at",
+    "approval_basis",
+    "visual_contract_sha256",
+    "baseline_bundle_sha256",
+    "visual_report_contract_sha256",
+    "scenario_count",
+    "passed_count"
+  ],
+  "volatile_fields_excluded": [
+    "generated_at",
+    "absolute_paths",
+    "actual_screenshot_paths",
+    "difference_paths",
+    "mean_difference",
+    "dhash_distance",
+    "runtime_messages"
+  ],
+  "rules": {
+    "all_visual_scenarios_must_pass": true,
+    "contract_errors_must_be_zero": true,
+    "signature_invalidates_on_visual_contract_change": true,
+    "signature_invalidates_on_baseline_change": true,
+    "signature_invalidates_on_normalized_report_change": true,
+    "volatile_measurements_do_not_invalidate": true,
+    "html_must_show_approval_status": true,
+    "private_key_not_packaged": true,
+    "private_key_backup_must_be_encrypted": true,
+    "stable_update_must_bind_approval_hash": true
+  }
+}

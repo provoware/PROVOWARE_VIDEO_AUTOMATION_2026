@@ -1,0 +1,208 @@
+{
+  "schema_version": 1,
+  "source": "resources/reference/laienmodus_einfach_reference.png",
+  "dimensions": {
+    "width": 810,
+    "height": 701
+  },
+  "dominant_colors": [
+    {
+      "hex": "#161c19",
+      "rgb": [
+        22,
+        28,
+        25
+      ],
+      "weight": 2505
+    },
+    {
+      "hex": "#272614",
+      "rgb": [
+        39,
+        38,
+        20
+      ],
+      "weight": 2405
+    },
+    {
+      "hex": "#151b19",
+      "rgb": [
+        21,
+        27,
+        25
+      ],
+      "weight": 2282
+    },
+    {
+      "hex": "#191a12",
+      "rgb": [
+        25,
+        26,
+        18
+      ],
+      "weight": 2190
+    },
+    {
+      "hex": "#233634",
+      "rgb": [
+        35,
+        54,
+        52
+      ],
+      "weight": 2132
+    },
+    {
+      "hex": "#0d0f0a",
+      "rgb": [
+        13,
+        15,
+        10
+      ],
+      "weight": 2083
+    },
+    {
+      "hex": "#464f3c",
+      "rgb": [
+        70,
+        79,
+        60
+      ],
+      "weight": 2062
+    },
+    {
+      "hex": "#141812",
+      "rgb": [
+        20,
+        24,
+        18
+      ],
+      "weight": 1909
+    },
+    {
+      "hex": "#423820",
+      "rgb": [
+        66,
+        56,
+        32
+      ],
+      "weight": 1864
+    },
+    {
+      "hex": "#808779",
+      "rgb": [
+        128,
+        135,
+        121
+      ],
+      "weight": 1793
+    },
+    {
+      "hex": "#0d1411",
+      "rgb": [
+        13,
+        20,
+        17
+      ],
+      "weight": 1629
+    },
+    {
+      "hex": "#0d100b",
+      "rgb": [
+        13,
+        16,
+        11
+      ],
+      "weight": 1600
+    },
+    {
+      "hex": "#0b0d09",
+      "rgb": [
+        11,
+        13,
+        9
+      ],
+      "weight": 1299
+    },
+    {
+      "hex": "#202115",
+      "rgb": [
+        32,
+        33,
+        21
+      ],
+      "weight": 1219
+    },
+    {
+      "hex": "#161f1f",
+      "rgb": [
+        22,
+        31,
+        31
+      ],
+      "weight": 1094
+    },
+    {
+      "hex": "#121815",
+      "rgb": [
+        18,
+        24,
+        21
+      ],
+      "weight": 967
+    },
+    {
+      "hex": "#3c2626",
+      "rgb": [
+        60,
+        38,
+        38
+      ],
+      "weight": 921
+    },
+    {
+      "hex": "#11130d",
+      "rgb": [
+        17,
+        19,
+        13
+      ],
+      "weight": 902
+    },
+    {
+      "hex": "#040403",
+      "rgb": [
+        4,
+        4,
+        3
+      ],
+      "weight": 715
+    },
+    {
+      "hex": "#161a14",
+      "rgb": [
+        22,
+        26,
+        20
+      ],
+      "weight": 429
+    }
+  ],
+  "requirements": {
+    "background": "sehr dunkel, leicht oliv-grün",
+    "frames": "warm-goldene Kontur",
+    "primary_tiles": [
+      "gold",
+      "magenta",
+      "grün",
+      "blau"
+    ],
+    "hierarchy": [
+      "Titel",
+      "Begrüßung",
+      "Hauptkacheln",
+      "Assistent/Tipps",
+      "Schnellaktionen"
+    ],
+    "interaction": "große Buttons, klare Hilfetexte, laienoptimierte Assistentenlogik"
+  }
+}

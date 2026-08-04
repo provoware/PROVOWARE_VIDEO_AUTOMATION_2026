@@ -1,0 +1,393 @@
+{
+  "schema_version": 8,
+  "functions": [
+    {
+      "id": "media.sort",
+      "label": "Dateien sortieren",
+      "module": "media_library",
+      "validation": "sort_key_registered",
+      "tests": [
+        "test_media_library"
+      ]
+    },
+    {
+      "id": "media.preview",
+      "label": "Große Medienvorschau",
+      "module": "preview_service",
+      "validation": "source_exists",
+      "tests": [
+        "test_preview_service"
+      ]
+    },
+    {
+      "id": "audio.playlist",
+      "label": "Audio vorhören und Playlist",
+      "module": "playlist",
+      "validation": "audio_supported",
+      "tests": [
+        "test_playlist"
+      ]
+    },
+    {
+      "id": "batch.render",
+      "label": "Videos erstellen",
+      "module": "runner",
+      "validation": "validate_pairs",
+      "tests": [
+        "test_core",
+        "test_real_ffmpeg"
+      ]
+    },
+    {
+      "id": "files.archive",
+      "label": "Verwendete Dateien sicher verschieben",
+      "module": "archive_service",
+      "validation": "archive_plan_valid",
+      "tests": [
+        "test_archive_service"
+      ]
+    },
+    {
+      "id": "plugins.validate",
+      "label": "Plugins prüfen",
+      "module": "plugins",
+      "validation": "plugin_manifest_valid",
+      "tests": [
+        "test_plugins"
+      ]
+    },
+    {
+      "id": "updates.validate",
+      "label": "Updates prüfen",
+      "module": "updates",
+      "validation": "update_manifest_valid",
+      "tests": [
+        "test_updates"
+      ]
+    },
+    {
+      "id": "assurance.run",
+      "label": "Anwendungsfälle simulieren",
+      "module": "assurance",
+      "validation": "scenario_registry_valid",
+      "tests": [
+        "test_assurance"
+      ]
+    },
+    {
+      "id": "project.persist",
+      "label": "Projektzustand speichern und wiederherstellen",
+      "module": "project_state",
+      "validation": "project_schema_valid",
+      "tests": [
+        "test_project_and_plugin_2_4"
+      ]
+    },
+    {
+      "id": "plugins.verify_signature",
+      "label": "Plugin-Signatur prüfen",
+      "module": "plugin_signing",
+      "validation": "ed25519_signature_valid",
+      "tests": [
+        "test_visual_and_plugin_signing_2_5"
+      ]
+    },
+    {
+      "id": "plugins.quarantine",
+      "label": "Manipuliertes Plugin isolieren",
+      "module": "plugin_signing",
+      "validation": "quarantine_target_safe",
+      "tests": [
+        "test_visual_and_plugin_signing_2_5"
+      ]
+    },
+    {
+      "id": "ui.visual_regression",
+      "label": "Oberfläche gegen Referenz prüfen",
+      "module": "visual_regression",
+      "validation": "baseline_and_layout_contract",
+      "tests": [
+        "test_visual_and_plugin_signing_2_5",
+        "capture_visual_scenarios"
+      ]
+    },
+    {
+      "id": "ui.month_calendar",
+      "label": "Monatskalender mit Tagesmarkierungen",
+      "module": "ui_dashboard_project_mixin",
+      "validation": "calendar_state_valid",
+      "tests": [
+        "capture_visual_scenarios"
+      ]
+    },
+    {
+      "id": "calendar.note",
+      "label": "Kalendertag mit Notiz, Typ und Farbe",
+      "module": "project_state",
+      "validation": "calendar_note_schema_valid",
+      "tests": [
+        "test_calendar_permissions_visual_2_6"
+      ]
+    },
+    {
+      "id": "plugins.permissions",
+      "label": "Plugin-Berechtigungen vor Freigabe anzeigen",
+      "module": "plugin_permissions",
+      "validation": "permission_profile_complete",
+      "tests": [
+        "test_calendar_permissions_visual_2_6"
+      ]
+    },
+    {
+      "id": "ui.workspace_visual_regression",
+      "label": "Arbeitsbereich visuell absichern",
+      "module": "visual_regression",
+      "validation": "workspace_baselines_complete",
+      "tests": [
+        "test_calendar_permissions_visual_2_6",
+        "capture_visual_scenarios"
+      ]
+    },
+    {
+      "id": "plugins.approval_store",
+      "label": "Plugin-Freigaben versioniert speichern, prüfen und widerrufen",
+      "module": "plugin_approvals",
+      "validation": "approval_identity_unchanged",
+      "tests": [
+        "test_plugin_approvals_calendar_visual_2_7"
+      ]
+    },
+    {
+      "id": "calendar.task_overview",
+      "label": "Kalendereinträge als filterbare Aufgabenübersicht anzeigen",
+      "module": "calendar_tasks",
+      "validation": "calendar_task_filter_valid",
+      "tests": [
+        "test_plugin_approvals_calendar_visual_2_7"
+      ]
+    },
+    {
+      "id": "ui.dialog_visual_regression",
+      "label": "Update, Dateiablage, Pluginfreigabe und Recovery visuell absichern",
+      "module": "workflow_dialogs",
+      "validation": "dialog_baselines_complete",
+      "tests": [
+        "test_plugin_approvals_calendar_visual_2_7",
+        "capture_visual_scenarios"
+      ]
+    },
+    {
+      "id": "ui.visual_inspection_html",
+      "label": "Verknüpfte Offline-HTML-Prüfoberfläche und Manifest erzeugen",
+      "module": "visual_inspection",
+      "validation": "html_manifest_links_valid",
+      "tests": [
+        "test_plugin_approvals_calendar_visual_2_7",
+        "build_visual_inspection"
+      ]
+    },
+    {
+      "id": "plugins.approvals.manage",
+      "label": "Plugin-Freigaben suchen, filtern und widerrufen",
+      "module": "plugin_approval_manager",
+      "validation": "approval_table_synchronized",
+      "tests": [
+        "test_release_2_8"
+      ]
+    },
+    {
+      "id": "quality.visual_approval.sign",
+      "label": "Manuelle visuelle Desktop-Abnahme kryptografisch signieren",
+      "module": "visual_approval",
+      "validation": "visual_manifest_and_baselines_unchanged",
+      "tests": [
+        "test_release_2_8"
+      ]
+    },
+    {
+      "id": "quality.visual_approval.verify",
+      "label": "Signierte visuelle Desktop-Abnahme prüfen",
+      "module": "visual_approval",
+      "validation": "ed25519_approval_signature_valid",
+      "tests": [
+        "test_release_2_8",
+        "check_visual_approval"
+      ]
+    },
+    {
+      "id": "diagnostics.report.create",
+      "label": "Privaten strukturierten Diagnosebericht erzeugen",
+      "module": "diagnostics_service",
+      "validation": "diagnostic_payload_private_and_complete",
+      "tests": [
+        "test_release_2_8"
+      ]
+    },
+    {
+      "id": "workspace.grid.layout",
+      "label": "Mittigen flexiblen 2×2-Arbeitsbereich bereitstellen",
+      "module": "ui_workspace_grid_mixin",
+      "validation": "workspace_grid_visual_contract",
+      "tests": [
+        "test_release_2_8",
+        "capture_visual_scenarios"
+      ]
+    },
+    {
+      "id": "logging.dual_language",
+      "label": "Ereignisse in Menschen- und Maschinensprache protokollieren",
+      "module": "ui_debug_footer_mixin",
+      "validation": "human_and_jsonl_event_consistency",
+      "tests": [
+        "test_release_2_8"
+      ]
+    },
+    {
+      "id": "quality.visual_contract_normalize",
+      "label": "Volatile visuelle Messwerte vom Freigabevertrag trennen",
+      "module": "visual_approval",
+      "validation": "deterministic_contract_hash",
+      "tests": [
+        "test_stable_release_2_8"
+      ]
+    },
+    {
+      "id": "security.visual_key_archive",
+      "label": "Visuellen Freigabeschlüssel verschlüsselt archivieren",
+      "module": "key_archive",
+      "validation": "encrypted_keypair_roundtrip",
+      "tests": [
+        "test_stable_release_2_8"
+      ]
+    },
+    {
+      "id": "updates.stable_visual_binding",
+      "label": "Stable-Update an visuellen Abnahmehash binden",
+      "module": "updates",
+      "validation": "stable_visual_approval_binding",
+      "tests": [
+        "test_stable_release_2_8"
+      ]
+    },
+    {
+      "id": "workspace.layout_profiles",
+      "label": "Rasterzustände je Anzeigeprofil speichern",
+      "module": "layout_profiles",
+      "validation": "workspace_layout_contract_valid",
+      "tests": [
+        "test_workspace_layout_profiles_2_8_1"
+      ]
+    },
+    {
+      "id": "project.offline_paths_preserve",
+      "label": "Nicht erreichbare Projektmedien verlustfrei erhalten",
+      "module": "project_state",
+      "validation": "missing_paths_retained",
+      "tests": [
+        "test_hardening_2_8_2"
+      ]
+    },
+    {
+      "id": "batch.output_reserve",
+      "label": "Ausgabeziele vor Stapelstart exklusiv reservieren",
+      "module": "naming",
+      "validation": "output_targets_unique_and_reserved",
+      "tests": [
+        "test_hardening_2_8_2"
+      ]
+    },
+    {
+      "id": "files.archive_journal",
+      "label": "Dateiablage transaktional journalisieren und wiederaufnehmen",
+      "module": "archive_service",
+      "validation": "archive_transaction_terminal",
+      "tests": [
+        "test_hardening_2_8_2"
+      ]
+    },
+    {
+      "id": "batch.terminal_guarantee",
+      "label": "Runner-Abschluss und begrenzten Prozessabbruch garantieren",
+      "module": "runner",
+      "validation": "batch_finished_always_emitted",
+      "tests": [
+        "test_hardening_2_8_2"
+      ]
+    },
+    {
+      "id": "plugins.os_isolation",
+      "label": "Validator-Plugins in Linux-Namespace, Chroot und Seccomp ausführen",
+      "module": "plugin_runtime",
+      "validation": "sandbox_layers_active",
+      "tests": [
+        "test_hardening_2_8_2"
+      ]
+    },
+    {
+      "id": "updates.reproducible_verify",
+      "label": "Update-Kandidaten schreibgeschützt und byteidentisch prüfen",
+      "module": "updates",
+      "validation": "candidate_unchanged_after_selftest",
+      "tests": [
+        "test_update_integrity_2_8_2"
+      ]
+    },
+    {
+      "id": "quality.mandatory_pipeline",
+      "label": "Verbindliche Lint-, Typ-, Coverage-, Sicherheits- und Komplexitätsgates",
+      "module": "internal_quality_gate",
+      "validation": "code_quality_contract_passed",
+      "tests": [
+        "test_hardening_2_8_2",
+        "quality.sh"
+      ]
+    },
+    {
+      "id": "release.package_deterministic",
+      "label": "Deterministisches Release-ZIP aus Manifest erzeugen",
+      "module": "package_release",
+      "validation": "zip_matches_release_manifest",
+      "tests": [
+        "verify_release_zip"
+      ]
+    },
+    {
+      "id": "batch.progress_engine",
+      "label": "FFmpeg-Prozessüberwachung als getrennten Dienst ausführen",
+      "module": "runner_process",
+      "validation": "progress_engine_error_paths_covered",
+      "tests": [
+        "test_quality_hardening_2_8_3"
+      ]
+    },
+    {
+      "id": "updates.validation_engine",
+      "label": "Updatehülle, Manifest und visuelle Bindung getrennt prüfen",
+      "module": "update_validation",
+      "validation": "update_validator_complexity_below_30",
+      "tests": [
+        "test_quality_hardening_2_8_3",
+        "test_update_integrity_2_8_2"
+      ]
+    },
+    {
+      "id": "plugins.seccomp_policy",
+      "label": "Seccomp-Regelaufbau getrennt und fehlersicher installieren",
+      "module": "sandbox_seccomp",
+      "validation": "seccomp_error_paths_covered",
+      "tests": [
+        "test_quality_hardening_2_8_3"
+      ]
+    },
+    {
+      "id": "quality.offline_wheelhouse",
+      "label": "Qualitätswerkzeuge hashgeprüft offline installieren",
+      "module": "quality_wheelhouse_common",
+      "validation": "wheelhouse_manifest_complete",
+      "tests": [
+        "verify_quality_wheelhouse",
+        "quality.sh"
+      ]
+    }
+  ]
+}

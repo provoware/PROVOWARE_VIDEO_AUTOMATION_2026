@@ -1,0 +1,42 @@
+{
+  "channel": "release-candidate",
+  "coverage": {
+    "branch_enabled": true,
+    "minimum_percent": 77.0,
+    "total_percent": 78.59
+  },
+  "distribution_policy": "full_project_zip_before_stable; component updates after stable only",
+  "external_gates": {
+    "bandit_1_9_4": "not_run_package_gateway_unavailable",
+    "mypy_2_3_0": "not_run_package_gateway_unavailable",
+    "pip_audit_2_10_1": "not_run_package_gateway_unavailable",
+    "ruff_0_16_1": "not_run_package_gateway_unavailable"
+  },
+  "features": [
+    "drag_drop_storyboard",
+    "capture_date_sort",
+    "deterministic_random_order",
+    "start_end_anchors",
+    "local_audio_waveform",
+    "scene_markers",
+    "scene_synced_slideshow",
+    "uniform_fallback"
+  ],
+  "quality": {
+    "architecture_findings": 0,
+    "internal_findings": 0,
+    "largest_python_file": "src/videobatch_fast/ui.py",
+    "largest_python_lines": 694,
+    "max_complexity": 28
+  },
+  "schema_version": 1,
+  "tests": {
+    "failed": 0,
+    "passed": 245
+  },
+  "version": "2.8.3-rc20",
+  "visuals": {
+    "passed": 16,
+    "total": 16
+  }
+}

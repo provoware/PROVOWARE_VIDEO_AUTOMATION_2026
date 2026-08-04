@@ -1,0 +1,19 @@
+{
+  "version": "2.8.3-rc24",
+  "source_archive_sha256": "c54c19141f4d08fbb19f6f38e40ce06c589a86725b988864ad8e22f28ad7501a",
+  "source_archive_size": 4013380,
+  "source_method": "GitHub issue attachment",
+  "github_actions_validation": "passed",
+  "tests": {
+    "total": 274,
+    "passed": 272,
+    "skipped": 2,
+    "failed": 0
+  },
+  "replacement_mode": "complete repository root replacement",
+  "workflow_cleanup": "completed afterward through GitHub connector",
+  "backup_branch": "backup/pre-direct-rc24-import-20260804",
+  "final_release_tag": "videobatch-fast-2.8.3-rc24",
+  "release_asset": "VideoBatch_Fast_2.8.3-rc24.zip",
+  "workflow_run_id": "30917148852"
+}

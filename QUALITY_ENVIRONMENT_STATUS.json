@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "build": "2.8.3-rc24",
+  "runtime_start": {
+    "status": "passed",
+    "architecture": "content-addressed user environment",
+    "quality_tools_block_start": false,
+    "interactive_questions": false,
+    "ffmpeg_aac_detection": "real smoke test",
+    "ui_ready_handshake": true,
+    "safe_mode_retry": true,
+    "system_python_fallback": "verified imports only",
+    "existing_instance_focus": true
+  },
+  "internal_gates": {
+    "tests": {
+      "passed": 253,
+      "failed": 0
+    },
+    "total_coverage_percent": 79,
+    "branch_measurement": true,
+    "application_simulations": "12/12",
+    "fault_lab": "12/12",
+    "visual_scenarios": "17/17",
+    "isolated_visual_regression": "passed",
+    "architecture_findings": 0,
+    "internal_quality_findings": 0,
+    "maximum_complexity": 29,
+    "release_manifest_files": 367
+  },
+  "external_gates": {
+    "ruff_0_16_1": "not installed in isolated build environment",
+    "mypy_2_3_0": "not installed in isolated build environment",
+    "bandit_1_9_4": "not installed in isolated build environment",
+    "pip_audit_2_10_1": "not installed in isolated build environment",
+    "physical_kde_x11_wayland": "required",
+    "large_media_soak": "required"
+  },
+  "stable_ready": false,
+  "stable_block_reason": "External quality tools, physical KDE session approval and large-media soak remain required."
+}

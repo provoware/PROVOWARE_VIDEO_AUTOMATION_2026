@@ -1,0 +1,55 @@
+{
+  "contract_version": "code-quality-2.8.3-rc11-v2",
+  "dependency_policy": {
+    "exact_versions_required": true,
+    "offline_install_required_for_stable": true,
+    "quality_lock": "requirements-quality.lock",
+    "release_gate_requires_external_tools": true,
+    "runtime_lock": "requirements.lock",
+    "single_environment": ".videobatch-venv",
+    "unified_lock": "requirements-toolchain.lock",
+    "wheelhouse_manifest": "toolchain_wheelhouse/TOOLCHAIN_WHEELHOUSE_MANIFEST.json"
+  },
+  "maintainability_policy": {
+    "background_tasks_require_bounded_shutdown": true,
+    "durable_state_writes_use_safe_io": true,
+    "interrupted_batch_journal_required": true,
+    "single_instance_lock_required": true,
+    "visible_ui_texts_must_be_externalized": true
+  },
+  "python": {
+    "branch_coverage_enabled": true,
+    "branch_coverage_minimum_percent": 65,
+    "branch_coverage_target_percent": 80,
+    "coverage_minimum_percent": 80,
+    "function_complexity_limit": 30,
+    "line_coverage_minimum_percent": 80,
+    "minimum": "3.10",
+    "source_line_limit": 700
+  },
+  "required_gates": [
+    "compileall",
+    "version_consistency",
+    "text_resource_validation",
+    "internal_ast_quality",
+    "ruff",
+    "mypy",
+    "pytest_cov",
+    "pytest_cov_line_and_branch",
+    "bandit",
+    "pip_audit",
+    "registry_validation",
+    "architecture_audit",
+    "application_simulation",
+    "workspace_profile_roundtrip",
+    "isolated_visual_regression",
+    "release_manifest_read_only_validation"
+  ],
+  "schema_version": 1,
+  "security_policy": {
+    "os_system_forbidden": true,
+    "private_keys_in_release_forbidden": true,
+    "shell_true_forbidden": true,
+    "tempfile_mktemp_forbidden": true
+  }
+}

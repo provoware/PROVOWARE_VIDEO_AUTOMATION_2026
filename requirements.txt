@@ -1,0 +1,2 @@
+-r requirements.lock
+# Systemabhängig: Python 3.10+, Tk/Ttk, FFmpeg, FFprobe, optional FFplay und xvfb-run.

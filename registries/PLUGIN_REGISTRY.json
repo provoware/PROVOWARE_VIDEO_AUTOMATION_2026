@@ -1,0 +1,104 @@
+{
+  "schema_version": 4,
+  "api_version": 1,
+  "plugin_directory": "plugins",
+  "allowed_capabilities": [
+    "validator"
+  ],
+  "forbidden_imports": [
+    "subprocess",
+    "socket",
+    "ctypes"
+  ],
+  "auto_enable": false,
+  "require_explicit_confirmation": true,
+  "permission_profiles": {
+    "validator": {
+      "title": "Prüf-Plugin",
+      "purpose": "Prüft übergebene Metadaten und meldet ein Ja/Nein-Ergebnis zurück.",
+      "file_access": [
+        "Nur ausdrücklich übergebene, nicht geheime Metadaten",
+        "Keine freie Ordnersuche",
+        "Keine Änderung an Originaldateien"
+      ],
+      "actions": [
+        "Validierung in einem zeitlich begrenzten Unterprozess",
+        "Strukturierte Antwort an VideoBatch zurückgeben"
+      ],
+      "prohibited": [
+        "Netzwerkzugriff",
+        "Shell- und Prozessaufrufe",
+        "Schreiben oder Löschen von Quelldateien",
+        "Änderung der VideoBatch-Konfiguration"
+      ],
+      "risk_level": "niedrig"
+    },
+    "quick_mode_provider": {
+      "title": "Schnellmodus-Anbieter",
+      "purpose": "Liefert deklarative Preset-Daten für einen zusätzlichen Schnellmodus.",
+      "file_access": [
+        "Nur eigenes Pluginverzeichnis",
+        "Keine Medieninhalte ohne ausdrückliche spätere Freigabe"
+      ],
+      "actions": [
+        "Preset-Beschreibung und sichere Parameter bereitstellen"
+      ],
+      "prohibited": [
+        "Eigenständiger FFmpeg-Start",
+        "Netzwerkzugriff",
+        "Dateien verschieben oder löschen"
+      ],
+      "risk_level": "mittel"
+    },
+    "exporter": {
+      "title": "Export-Plugin",
+      "purpose": "Erzeugt einen vom Nutzer ausdrücklich gewählten Export aus freigegebenen Projektdaten.",
+      "file_access": [
+        "Nur freigegebene Projektdaten",
+        "Nur vom Nutzer gewählter Zielpfad"
+      ],
+      "actions": [
+        "Exportdatei im bestätigten Zielordner erzeugen"
+      ],
+      "prohibited": [
+        "Originaldateien überschreiben",
+        "Netzwerkzugriff",
+        "beliebige Ordner durchsuchen"
+      ],
+      "risk_level": "mittel"
+    }
+  },
+  "approval_registry": "registries/PLUGIN_APPROVAL_REGISTRY.json",
+  "approval_policy": {
+    "store_version": true,
+    "store_payload_sha256": true,
+    "store_key_id": true,
+    "store_capability": true,
+    "store_permission_sha256": true,
+    "store_approved_at": true,
+    "expire_on_change": true,
+    "allow_revoke": true
+  },
+  "implemented_capabilities": [
+    "validator"
+  ],
+  "disabled_capabilities": {
+    "quick_mode_provider": "Noch nicht als deklarativer, sicherer Vertrag implementiert.",
+    "exporter": "Noch nicht mit zielgebundener Dateifreigabe implementiert."
+  },
+  "sandbox": {
+    "required": true,
+    "platform": "linux",
+    "layers": [
+      "user_namespace",
+      "network_namespace",
+      "pid_namespace",
+      "landlock",
+      "seccomp",
+      "resource_limits",
+      "restricted_builtins"
+    ],
+    "fail_closed": true,
+    "insecure_fallback": false
+  }
+}

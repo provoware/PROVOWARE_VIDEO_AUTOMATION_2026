@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "version": "2.8.3-rc23",
+  "channel": "rc",
+  "development_complete": true,
+  "stable_ready": false,
+  "tests": {
+    "passed": 268,
+    "failed": 0
+  },
+  "coverage": {
+    "lines_percent": 82.83,
+    "branches_percent": 66.37,
+    "combined_percent": 79.56,
+    "line_gate": 80.0,
+    "branch_gate": 65.0
+  },
+  "assurance": {
+    "passed": 12,
+    "total": 12
+  },
+  "fault_lab": {
+    "passed": 12,
+    "total": 12
+  },
+  "visual": {
+    "passed": 18,
+    "total": 18,
+    "isolated_verification": true,
+    "physical_desktop_approval": false
+  },
+  "large_icon_folder_test": {
+    "records": 20000,
+    "thumbnail_requests_below": 100,
+    "passed": true
+  },
+  "architecture": {
+    "modules": 85,
+    "functions": 799,
+    "classes": 92,
+    "findings": 0
+  },
+  "internal_quality": {
+    "findings": 0,
+    "maximum_complexity": 29,
+    "largest_python_file_lines": 686
+  },
+  "external_quality": {
+    "ruff_0.16.1": "blocked_not_installed",
+    "mypy_2.3.0": "blocked_not_installed",
+    "bandit_1.9.4": "blocked_not_installed",
+    "pip_audit_2.10.1": "blocked_not_installed"
+  },
+  "stable_blockers": [
+    "ruff_0.16.1",
+    "mypy_2.3.0",
+    "bandit_1.9.4",
+    "pip-audit_2.10.1",
+    "physical_kde_x11_wayland",
+    "large_media_long_render"
+  ],
+  "release_manifest": {
+    "file_count": 385,
+    "validated": true
+  }
+}

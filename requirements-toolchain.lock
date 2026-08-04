@@ -1,0 +1,14 @@
+# Einheitlicher, exakt gesperrter VideoBatch-Vertrag.
+# Laufzeit
+cffi==2.0.0
+cryptography==46.0.4
+Pillow==12.2.0
+pycparser==3.0
+# Qualität und Tests
+bandit==1.9.4
+coverage==7.13.3
+mypy==2.3.0
+pip-audit==2.10.1
+pytest==9.0.2
+pytest-cov==7.0.0
+ruff==0.16.1

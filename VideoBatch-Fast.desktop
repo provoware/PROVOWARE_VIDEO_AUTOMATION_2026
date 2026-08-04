@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=VideoBatch Fast
+Comment=Geführte, selbstheilende Videoautomatisierung
+Exec=sh -c 'cd "$(dirname "$1")" && exec ./STARTEN.sh' sh %k
+Terminal=false
+Icon=video-x-generic
+Categories=AudioVideo;Video;
+StartupNotify=true

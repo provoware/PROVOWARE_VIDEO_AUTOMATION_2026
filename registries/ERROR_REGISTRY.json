@@ -1,0 +1,200 @@
+{
+  "schema_version": 2,
+  "errors": {
+    "RUNTIME_FFMPEG_MISSING": {
+      "title": "FFmpeg wurde nicht gefunden",
+      "cause": "Das benötigte Medienwerkzeug ist nicht installiert oder nicht im Suchpfad verfügbar.",
+      "effect": "VideoBatch kann noch keine Videos erstellen.",
+      "automatic_action": "Der Start wurde sicher blockiert. Originaldateien wurden nicht verändert.",
+      "solution": "FFmpeg über die Paketverwaltung installieren und die Prüfung erneut starten.",
+      "alternative": "Einen vorhandenen FFmpeg-Pfad in den Systemeinstellungen bereitstellen.",
+      "severity": "blocking",
+      "actions": [
+        "retry_runtime",
+        "open_install_help"
+      ]
+    },
+    "INPUT_PAIR_COUNT_MISMATCH": {
+      "title": "Audio und Medien passen noch nicht zusammen",
+      "cause": "Die Anzahl der Audiodateien stimmt nicht mit der Anzahl der Bilder oder Videos überein.",
+      "effect": "Eine eindeutige Produktionszuordnung ist noch nicht möglich.",
+      "automatic_action": "Der Start wurde vor der Verarbeitung gestoppt.",
+      "solution": "Fehlende Dateien ergänzen oder überzählige Einträge entfernen.",
+      "alternative": "Eine ausgewählte Audio- und Mediendatei manuell als Paar verbinden.",
+      "severity": "blocking",
+      "actions": [
+        "focus_file_lists",
+        "show_pairing"
+      ]
+    },
+    "INPUT_FILE_MISSING": {
+      "title": "Eine ausgewählte Datei ist nicht mehr erreichbar",
+      "cause": "Die Datei wurde verschoben, gelöscht oder das Laufwerk ist nicht mehr verbunden.",
+      "effect": "Der betroffene Auftrag kann nicht gestartet werden.",
+      "automatic_action": "Andere Dateien bleiben erhalten; der fehlerhafte Eintrag wurde markiert.",
+      "solution": "Datei erneut auswählen oder das Laufwerk verbinden.",
+      "alternative": "Den Eintrag aus der Liste entfernen.",
+      "severity": "blocking",
+      "actions": [
+        "reselect_file",
+        "remove_missing"
+      ]
+    },
+    "OUTPUT_NOT_WRITABLE": {
+      "title": "Der Ausgabeordner ist nicht beschreibbar",
+      "cause": "Es fehlen Schreibrechte oder das Ziel ist nicht erreichbar.",
+      "effect": "Die Videoerstellung wurde noch nicht begonnen.",
+      "automatic_action": "Es wurde keine Ausgabedatei angelegt.",
+      "solution": "Einen beschreibbaren Ausgabeordner auswählen.",
+      "alternative": "Schreibrechte und freien Speicher prüfen.",
+      "severity": "blocking",
+      "actions": [
+        "choose_output",
+        "retry_validation"
+      ]
+    },
+    "PREVIEW_FAILED": {
+      "title": "Die Vorschau konnte nicht erzeugt werden",
+      "cause": "Das Format ist nicht direkt darstellbar oder die Datei ist beschädigt.",
+      "effect": "Die Vorschau fehlt; die Produktionsfähigkeit wird separat geprüft.",
+      "automatic_action": "Der Vorschaufehler wurde isoliert und blockiert nicht automatisch den Stapel.",
+      "solution": "Technische Dateiprüfung ausführen.",
+      "alternative": "Datei mit einem externen Player öffnen.",
+      "severity": "warning",
+      "actions": [
+        "probe_selected",
+        "open_external"
+      ]
+    },
+    "ARCHIVE_COPY_VERIFY_FAILED": {
+      "title": "Die verwendete Datei konnte nicht sicher abgelegt werden",
+      "cause": "Kopie und Original stimmen nach der Prüfung nicht vollständig überein.",
+      "effect": "Die fertige Videoausgabe bleibt gültig; die Quelldatei bleibt am Ursprungsort.",
+      "automatic_action": "Das Original wurde nicht gelöscht und die unvollständige Zielkopie wurde isoliert.",
+      "solution": "Ziellaufwerk prüfen und nur die Dateiablage erneut versuchen.",
+      "alternative": "Datei vorerst am Ursprungsort belassen.",
+      "severity": "warning",
+      "actions": [
+        "retry_archive",
+        "open_archive_report"
+      ]
+    },
+    "PLUGIN_INVALID": {
+      "title": "Ein Plugin wurde aus Sicherheitsgründen nicht geladen",
+      "cause": "Manifest, API-Version oder Dateipfad entspricht nicht dem Plugin-Vertrag.",
+      "effect": "Die Kernfunktionen bleiben verfügbar; nur das Plugin ist deaktiviert.",
+      "automatic_action": "Das Plugin wurde in Quarantäne belassen.",
+      "solution": "Ein kompatibles und geprüftes Plugin-Paket verwenden.",
+      "alternative": "Plugin entfernen und VideoBatch ohne Erweiterung starten.",
+      "severity": "warning",
+      "actions": [
+        "open_plugin_report",
+        "disable_plugin"
+      ]
+    },
+    "UPDATE_INVALID": {
+      "title": "Das Update-Paket wurde abgelehnt",
+      "cause": "Manifest, Prüfsumme, Zielpfad oder Kompatibilitätsangabe ist ungültig.",
+      "effect": "Die bestehende Installation bleibt unverändert.",
+      "automatic_action": "Das Paket wurde nicht installiert.",
+      "solution": "Ein vollständig geprüftes Update-Paket auswählen.",
+      "alternative": "Die aktuelle Version weiterverwenden.",
+      "severity": "blocking",
+      "actions": [
+        "choose_update",
+        "open_update_report"
+      ]
+    },
+    "PLUGIN_UNSIGNED": {
+      "title": "Plugin besitzt keine vertrauenswürdige Signatur",
+      "cause": "Die Erweiterung wurde nicht mit einem registrierten Ed25519-Schlüssel signiert.",
+      "effect": "Das Plugin wird nicht geladen oder ausgeführt.",
+      "automatic_action": "Die Erweiterung bleibt deaktiviert und kann sicher in Quarantäne verschoben werden.",
+      "solution": "Ein signiertes Plugin-Paket vom bekannten Herausgeber verwenden.",
+      "alternative": "VideoBatch ohne dieses Plugin weiterverwenden.",
+      "severity": "warning",
+      "actions": [
+        "open_plugin_report",
+        "disable_plugin"
+      ]
+    },
+    "PLUGIN_SIGNATURE_INVALID": {
+      "title": "Plugin wurde nach der Signierung verändert",
+      "cause": "Dateien, Hashwerte oder kryptografische Signatur stimmen nicht mehr überein.",
+      "effect": "Die Integrität und Herkunft der Erweiterung sind nicht ausreichend belegt.",
+      "automatic_action": "Das Plugin wird blockiert und mit Begründung in Quarantäne verschoben.",
+      "solution": "Das unveränderte Originalpaket erneut beziehen und prüfen.",
+      "alternative": "Plugin dauerhaft entfernen.",
+      "severity": "blocking",
+      "actions": [
+        "open_plugin_report",
+        "disable_plugin"
+      ]
+    },
+    "VISUAL_REGRESSION_FAILED": {
+      "title": "Die Oberfläche weicht von der geprüften Referenz ab",
+      "cause": "Layout, Farben, Pflichttexte oder sichtbare Grenzen haben sich unerwartet verändert.",
+      "effect": "Ein Darstellungsfehler könnte Nutzeraktionen verdecken oder Texte abschneiden.",
+      "automatic_action": "Die neue Darstellung wird nicht automatisch als Referenz übernommen.",
+      "solution": "Abweichungsbericht und Kandidatenbilder prüfen und den Fehler korrigieren.",
+      "alternative": "Eine beabsichtigte Änderung erst nach manueller Sichtprüfung ausdrücklich als neue Referenz akzeptieren.",
+      "severity": "blocking",
+      "actions": [
+        "open_visual_report",
+        "review_baseline_candidate"
+      ]
+    },
+    "OUTPUT_RESERVATION_FAILED": {
+      "title": "Ausgabeziel konnte nicht sicher reserviert werden",
+      "cause": "Der Zielname ist bereits vorhanden oder wird von einem anderen Auftrag verwendet.",
+      "effect": "Der Stapel wurde vor FFmpeg sicher blockiert.",
+      "automatic_action": "Alle bereits angelegten Reservierungen wurden wieder entfernt.",
+      "solution": "Ausgabeordner prüfen und den Start erneut ausführen.",
+      "alternative": "Einen anderen Ausgabeordner wählen.",
+      "severity": "blocking",
+      "actions": [
+        "choose_output",
+        "retry_validation"
+      ]
+    },
+    "PLUGIN_SANDBOX_UNAVAILABLE": {
+      "title": "Plugin-Isolierung ist auf diesem System nicht verfügbar",
+      "cause": "Linux-Namespace, unshare oder libseccomp fehlt oder wurde vom System blockiert.",
+      "effect": "Plugins werden nicht ausgeführt; die Kernanwendung bleibt verfügbar.",
+      "automatic_action": "Die Plugin-Ausführung wurde nach dem Fail-Closed-Prinzip deaktiviert.",
+      "solution": "unshare und libseccomp installieren oder Plugin inaktiv lassen.",
+      "alternative": "Kernfunktionen ohne Plugin verwenden.",
+      "severity": "blocking",
+      "actions": [
+        "open_install_help",
+        "open_logs"
+      ]
+    },
+    "ARCHIVE_RECOVERY_REQUIRED": {
+      "title": "Eine frühere Dateiablage war noch nicht vollständig abgeschlossen",
+      "cause": "Das Tool oder das Laufwerk wurde während einer Archivtransaktion unterbrochen.",
+      "effect": "Quelle und Ziel werden vor jeder weiteren Löschung erneut geprüft.",
+      "automatic_action": "Das Journal wurde ausgewertet; Originaldateien bleiben im Zweifel erhalten.",
+      "solution": "Recoverybericht prüfen und danach die Ablage erneut starten.",
+      "alternative": "Dateien unverändert am Ursprungsort belassen.",
+      "severity": "warning",
+      "actions": [
+        "open_logs",
+        "retry_validation"
+      ]
+    },
+    "UPDATE_CANDIDATE_MUTATED": {
+      "title": "Der Update-Selbsttest hat den Kandidaten verändert",
+      "cause": "Eine Prüfroutine hat manifestierte Dateien geschrieben oder neu erzeugt.",
+      "effect": "Das Update wurde nicht aktiviert.",
+      "automatic_action": "Die aktuelle Installation blieb aktiv; der Kandidat wurde verworfen.",
+      "solution": "Build- und Prüfschritte trennen und das Update neu erzeugen.",
+      "alternative": "Die installierte Version weiterverwenden.",
+      "severity": "blocking",
+      "actions": [
+        "open_logs",
+        "reselect_file"
+      ]
+    }
+  }
+}

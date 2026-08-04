@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "id": "workspace-layout-profiles",
+  "contract_version": "workspace-grid-2x2-v1",
+  "max_profiles_per_project": 16,
+  "profile_key_format": "{screen_width}x{screen_height}@{ui_zoom}",
+  "defaults": {
+    "compact": {
+      "max_width": 1366,
+      "max_height": 768,
+      "ratios": {
+        "root_vertical": 0.7,
+        "grid_vertical": 0.4,
+        "top_horizontal": 0.54,
+        "bottom_horizontal": 0.5
+      }
+    },
+    "standard": {
+      "max_width": 1920,
+      "max_height": 1080,
+      "ratios": {
+        "root_vertical": 0.78,
+        "grid_vertical": 0.4,
+        "top_horizontal": 0.5,
+        "bottom_horizontal": 0.5
+      }
+    },
+    "large": {
+      "ratios": {
+        "root_vertical": 0.78,
+        "grid_vertical": 0.4,
+        "top_horizontal": 0.5,
+        "bottom_horizontal": 0.5
+      }
+    }
+  },
+  "limits": {
+    "root_vertical": {
+      "hard_min_ratio": 0.5,
+      "hard_max_ratio": 0.88,
+      "first_min_px": 280,
+      "second_min_px": 120
+    },
+    "grid_vertical": {
+      "hard_min_ratio": 0.28,
+      "hard_max_ratio": 0.72,
+      "first_min_px": 90,
+      "second_min_px": 110
+    },
+    "top_horizontal": {
+      "hard_min_ratio": 0.28,
+      "hard_max_ratio": 0.72,
+      "first_min_px": 250,
+      "second_min_px": 250
+    },
+    "bottom_horizontal": {
+      "hard_min_ratio": 0.28,
+      "hard_max_ratio": 0.72,
+      "first_min_px": 270,
+      "second_min_px": 270
+    }
+  },
+  "rules": {
+    "store_ratios_not_absolute_pixels": true,
+    "separate_by_resolution_and_ui_zoom": true,
+    "contract_change_expires_profile": true,
+    "invalid_values_reset_to_tested_defaults": true,
+    "project_scoped_storage": true,
+    "atomic_project_write": true
+  }
+}

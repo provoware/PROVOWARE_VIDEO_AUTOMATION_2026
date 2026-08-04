@@ -1,0 +1,43 @@
+{
+  "schema_version": 4,
+  "name": "Acid Paper",
+  "label": "Acid Paper",
+  "colors": {
+    "background_main": "#F1EED8",
+    "background_surface": "#FFFBEA",
+    "background_elevated": "#E6E0BE",
+    "background_preview": "#151515",
+    "background_toolbar": "#D9FF43",
+    "text_primary": "#171717",
+    "text_secondary": "#30302A",
+    "text_muted": "#505047",
+    "border_default": "#171717",
+    "border_subtle": "#8B876F",
+    "border_focus": "#005B96",
+    "action_primary": "#FF4F9A",
+    "action_primary_text": "#171017",
+    "action_secondary": "#D9D3AE",
+    "status_success": "#38B86B",
+    "status_information": "#006BA6",
+    "status_active": "#7C3AED",
+    "status_warning": "#D97706",
+    "status_attention": "#C2410C",
+    "status_error": "#C81E4B",
+    "state_selected": "#B8E6FF",
+    "state_hover": "#E1DDAF",
+    "state_disabled": "#9A9682",
+    "tile_gold": "#F4C430",
+    "tile_magenta": "#D63384",
+    "tile_green": "#2B9348",
+    "tile_blue": "#0077B6"
+  },
+  "metrics": {
+    "base_font": 12,
+    "title_font": 27,
+    "section_font": 16,
+    "row_height": 37,
+    "button_padding_x": 12,
+    "button_padding_y": 8,
+    "card_padding": 9
+  }
+}

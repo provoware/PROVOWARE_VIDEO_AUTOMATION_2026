@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "contract_id": "videobatch-fast.fault-lab/2.8.3-rc17-v1",
+  "release_target": "2.8.3-rc17",
+  "destructive_operations_forbidden": true,
+  "workspace_must_be_temporary": true,
+  "scenarios": [
+    "atomic_write_disk_full",
+    "atomic_write_interrupted",
+    "read_only_output",
+    "removed_external_target",
+    "ffmpeg_crash",
+    "ffmpeg_stall_watchdog",
+    "suspend_resume_process",
+    "hundred_job_journal",
+    "long_duration_progress",
+    "corrupt_configuration_recovery",
+    "corrupt_project_quarantine",
+    "recovery_without_duplicate_completed_jobs"
+  ]
+}

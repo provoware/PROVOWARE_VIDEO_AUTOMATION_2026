@@ -1,0 +1,105 @@
+{
+  "schema_version": 3,
+  "release_target": "2.8.3-rc24",
+  "installer_id": "videobatch-signed-channel-ab-installer-v3",
+  "default_install_root": "~/.local/share/VideoBatchFast",
+  "maximum_part_bytes": 31457280,
+  "package_format": "deterministic-tar-gzip",
+  "signature": {
+    "algorithm": "ed25519",
+    "channel_index_required": true,
+    "release_manifest_required": true,
+    "component_part_signatures_required": true,
+    "part_hashes_bound_to_manifest": true,
+    "private_key_must_never_ship": true,
+    "trusted_key_id_required": true,
+    "immutable_release_id_required": true,
+    "channel_expiry_required": true,
+    "channel_generation_required": true
+  },
+  "layout": {
+    "strategy": "ab-slots",
+    "slots": [
+      "A",
+      "B"
+    ],
+    "active_link": "current",
+    "controller": "controller",
+    "slot_manifests": "slot_manifests",
+    "transaction_journal": "pending_transaction.json"
+  },
+  "components": [
+    {
+      "id": "bootstrap",
+      "install_path": ".",
+      "description": "Starter, Symbol und portables Laufzeitmanifest"
+    },
+    {
+      "id": "runtime",
+      "install_path": "usr/runtime",
+      "description": "Eingebettete Python- und Tk-Laufzeit"
+    },
+    {
+      "id": "media",
+      "install_path": "usr/media",
+      "description": "Bereinigte FFmpeg-/FFprobe-Adapter"
+    },
+    {
+      "id": "application",
+      "install_path": "usr/app",
+      "description": "Anwendungslogik, Registries, Hilfen und Ressourcen"
+    },
+    {
+      "id": "desktop",
+      "install_path": "usr/share",
+      "description": "Desktop- und Menüintegration"
+    }
+  ],
+  "required_update_order": [
+    "bootstrap",
+    "runtime",
+    "media",
+    "application",
+    "desktop"
+  ],
+  "transaction": {
+    "never_modify_active_slot": true,
+    "clone_confirmed_slot_to_inactive_slot": true,
+    "apply_only_changed_components": true,
+    "verify_every_file": true,
+    "verify_complete_inactive_slot": true,
+    "atomic_symlink_switch": true,
+    "real_boot_confirmation_required": true,
+    "automatic_boot_rollback": true,
+    "retain_two_complete_slots": true,
+    "power_loss_recovery": true,
+    "never_modify_user_data": true,
+    "automatic_rollback": true,
+    "full_slot_file_allowlist": true,
+    "archive_expansion_limits": true,
+    "disk_space_preflight": true,
+    "fsync_complete_inactive_slot": true,
+    "manual_rollback_restores_full_state": true
+  },
+  "channel_index": {
+    "relative_urls_supported": true,
+    "remote_transport_must_be_https": true,
+    "local_file_urls_allowed_for_testing": true,
+    "stable_and_rc_channels": true,
+    "monotonic_release_sequence": true,
+    "downgrade_and_replay_blocked_by_default": true,
+    "download_only_changed_components": true,
+    "minimum_installed_version_required": true,
+    "minimum_installer_schema_required": true,
+    "expires_utc_required": true,
+    "generation_must_increase": true,
+    "same_origin_redirects_only": true,
+    "stable_and_rc_preserved_when_merging": true
+  },
+  "user_data_locations": [
+    "~/.config/VideoBatchFast",
+    "~/.local/state/VideoBatchFast",
+    "~/.cache/VideoBatchFast",
+    "~/Videos"
+  ]
+}

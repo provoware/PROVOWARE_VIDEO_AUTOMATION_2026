@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "targets": [
+    {
+      "os": "ubuntu-22.04",
+      "desktop": "kde",
+      "session": "x11"
+    },
+    {
+      "os": "ubuntu-22.04",
+      "desktop": "kde",
+      "session": "wayland"
+    },
+    {
+      "os": "ubuntu-24.04",
+      "desktop": "kde",
+      "session": "x11"
+    },
+    {
+      "os": "ubuntu-24.04",
+      "desktop": "kde",
+      "session": "wayland"
+    }
+  ],
+  "required_gates": [
+    "unit-tests",
+    "branch-coverage",
+    "fault-lab",
+    "portable-build",
+    "portable-manifest",
+    "ffmpeg-aac-smoke",
+    "ui-handshake",
+    "artifact-signature",
+    "reproducible-double-build"
+  ],
+  "oldest_runtime_baseline": "ubuntu-22.04",
+  "media_policy": "never inject bundled Python glibc into FFmpeg"
+}

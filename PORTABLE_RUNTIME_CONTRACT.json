@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "contract_id": "videobatch-fast.portable-runtime/2.8.3-rc24-v1",
+  "release_target": "2.8.3-rc24",
+  "platform": "linux-x86_64",
+  "python": {
+    "version": "3.13.5",
+    "implementation": "CPython",
+    "required_imports": [
+      "tkinter",
+      "cryptography",
+      "PIL",
+      "cffi",
+      "pycparser"
+    ]
+  },
+  "ffmpeg": {
+    "version_prefix": "7.1.3",
+    "required_binaries": [
+      "ffmpeg",
+      "ffprobe"
+    ],
+    "required_encoders": [
+      "aac",
+      "libx264"
+    ],
+    "required_filters": [
+      "scale",
+      "pad",
+      "fade",
+      "xfade",
+      "overlay"
+    ]
+  },
+  "policy": {
+    "system_python_not_required": true,
+    "system_ffmpeg_not_required": true,
+    "network_not_required_at_runtime": true,
+    "embedded_files_are_hash_verified": true,
+    "portable_runtime_is_preferred": true,
+    "quality_tools_are_not_part_of_user_runtime": true,
+    "fault_lab_is_sandbox_only": true
+  }
+}

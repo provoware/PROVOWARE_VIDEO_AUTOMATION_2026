@@ -1,0 +1,281 @@
+{
+  "schema_version": 7,
+  "version": "2.8.3-rc24",
+  "components": {
+    "dashboard.header": {
+      "module": "ui_dashboard_project_mixin",
+      "reusable": true,
+      "slots": [
+        "title",
+        "subtitle",
+        "project_name",
+        "quick_note",
+        "clock",
+        "calendar",
+        "status"
+      ],
+      "responsive_rules": [
+        "left_right_split",
+        "compact_calendar",
+        "single_line_note"
+      ]
+    },
+    "dashboard.calendar": {
+      "module": "ui_dashboard_project_mixin",
+      "reusable": true,
+      "state": "project.calendar_notes",
+      "mark_states": [
+        "none",
+        "success",
+        "warning",
+        "error",
+        "info",
+        "active"
+      ],
+      "interaction": "click_edit_with_tooltip",
+      "entry_types": [
+        "note",
+        "task",
+        "reminder",
+        "deadline"
+      ]
+    },
+    "dashboard.action_tiles": {
+      "module": "ui_dashboard_project_mixin",
+      "reusable": true,
+      "styles": [
+        "TileGold",
+        "TilePink",
+        "TileGreen",
+        "TileBlue"
+      ],
+      "count": 4
+    },
+    "dashboard.assistant_panel": {
+      "module": "ui_dashboard_project_mixin",
+      "reusable": true,
+      "extension_slot": true
+    },
+    "dashboard.tips_panel": {
+      "module": "ui_dashboard_project_mixin",
+      "reusable": true,
+      "extension_slot": true
+    },
+    "workspace.production": {
+      "module": "ui_workspace_grid_mixin",
+      "reusable": true,
+      "page": "workspace",
+      "visual_scenarios": [
+        "files",
+        "preview",
+        "playlist",
+        "monitor",
+        "debug_machine"
+      ]
+    },
+    "plugins.signature_guard": {
+      "module": "plugin_signing",
+      "reusable": true,
+      "algorithm": "ed25519"
+    },
+    "quality.visual_regression": {
+      "module": "visual_regression",
+      "reusable": true,
+      "baseline_policy": "explicit_acceptance_only"
+    },
+    "plugins.permission_dialog": {
+      "module": "plugin_permissions",
+      "reusable": true,
+      "shows": [
+        "publisher",
+        "capability",
+        "file_access",
+        "actions",
+        "prohibited",
+        "risk_level"
+      ],
+      "confirmation_required": true
+    },
+    "calendar.task_overview": {
+      "module": "calendar_tasks",
+      "reusable": true,
+      "type": "dialog",
+      "filters": [
+        "all",
+        "today",
+        "week",
+        "month",
+        "tasks",
+        "appointments",
+        "open"
+      ]
+    },
+    "plugins.approval_dialog": {
+      "module": "workflow_dialogs",
+      "reusable": true,
+      "type": "security_dialog",
+      "visual_scenario": "dialog_plugin_permissions_860x740_100"
+    },
+    "updates.assistant_dialog": {
+      "module": "workflow_dialogs",
+      "reusable": true,
+      "type": "guided_dialog",
+      "visual_scenario": "dialog_update_assistant_780x620_100"
+    },
+    "archive.preview_dialog": {
+      "module": "workflow_dialogs",
+      "reusable": true,
+      "type": "guided_dialog",
+      "visual_scenario": "dialog_archive_760x600_100"
+    },
+    "recovery.guided_dialog": {
+      "module": "workflow_dialogs",
+      "reusable": true,
+      "type": "guided_dialog",
+      "visual_scenario": "dialog_recovery_780x610_100"
+    },
+    "quality.visual_html": {
+      "module": "visual_inspection",
+      "reusable": true,
+      "html": "visual_inspection/index.html",
+      "manifest": "VISUAL_INSPECTION_MANIFEST.json"
+    },
+    "workspace.grid2x2": {
+      "module": "ui_workspace_grid_mixin",
+      "reusable": true,
+      "page": "workspace",
+      "layout": "flexible_2x2_paned_grid",
+      "cells": [
+        "files",
+        "preview",
+        "assistant",
+        "production"
+      ],
+      "responsive_rules": [
+        "minimum_cell_sizes",
+        "scrollable_quick_modes",
+        "persistent_access_to_actions"
+      ],
+      "visual_scenarios": [
+        "workspace_grid_1280x720_100",
+        "workspace_debug_machine_1920x1080_100"
+      ]
+    },
+    "debug.professional_footer": {
+      "module": "ui_debug_footer_mixin",
+      "reusable": true,
+      "languages": [
+        "human_plain",
+        "jsonl_machine",
+        "technical_process",
+        "diagnostic"
+      ],
+      "features": [
+        "solution_focused_events",
+        "structured_jsonl",
+        "session_build_identity",
+        "diagnostic_report"
+      ]
+    },
+    "plugins.approval_manager": {
+      "module": "plugin_approval_manager",
+      "reusable": true,
+      "type": "management_dialog",
+      "filters": [
+        "all",
+        "active",
+        "expired",
+        "revoked"
+      ],
+      "columns": [
+        "plugin_id",
+        "status",
+        "version",
+        "payload_sha256",
+        "capability",
+        "publisher",
+        "approved_at",
+        "updated_at",
+        "installed"
+      ],
+      "actions": [
+        "refresh",
+        "details",
+        "revoke"
+      ],
+      "visual_scenario": "dialog_plugin_approval_manager_1180x700_100"
+    },
+    "quality.visual_manual_approval": {
+      "module": "visual_approval",
+      "reusable": true,
+      "algorithm": "ed25519",
+      "status": [
+        "missing",
+        "approved",
+        "expired",
+        "invalid"
+      ],
+      "bound_to": [
+        "build_id",
+        "inspection_manifest_hash",
+        "baseline_bundle_hash",
+        "visual_report_hash",
+        "reviewer",
+        "approved_at"
+      ],
+      "visual_scenario": "dialog_visual_approval_760x540_100"
+    },
+    "diagnostics.report": {
+      "module": "diagnostics_service",
+      "reusable": true,
+      "format": "json",
+      "file_mode": "0600",
+      "contains": [
+        "build",
+        "session",
+        "platform",
+        "python",
+        "registry_status",
+        "project_and_log_paths"
+      ]
+    },
+    "quality.visual_contract": {
+      "module": "visual_approval",
+      "reusable": true,
+      "volatile_values_excluded": true,
+      "stable_update_binding": true
+    },
+    "security.key_archive": {
+      "module": "key_archive",
+      "reusable": true,
+      "cipher": "AES-256-GCM",
+      "kdf": "scrypt",
+      "packaged": false
+    },
+    "workspace.layout_profile_manager": {
+      "label": "Anzeigeprofilgebundene Rasterverwaltung",
+      "module": "ui_layout_profiles_mixin",
+      "registry": "WORKSPACE_LAYOUT_REGISTRY.json",
+      "reusable": true,
+      "state_scope": "project",
+      "self_healing": true
+    },
+    "quality.hardening_status": {
+      "module": "ui_debug_footer_mixin",
+      "reusable": true,
+      "shows": [
+        "correlation_id",
+        "runner_terminal_state",
+        "archive_recovery",
+        "plugin_isolation",
+        "quality_gate_status"
+      ]
+    },
+    "workspace.event_dispatcher": {
+      "module": "ui_event_handlers_mixin",
+      "reusable": true,
+      "responsibility": "typed_event_routing_without_large_branch_chain",
+      "quality_contract": "function_complexity_max_30"
+    }
+  }
+}

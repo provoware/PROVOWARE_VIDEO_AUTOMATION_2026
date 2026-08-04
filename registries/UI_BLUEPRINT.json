@@ -1,0 +1,124 @@
+{
+  "schema_version": 4,
+  "name": "Laienmodus Einfach",
+  "source": "Bildvorlage 4 – Laienmodus Einfach",
+  "palette": {
+    "background": "#080d12",
+    "surface": "#111820",
+    "surface_elevated": "#182330",
+    "border": "#304154",
+    "text_primary": "#f5f7fa",
+    "text_secondary": "#aeb9c5",
+    "accent_gold": "#e8bd4e",
+    "accent_magenta": "#a34782",
+    "accent_green": "#3f7a50",
+    "accent_blue": "#2b6f99",
+    "accent_cyan": "#43c6d7"
+  },
+  "layout": {
+    "header": [
+      "title",
+      "subtitle",
+      "quick_note",
+      "date_time",
+      "month_calendar"
+    ],
+    "hero": [
+      "welcome",
+      "help_button",
+      "action_tiles"
+    ],
+    "middle": [
+      "assistant_panel",
+      "tips_panel"
+    ],
+    "footer": [
+      "quick_action_row",
+      "status_line",
+      "font_controls"
+    ],
+    "workspace_grid_2x2": [
+      "files_and_sorting",
+      "large_preview",
+      "assistant_playlist_settings",
+      "pairing_and_production"
+    ],
+    "professional_debug_footer": [
+      "human_events",
+      "machine_jsonl",
+      "technical_process",
+      "diagnostics"
+    ]
+  },
+  "action_tiles": [
+    "Neues Projekt",
+    "Projekt speichern",
+    "Notiz speichern",
+    "Audio abspielen"
+  ],
+  "quick_actions": [
+    "Hilfe & Tutorials",
+    "Zufalls-Idee",
+    "Projektdatei öffnen",
+    "Einstellungen"
+  ],
+  "goals": [
+    "große klare Beschriftungen",
+    "klare Hierarchie",
+    "sichtbare Hilfen",
+    "pluginfähige Architektur",
+    "wiederverwendbare Komponenten",
+    "JSON-Versionierung",
+    "Kalendernotizen mit Tooltip",
+    "sichtbare Plugin-Berechtigungen",
+    "visuell abgesicherter Arbeitsbereich",
+    "widerrufbare Plugin-Freigabeverwaltung",
+    "signierte manuelle Desktop-Abnahme",
+    "professionelles Debugging in Menschen- und Maschinensprache",
+    "mittiger flexibler 2×2-Arbeitsbereich",
+    "deterministische visuelle Freigabe ohne volatile Messwerte",
+    "verschlüsselte Offline-Schlüsselarchivierung",
+    "Stable-Updatebindung an Abnahmehash",
+    "modernes kontrastreiches Erscheinungsbild"
+  ],
+  "version": "2.8.3-rc24",
+  "reference": {
+    "path": "resources/reference/laienmodus_einfach_reference.png",
+    "dimensions": [
+      810,
+      701
+    ],
+    "analysis": "resources/reference/laienmodus_einfach_analysis.json"
+  },
+  "responsive": {
+    "minimum_window": [
+      1024,
+      680
+    ],
+    "tested_scenarios": [
+      "1280x720@100",
+      "1366x768@100",
+      "1920x1080@100",
+      "1920x1080@140",
+      "workspace-files@1366x768",
+      "workspace-preview@1920x1080",
+      "workspace-playlist@1366x768",
+      "workspace-monitor@1920x1080@140",
+      "workspace-grid@1280x720",
+      "workspace-debug-machine@1920x1080",
+      "dialog-update@780x620",
+      "dialog-archive@760x600",
+      "dialog-plugin@860x740",
+      "dialog-recovery@780x610",
+      "dialog-plugin-approval-manager@1180x700",
+      "dialog-visual-approval@760x540"
+    ],
+    "dashboard_first": true,
+    "workspace_separate_page": true
+  },
+  "versioning": {
+    "registry": "UI_COMPONENT_REGISTRY.json",
+    "baseline_version": "2.8.3-rc24"
+  },
+  "product_name": "provoware - videoautomation - 2026"
+}

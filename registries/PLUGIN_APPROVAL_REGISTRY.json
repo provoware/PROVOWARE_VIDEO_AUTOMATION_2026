@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "id": "plugin-approval-contract",
+  "version": "2.8.3-rc24",
+  "storage": {
+    "scope": "user_state",
+    "path": "plugin_approvals.json",
+    "mode": "0600",
+    "atomic_write": true,
+    "self_heal_corrupt_file": true
+  },
+  "statuses": [
+    "active",
+    "revoked",
+    "expired"
+  ],
+  "required_identity_fields": [
+    "plugin_id",
+    "version",
+    "payload_sha256",
+    "key_id",
+    "capability",
+    "permission_sha256"
+  ],
+  "invalidation_triggers": [
+    "plugin_version_changed",
+    "plugin_payload_changed",
+    "signature_key_changed",
+    "capability_changed",
+    "permission_profile_changed"
+  ],
+  "record_fields": [
+    "plugin_id",
+    "version",
+    "payload_sha256",
+    "key_id",
+    "capability",
+    "permission_sha256",
+    "permissions",
+    "approved_at",
+    "updated_at",
+    "status",
+    "reason"
+  ],
+  "rules": {
+    "auto_enable": false,
+    "explicit_permission_review": true,
+    "sandbox_required_for_validator": true,
+    "approval_must_expire_on_any_identity_change": true,
+    "revocation_must_be_user_visible": true
+  },
+  "management_ui": {
+    "table_columns": [
+      "plugin_id",
+      "status",
+      "version",
+      "payload_sha256",
+      "capability",
+      "publisher",
+      "approved_at",
+      "updated_at",
+      "installed"
+    ],
+    "search_fields": [
+      "plugin_id",
+      "version",
+      "payload_sha256",
+      "capability",
+      "publisher",
+      "reason"
+    ],
+    "filters": [
+      "all",
+      "active",
+      "expired",
+      "revoked"
+    ],
+    "direct_revocation": true,
+    "synchronize_installed_plugins_on_open": true
+  }
+}

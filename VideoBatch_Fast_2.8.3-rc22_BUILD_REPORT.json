@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "version": "2.8.3-rc22",
+  "channel": "rc",
+  "development_complete": true,
+  "stable_ready": false,
+  "tests": {
+    "passed": 261,
+    "failed": 0
+  },
+  "coverage": {
+    "lines_percent": 82.2,
+    "branches_percent": 65.62,
+    "line_gate": 80.0,
+    "branch_gate": 65.0
+  },
+  "assurance": {
+    "passed": 12,
+    "total": 12
+  },
+  "fault_lab": {
+    "passed": 12,
+    "total": 12
+  },
+  "visual": {
+    "passed": 17,
+    "total": 17,
+    "isolated_verification": true,
+    "physical_desktop_approval": false
+  },
+  "large_folder_test": {
+    "files": 20000,
+    "batch_size": 128,
+    "passed": true
+  },
+  "themes": [
+    "neon_gravity",
+    "acid_paper",
+    "toxic_candy",
+    "ultraviolet"
+  ],
+  "architecture_findings": 0,
+  "internal_quality_findings": 0,
+  "maximum_complexity": 29,
+  "stable_blockers": [
+    "ruff_0.16.1",
+    "mypy_2.3.0",
+    "bandit_1.9.4",
+    "pip-audit_2.10.1",
+    "physical_kde_x11_wayland",
+    "large_media_long_render"
+  ]
+}

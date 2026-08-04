@@ -1,0 +1,362 @@
+{
+  "baseline_version": "2.8.3-rc24",
+  "policy": {
+    "auto_replace_baseline": false,
+    "baseline_changes_require_explicit_acceptance": true,
+    "maximum_dhash_distance": 24,
+    "maximum_mean_difference": 0.075,
+    "required_semantic_colors": [
+      "#FFD43B",
+      "#E83E9E",
+      "#25B96B"
+    ],
+    "required_visible_texts": [
+      "provoware - videoautomation - 2026",
+      "Version 2.8.3-rc24",
+      "Projekt",
+      "Schnellzugriff",
+      "Audio hinzufügen",
+      "Bilder/Videos"
+    ]
+  },
+  "reference_image": "resources/reference/laienmodus_einfach_reference.png",
+  "scenarios": [
+    {
+      "font_scale": 100,
+      "group": "dashboard",
+      "height": 720,
+      "id": "dashboard_1280x720_100",
+      "page": "dashboard",
+      "required_semantic_colors": [
+        "#FFD43B",
+        "#E83E9E",
+        "#25B96B"
+      ],
+      "required_visible_texts": [
+        "provoware - videoautomation - 2026",
+        "Version 2.8.3-rc24",
+        "Projekt",
+        "Schnellzugriff",
+        "Audio hinzufügen",
+        "Bilder/Videos"
+      ],
+      "width": 1280
+    },
+    {
+      "font_scale": 100,
+      "group": "dashboard",
+      "height": 768,
+      "id": "dashboard_1366x768_100",
+      "page": "dashboard",
+      "required_semantic_colors": [
+        "#FFD43B",
+        "#E83E9E",
+        "#25B96B"
+      ],
+      "required_visible_texts": [
+        "provoware - videoautomation - 2026",
+        "Version 2.8.3-rc24",
+        "Projekt",
+        "Schnellzugriff",
+        "Audio hinzufügen",
+        "Bilder/Videos"
+      ],
+      "width": 1366
+    },
+    {
+      "font_scale": 100,
+      "group": "dashboard",
+      "height": 1080,
+      "id": "dashboard_1920x1080_100",
+      "page": "dashboard",
+      "required_semantic_colors": [
+        "#FFD43B",
+        "#E83E9E",
+        "#25B96B"
+      ],
+      "required_visible_texts": [
+        "provoware - videoautomation - 2026",
+        "Version 2.8.3-rc24",
+        "Projekt",
+        "Schnellzugriff",
+        "Audio hinzufügen",
+        "Bilder/Videos"
+      ],
+      "width": 1920
+    },
+    {
+      "font_scale": 140,
+      "group": "dashboard",
+      "height": 1080,
+      "id": "dashboard_1920x1080_140",
+      "page": "dashboard",
+      "required_semantic_colors": [
+        "#FFD43B",
+        "#E83E9E",
+        "#25B96B"
+      ],
+      "required_visible_texts": [
+        "provoware - videoautomation - 2026",
+        "Version 2.8.3-rc24",
+        "Projekt",
+        "Schnellzugriff",
+        "Audio hinzufügen",
+        "Bilder/Videos"
+      ],
+      "width": 1920
+    },
+    {
+      "font_scale": 100,
+      "group": "workspace",
+      "height": 768,
+      "id": "workspace_files_1366x768_100",
+      "page": "workspace",
+      "required_visible_texts": [
+        "Medien",
+        "Dateien",
+        "Audio hinzufügen",
+        "Medien hinzufügen",
+        "Spaltenkopf anklicken"
+      ],
+      "state": "files",
+      "width": 1366
+    },
+    {
+      "font_scale": 100,
+      "group": "workspace",
+      "height": 1080,
+      "id": "workspace_preview_1920x1080_100",
+      "page": "workspace",
+      "required_visible_texts": [
+        "Vorschau",
+        "Große Vorschau",
+        "Einpassen",
+        "Vollbild",
+        "bild_querformat.png"
+      ],
+      "state": "preview",
+      "width": 1920
+    },
+    {
+      "font_scale": 100,
+      "group": "workspace",
+      "height": 768,
+      "id": "workspace_playlist_1366x768_100",
+      "page": "workspace",
+      "required_visible_texts": [
+        "Vorschau",
+        "Audio vorhören",
+        "Vorhör-Playlist",
+        "Wiederholung",
+        "Zufall"
+      ],
+      "state": "playlist",
+      "width": 1366
+    },
+    {
+      "font_scale": 140,
+      "group": "workspace",
+      "height": 1080,
+      "id": "workspace_monitor_1920x1080_140",
+      "page": "workspace",
+      "required_visible_texts": [
+        "Produktion",
+        "Echtzeitstatus und Lösungen",
+        "Gesamtfortschritt",
+        "Aktueller Auftrag",
+        "Laufzeit",
+        "Restzeit"
+      ],
+      "state": "monitor",
+      "width": 1920
+    },
+    {
+      "capture_target": "dialog",
+      "font_scale": 100,
+      "group": "dialogs",
+      "height": 620,
+      "id": "dialog_update_assistant_780x620_100",
+      "page": "dialog",
+      "required_visible_texts": [
+        "Geführtes Update",
+        "Update 2.7.1 sicher vorbereiten",
+        "Paketprüfung",
+        "Kandidatenprüfung",
+        "Rückrollschutz",
+        "Update-Kandidat erstellen und testen"
+      ],
+      "root_height": 800,
+      "root_width": 1280,
+      "state": "update",
+      "width": 780
+    },
+    {
+      "capture_target": "dialog",
+      "font_scale": 100,
+      "group": "dialogs",
+      "height": 600,
+      "id": "dialog_archive_760x600_100",
+      "page": "dialog",
+      "required_visible_texts": [
+        "Verwendete Dateien sicher ablegen",
+        "Dateiablage vor dem Verschieben prüfen",
+        "Sicherheitsablauf",
+        "Dateien geprüft ablegen",
+        "Später aufräumen"
+      ],
+      "root_height": 800,
+      "root_width": 1280,
+      "state": "archive",
+      "width": 760
+    },
+    {
+      "capture_target": "dialog",
+      "font_scale": 100,
+      "group": "dialogs",
+      "height": 740,
+      "id": "dialog_plugin_permissions_860x740_100",
+      "page": "dialog",
+      "required_visible_texts": [
+        "Plugin-Berechtigungen und Freigabe",
+        "Plugin sicher prüfen und freigeben",
+        "Berechtigungsübersicht",
+        "Freigabebindung",
+        "Sandbox-Test erlauben und freigeben"
+      ],
+      "root_height": 900,
+      "root_width": 1366,
+      "state": "plugin",
+      "width": 860
+    },
+    {
+      "capture_target": "dialog",
+      "font_scale": 100,
+      "group": "dialogs",
+      "height": 610,
+      "id": "dialog_recovery_780x610_100",
+      "page": "dialog",
+      "required_visible_texts": [
+        "Recovery und sichere Wiederaufnahme",
+        "wiederherstellbaren Zustand",
+        "Was bleibt geschützt?",
+        "Sichere Recovery",
+        "Sichere Wiederaufnahme starten"
+      ],
+      "root_height": 820,
+      "root_width": 1280,
+      "state": "recovery",
+      "width": 780
+    },
+    {
+      "font_scale": 100,
+      "group": "workspace",
+      "height": 720,
+      "id": "workspace_grid_1280x720_100",
+      "page": "workspace",
+      "required_visible_texts": [
+        "Medien",
+        "Dateien",
+        "Audio hinzufügen",
+        "Medien hinzufügen",
+        "Spaltenkopf anklicken"
+      ],
+      "state": "files",
+      "width": 1280
+    },
+    {
+      "font_scale": 100,
+      "group": "workspace",
+      "height": 1080,
+      "id": "workspace_debug_machine_1920x1080_100",
+      "page": "workspace",
+      "required_visible_texts": [
+        "Hilfe & Protokoll",
+        "Profi-Debugging & Profilogging",
+        "Maschinensprache · JSONL"
+      ],
+      "state": "debug_machine",
+      "width": 1920
+    },
+    {
+      "capture_target": "dialog",
+      "font_scale": 100,
+      "group": "dialogs",
+      "height": 700,
+      "id": "dialog_plugin_approval_manager_1180x700_100",
+      "page": "dialog",
+      "required_visible_texts": [
+        "Plugin-Freigabeverwaltung",
+        "Suche",
+        "Status",
+        "Neu prüfen",
+        "Ausgewählte Freigabe widerrufen",
+        "Schließen"
+      ],
+      "root_height": 900,
+      "root_width": 1400,
+      "state": "approval_manager",
+      "width": 1180
+    },
+    {
+      "capture_target": "dialog",
+      "font_scale": 100,
+      "group": "dialogs",
+      "height": 540,
+      "id": "dialog_visual_approval_760x540_100",
+      "page": "dialog",
+      "required_visible_texts": [
+        "Manuelle visuelle Desktop-Freigabe",
+        "Visuelle Desktopprüfung signieren",
+        "Build-ID",
+        "Manipulationsschutz",
+        "Prüfername oder Kürzel",
+        "Prüfung signieren"
+      ],
+      "root_height": 800,
+      "root_width": 1280,
+      "state": "visual_approval",
+      "width": 760
+    },
+    {
+      "capture_target": "dialog",
+      "font_scale": 100,
+      "group": "dialogs",
+      "height": 620,
+      "id": "dialog_solution_actions_760x620_100",
+      "page": "dialog",
+      "required_visible_texts": [
+        "Ausgabeordner ist nicht beschreibbar",
+        "Was ist passiert?",
+        "Empfohlene Lösung",
+        "Neuen Ausgabeordner erstellen",
+        "Sicheren Ausgabeordner verwenden",
+        "Ohne Änderung schließen"
+      ],
+      "root_height": 820,
+      "root_width": 1280,
+      "state": "solution",
+      "width": 760
+    },
+    {
+      "capture_target": "dialog",
+      "font_scale": 100,
+      "group": "dialogs",
+      "height": 760,
+      "id": "dialog_media_import_icons_1220x760_100",
+      "page": "dialog",
+      "required_visible_texts": [
+        "Bilder und Videos auswählen",
+        "Mehrfachauswahl",
+        "☷ Liste",
+        "▦ Symbole",
+        "Live-Vorschau",
+        "Auswahl übernehmen + im Ordner bleiben"
+      ],
+      "root_height": 900,
+      "root_width": 1440,
+      "state": "media_import",
+      "width": 1220
+    }
+  ],
+  "schema_version": 4
+}

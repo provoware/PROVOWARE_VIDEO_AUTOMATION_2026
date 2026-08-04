@@ -1,0 +1,43 @@
+{
+  "schema_version": 4,
+  "name": "Ultraviolet",
+  "label": "Ultraviolet",
+  "colors": {
+    "background_main": "#090818",
+    "background_surface": "#17152D",
+    "background_elevated": "#272047",
+    "background_preview": "#03030A",
+    "background_toolbar": "#111027",
+    "text_primary": "#FAFAFF",
+    "text_secondary": "#DDD9FF",
+    "text_muted": "#B8B1DA",
+    "border_default": "#7B72D8",
+    "border_subtle": "#403966",
+    "border_focus": "#68D8FF",
+    "action_primary": "#FF7AC8",
+    "action_primary_text": "#210B19",
+    "action_secondary": "#332C59",
+    "status_success": "#75F0B3",
+    "status_information": "#68D8FF",
+    "status_active": "#B99CFF",
+    "status_warning": "#FFD36A",
+    "status_attention": "#FFAA6B",
+    "status_error": "#FF6E93",
+    "state_selected": "#493E82",
+    "state_hover": "#352E5C",
+    "state_disabled": "#746E91",
+    "tile_gold": "#D6A638",
+    "tile_magenta": "#C64A9A",
+    "tile_green": "#3D9970",
+    "tile_blue": "#367FB5"
+  },
+  "metrics": {
+    "base_font": 12,
+    "title_font": 27,
+    "section_font": 16,
+    "row_height": 37,
+    "button_padding_x": 12,
+    "button_padding_y": 8,
+    "card_padding": 9
+  }
+}

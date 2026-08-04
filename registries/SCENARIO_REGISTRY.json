@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "scenarios": [
+    {"id":"valid_pair_fast_path","handler":"valid_pair_fast_path","expected":"pass"},
+    {"id":"pair_count_mismatch","handler":"pair_count_mismatch","expected":"blocked"},
+    {"id":"missing_input","handler":"missing_input","expected":"blocked"},
+    {"id":"read_only_output","handler":"read_only_output","expected":"blocked"},
+    {"id":"corrupt_config","handler":"corrupt_config","expected":"healed"},
+    {"id":"duplicate_sort_stability","handler":"duplicate_sort_stability","expected":"pass"},
+    {"id":"archive_collision","handler":"archive_collision","expected":"pass"},
+    {"id":"archive_copy_failure","handler":"archive_copy_failure","expected":"safe_failure"},
+    {"id":"invalid_plugin","handler":"invalid_plugin","expected":"blocked"},
+    {"id":"invalid_update","handler":"invalid_update","expected":"blocked"},
+    {"id":"log_redaction","handler":"log_redaction","expected":"pass"},
+    {"id":"registry_consistency","handler":"registry_consistency","expected":"pass"}
+  ]
+}

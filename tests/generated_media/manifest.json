@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "files": {
+    "audio_short": "tests/generated_media/audio_kurz.wav",
+    "image_landscape": "tests/generated_media/bild_querformat.png",
+    "video_compatible": "tests/generated_media/video_kompatibel.mp4",
+    "video_short": "tests/generated_media/video_zu_kurz.mp4",
+    "corrupt_media": "tests/generated_media/medium_beschaedigt.mp4",
+    "unicode_image": "tests/generated_media/bühne_äöü_测试.png"
+  }
+}

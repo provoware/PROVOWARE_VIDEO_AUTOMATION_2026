@@ -1,0 +1,22 @@
+{
+  "schema_version": 3,
+  "update_schema_version": 3,
+  "allowed_operations": ["add", "replace", "delete"],
+  "forbidden_paths": ["../", "/", "~"],
+  "require_hashes": true,
+  "require_compatible_from": true,
+  "staging_required": true,
+  "self_test_required": true,
+  "rollback_required": true,
+  "candidate_must_remain_byte_identical_after_test": true,
+  "symbolic_links_forbidden": true,
+  "max_files": 2000,
+  "max_uncompressed_bytes": 1073741824,
+  "max_compression_ratio": 200,
+  "stable_requires_visual_approval": true,
+  "stable_required_binding_fields": [
+    "build_id",
+    "visual_contract_sha256",
+    "approval_sha256"
+  ]
+}

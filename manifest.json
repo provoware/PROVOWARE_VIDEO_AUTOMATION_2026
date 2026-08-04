@@ -1,0 +1,9 @@
+{
+  "artifact_policy": "full-project-zip-before-stable",
+  "build_date": "2026-08-04",
+  "channel": "rc",
+  "entrypoint": "videobatch.sh",
+  "name": "VideoBatch Fast",
+  "schema_version": 1,
+  "version": "2.8.3-rc24"
+}

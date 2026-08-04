@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "contract_id": "videobatch-fast.predictive-startup/2.8.3-rc24-v2",
+  "release_target": "2.8.3-rc24",
+  "goal": "Die Oberfläche ohne Nutzerintervention nach einer bestätigten UI-Bereitschaftsmeldung öffnen; bei einem frühen Oberflächenfehler automatisch in einen neutralen sicheren Startmodus wechseln.",
+  "stages": [
+    {
+      "id": "system",
+      "order": 1,
+      "label": "Programmpaket und System prüfen"
+    },
+    {
+      "id": "runtime",
+      "order": 2,
+      "label": "Laufzeit automatisch vorbereiten"
+    },
+    {
+      "id": "project",
+      "order": 3,
+      "label": "Projekt und Medienfunktionen prüfen"
+    },
+    {
+      "id": "launch",
+      "order": 4,
+      "label": "Oberfläche öffnen"
+    }
+  ],
+  "policy": {
+    "interactive_questions_forbidden": true,
+    "quality_tools_must_not_block_application_start": true,
+    "ffmpeg_codec_listing_must_not_block_application_start": true,
+    "real_encoder_smoke_test_is_authoritative": true,
+    "missing_ffmpeg_starts_ui_in_degraded_mode": true,
+    "runtime_environment_is_content_addressed": true,
+    "runtime_environment_must_not_be_moved_after_creation": true,
+    "technical_output_goes_to_log": true,
+    "desktop_and_cli_launchers_are_maintained_automatically": true,
+    "maximum_automatic_repair_attempts": 2,
+    "fatal_conditions": [
+      "bootstrap_python_missing",
+      "tk_missing",
+      "project_package_incomplete",
+      "runtime_cannot_be_installed_or_verified_after_all_repair_attempts"
+    ],
+    "ui_ready_handshake_required": true,
+    "normal_start_retried_in_safe_mode": true,
+    "existing_instance_is_focused_instead_of_rejected": true,
+    "runtime_ready_marker_is_auto_repairable": true,
+    "startup_probe_never_blocks_ui_launch": true,
+    "application_ready_timeout_seconds": 35,
+    "system_python_runtime_fallback_allowed": true,
+    "system_fallback_forces_safe_mode": true
+  }
+}
