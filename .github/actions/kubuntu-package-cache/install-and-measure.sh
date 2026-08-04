@@ -11,7 +11,6 @@ APT_ARCHIVES="$RUNNER_TEMP/apt-archives"
 PIP_CACHE_DIR="$RUNNER_TEMP/pip-cache"
 LOG_DIR="matrix-logs"
 PACKAGE_FILE=".github/ci/kubuntu-packages.txt"
-METRICS_FILE="CI_PACKAGE_METRICS.json"
 export PIP_CACHE_DIR
 
 mkdir -p "$APT_ARCHIVES/partial" "$PIP_CACHE_DIR" "$LOG_DIR"
@@ -33,23 +32,33 @@ update_result="${PIPESTATUS[0]}"
 set -e
 
 if ((update_result == 0)); then
-  apt-get \
-    -o Dir::Cache::archives="$APT_ARCHIVES" \
-    --simulate install -y --no-install-recommends "${packages[@]}" \
-    2>&1 | tee "$LOG_DIR/apt-simulate.log"
-
   set +e
-  sudo env DEBIAN_FRONTEND=noninteractive \
-    timeout --signal=TERM --kill-after=30s 15m \
+  timeout --signal=TERM --kill-after=30s 3m \
     apt-get \
-      -o Acquire::Retries=5 \
-      -o Dpkg::Use-Pty=0 \
       -o Dir::Cache::archives="$APT_ARCHIVES" \
-      install -y --no-install-recommends "${packages[@]}" \
-    2>&1 | tee "$LOG_DIR/apt-install.log"
-  apt_result="${PIPESTATUS[0]}"
+      --simulate install -y --no-install-recommends "${packages[@]}" \
+    2>&1 | tee "$LOG_DIR/apt-simulate.log"
+  simulate_result="${PIPESTATUS[0]}"
   set -e
+
+  if ((simulate_result == 0)); then
+    set +e
+    sudo env DEBIAN_FRONTEND=noninteractive \
+      timeout --signal=TERM --kill-after=30s 15m \
+      apt-get \
+        -o Acquire::Retries=5 \
+        -o Dpkg::Use-Pty=0 \
+        -o Dir::Cache::archives="$APT_ARCHIVES" \
+        install -y --no-install-recommends "${packages[@]}" \
+      2>&1 | tee "$LOG_DIR/apt-install.log"
+    apt_result="${PIPESTATUS[0]}"
+    set -e
+  else
+    apt_result="$simulate_result"
+    : > "$LOG_DIR/apt-install.log"
+  fi
 else
+  simulate_result=125
   apt_result="$update_result"
   : > "$LOG_DIR/apt-simulate.log"
   : > "$LOG_DIR/apt-install.log"
@@ -96,7 +105,7 @@ pip_after="$(du -sb "$PIP_CACHE_DIR" | awk '{print $1}')"
 
 export apt_before apt_after pip_before pip_after
 export apt_started apt_finished pip_started pip_finished
-export apt_result pip_result verify_result update_result
+export apt_result pip_result verify_result update_result simulate_result
 export REQUESTED_PACKAGE_COUNT="${#packages[@]}"
 
 python3 - <<'PY'
@@ -143,15 +152,16 @@ apt_exact = os.environ.get("APT_CACHE_EXACT_HIT") == "true"
 pip_exact = os.environ.get("PIP_CACHE_EXACT_HIT") == "true"
 apt_restored = apt_before > 1024 * 1024
 pip_restored = pip_before > 1024 * 1024
+update_ok = int(os.environ["update_result"]) == 0
+simulate_ok = int(os.environ["simulate_result"]) == 0
 apt_ok = int(os.environ["apt_result"]) == 0
 pip_ok = int(os.environ["pip_result"]) == 0
 verify_ok = int(os.environ["verify_result"]) == 0
-update_ok = int(os.environ["update_result"]) == 0
-overall_ok = apt_ok and pip_ok and verify_ok and update_ok
+overall_ok = update_ok and simulate_ok and apt_ok and pip_ok and verify_ok
 mode = os.environ.get("CI_PACKAGE_MODE", "matrix")
 
 metrics = {
-    "schema_version": 2,
+    "schema_version": 3,
     "mode": mode,
     "os": os.environ["MATRIX_OS"],
     "session": os.environ["MATRIX_SESSION"],
@@ -180,6 +190,7 @@ metrics = {
     "pip_cache_before_bytes": pip_before,
     "pip_cache_after_bytes": pip_after,
     "apt_update_success": update_ok,
+    "apt_simulation_success": simulate_ok,
     "apt_success": apt_ok,
     "pip_success": pip_ok,
     "verification_success": verify_ok,
@@ -230,6 +241,10 @@ lines = [
     f"- APT-Vorrat vorher: **{human_size(apt_before)}**",
     f"- APT-Vorrat nachher: **{human_size(apt_after)}**",
     f"- Python-Vorrat nachher: **{human_size(pip_after)}**",
+    (
+        "- Paketvorberechnung: "
+        f"**{'bestanden' if simulate_ok else 'fehlgeschlagen'}**"
+    ),
     f"- Werkzeugprüfung: **{'bestanden' if verify_ok else 'fehlgeschlagen'}**",
     "",
     "## Was bedeutet das?",
@@ -259,6 +274,10 @@ PY
 if ((update_result != 0)); then
   echo "::error title=Paketübersicht nicht erreichbar::Die Ubuntu-Paketübersicht konnte trotz Wiederholungen nicht aktualisiert werden. Details: matrix-logs/apt-update.log"
   exit "$update_result"
+fi
+if ((simulate_result != 0)); then
+  echo "::error title=Paketvorberechnung abgebrochen::Die reine APT-Vorberechnung wurde nach spätestens drei Minuten beendet oder ist fehlgeschlagen. Details: matrix-logs/apt-simulate.log"
+  exit "$simulate_result"
 fi
 if ((apt_result != 0)); then
   echo "::error title=APT-Installation fehlgeschlagen::Die Ubuntu-Pakete konnten nicht vollständig installiert werden. Details: matrix-logs/apt-install.log"

@@ -58,6 +58,22 @@ def test_installer_keeps_minimal_install_and_tool_validation() -> None:
     assert "GITHUB_STEP_SUMMARY" in text
 
 
+def test_apt_simulation_has_its_own_timeout_and_clear_error() -> None:
+    text = INSTALLER.read_text(encoding="utf-8")
+
+    bounded_simulation = (
+        "timeout --signal=TERM --kill-after=30s 3m \\\n"
+        "    apt-get \\\n"
+        "      -o Dir::Cache::archives=\"$APT_ARCHIVES\" \\\n"
+        "      --simulate install -y --no-install-recommends"
+    )
+    assert bounded_simulation in text
+    assert 'simulate_result="${PIPESTATUS[0]}"' in text
+    assert "apt_simulation_success" in text
+    assert "Paketvorberechnung abgebrochen" in text
+    assert "matrix-logs/apt-simulate.log" in text
+
+
 def test_warmup_has_read_only_repository_permissions() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
 
