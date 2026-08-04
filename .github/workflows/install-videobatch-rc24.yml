@@ -6,6 +6,8 @@ on:
     paths:
       - '.github/workflows/install-videobatch-rc24.yml'
   workflow_dispatch:
+  issues:
+    types: [opened]
 
 permissions:
   contents: write
@@ -16,6 +18,7 @@ concurrency:
 
 jobs:
   install-and-validate:
+    if: github.event_name != 'issues' || github.event.issue.title == 'RUN_RC24_INSTALL_20260804'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -104,6 +107,3 @@ jobs:
           git add -A
           git commit -m 'Install VideoBatch Fast 2.8.3-rc24'
           git push origin HEAD:main
-
-# retrigger: 2026-08-04T11:18:00+02:00
-# merge-trigger: 2026-08-04T11:22:00+02:00
