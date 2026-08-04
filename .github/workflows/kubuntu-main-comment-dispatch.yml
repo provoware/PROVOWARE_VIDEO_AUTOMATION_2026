@@ -92,9 +92,14 @@ jobs:
           done
 
           if [[ -z "$run_json" ]]; then
+            cat > run-comment.md <<EOF
+          ⚠️ **${LABEL} wurde ausgelöst**, aber die Run-ID war innerhalb von 60 Sekunden noch nicht abrufbar.
+
+          Unter **Actions** läuft die Prüfung dennoch weiter. Es ist keine erneute Auslösung erforderlich.
+          EOF
             gh issue comment 12 \
               --repo "$GITHUB_REPOSITORY" \
-              --body "⚠️ **${LABEL} wurde ausgelöst**, aber die Run-ID war innerhalb von 60 Sekunden noch nicht abrufbar. Unter Actions läuft die Prüfung dennoch weiter."
+              --body-file run-comment.md
             echo "::warning title=Run-ID noch nicht sichtbar::Der Workflow wurde ausgelöst, aber noch nicht in der Run-Liste gefunden."
             exit 0
           fi
@@ -103,7 +108,17 @@ jobs:
           run_url="$(jq -r '.url' <<< "$run_json")"
           run_status="$(jq -r '.status' <<< "$run_json")"
           head_sha="$(jq -r '.headSha' <<< "$run_json")"
+          cat > run-comment.md <<EOF
+          🚦 **${LABEL} gestartet**
+
+          - Run: [${run_id}](${run_url})
+          - Status: \`${run_status}\`
+          - Branch: \`main\`
+          - Commit: \`${head_sha}\`
+
+          Die Abschlussauswertung erfolgt automatisch.
+          EOF
           gh issue comment 12 \
             --repo "$GITHUB_REPOSITORY" \
-            --body "🚦 **${LABEL} gestartet**\n\n- Run: [${run_id}](${run_url})\n- Status: \`${run_status}\`\n- Branch: \`main\`\n- Commit: \`${head_sha}\`\n\nDie Abschlussauswertung erfolgt automatisch."
+            --body-file run-comment.md
           echo "::notice title=Geschützter Workflow gestartet::${LABEL}, Run ${run_id}, Status ${run_status}."
