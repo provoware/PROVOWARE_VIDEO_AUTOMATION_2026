@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - .github/workflows/kubuntu-pr-matrix.yml
+      - .github/workflows/kubuntu-build-matrix.yml
       - scripts/**
       - src/**
       - tests/**
