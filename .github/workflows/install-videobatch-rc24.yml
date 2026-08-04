@@ -92,7 +92,7 @@ jobs:
           PY
           echo prevalidation-ok > /tmp/rc24-stage
 
-      - name: RC24 einsetzen und Workflow-Ordner unverändert lassen
+      - name: RC24 exakt im Originalzustand einsetzen
         shell: bash
         run: |
           set -euo pipefail
@@ -105,9 +105,6 @@ jobs:
           test -f "$SOURCE/manifest.json"
           find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
           cp -a "$SOURCE"/. ./
-          rm -rf .github/workflows
-          mkdir -p .github/workflows
-          cp -a /tmp/current-workflows/. .github/workflows/
           find . -type d -name '__pycache__' -prune -exec rm -rf {} +
           find . -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete
           echo extract-ok > /tmp/rc24-stage
@@ -159,6 +156,15 @@ jobs:
           rm -rf .venv .pytest_cache
           find . -type d -name '__pycache__' -prune -exec rm -rf {} +
           find . -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete
+
+          # GitHub Actions darf ohne workflows-Recht keine Workflow-Dateien pushen.
+          # Deshalb wird der zuvor gesicherte Workflow-Ordner erst nach den Tests
+          # und unmittelbar vor dem Commit wiederhergestellt. Die endgültige
+          # RC24-Workflow-Synchronisierung erfolgt danach über den GitHub-Connector.
+          rm -rf .github/workflows
+          mkdir -p .github/workflows
+          cp -a /tmp/current-workflows/. .github/workflows/
+
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
