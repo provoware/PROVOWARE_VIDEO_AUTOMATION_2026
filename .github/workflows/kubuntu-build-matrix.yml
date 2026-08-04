@@ -40,6 +40,7 @@ jobs:
           - x11
           - wayland
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
     env:
       XDG_SESSION_TYPE: ${{ matrix.session }}
       PYTHONDONTWRITEBYTECODE: '1'
@@ -50,11 +51,16 @@ jobs:
       - name: Install KDE/Tk/media test dependencies
         run: |
           set -Eeuo pipefail
-          sudo apt-get update
-          sudo apt-get install -y \
+          sudo env DEBIAN_FRONTEND=noninteractive \
+            timeout --signal=TERM --kill-after=30s 5m \
+            apt-get -o Acquire::Retries=5 update
+          sudo env DEBIAN_FRONTEND=noninteractive \
+            timeout --signal=TERM --kill-after=30s 12m \
+            apt-get -o Acquire::Retries=5 -o Dpkg::Use-Pty=0 install -y \
             python3 python3-tk python3-pip ffmpeg xvfb weston \
             dbus-x11 plasma-workspace
-          python3 -m pip install --user --requirement requirements-toolchain.lock
+          timeout --signal=TERM --kill-after=30s 8m \
+            python3 -m pip install --user --requirement requirements-toolchain.lock
 
       - name: Start deterministic display
         run: |
