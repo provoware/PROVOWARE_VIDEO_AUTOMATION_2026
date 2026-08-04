@@ -6,8 +6,8 @@ python3 "$ROOT/scripts/check_release_literal_hygiene.py" \
   --report "$ROOT/RELEASE_LITERAL_HYGIENE.json"
 python3 -m pytest -q
 bash "$ROOT/videobatch.sh" fault-lab
-python3 "$ROOT/scripts/check_version_consistency.py"
-python3 "$ROOT/scripts/check_text_resources.py"
+python3 "$ROOT/scripts/validate_version_contract.py"
+python3 "$ROOT/scripts/validate_text_resources.py"
 ffmpeg -hide_banner -loglevel error -f lavfi -i sine=frequency=880:duration=.2 -c:a aac -f null -
 MEDIA_ARGS=()
 if [[ -n "${VIDEOBATCH_STATIC_MEDIA_DIR:-}" ]]; then MEDIA_ARGS=(--static-media-dir "$VIDEOBATCH_STATIC_MEDIA_DIR"); fi
