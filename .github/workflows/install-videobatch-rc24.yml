@@ -17,25 +17,25 @@ concurrency:
 jobs:
   install-and-validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - name: Checkout bootstrap
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Download and verify source archive
+      - name: Download and verify RC24 source
         shell: bash
         run: |
           set -euo pipefail
           URL='https://filebin.net/provoware-videobatch-rc24-20260804-9f7c2a/VideoBatch_Fast_2.8.3-rc24.zip'
+          ARCHIVE='/tmp/VideoBatch_Fast_2.8.3-rc24.zip'
           curl --fail --location --retry 5 --retry-all-errors \
-            --connect-timeout 20 --max-time 300 \
-            "$URL" -o /tmp/VideoBatch_Fast_2.8.3-rc24.zip
+            --connect-timeout 20 --max-time 300 "$URL" -o "$ARCHIVE"
           echo 'c54c19141f4d08fbb19f6f38e40ce06c589a86725b988864ad8e22f28ad7501a  /tmp/VideoBatch_Fast_2.8.3-rc24.zip' | sha256sum --check --strict
-          unzip -t /tmp/VideoBatch_Fast_2.8.3-rc24.zip
+          unzip -t "$ARCHIVE"
 
-      - name: Replace repository root with RC24 source
+      - name: Replace repository root
         shell: bash
         run: |
           set -euo pipefail
@@ -69,14 +69,14 @@ jobs:
           .venv/bin/python -m pip install --upgrade pip
           .venv/bin/python -m pip install -r requirements-toolchain.lock
 
-      - name: Validate release metadata and tests
+      - name: Validate release and run complete tests
         shell: bash
         run: |
           set -euo pipefail
           PYTHONPATH=src .venv/bin/python scripts/validate_release_manifest.py
           PYTHONPATH=src xvfb-run -a .venv/bin/python -m pytest -q
 
-      - name: Record evidence and publish final project tree
+      - name: Record evidence and publish final RC24 tree
         shell: bash
         run: |
           set -euo pipefail
@@ -102,5 +102,19 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
+          if git diff --cached --quiet; then
+            echo 'No repository changes detected; refusing an empty release commit.' >&2
+            exit 1
+          fi
           git commit -m 'Install VideoBatch Fast 2.8.3-rc24'
           git push origin HEAD:main
+          FINAL_SHA="$(git rev-parse HEAD)"
+          TAG='videobatch-fast-2.8.3-rc24'
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Release tag $TAG already exists; leaving it unchanged."
+          else
+            git tag -a "$TAG" "$FINAL_SHA" -m 'VideoBatch Fast 2.8.3-rc24 validated release candidate'
+            git push origin "refs/tags/$TAG"
+          fi
+
+# actions-enabled-retrigger: 2026-08-04T11:39:00+02:00
