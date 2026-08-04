@@ -2,9 +2,9 @@ name: Kubuntu compatibility matrix PR validation
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
     paths:
+      - .github/ci/kubuntu-packages.txt
       - .github/workflows/kubuntu-pr-matrix.yml
       - .github/workflows/kubuntu-build-matrix.yml
       - scripts/**
@@ -29,17 +29,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-22.04
-          - ubuntu-24.04
-        session:
-          - x11
-          - wayland
+        os: [ubuntu-22.04, ubuntu-24.04]
+        session: [x11, wayland]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     env:
       XDG_SESSION_TYPE: ${{ matrix.session }}
       PYTHONDONTWRITEBYTECODE: '1'
+      APT_ARCHIVES: ${{ runner.temp }}/apt-archives
+      PIP_CACHE_DIR: ${{ runner.temp }}/pip-cache
 
     steps:
       - name: Check out PR branch
@@ -47,38 +45,61 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
+      - name: Prepare package caches
+        run: |
+          set -Eeuo pipefail
+          mkdir -p "$APT_ARCHIVES/partial" "$PIP_CACHE_DIR"
+
+      - name: Restore Ubuntu package cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.APT_ARCHIVES }}
+          key: apt-v2-${{ matrix.os }}-${{ hashFiles('.github/ci/kubuntu-packages.txt') }}
+          restore-keys: |
+            apt-v2-${{ matrix.os }}-
+
+      - name: Restore Python package cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PIP_CACHE_DIR }}
+          key: pip-v2-${{ matrix.os }}-${{ hashFiles('requirements-toolchain.lock') }}
+          restore-keys: |
+            pip-v2-${{ matrix.os }}-
+
       - name: Install KDE, Tk and media dependencies
         run: |
           set -Eeuo pipefail
+          mapfile -t packages < <(sed '/^[[:space:]]*#/d; /^[[:space:]]*$/d' .github/ci/kubuntu-packages.txt)
+          ((${#packages[@]} > 0))
+          chmod -R u+rwX "$APT_ARCHIVES" "$PIP_CACHE_DIR"
           sudo env DEBIAN_FRONTEND=noninteractive \
             timeout --signal=TERM --kill-after=30s 5m \
             apt-get -o Acquire::Retries=5 update
           sudo env DEBIAN_FRONTEND=noninteractive \
             timeout --signal=TERM --kill-after=30s 12m \
-            apt-get -o Acquire::Retries=5 -o Dpkg::Use-Pty=0 install -y \
-            python3 python3-tk python3-pip ffmpeg xvfb weston \
-            dbus-x11 plasma-workspace
+            apt-get -o Acquire::Retries=5 \
+              -o Dpkg::Use-Pty=0 \
+              -o Dir::Cache::archives="$APT_ARCHIVES" \
+              install -y --no-install-recommends "${packages[@]}"
           timeout --signal=TERM --kill-after=30s 8m \
             python3 -m pip install --user --requirement requirements-toolchain.lock
+          du -sh "$APT_ARCHIVES" "$PIP_CACHE_DIR" || true
 
       - name: Start deterministic display
         run: |
           set -Eeuo pipefail
           if [[ "${{ matrix.session }}" == x11 ]]; then
-            Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp \
-              >/tmp/xvfb.log 2>&1 &
+            Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
             echo "DISPLAY=:99" >> "$GITHUB_ENV"
           else
             mkdir -p "$RUNNER_TEMP/xdg"
             chmod 700 "$RUNNER_TEMP/xdg"
             XDG_RUNTIME_DIR="$RUNNER_TEMP/xdg" weston \
-              --backend=headless-backend.so \
-              --socket=wayland-vb \
-              --idle-time=0 >/tmp/weston.log 2>&1 &
+              --backend=headless-backend.so --socket=wayland-vb --idle-time=0 \
+              >/tmp/weston.log 2>&1 &
             echo "XDG_RUNTIME_DIR=$RUNNER_TEMP/xdg" >> "$GITHUB_ENV"
             echo "WAYLAND_DISPLAY=wayland-vb" >> "$GITHUB_ENV"
-            Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp \
-              >/tmp/xvfb.log 2>&1 &
+            Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
             echo "DISPLAY=:99" >> "$GITHUB_ENV"
           fi
           sleep 2
@@ -91,9 +112,7 @@ jobs:
           set -Eeuo pipefail
           FFMPEG_PATH="$(readlink -f "$(command -v ffmpeg)")"
           FFPROBE_PATH="$(readlink -f "$(command -v ffprobe)")"
-          test -x "$FFMPEG_PATH"
-          test -x "$FFPROBE_PATH"
-
+          test -x "$FFMPEG_PATH" && test -x "$FFPROBE_PATH"
           FFMPEG_VERSION="$("$FFMPEG_PATH" -version | sed -n '1p')"
           FFPROBE_VERSION="$("$FFPROBE_PATH" -version | sed -n '1p')"
           PACKAGE_VERSION="$(dpkg-query -W -f='${Version}' ffmpeg)"
@@ -104,55 +123,36 @@ jobs:
           ln -sfn "$FFMPEG_PATH" "$MEDIA_DIR/ffmpeg"
           ln -sfn "$FFPROBE_PATH" "$MEDIA_DIR/ffprobe"
           echo "VIDEOBATCH_STATIC_MEDIA_DIR=$MEDIA_DIR" >> "$GITHUB_ENV"
-
           export FFMPEG_PATH FFPROBE_PATH FFMPEG_VERSION FFPROBE_VERSION
           export PACKAGE_VERSION FFMPEG_SHA256 FFPROBE_SHA256 MEDIA_DIR
           python3 - <<'PY'
-          import json
-          import os
+          import json, os
           from pathlib import Path
-
           evidence = {
               "schema_version": 1,
               "provider": "ubuntu-apt",
               "os": os.environ["MATRIX_OS"],
               "session": os.environ["MATRIX_SESSION"],
-              "package": {
-                  "name": "ffmpeg",
-                  "version": os.environ["PACKAGE_VERSION"],
-              },
+              "package": {"name": "ffmpeg", "version": os.environ["PACKAGE_VERSION"]},
               "media_dir": os.environ["MEDIA_DIR"],
-              "ffmpeg": {
-                  "path": os.environ["FFMPEG_PATH"],
-                  "version": os.environ["FFMPEG_VERSION"],
-                  "sha256": os.environ["FFMPEG_SHA256"],
-              },
-              "ffprobe": {
-                  "path": os.environ["FFPROBE_PATH"],
-                  "version": os.environ["FFPROBE_VERSION"],
-                  "sha256": os.environ["FFPROBE_SHA256"],
-              },
+              "ffmpeg": {"path": os.environ["FFMPEG_PATH"], "version": os.environ["FFMPEG_VERSION"], "sha256": os.environ["FFMPEG_SHA256"]},
+              "ffprobe": {"path": os.environ["FFPROBE_PATH"], "version": os.environ["FFPROBE_VERSION"], "sha256": os.environ["FFPROBE_SHA256"]},
           }
-          Path("FFMPEG_TOOLCHAIN.json").write_text(
-              json.dumps(evidence, ensure_ascii=False, indent=2) + "\n",
-              encoding="utf-8",
-          )
+          Path("FFMPEG_TOOLCHAIN.json").write_text(json.dumps(evidence, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
           PY
 
       - name: Check hardcoded release literals
         run: |
           set -Eeuo pipefail
           mkdir -p matrix-logs
-          python3 scripts/check_release_literal_hygiene.py \
-            --report RELEASE_LITERAL_HYGIENE.json \
+          python3 scripts/check_release_literal_hygiene.py --report RELEASE_LITERAL_HYGIENE.json \
             2>&1 | tee matrix-logs/release-literal-hygiene.log
 
       - name: Run complete compatibility contract
         run: |
           set -Eeuo pipefail
           mkdir -p matrix-logs
-          bash scripts/kubuntu_matrix_smoke.sh \
-            2>&1 | tee matrix-logs/compatibility-contract.log
+          bash scripts/kubuntu_matrix_smoke.sh 2>&1 | tee matrix-logs/compatibility-contract.log
 
       - name: Write matrix status and collect diagnostics
         if: always()
@@ -166,23 +166,17 @@ jobs:
           test ! -f /tmp/xvfb.log || cp /tmp/xvfb.log matrix-logs/xvfb.log
           test ! -f /tmp/weston.log || cp /tmp/weston.log matrix-logs/weston.log
           python3 - <<'PY'
-          import json
-          import os
+          import json, os
           from pathlib import Path
-
           result = {
-              "schema_version": 1,
+              "schema_version": 2,
               "os": os.environ["MATRIX_OS"],
               "session": os.environ["MATRIX_SESSION"],
               "status": os.environ["MATRIX_STATUS"],
               "run_id": os.environ["GITHUB_RUN_ID"],
               "commit": os.environ["GITHUB_SHA"],
           }
-          name = f"matrix-status-{result['os']}-{result['session']}.json"
-          Path(name).write_text(
-              json.dumps(result, ensure_ascii=False, indent=2) + "\n",
-              encoding="utf-8",
-          )
+          Path(f"matrix-status-{result['os']}-{result['session']}.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
           PY
 
       - name: Upload matrix evidence
@@ -211,10 +205,8 @@ jobs:
   report:
     name: Consolidate PR matrix result
     if: always()
-    needs:
-      - matrix
+    needs: [matrix]
     runs-on: ubuntu-latest
-
     steps:
       - name: Download matrix status records
         uses: actions/download-artifact@v4
@@ -228,65 +220,24 @@ jobs:
         run: |
           set -Eeuo pipefail
           python3 - <<'PY'
-          import json
-          import os
+          import json, os
           from pathlib import Path
-
-          expected = [
-              ("ubuntu-22.04", "x11"),
-              ("ubuntu-22.04", "wayland"),
-              ("ubuntu-24.04", "x11"),
-              ("ubuntu-24.04", "wayland"),
-          ]
+          expected = [("ubuntu-22.04", "x11"), ("ubuntu-22.04", "wayland"), ("ubuntu-24.04", "x11"), ("ubuntu-24.04", "wayland")]
           records = {}
           for path in Path("matrix-status").glob("matrix-status-*.json"):
               record = json.loads(path.read_text(encoding="utf-8"))
               records[(record.get("os"), record.get("session"))] = record
-
-          results = []
-          for os_name, session in expected:
-              record = records.get((os_name, session), {})
-              results.append(
-                  {
-                      "os": os_name,
-                      "session": session,
-                      "status": record.get("status", "missing"),
-                  }
-              )
+          results = [{"os": os_name, "session": session, "status": records.get((os_name, session), {}).get("status", "missing")} for os_name, session in expected]
           all_success = all(item["status"] == "success" for item in results)
-          summary = {
-              "schema_version": 1,
-              "status": "passed" if all_success else "failed",
-              "run_id": os.environ["GITHUB_RUN_ID"],
-              "commit": os.environ["GITHUB_SHA"],
-              "results": results,
-          }
-          Path("KUBUNTU_PR_MATRIX_SUMMARY.json").write_text(
-              json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
-              encoding="utf-8",
-          )
-          lines = [
-              "# Kubuntu PR matrix",
-              "",
-              "| System | Sitzung | Ergebnis |",
-              "|---|---|---|",
-          ]
+          summary = {"schema_version": 2, "status": "passed" if all_success else "failed", "run_id": os.environ["GITHUB_RUN_ID"], "commit": os.environ["GITHUB_SHA"], "results": results}
+          Path("KUBUNTU_PR_MATRIX_SUMMARY.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          lines = ["# Kubuntu PR matrix", "", "| System | Sitzung | Ergebnis |", "|---|---|---|"]
           for item in results:
               symbol = "✅" if item["status"] == "success" else "❌"
-              lines.append(
-                  f"| {item['os']} | {item['session']} | "
-                  f"{symbol} `{item['status']}` |"
-              )
-          Path("KUBUNTU_PR_MATRIX_SUMMARY.md").write_text(
-              "\n".join(lines) + "\n",
-              encoding="utf-8",
-          )
-          with Path(os.environ["GITHUB_OUTPUT"]).open(
-              "a", encoding="utf-8"
-          ) as output:
-              output.write(
-                  f"all_success={'true' if all_success else 'false'}\n"
-              )
+              lines.append(f"| {item['os']} | {item['session']} | {symbol} `{item['status']}` |")
+          Path("KUBUNTU_PR_MATRIX_SUMMARY.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as output:
+              output.write(f"all_success={'true' if all_success else 'false'}\n")
           PY
 
       - name: Upload consolidated report
