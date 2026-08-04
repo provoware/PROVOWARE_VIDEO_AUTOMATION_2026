@@ -7,11 +7,15 @@ import resource
 import shutil
 import subprocess
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-try:
+if TYPE_CHECKING:
     from .sandbox_seccomp import SeccompUnavailable, find_seccomp_library, install_seccomp_policy
-except ImportError:  # standalone import inside the chrooted plugin host
-    from sandbox_seccomp import SeccompUnavailable, find_seccomp_library, install_seccomp_policy
+else:
+    try:
+        from .sandbox_seccomp import SeccompUnavailable, find_seccomp_library, install_seccomp_policy
+    except ImportError:  # standalone import inside the chrooted plugin host
+        from sandbox_seccomp import SeccompUnavailable, find_seccomp_library, install_seccomp_policy
 
 PR_SET_NO_NEW_PRIVS = 38
 LANDLOCK_CREATE_RULESET_VERSION = 1
