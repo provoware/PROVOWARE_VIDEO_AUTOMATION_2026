@@ -36,8 +36,6 @@ jobs:
     env:
       XDG_SESSION_TYPE: ${{ matrix.session }}
       PYTHONDONTWRITEBYTECODE: '1'
-      APT_ARCHIVES: ${{ runner.temp }}/apt-archives
-      PIP_CACHE_DIR: ${{ runner.temp }}/pip-cache
 
     steps:
       - name: Check out PR branch
@@ -45,61 +43,277 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Prepare package caches
+      - name: Prepare local package cache folders
         run: |
           set -Eeuo pipefail
-          mkdir -p "$APT_ARCHIVES/partial" "$PIP_CACHE_DIR"
+          mkdir -p \
+            "$RUNNER_TEMP/apt-archives/partial" \
+            "$RUNNER_TEMP/pip-cache" \
+            matrix-logs
 
       - name: Restore Ubuntu package cache
+        id: apt_cache
         uses: actions/cache@v4
         with:
-          path: ${{ env.APT_ARCHIVES }}
-          key: apt-v2-${{ matrix.os }}-${{ hashFiles('.github/ci/kubuntu-packages.txt') }}
+          path: ${{ runner.temp }}/apt-archives
+          key: apt-v3-${{ matrix.os }}-${{ hashFiles('.github/ci/kubuntu-packages.txt') }}
           restore-keys: |
-            apt-v2-${{ matrix.os }}-
+            apt-v3-${{ matrix.os }}-
 
       - name: Restore Python package cache
+        id: pip_cache
         uses: actions/cache@v4
         with:
-          path: ${{ env.PIP_CACHE_DIR }}
-          key: pip-v2-${{ matrix.os }}-${{ hashFiles('requirements-toolchain.lock') }}
+          path: ${{ runner.temp }}/pip-cache
+          key: pip-v3-${{ matrix.os }}-${{ hashFiles('requirements-toolchain.lock') }}
           restore-keys: |
-            pip-v2-${{ matrix.os }}-
+            pip-v3-${{ matrix.os }}-
 
-      - name: Install KDE, Tk and media dependencies
+      - name: Install and measure KDE, Tk and media dependencies
+        id: dependencies
+        env:
+          APT_CACHE_HIT: ${{ steps.apt_cache.outputs.cache-hit }}
+          PIP_CACHE_HIT: ${{ steps.pip_cache.outputs.cache-hit }}
+          MATRIX_OS: ${{ matrix.os }}
+          MATRIX_SESSION: ${{ matrix.session }}
         run: |
           set -Eeuo pipefail
-          mapfile -t packages < <(sed '/^[[:space:]]*#/d; /^[[:space:]]*$/d' .github/ci/kubuntu-packages.txt)
+
+          APT_ARCHIVES="$RUNNER_TEMP/apt-archives"
+          PIP_CACHE_DIR="$RUNNER_TEMP/pip-cache"
+          export PIP_CACHE_DIR
+          mapfile -t packages < <(
+            sed '/^[[:space:]]*#/d; /^[[:space:]]*$/d' \
+              .github/ci/kubuntu-packages.txt
+          )
           ((${#packages[@]} > 0))
-          chmod -R u+rwX "$APT_ARCHIVES" "$PIP_CACHE_DIR"
+
+          cache_before_bytes="$(du -sb "$APT_ARCHIVES" | awk '{print $1}')"
+          apt_started="$(date +%s)"
+
           sudo env DEBIAN_FRONTEND=noninteractive \
             timeout --signal=TERM --kill-after=30s 5m \
-            apt-get -o Acquire::Retries=5 update
+            apt-get -o Acquire::Retries=5 update \
+            2>&1 | tee matrix-logs/apt-update.log
+
+          apt-get \
+            -o Dir::Cache::archives="$APT_ARCHIVES" \
+            --simulate install -y --no-install-recommends "${packages[@]}" \
+            2>&1 | tee matrix-logs/apt-simulate.log
+
+          set +e
           sudo env DEBIAN_FRONTEND=noninteractive \
             timeout --signal=TERM --kill-after=30s 12m \
-            apt-get -o Acquire::Retries=5 \
+            apt-get \
+              -o Acquire::Retries=5 \
               -o Dpkg::Use-Pty=0 \
               -o Dir::Cache::archives="$APT_ARCHIVES" \
-              install -y --no-install-recommends "${packages[@]}"
+              install -y --no-install-recommends "${packages[@]}" \
+            2>&1 | tee matrix-logs/apt-install.log
+          apt_result="${PIPESTATUS[0]}"
+          set -e
+
+          apt_finished="$(date +%s)"
+          pip_started="$(date +%s)"
+
+          set +e
           timeout --signal=TERM --kill-after=30s 8m \
-            python3 -m pip install --user --requirement requirements-toolchain.lock
-          du -sh "$APT_ARCHIVES" "$PIP_CACHE_DIR" || true
+            python3 -m pip install \
+              --user \
+              --requirement requirements-toolchain.lock \
+            2>&1 | tee matrix-logs/pip-install.log
+          pip_result="${PIPESTATUS[0]}"
+          set -e
+
+          pip_finished="$(date +%s)"
+          sudo chown -R "$(id -u):$(id -g)" \
+            "$APT_ARCHIVES" "$PIP_CACHE_DIR"
+          cache_after_bytes="$(du -sb "$APT_ARCHIVES" | awk '{print $1}')"
+          pip_cache_bytes="$(du -sb "$PIP_CACHE_DIR" | awk '{print $1}')"
+
+          export apt_result pip_result apt_started apt_finished
+          export pip_started pip_finished cache_before_bytes
+          export cache_after_bytes pip_cache_bytes
+          export REQUESTED_PACKAGE_COUNT="${#packages[@]}"
+
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          def text(path: str) -> str:
+              try:
+                  return Path(path).read_text(
+                      encoding="utf-8",
+                      errors="replace",
+                  )
+              except OSError:
+                  return ""
+
+          def human_size(value: int) -> str:
+              size = float(value)
+              for unit in ("B", "KiB", "MiB", "GiB"):
+                  if size < 1024 or unit == "GiB":
+                      return f"{size:.1f} {unit}"
+                  size /= 1024
+              return f"{value} B"
+
+          simulate = text("matrix-logs/apt-simulate.log")
+          install = text("matrix-logs/apt-install.log")
+          planned_match = re.search(
+              r"(\d+)\s+newly installed",
+              simulate,
+          )
+          download_match = re.search(
+              r"Need to get ([^\n]+?) of archives\.",
+              install,
+          )
+
+          apt_hit = os.environ.get("APT_CACHE_HIT") == "true"
+          pip_hit = os.environ.get("PIP_CACHE_HIT") == "true"
+          apt_ok = int(os.environ["apt_result"]) == 0
+          pip_ok = int(os.environ["pip_result"]) == 0
+
+          metrics = {
+              "schema_version": 1,
+              "os": os.environ["MATRIX_OS"],
+              "session": os.environ["MATRIX_SESSION"],
+              "apt_cache_hit": apt_hit,
+              "pip_cache_hit": pip_hit,
+              "requested_packages": int(
+                  os.environ["REQUESTED_PACKAGE_COUNT"]
+              ),
+              "planned_new_packages": (
+                  int(planned_match.group(1))
+                  if planned_match
+                  else None
+              ),
+              "download_summary": (
+                  download_match.group(1)
+                  if download_match
+                  else "keine Downloadangabe gefunden"
+              ),
+              "apt_seconds": (
+                  int(os.environ["apt_finished"])
+                  - int(os.environ["apt_started"])
+              ),
+              "pip_seconds": (
+                  int(os.environ["pip_finished"])
+                  - int(os.environ["pip_started"])
+              ),
+              "apt_cache_before_bytes": int(
+                  os.environ["cache_before_bytes"]
+              ),
+              "apt_cache_after_bytes": int(
+                  os.environ["cache_after_bytes"]
+              ),
+              "pip_cache_bytes": int(
+                  os.environ["pip_cache_bytes"]
+              ),
+              "apt_success": apt_ok,
+              "pip_success": pip_ok,
+          }
+          Path("CI_PACKAGE_METRICS.json").write_text(
+              json.dumps(metrics, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+
+          overall_ok = apt_ok and pip_ok
+          light = "🟢" if overall_ok else "🔴"
+          cache_state = (
+              "Ja – vorhandene Pakete wurden wiederverwendet."
+              if apt_hit
+              else "Nein – dieser Lauf baut den Cache erst auf."
+          )
+          next_step = (
+              "Keine Aktion nötig."
+              if overall_ok
+              else "Den Abschnitt mit der roten Fehlermeldung öffnen."
+          )
+          lines = [
+              f"# {light} Paketvorbereitung einfach erklärt",
+              "",
+              f"**System:** {metrics['os']} / {metrics['session']}",
+              f"**Ergebnis:** {'erfolgreich' if overall_ok else 'fehlgeschlagen'}",
+              "",
+              "## Das Wichtigste",
+              "",
+              f"- APT-Cache bereits vorhanden: **{cache_state}**",
+              f"- Direkte Pakete in der Liste: **{metrics['requested_packages']}**",
+              (
+                  "- Neu einzuplanende Pakete einschließlich Abhängigkeiten: "
+                  f"**{metrics['planned_new_packages'] if metrics['planned_new_packages'] is not None else 'nicht ermittelt'}**"
+              ),
+              f"- Tatsächliche APT-Downloadangabe: **{metrics['download_summary']}**",
+              f"- APT-Dauer: **{metrics['apt_seconds']} Sekunden**",
+              f"- Pip-Dauer: **{metrics['pip_seconds']} Sekunden**",
+              (
+                  "- APT-Cache nach dem Lauf: "
+                  f"**{human_size(metrics['apt_cache_after_bytes'])}**"
+              ),
+              (
+                  "- Pip-Cache nach dem Lauf: "
+                  f"**{human_size(metrics['pip_cache_bytes'])}**"
+              ),
+              "",
+              "## Was bedeutet das?",
+              "",
+              (
+                  "Ein Cache ist ein lokaler Vorrat bereits heruntergeladener "
+                  "Pakete. Beim ersten Lauf wird er aufgebaut. Spätere Läufe "
+                  "müssen deutlich weniger erneut aus dem Internet laden."
+              ),
+              "",
+              f"**Nächster Schritt:** {next_step}",
+          ]
+          summary = "\n".join(lines) + "\n"
+          Path("matrix-logs/package-metrics.md").write_text(
+              summary,
+              encoding="utf-8",
+          )
+          with Path(os.environ["GITHUB_STEP_SUMMARY"]).open(
+              "a",
+              encoding="utf-8",
+          ) as output:
+              output.write(summary)
+
+          notice = (
+              f"{metrics['os']} / {metrics['session']}: "
+              f"APT {metrics['apt_seconds']} s, "
+              f"Download {metrics['download_summary']}, "
+              f"Cache {'Treffer' if apt_hit else 'Aufbau'}."
+          )
+          print(f"::notice title=CI-Paketstatus::{notice}")
+          PY
+
+          if ((apt_result != 0)); then
+            echo "::error title=APT-Installation fehlgeschlagen::Die Ubuntu-Pakete konnten nicht vollständig installiert werden. Details stehen in apt-install.log."
+            exit "$apt_result"
+          fi
+          if ((pip_result != 0)); then
+            echo "::error title=Python-Installation fehlgeschlagen::Die Python-Werkzeuge konnten nicht vollständig installiert werden. Details stehen in pip-install.log."
+            exit "$pip_result"
+          fi
 
       - name: Start deterministic display
         run: |
           set -Eeuo pipefail
           if [[ "${{ matrix.session }}" == x11 ]]; then
-            Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
+            Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp \
+              >/tmp/xvfb.log 2>&1 &
             echo "DISPLAY=:99" >> "$GITHUB_ENV"
           else
             mkdir -p "$RUNNER_TEMP/xdg"
             chmod 700 "$RUNNER_TEMP/xdg"
             XDG_RUNTIME_DIR="$RUNNER_TEMP/xdg" weston \
-              --backend=headless-backend.so --socket=wayland-vb --idle-time=0 \
-              >/tmp/weston.log 2>&1 &
+              --backend=headless-backend.so \
+              --socket=wayland-vb \
+              --idle-time=0 >/tmp/weston.log 2>&1 &
             echo "XDG_RUNTIME_DIR=$RUNNER_TEMP/xdg" >> "$GITHUB_ENV"
             echo "WAYLAND_DISPLAY=wayland-vb" >> "$GITHUB_ENV"
-            Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
+            Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp \
+              >/tmp/xvfb.log 2>&1 &
             echo "DISPLAY=:99" >> "$GITHUB_ENV"
           fi
           sleep 2
@@ -112,7 +326,9 @@ jobs:
           set -Eeuo pipefail
           FFMPEG_PATH="$(readlink -f "$(command -v ffmpeg)")"
           FFPROBE_PATH="$(readlink -f "$(command -v ffprobe)")"
-          test -x "$FFMPEG_PATH" && test -x "$FFPROBE_PATH"
+          test -x "$FFMPEG_PATH"
+          test -x "$FFPROBE_PATH"
+
           FFMPEG_VERSION="$("$FFMPEG_PATH" -version | sed -n '1p')"
           FFPROBE_VERSION="$("$FFPROBE_PATH" -version | sed -n '1p')"
           PACKAGE_VERSION="$(dpkg-query -W -f='${Version}' ffmpeg)"
@@ -123,36 +339,55 @@ jobs:
           ln -sfn "$FFMPEG_PATH" "$MEDIA_DIR/ffmpeg"
           ln -sfn "$FFPROBE_PATH" "$MEDIA_DIR/ffprobe"
           echo "VIDEOBATCH_STATIC_MEDIA_DIR=$MEDIA_DIR" >> "$GITHUB_ENV"
+
           export FFMPEG_PATH FFPROBE_PATH FFMPEG_VERSION FFPROBE_VERSION
           export PACKAGE_VERSION FFMPEG_SHA256 FFPROBE_SHA256 MEDIA_DIR
           python3 - <<'PY'
-          import json, os
+          import json
+          import os
           from pathlib import Path
+
           evidence = {
               "schema_version": 1,
               "provider": "ubuntu-apt",
               "os": os.environ["MATRIX_OS"],
               "session": os.environ["MATRIX_SESSION"],
-              "package": {"name": "ffmpeg", "version": os.environ["PACKAGE_VERSION"]},
+              "package": {
+                  "name": "ffmpeg",
+                  "version": os.environ["PACKAGE_VERSION"],
+              },
               "media_dir": os.environ["MEDIA_DIR"],
-              "ffmpeg": {"path": os.environ["FFMPEG_PATH"], "version": os.environ["FFMPEG_VERSION"], "sha256": os.environ["FFMPEG_SHA256"]},
-              "ffprobe": {"path": os.environ["FFPROBE_PATH"], "version": os.environ["FFPROBE_VERSION"], "sha256": os.environ["FFPROBE_SHA256"]},
+              "ffmpeg": {
+                  "path": os.environ["FFMPEG_PATH"],
+                  "version": os.environ["FFMPEG_VERSION"],
+                  "sha256": os.environ["FFMPEG_SHA256"],
+              },
+              "ffprobe": {
+                  "path": os.environ["FFPROBE_PATH"],
+                  "version": os.environ["FFPROBE_VERSION"],
+                  "sha256": os.environ["FFPROBE_SHA256"],
+              },
           }
-          Path("FFMPEG_TOOLCHAIN.json").write_text(json.dumps(evidence, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          Path("FFMPEG_TOOLCHAIN.json").write_text(
+              json.dumps(evidence, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
           PY
 
       - name: Check hardcoded release literals
         run: |
           set -Eeuo pipefail
           mkdir -p matrix-logs
-          python3 scripts/check_release_literal_hygiene.py --report RELEASE_LITERAL_HYGIENE.json \
+          python3 scripts/check_release_literal_hygiene.py \
+            --report RELEASE_LITERAL_HYGIENE.json \
             2>&1 | tee matrix-logs/release-literal-hygiene.log
 
       - name: Run complete compatibility contract
         run: |
           set -Eeuo pipefail
           mkdir -p matrix-logs
-          bash scripts/kubuntu_matrix_smoke.sh 2>&1 | tee matrix-logs/compatibility-contract.log
+          bash scripts/kubuntu_matrix_smoke.sh \
+            2>&1 | tee matrix-logs/compatibility-contract.log
 
       - name: Write matrix status and collect diagnostics
         if: always()
@@ -163,20 +398,42 @@ jobs:
         run: |
           set -Eeuo pipefail
           mkdir -p matrix-logs
-          test ! -f /tmp/xvfb.log || cp /tmp/xvfb.log matrix-logs/xvfb.log
-          test ! -f /tmp/weston.log || cp /tmp/weston.log matrix-logs/weston.log
+          test ! -f /tmp/xvfb.log || \
+            cp /tmp/xvfb.log matrix-logs/xvfb.log
+          test ! -f /tmp/weston.log || \
+            cp /tmp/weston.log matrix-logs/weston.log
           python3 - <<'PY'
-          import json, os
+          import json
+          import os
           from pathlib import Path
+
+          metrics = {}
+          try:
+              metrics = json.loads(
+                  Path("CI_PACKAGE_METRICS.json").read_text(
+                      encoding="utf-8"
+                  )
+              )
+          except (OSError, json.JSONDecodeError):
+              pass
+
           result = {
-              "schema_version": 2,
+              "schema_version": 3,
               "os": os.environ["MATRIX_OS"],
               "session": os.environ["MATRIX_SESSION"],
               "status": os.environ["MATRIX_STATUS"],
               "run_id": os.environ["GITHUB_RUN_ID"],
+              "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
               "commit": os.environ["GITHUB_SHA"],
+              "package_metrics": metrics,
           }
-          Path(f"matrix-status-{result['os']}-{result['session']}.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          name = (
+              f"matrix-status-{result['os']}-{result['session']}.json"
+          )
+          Path(name).write_text(
+              json.dumps(result, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
           PY
 
       - name: Upload matrix evidence
@@ -188,6 +445,7 @@ jobs:
             dist-matrix-a/*
             FFMPEG_TOOLCHAIN.json
             RELEASE_LITERAL_HYGIENE.json
+            CI_PACKAGE_METRICS.json
             matrix-status-${{ matrix.os }}-${{ matrix.session }}.json
             matrix-logs/*
           if-no-files-found: warn
@@ -207,6 +465,7 @@ jobs:
     if: always()
     needs: [matrix]
     runs-on: ubuntu-latest
+
     steps:
       - name: Download matrix status records
         uses: actions/download-artifact@v4
@@ -215,29 +474,164 @@ jobs:
           path: matrix-status
           merge-multiple: true
 
-      - name: Build consolidated report
+      - name: Build clear consolidated report
         id: report
         run: |
           set -Eeuo pipefail
           python3 - <<'PY'
-          import json, os
+          import json
+          import os
           from pathlib import Path
-          expected = [("ubuntu-22.04", "x11"), ("ubuntu-22.04", "wayland"), ("ubuntu-24.04", "x11"), ("ubuntu-24.04", "wayland")]
+
+          expected = [
+              ("ubuntu-22.04", "x11"),
+              ("ubuntu-22.04", "wayland"),
+              ("ubuntu-24.04", "x11"),
+              ("ubuntu-24.04", "wayland"),
+          ]
           records = {}
-          for path in Path("matrix-status").glob("matrix-status-*.json"):
-              record = json.loads(path.read_text(encoding="utf-8"))
-              records[(record.get("os"), record.get("session"))] = record
-          results = [{"os": os_name, "session": session, "status": records.get((os_name, session), {}).get("status", "missing")} for os_name, session in expected]
-          all_success = all(item["status"] == "success" for item in results)
-          summary = {"schema_version": 2, "status": "passed" if all_success else "failed", "run_id": os.environ["GITHUB_RUN_ID"], "commit": os.environ["GITHUB_SHA"], "results": results}
-          Path("KUBUNTU_PR_MATRIX_SUMMARY.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-          lines = ["# Kubuntu PR matrix", "", "| System | Sitzung | Ergebnis |", "|---|---|---|"]
+          for path in Path("matrix-status").glob(
+              "matrix-status-*.json"
+          ):
+              record = json.loads(
+                  path.read_text(encoding="utf-8")
+              )
+              records[
+                  (record.get("os"), record.get("session"))
+              ] = record
+
+          results = []
+          for os_name, session in expected:
+              record = records.get((os_name, session), {})
+              results.append(
+                  {
+                      "os": os_name,
+                      "session": session,
+                      "status": record.get("status", "missing"),
+                      "package_metrics": record.get(
+                          "package_metrics",
+                          {},
+                      ),
+                  }
+              )
+
+          all_success = all(
+              item["status"] == "success"
+              for item in results
+          )
+          summary = {
+              "schema_version": 3,
+              "status": "passed" if all_success else "failed",
+              "run_id": os.environ["GITHUB_RUN_ID"],
+              "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+              "commit": os.environ["GITHUB_SHA"],
+              "results": results,
+          }
+          Path("KUBUNTU_PR_MATRIX_SUMMARY.json").write_text(
+              json.dumps(
+                  summary,
+                  ensure_ascii=False,
+                  indent=2,
+              )
+              + "\n",
+              encoding="utf-8",
+          )
+
+          light = "🟢" if all_success else "🔴"
+          lines = [
+              f"# {light} Kubuntu-Prüfung einfach erklärt",
+              "",
+              (
+                  "**Gesamtergebnis: Alle vier Kombinationen "
+                  "funktionieren.**"
+                  if all_success
+                  else
+                  "**Gesamtergebnis: Mindestens eine Kombination "
+                  "benötigt Aufmerksamkeit.**"
+              ),
+              "",
+              "| System | Anzeigeart | Ergebnis | Cache | Download | APT-Dauer |",
+              "|---|---|---|---|---:|---:|",
+          ]
           for item in results:
-              symbol = "✅" if item["status"] == "success" else "❌"
-              lines.append(f"| {item['os']} | {item['session']} | {symbol} `{item['status']}` |")
-          Path("KUBUNTU_PR_MATRIX_SUMMARY.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
-          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as output:
-              output.write(f"all_success={'true' if all_success else 'false'}\n")
+              metrics = item["package_metrics"]
+              status = item["status"]
+              symbol = "✅" if status == "success" else "❌"
+              cache = (
+                  "Treffer"
+                  if metrics.get("apt_cache_hit")
+                  else "Aufbau"
+              )
+              download = metrics.get(
+                  "download_summary",
+                  "nicht ermittelt",
+              )
+              duration = metrics.get("apt_seconds")
+              duration_text = (
+                  f"{duration} s"
+                  if isinstance(duration, int)
+                  else "nicht ermittelt"
+              )
+              session_name = (
+                  "klassisch (X11)"
+                  if item["session"] == "x11"
+                  else "modern (Wayland)"
+              )
+              lines.append(
+                  f"| {item['os']} | {session_name} | "
+                  f"{symbol} `{status}` | {cache} | "
+                  f"{download} | {duration_text} |"
+              )
+
+          lines.extend(
+              [
+                  "",
+                  "## Was bedeutet das für Laien?",
+                  "",
+                  (
+                      "Die Anwendung wurde auf zwei Ubuntu-Versionen "
+                      "und zwei Anzeigearten geprüft. Ein grünes "
+                      "Gesamtergebnis bedeutet: Alle vier Varianten "
+                      "haben denselben vollständigen Test bestanden."
+                  ),
+                  "",
+                  (
+                      "Beim ersten Lauf steht in der Spalte **Cache** "
+                      "meist **Aufbau**. Beim identischen zweiten Lauf "
+                      "soll dort **Treffer** stehen und die "
+                      "Downloadmenge deutlich sinken."
+                  ),
+                  "",
+                  (
+                      "**Nächster Schritt:** "
+                      + (
+                          "Identischen zweiten Lauf für den "
+                          "Cache-Vergleich starten."
+                          if all_success
+                          else
+                          "Die rote Kombination öffnen und nur deren "
+                          "Fehler beheben."
+                      )
+                  ),
+              ]
+          )
+          report = "\n".join(lines) + "\n"
+          Path("KUBUNTU_PR_MATRIX_SUMMARY.md").write_text(
+              report,
+              encoding="utf-8",
+          )
+          with Path(os.environ["GITHUB_STEP_SUMMARY"]).open(
+              "a",
+              encoding="utf-8",
+          ) as output:
+              output.write(report)
+          with Path(os.environ["GITHUB_OUTPUT"]).open(
+              "a",
+              encoding="utf-8",
+          ) as output:
+              output.write(
+                  f"all_success={'true' if all_success else 'false'}\n"
+              )
           PY
 
       - name: Upload consolidated report
@@ -253,5 +647,5 @@ jobs:
       - name: Enforce complete success
         if: steps.report.outputs.all_success != 'true'
         run: |
-          echo "Not all four Kubuntu combinations passed." >&2
+          echo "::error title=Vierfachprüfung unvollständig::Mindestens eine Ubuntu-/Anzeige-Kombination ist fehlgeschlagen. Öffne die rote Tabellenzeile im Bericht."
           exit 1
