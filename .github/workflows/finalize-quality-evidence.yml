@@ -44,7 +44,7 @@ jobs:
           PYTHONDONTWRITEBYTECODE: '1'
         run: |
           set -Eeuo pipefail
-          python3 scripts/render_release_docs.py
+          python3 scripts/render_release_docs.py --write
           python3 scripts/validate_release_file_status.py
           python3 scripts/render_release_docs.py --check
           python3 scripts/build_release_manifest.py
