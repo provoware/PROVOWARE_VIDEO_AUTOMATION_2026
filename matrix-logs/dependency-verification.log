@@ -1,6 +1,0 @@
-/usr/bin/python3
-/usr/bin/ffmpeg
-/usr/bin/ffprobe
-/usr/bin/Xvfb
-/usr/bin/weston
-plasma-workspace	4:5.27.12-0ubuntu0.1
