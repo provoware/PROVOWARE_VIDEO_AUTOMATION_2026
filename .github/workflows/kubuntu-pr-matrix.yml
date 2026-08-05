@@ -1,163 +1,401 @@
-name: Temporary canonical release evidence transaction
+name: Kubuntu compatibility matrix PR validation
 
 on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]
-    paths: [.github/workflows/kubuntu-pr-matrix.yml]
+    paths:
+      - .github/actions/kubuntu-package-cache/**
+      - .github/ci/kubuntu-packages.txt
+      - .github/workflows/kubuntu-cache-warmup.yml
+      - .github/workflows/kubuntu-pr-matrix.yml
+      - .github/workflows/kubuntu-build-matrix.yml
+      - scripts/**
+      - src/**
+      - tests/**
+      - VERSION.json
+      - pyproject.toml
+      - requirements.lock
+      - requirements-toolchain.lock
 
 permissions:
-  contents: write
+  contents: read
   actions: read
 
+concurrency:
+  group: kubuntu-pr-matrix-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
-  apply:
-    name: Rebuild canonical evidence on clean main base
-    if: github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+  matrix:
+    name: ${{ matrix.os }} / ${{ matrix.session }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-22.04
+          - ubuntu-24.04
+        session:
+          - x11
+          - wayland
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
     env:
+      XDG_SESSION_TYPE: ${{ matrix.session }}
       PYTHONDONTWRITEBYTECODE: '1'
-      PYTHONPATH: 'src:.'
-      GH_TOKEN: ${{ github.token }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out PR branch
+        uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Restore hash-verified audited source
+      - name: Prepare cached Kubuntu dependencies
+        uses: ./.github/actions/kubuntu-package-cache
+        with:
+          os: ${{ matrix.os }}
+          session: ${{ matrix.session }}
+          mode: matrix
+
+      - name: Start deterministic display
         run: |
           set -Eeuo pipefail
-          tmp="$RUNNER_TEMP/canonical-evidence"
-          mkdir -p "$tmp/export" "$tmp/source"
-          gh api -H 'Accept: application/vnd.github+json' \
-            "/repos/$GITHUB_REPOSITORY/actions/artifacts/8915848393/zip" > "$tmp/export.zip"
-          echo 'aa856745ce8d5807196822b2785fd680d0065a665720870e7bd0fd50d47e4b32  '"$tmp/export.zip" | sha256sum --check --strict
-          unzip -q "$tmp/export.zip" -d "$tmp/export"
-          echo 'b4315241d282b0ed32a6b79f14dc89f98c1da46fac523186e7f44917ea5d908a  '"$tmp/export/TRACKED_SOURCE.tar.gz" | sha256sum --check --strict
-          tar -xzf "$tmp/export/TRACKED_SOURCE.tar.gz" -C "$tmp/source"
-          base64 --decode "$tmp/source/.github/scripts/release-evidence-payload.b64" > "$tmp/payload.tar.gz"
-          echo 'a4df1d6124634386f8dc9de20f1b737d6986fa8bcc4324bc9fac181ff8ed6fd5  '"$tmp/payload.tar.gz" | sha256sum --check --strict
-          tar -xzf "$tmp/payload.tar.gz" -C .
-          cp "$tmp/source/diagnostics/release_readiness/release_readiness_dashboard.py" diagnostics/release_readiness/
-          cp "$tmp/source/diagnostics/release_readiness/ci_status.example.json" diagnostics/release_readiness/
+          if [[ "${{ matrix.session }}" == x11 ]]; then
+            Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp \
+              >/tmp/xvfb.log 2>&1 &
+            echo "DISPLAY=:99" >> "$GITHUB_ENV"
+          else
+            mkdir -p "$RUNNER_TEMP/xdg"
+            chmod 700 "$RUNNER_TEMP/xdg"
+            XDG_RUNTIME_DIR="$RUNNER_TEMP/xdg" weston \
+              --backend=headless-backend.so \
+              --socket=wayland-vb \
+              --idle-time=0 >/tmp/weston.log 2>&1 &
+            echo "XDG_RUNTIME_DIR=$RUNNER_TEMP/xdg" >> "$GITHUB_ENV"
+            echo "WAYLAND_DISPLAY=wayland-vb" >> "$GITHUB_ENV"
+            Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp \
+              >/tmp/xvfb.log 2>&1 &
+            echo "DISPLAY=:99" >> "$GITHUB_ENV"
+          fi
+          sleep 2
 
-      - name: Synchronize evidence and patch manifest compatibility
+      - name: Provision and attest Ubuntu FFmpeg
+        env:
+          MATRIX_OS: ${{ matrix.os }}
+          MATRIX_SESSION: ${{ matrix.session }}
+        run: |
+          set -Eeuo pipefail
+          FFMPEG_PATH="$(readlink -f "$(command -v ffmpeg)")"
+          FFPROBE_PATH="$(readlink -f "$(command -v ffprobe)")"
+          test -x "$FFMPEG_PATH"
+          test -x "$FFPROBE_PATH"
+
+          FFMPEG_VERSION="$("$FFMPEG_PATH" -version | sed -n '1p')"
+          FFPROBE_VERSION="$("$FFPROBE_PATH" -version | sed -n '1p')"
+          PACKAGE_VERSION="$(dpkg-query -W -f='${Version}' ffmpeg)"
+          FFMPEG_SHA256="$(sha256sum "$FFMPEG_PATH" | awk '{print $1}')"
+          FFPROBE_SHA256="$(sha256sum "$FFPROBE_PATH" | awk '{print $1}')"
+          MEDIA_DIR="$RUNNER_TEMP/ffmpeg-system/bin"
+          mkdir -p "$MEDIA_DIR"
+          ln -sfn "$FFMPEG_PATH" "$MEDIA_DIR/ffmpeg"
+          ln -sfn "$FFPROBE_PATH" "$MEDIA_DIR/ffprobe"
+          echo "VIDEOBATCH_STATIC_MEDIA_DIR=$MEDIA_DIR" >> "$GITHUB_ENV"
+
+          export FFMPEG_PATH FFPROBE_PATH FFMPEG_VERSION FFPROBE_VERSION
+          export PACKAGE_VERSION FFMPEG_SHA256 FFPROBE_SHA256 MEDIA_DIR
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          evidence = {
+              "schema_version": 1,
+              "provider": "ubuntu-apt",
+              "os": os.environ["MATRIX_OS"],
+              "session": os.environ["MATRIX_SESSION"],
+              "package": {
+                  "name": "ffmpeg",
+                  "version": os.environ["PACKAGE_VERSION"],
+              },
+              "media_dir": os.environ["MEDIA_DIR"],
+              "ffmpeg": {
+                  "path": os.environ["FFMPEG_PATH"],
+                  "version": os.environ["FFMPEG_VERSION"],
+                  "sha256": os.environ["FFMPEG_SHA256"],
+              },
+              "ffprobe": {
+                  "path": os.environ["FFPROBE_PATH"],
+                  "version": os.environ["FFPROBE_VERSION"],
+                  "sha256": os.environ["FFPROBE_SHA256"],
+              },
+          }
+          Path("FFMPEG_TOOLCHAIN.json").write_text(
+              json.dumps(evidence, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Check hardcoded release literals
+        run: |
+          set -Eeuo pipefail
+          mkdir -p matrix-logs
+          python3 scripts/check_release_literal_hygiene.py \
+            --report RELEASE_LITERAL_HYGIENE.json \
+            2>&1 | tee matrix-logs/release-literal-hygiene.log
+
+      - name: Run complete compatibility contract
+        run: |
+          set -Eeuo pipefail
+          mkdir -p matrix-logs
+          bash scripts/kubuntu_matrix_smoke.sh \
+            2>&1 | tee matrix-logs/compatibility-contract.log
+
+      - name: Write matrix status and collect diagnostics
+        if: always()
+        env:
+          MATRIX_OS: ${{ matrix.os }}
+          MATRIX_SESSION: ${{ matrix.session }}
+          MATRIX_STATUS: ${{ job.status }}
+        run: |
+          set -Eeuo pipefail
+          mkdir -p matrix-logs
+          test ! -f /tmp/xvfb.log || \
+            cp /tmp/xvfb.log matrix-logs/xvfb.log
+          test ! -f /tmp/weston.log || \
+            cp /tmp/weston.log matrix-logs/weston.log
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          metrics = {}
+          try:
+              metrics = json.loads(
+                  Path("CI_PACKAGE_METRICS.json").read_text(
+                      encoding="utf-8"
+                  )
+              )
+          except (OSError, json.JSONDecodeError):
+              pass
+
+          result = {
+              "schema_version": 4,
+              "os": os.environ["MATRIX_OS"],
+              "session": os.environ["MATRIX_SESSION"],
+              "status": os.environ["MATRIX_STATUS"],
+              "run_id": os.environ["GITHUB_RUN_ID"],
+              "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+              "commit": os.environ["GITHUB_SHA"],
+              "package_metrics": metrics,
+          }
+          name = (
+              f"matrix-status-{result['os']}-{result['session']}.json"
+          )
+          Path(name).write_text(
+              json.dumps(result, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Upload matrix evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-matrix-${{ matrix.os }}-${{ matrix.session }}
+          path: |
+            dist-matrix-a/*
+            FFMPEG_TOOLCHAIN.json
+            RELEASE_LITERAL_HYGIENE.json
+            CI_PACKAGE_METRICS.json
+            matrix-status-${{ matrix.os }}-${{ matrix.session }}.json
+            matrix-logs/*
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload machine-readable matrix status
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: matrix-status-${{ matrix.os }}-${{ matrix.session }}
+          path: matrix-status-${{ matrix.os }}-${{ matrix.session }}.json
+          if-no-files-found: error
+          retention-days: 30
+
+  report:
+    name: Consolidate PR matrix result
+    if: always()
+    needs:
+      - matrix
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download matrix status records
+        uses: actions/download-artifact@v4
+        with:
+          pattern: matrix-status-*
+          path: matrix-status
+          merge-multiple: true
+
+      - name: Build clear consolidated report
+        id: report
         run: |
           set -Eeuo pipefail
           python3 - <<'PY'
           import json
-          import textwrap
+          import os
           from pathlib import Path
 
-          evidence_path = Path('diagnostics/release_readiness/RELEASE_EVIDENCE.json')
-          data = json.loads(evidence_path.read_text(encoding='utf-8'))
-          data['provenance'].update({
-              'verified_source_commit': 'f07deedf8e76a5e0a98f9cae986637d97e11f152',
-              'repository_finalization_commit': 'f49426932c836e363aec3ff512be044c37388fac',
-              'manifest_regeneration_run_id': 30972953813,
-              'matrix_workflow_run_id': 30972953813,
-          })
-          data['matrix'].update({
-              'workflow_run_id': 30972953813,
-              'verified_commit': 'f07deedf8e76a5e0a98f9cae986637d97e11f152',
-          })
-          passed = {'ruff_0_16_1', 'mypy_2_3_0', 'bandit_1_9_4', 'pip_audit_2_10_1'}
-          for gate in data['stable_gates']:
-              if gate['id'] in passed:
-                  gate.update(status='passed', reason='Exakt gepinnter Offline-Lauf bestanden; Workflow 30972392104')
-          files = data['release_files']
-          if not any(item['path'] == 'QUALITY_GATE_REPORT_2.8.3-rc24_save_.md' for item in files['ready']):
-              files['ready'].insert(7, {
-                  'path': 'QUALITY_GATE_REPORT_2.8.3-rc24_save_.md',
-                  'label': 'Exakter Offline-Qualitätsbericht',
-                  'evidence': 'Ruff, MyPy, Bandit und pip-audit vollständig bestanden',
-              })
-          files['unfinished'] = [
-              item for item in files['unfinished']
-              if item['path'] not in {'QUALITY_GATE_ATTEMPT_2.8.3-rc24.md', 'QUALITY_ENVIRONMENT_STATUS.json'}
+          expected = [
+              ("ubuntu-22.04", "x11"),
+              ("ubuntu-22.04", "wayland"),
+              ("ubuntu-24.04", "x11"),
+              ("ubuntu-24.04", "wayland"),
           ]
-          data['release_cleanup']['ready_deliverables'] = len(files['ready'])
-          data['release_cleanup']['unfinished_gate_files'] = len(files['unfinished'])
-          data['manifest']['file_count'] = 365
-          data['progress'] = {
-              'percent': 93,
-              'completed': 28,
-              'open': 2,
-              'total': 30,
-              'current_todo': 'Physische KDE-Abnahme und Langzeitrender bleiben offen',
+          records = {}
+          for path in Path("matrix-status").glob(
+              "matrix-status-*.json"
+          ):
+              record = json.loads(path.read_text(encoding="utf-8"))
+              records[(record.get("os"), record.get("session"))] = record
+
+          results = []
+          for os_name, session in expected:
+              record = records.get((os_name, session), {})
+              results.append(
+                  {
+                      "os": os_name,
+                      "session": session,
+                      "status": record.get("status", "missing"),
+                      "package_metrics": record.get(
+                          "package_metrics", {}
+                      ),
+                  }
+              )
+
+          all_success = all(
+              item["status"] == "success" for item in results
+          )
+          summary = {
+              "schema_version": 4,
+              "status": "passed" if all_success else "failed",
+              "run_id": os.environ["GITHUB_RUN_ID"],
+              "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+              "commit": os.environ["GITHUB_SHA"],
+              "results": results,
           }
-          evidence_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          Path("KUBUNTU_PR_MATRIX_SUMMARY.json").write_text(
+              json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
 
-          generator = Path('diagnostics/release_readiness/generate_from_evidence.py')
-          generator.write_text(
-              generator.read_text(encoding='utf-8').replace(
-                  'External quality tools, physical KDE session approval and large-media soak remain required.',
-                  'Physical KDE session approval and the documented large-media soak remain required.',
+          light = "🟢" if all_success else "🔴"
+          lines = [
+              f"# {light} Kubuntu-Prüfung einfach erklärt",
+              "",
+              (
+                  "**Gesamtergebnis: Alle vier Kombinationen "
+                  "funktionieren.**"
+                  if all_success
+                  else
+                  "**Gesamtergebnis: Mindestens eine Kombination "
+                  "benötigt Aufmerksamkeit.**"
               ),
-              encoding='utf-8',
-          )
+              "",
+              (
+                  "| System | Anzeigeart | Ergebnis | Paketvorrat | "
+                  "Netzdownload | APT-Dauer |"
+              ),
+              "|---|---|---|---|---:|---:|",
+          ]
+          for item in results:
+              metrics = item["package_metrics"]
+              status = item["status"]
+              symbol = "✅" if status == "success" else "❌"
+              if metrics.get("apt_cache_exact_hit"):
+                  cache = "aktuelle Woche"
+              elif metrics.get("apt_cache_restored"):
+                  cache = "älterer Vorrat"
+              else:
+                  cache = "neu aufgebaut"
+              download = metrics.get(
+                  "download_summary", "nicht ermittelt"
+              )
+              duration = metrics.get("apt_seconds")
+              duration_text = (
+                  f"{duration} s"
+                  if isinstance(duration, int)
+                  else "nicht ermittelt"
+              )
+              session_name = (
+                  "klassisch (X11)"
+                  if item["session"] == "x11"
+                  else "modern (Wayland)"
+              )
+              lines.append(
+                  f"| {item['os']} | {session_name} | "
+                  f"{symbol} `{status}` | {cache} | "
+                  f"{download} | {duration_text} |"
+              )
 
-          engine = Path('diagnostics/release_readiness/engine.py')
-          text = engine.read_text(encoding='utf-8')
-          if 'import base64\n' not in text:
-              text = text.replace('import hashlib\n', 'import base64\nimport hashlib\n', 1)
-          if 'import zlib\n' not in text:
-              text = text.replace('import urllib.request\n', 'import urllib.request\nimport zlib\n', 1)
-          start = text.index('def read_json(')
-          end = text.index('\n\ndef load_evidence', start)
-          function = textwrap.dedent('''
-              def read_json(path: Path) -> dict[str, Any]:
-                  try:
-                      value = json.loads(path.read_text(encoding="utf-8"))
-                  except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-                      raise EvidenceError(f"Ungültige JSON-Quelle {path}: {exc}") from exc
-                  if not isinstance(value, dict):
-                      raise EvidenceError(f"JSON-Wurzel muss ein Objekt sein: {path}")
-                  if path.name == "RELEASE_MANIFEST.json" and not isinstance(value.get("files"), list):
-                      if value.get("files_encoding") != "zlib+base64+json":
-                          raise EvidenceError("Nicht unterstütztes Manifestformat")
-                      try:
-                          size = int(value["files_uncompressed_size"])
-                          if not 0 <= size <= 16 * 1024 * 1024:
-                              raise ValueError("ungültige Größe")
-                          raw = zlib.decompress(base64.b64decode(str(value["files_payload"]), validate=True))
-                          digest = hashlib.sha256(raw).hexdigest()
-                          if len(raw) != size or digest != str(value.get("files_payload_sha256", "")):
-                              raise ValueError("Nutzlastprüfung fehlgeschlagen")
-                          value["files"] = json.loads(raw.decode("utf-8"))
-                      except (KeyError, TypeError, ValueError, UnicodeError, json.JSONDecodeError, zlib.error) as exc:
-                          raise EvidenceError(f"Ungültige kompakte Manifestnutzlast: {exc}") from exc
-                      if not isinstance(value["files"], list):
-                          raise EvidenceError("Manifestdateiliste ist keine Liste")
-                  return value
-          ''').lstrip()
-          text = text[:start] + function.rstrip() + text[end:]
-          text = text.replace(
-              'f"CI ist noch nicht endgültig: {ci.get(\'status\', \'unknown\')}"',
-              'f"CI ist noch nicht endgültig: {normalize_status(ci.get(\'status\'))} ({ci.get(\'status\', \'unknown\')})"',
+          lines.extend(
+              [
+                  "",
+                  "## Was bedeutet das für Laien?",
+                  "",
+                  (
+                      "Die Anwendung wurde auf zwei Ubuntu-Versionen "
+                      "und auf den Anzeigearten X11 und Wayland geprüft. "
+                      "Grün bedeutet, dass Installation, FFmpeg-Nachweis, "
+                      "Tests und reproduzierbarer Portable-Build in allen "
+                      "vier Varianten funktioniert haben."
+                  ),
+                  "",
+                  (
+                      "Der wöchentliche Paketvorrat auf main verhindert, "
+                      "dass jede Prüfung hunderte große KDE- und "
+                      "Medienpakete erneut aus dem Internet laden muss."
+                  ),
+                  "",
+                  (
+                      "**Nächster Schritt:** "
+                      + (
+                          "Keine manuelle Aktion nötig."
+                          if all_success
+                          else
+                          "Die erste rote Tabellenzeile öffnen und deren "
+                          "Logdatei prüfen."
+                      )
+                  ),
+              ]
           )
-          engine.write_text(text, encoding='utf-8')
+          report = "\n".join(lines) + "\n"
+          Path("KUBUNTU_PR_MATRIX_SUMMARY.md").write_text(
+              report, encoding="utf-8"
+          )
+          with Path(os.environ["GITHUB_STEP_SUMMARY"]).open(
+              "a", encoding="utf-8"
+          ) as output:
+              output.write(report)
+          with Path(os.environ["GITHUB_OUTPUT"]).open(
+              "a", encoding="utf-8"
+          ) as output:
+              output.write(
+                  f"all_success={'true' if all_success else 'false'}\n"
+              )
           PY
 
-      - name: Generate, verify and publish clean final tree
+      - name: Upload consolidated report
+        uses: actions/upload-artifact@v4
+        with:
+          name: kubuntu-pr-matrix-summary
+          path: |
+            KUBUNTU_PR_MATRIX_SUMMARY.json
+            KUBUNTU_PR_MATRIX_SUMMARY.md
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Enforce complete success
+        if: steps.report.outputs.all_success != 'true'
         run: |
-          set -Eeuo pipefail
-          git fetch --no-tags origin main
-          git show FETCH_HEAD:.github/workflows/kubuntu-pr-matrix.yml > .github/workflows/kubuntu-pr-matrix.yml
-          python3 -m py_compile diagnostics/release_readiness/*.py
-          python3 diagnostics/release_readiness/generate_from_evidence.py --write
-          python3 diagnostics/release_readiness/generate_from_evidence.py --check
-          python3 scripts/build_release_manifest.py
-          python3 scripts/validate_release_manifest.py
-          python3 diagnostics/release_readiness/selftest.py
-          python3 diagnostics/release_readiness/running_status_selftest.py
-          test "$(git hash-object .github/workflows/kubuntu-pr-matrix.yml)" = 80ac11d5e7fed537666d21bd5ca21fa5c6bcc0ce
-          git config user.name provoware-release-bot
-          git config user.email provoware.one@gmail.com
-          git add -A
-          git diff --cached --check
-          git commit -m 'Add canonical release evidence dashboard'
-          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+          echo "::error title=Vierfachprüfung unvollständig::Mindestens eine Ubuntu-/Anzeige-Kombination ist fehlgeschlagen. Öffne die rote Tabellenzeile im Bericht."
+          exit 1

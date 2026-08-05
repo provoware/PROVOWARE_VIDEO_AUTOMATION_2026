@@ -1,8 +1,15 @@
 {
-  "artifact_policy": "full-project-zip-before-stable",
+  "schema_version": 2,
+  "generated_from": "diagnostics/release_readiness/RELEASE_EVIDENCE.json",
+  "name": "VideoBatch Fast",
+  "version": "2.8.3-rc24",
+  "release_channel": "rc",
   "build_date": "2026-08-05",
+  "artifact_policy": "full-project-zip-before-stable",
+  "deterministic_build": "passed; two independent builds byte-identical",
   "critical_fix": {
     "area": "already-selected project media list",
+    "root_cause": "unbounded per-click preview threads and FFmpeg processes plus unvalidated direct Tk image decoding",
     "resolution": [
       "single serial preview controller",
       "180 ms debounce",
@@ -11,19 +18,20 @@
       "main-thread-only Tk updates",
       "explicit PNG output for FFmpeg 7+ atomic partial files",
       "invalid cache targets removed before regeneration"
-    ],
-    "root_cause": "unbounded per-click preview threads and FFmpeg processes plus unvalidated direct Tk image decoding"
+    ]
   },
-  "deterministic_build": "passed; two independent builds byte-identical",
-  "finalization": {
-    "historical_reports": "archived and excluded from release packages",
-    "release_file_status": "ready/unfinished contract added",
-    "repository_cleanup": "passed",
-    "stable_gate_policy": "unchanged and fail-closed",
-    "tooltip_help_review": "completed"
+  "runtime_start": {
+    "status": "passed",
+    "architecture": "content-addressed user environment",
+    "quality_tools_block_start": false,
+    "interactive_questions": false,
+    "ffmpeg_aac_detection": "real smoke test",
+    "ui_ready_handshake": true,
+    "safe_mode_retry": true,
+    "system_python_fallback": "verified imports only",
+    "existing_instance_focus": true
   },
   "fresh_package_verification": "passed from complete tracked source audit; 323 tests passed under Xvfb",
-  "name": "VideoBatch Fast",
   "quality": {
     "architecture_findings": 0,
     "internal_files_checked": 203,
@@ -32,39 +40,40 @@
     "largest_python_file_lines": 683,
     "max_complexity": 29
   },
-  "release_channel": "rc",
   "release_cleanup": {
     "historical_reports_archived": 56,
     "obsolete_visual_baselines_removed": 16,
-    "ready_deliverables": 10,
+    "ready_deliverables": 11,
+    "unfinished_gate_files": 6,
     "release_archive_excluded": true,
-    "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe",
-    "unfinished_gate_files": 8
+    "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe"
   },
-  "release_manifest_files": 370,
-  "schema_version": 1,
+  "release_manifest_files": 365,
+  "matrix": {
+    "status": "passed",
+    "passed_targets": 4,
+    "total_targets": 4,
+    "workflow_run_id": 30972953813,
+    "verified_commit": "f07deedf8e76a5e0a98f9cae986637d97e11f152",
+    "scope_note": "Headless deterministic CI matrix; not a substitute for physical KDE acceptance."
+  },
   "stable_blockers": [
-    "Ruff 0.16.1 not executed",
-    "MyPy 2.3.0 not executed",
-    "Bandit 1.9.4 not executed",
-    "pip-audit 2.10.1 not executed",
-    "physical KDE X11/Wayland acceptance open",
-    "long render with large media set and slow external target open"
+    "Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless",
+    "Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt"
   ],
   "stable_ready": false,
   "status": "passed",
   "tests": {
-    "assurance_scenarios": "12/12",
+    "passed": 323,
+    "failed": 0,
+    "skipped": 0,
+    "line_coverage_percent": 82.43,
     "branch_coverage_percent": 67.21,
     "combined_coverage_percent": 79.46,
+    "assurance_scenarios": "12/12",
     "fault_lab": "12/12",
-    "line_coverage_percent": 82.43,
-    "passed": 323,
-    "selected_media_click_stress": "120 rapid selection changes, passed",
-    "skip_reason": "none in the final Xvfb regression run",
-    "skipped": 0,
+    "visual_scenarios": "18/18",
     "targeted_rc24": "27/27 finalization and preview regressions",
-    "visual_scenarios": "18/18"
-  },
-  "version": "2.8.3-rc24"
+    "selected_media_click_stress": "120 rapid selection changes, passed"
+  }
 }
