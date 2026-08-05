@@ -1,7 +1,7 @@
 {
-  "schema_version": 1,
-  "contract_id": "videobatch-fast.fault-lab/2.8.3-rc17-v1",
-  "release_target": "2.8.3-rc17",
+  "schema_version": 2,
+  "contract_id": "videobatch-fast.fault-lab/2.8.3-rc24-v2",
+  "release_target": "2.8.3-rc24",
   "destructive_operations_forbidden": true,
   "workspace_must_be_temporary": true,
   "scenarios": [
@@ -16,6 +16,28 @@
     "long_duration_progress",
     "corrupt_configuration_recovery",
     "corrupt_project_quarantine",
-    "recovery_without_duplicate_completed_jobs"
-  ]
+    "recovery_without_duplicate_completed_jobs",
+    "missing_ffmpeg_binary",
+    "batch_job_exception_isolation",
+    "batch_internal_failure_breaker",
+    "background_task_exception_containment",
+    "journal_failure_containment",
+    "ui_event_handler_exception_containment",
+    "event_buffer_pressure",
+    "callback_failure_containment"
+  ],
+  "continuation_policy": {
+    "isolated_internal_job_error_continues": true,
+    "maximum_consecutive_internal_failures": 2,
+    "background_task_errors_are_reported": true,
+    "terminal_events_must_survive_event_pressure": true,
+    "journal_failures_are_nonfatal_and_visible": true,
+    "ui_handler_errors_are_nonfatal_and_visible": true
+  },
+  "cli": {
+    "entrypoint": "./FEHLERLABOR.sh",
+    "supports_scenario_filter": true,
+    "supports_repeat_1_to_25": true,
+    "json_report": true
+  }
 }
