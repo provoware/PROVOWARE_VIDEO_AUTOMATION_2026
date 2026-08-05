@@ -1,7 +1,7 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 365,
+  "file_count": 367,
   "files": [
     {
       "mode": "0o644",
@@ -120,8 +120,8 @@
     {
       "mode": "0o644",
       "path": "FAULT_LAB_CONTRACT.json",
-      "sha256": "1bf5725cadaef32448070a6db451f967c329a94011994c80e4e3ceab5f8b5196",
-      "size": 598
+      "sha256": "7eaaffe0fff2bdb9909f2acd7c04f0c6151205d802ca6e66f31e59bf07491b78",
+      "size": 842
     },
     {
       "mode": "0o644",
@@ -1248,8 +1248,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/fault_lab.py",
-      "sha256": "5212f1dd397933a8992ca1df6852db068748ad1ad9e152bebaee23f84657008d",
-      "size": 10965
+      "sha256": "a966d417ef15eb819460ce3bdd7faf7800a68bc0df733e780addb0c75d80c4df",
+      "size": 14842
     },
     {
       "mode": "0o644",
@@ -1439,9 +1439,15 @@
     },
     {
       "mode": "0o644",
+      "path": "src/videobatch_fast/retry_queue.py",
+      "sha256": "cd9af847fa9d7de481609b21492ae202038c6a767a1eb5ebc612004eae9e8880",
+      "size": 9089
+    },
+    {
+      "mode": "0o644",
       "path": "src/videobatch_fast/runner.py",
-      "sha256": "cce706af7358b2b31f0f5f4397122b9607cb4e50afb9a55de170f051911dfac1",
-      "size": 11706
+      "sha256": "85970e8e2f020614bf2139ded1b3399d63b12a228b7ed2364b3b70bccc993975",
+      "size": 21772
     },
     {
       "mode": "0o644",
@@ -1500,8 +1506,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/task_manager.py",
-      "sha256": "aae7ffd710631f00d9c79424ea65f86385229c258e272ad2ed81098c9bc80f62",
-      "size": 1789
+      "sha256": "2aa222bce65ce182aeded3abedf90f6509828afdc5bbf563960b00cb91eb81f5",
+      "size": 2676
     },
     {
       "mode": "0o644",
@@ -1560,8 +1566,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/ui_event_handlers_mixin.py",
-      "sha256": "950c33294e67ac0d3fe6124fd998ff2cfa8d0a14f0ccb646995c2c94bb60dc20",
-      "size": 10388
+      "sha256": "977259fde0eef8d6551574ff39a462f4cd15bd1f068af75dab4fda1ca462d5d5",
+      "size": 16163
     },
     {
       "mode": "0o644",
@@ -1878,8 +1884,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_hardening_2_8_2.py",
-      "sha256": "e12a7902158a908bb0d54b2cc7b4bbbd93a0dc8abd555a53a4de0d4e2d82064e",
-      "size": 10832
+      "sha256": "bba79a4257c242fc710339a458747f054600ac71061730915a3bbed3fa63d8c3",
+      "size": 10962
     },
     {
       "mode": "0o644",
@@ -1920,7 +1926,7 @@
     {
       "mode": "0o644",
       "path": "tests/test_portable_runtime_and_fault_lab_rc12.py",
-      "sha256": "5ca314d9913a7139963b244e811314489c5814a025ac6bf491a457c47db3af44",
+      "sha256": "0c252bec062e55b924eedf25ffb7837c423b182ef8871cffebc2b49e398fcd27",
       "size": 3004
     },
     {
@@ -2102,6 +2108,12 @@
       "path": "tests/test_repository_finalization.py",
       "sha256": "2503443fcd8e204968a9fedb4dc33194958f9a35c2ef84d4181d09293b4785c9",
       "size": 2356
+    },
+    {
+      "mode": "0o644",
+      "path": "tests/test_retry_queue_resilience.py",
+      "sha256": "69af51f9e968e754477c6cc132b2c32b38c9590a2be81e845b93039a6608d9d9",
+      "size": 9144
     },
     {
       "mode": "0o644",
