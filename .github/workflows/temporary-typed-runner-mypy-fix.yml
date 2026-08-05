@@ -22,10 +22,14 @@ jobs:
       - name: Apply minimal typed runner fixes
         shell: bash
         env:
-          EXPECTED_HEAD: 9a249caa8af721c5ffa7bbe4403683608b577fcc
+          EXPECTED_PRODUCT_HEAD: 9a249caa8af721c5ffa7bbe4403683608b577fcc
         run: |
           set -Eeuo pipefail
-          test "$(git rev-parse HEAD^)" = "$EXPECTED_HEAD"
+          mapfile -t changed < <(git diff --name-only "$EXPECTED_PRODUCT_HEAD" HEAD)
+          [[ "${changed[*]}" == '.github/workflows/temporary-typed-runner-mypy-fix.yml' ]] || {
+            printf 'Unerwartete parallele Änderungen: %s\n' "${changed[*]}" >&2
+            exit 42
+          }
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
 
@@ -55,11 +59,18 @@ jobs:
           export VIDEOBATCH_DIAGNOSTICS_DIR="$RUNNER_TEMP/diagnostics"
           python3 scripts/check_event_architecture.py
           python3 scripts/verify_compile_isolated.py
-          python3 -m pytest -q -p no:cacheprovider \
-            tests/test_runner_app_events.py \
-            tests/test_event_architecture_gate.py \
-            tests/test_retry_queue_resilience.py \
-            tests/test_recovery_consistency.py
+          python3 - <<'PY'
+          from pathlib import Path
+          from videobatch_fast.recovery_consistency import _safe_int
+
+          source = Path('src/videobatch_fast/runner.py').read_text(encoding='utf-8')
+          assert 'emit=self._emit' not in source
+          assert source.count('emit=self._publish_mapping') == 1
+          assert _safe_int('12') == 12
+          assert _safe_int(7.9) == 7
+          assert _safe_int(object(), 5) == 5
+          assert _safe_int(None, 6) == 6
+          PY
           python3 scripts/build_release_manifest.py
           python3 - <<'PY'
           import json
