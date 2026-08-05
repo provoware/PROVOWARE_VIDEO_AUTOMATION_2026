@@ -1,0 +1,56 @@
+name: Temporary exact manifest synchronization
+
+on:
+  push:
+    branches:
+      - agent/crash-resilience-fault-lab-20260805
+    paths:
+      - .github/workflows/temporary-manifest-sync.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temporary-manifest-sync
+  cancel-in-progress: false
+
+jobs:
+  synchronize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact branch head
+        uses: actions/checkout@v4
+        with:
+          ref: agent/crash-resilience-fault-lab-20260805
+          fetch-depth: 0
+
+      - name: Remove temporary workflow before manifest generation
+        run: rm -- .github/workflows/temporary-manifest-sync.yml
+
+      - name: Generate and validate exact 367-file manifest
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
+        run: |
+          set -Eeuo pipefail
+          python3 scripts/build_release_manifest.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          payload = json.loads(Path('RELEASE_MANIFEST.json').read_text(encoding='utf-8'))
+          actual = len(payload.get('files', []))
+          declared = int(payload.get('file_count', -1))
+          if actual != 367 or declared != 367:
+              raise SystemExit(f'Expected exactly 367 files, got declared={declared}, actual={actual}')
+          PY
+          python3 scripts/validate_release_manifest.py
+
+      - name: Commit manifest and self-removal atomically
+        run: |
+          set -Eeuo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add RELEASE_MANIFEST.json .github/workflows/temporary-manifest-sync.yml
+          git diff --cached --check
+          git commit -m 'Synchronize exact 367-file release manifest'
+          git push origin HEAD:agent/crash-resilience-fault-lab-20260805
