@@ -41,6 +41,11 @@
       "evidence": "Interne Qualitätsprüfung ohne Befund"
     },
     {
+      "path": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md",
+      "label": "Exakter Offline-Qualitätsbericht",
+      "evidence": "Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4 und pip-audit 2.10.1 vollständig bestanden"
+    },
+    {
       "path": "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md",
       "label": "Implementierungsbericht",
       "evidence": "Umgesetzte Funktions- und Sicherheitsverträge dokumentiert"
@@ -63,11 +68,6 @@
       "reason": "Enthält bewusst die verbleibenden Stable-Gates"
     },
     {
-      "path": "QUALITY_GATE_ATTEMPT_2.8.3-rc24.md",
-      "label": "Externe Qualitätswerkzeuge",
-      "reason": "Ruff, MyPy, Bandit und pip-audit sind noch nicht abschließend ausgeführt"
-    },
-    {
       "path": "STABLE_GATE_ITERATION_2.8.3-rc24_2026-08-04.md",
       "label": "Stable-Freigabeiteration",
       "reason": "Stable-Freigabe ist ausdrücklich noch blockiert"
@@ -86,11 +86,6 @@
       "path": "VISUAL_DESKTOP_APPROVAL.md",
       "label": "Desktop-Sichtprüfung",
       "reason": "Physische KDE-X11-/Wayland-Abnahme bleibt offen"
-    },
-    {
-      "path": "QUALITY_ENVIRONMENT_STATUS.json",
-      "label": "Qualitätsumgebung",
-      "reason": "Exakte Offline-Werkzeugumgebung ist nicht vollständig freigegeben"
     },
     {
       "path": "VISUAL_INSPECTION_MANIFEST.json",
