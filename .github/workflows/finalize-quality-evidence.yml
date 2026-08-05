@@ -30,10 +30,13 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Install pinned project test dependencies
+      - name: Install required system and pinned Python dependencies
         run: |
           set -Eeuo pipefail
+          sudo env DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=5 update
+          sudo env DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=5 install -y --no-install-recommends python3-tk
           python3 -m pip install --user --requirement requirements-toolchain.lock
+          python3 -c 'import tkinter; print("TKINTER_RUNTIME_OK")'
 
       - name: Remove temporary workflow before generation
         run: rm -- .github/workflows/finalize-quality-evidence.yml
