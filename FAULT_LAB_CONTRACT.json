@@ -1,9 +1,14 @@
 {
-  "schema_version": 1,
-  "contract_id": "videobatch-fast.fault-lab/2.8.3-rc17-v1",
-  "release_target": "2.8.3-rc17",
+  "schema_version": 2,
+  "contract_id": "videobatch-fast.fault-lab/2.8.3-rc24-v2",
+  "release_target": "2.8.3-rc24",
   "destructive_operations_forbidden": true,
   "workspace_must_be_temporary": true,
+  "retry_policy": {
+    "maximum_entries": 100,
+    "maximum_failed_attempts_per_job": 2,
+    "automatic_retry_loop_forbidden": true
+  },
   "scenarios": [
     "atomic_write_disk_full",
     "atomic_write_interrupted",
@@ -16,6 +21,9 @@
     "long_duration_progress",
     "corrupt_configuration_recovery",
     "corrupt_project_quarantine",
-    "recovery_without_duplicate_completed_jobs"
+    "recovery_without_duplicate_completed_jobs",
+    "retry_queue_attempt_limit",
+    "retry_queue_preserves_unstarted",
+    "ui_event_handler_isolation"
   ]
 }
