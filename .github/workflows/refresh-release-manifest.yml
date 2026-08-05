@@ -1,0 +1,75 @@
+name: Temporary release manifest refresh
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-final-release-manifest
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    if: github.head_ref == 'cleanup/remove-generated-ci-evidence-20260805'
+    name: Regenerate, verify, and commit release manifest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out cleanup branch
+        uses: actions/checkout@v4
+        with:
+          ref: cleanup/remove-generated-ci-evidence-20260805
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Install pinned Python dependencies
+        run: |
+          set -Eeuo pipefail
+          timeout --signal=TERM --kill-after=30s 8m \
+            python3 -m pip install --user --requirement requirements-toolchain.lock
+
+      - name: Remove temporary workflow before manifest generation
+        run: rm -- .github/workflows/refresh-release-manifest.yml
+
+      - name: Rebuild and verify release manifest
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          set -Eeuo pipefail
+          rm -rf matrix-logs matrix-status warmup-metrics release-audit dist-matrix-*
+          rm -f CI_PACKAGE_METRICS.json FFMPEG_TOOLCHAIN.json RELEASE_LITERAL_HYGIENE.json
+          python3 scripts/build_release_manifest.py
+          python3 scripts/validate_release_manifest.py
+          python3 scripts/validate_release_file_status.py
+          python3 scripts/render_release_docs.py --check
+          python3 -m pytest -q \
+            tests/test_repository_finalization.py \
+            tests/test_release_file_status.py \
+            tests/test_tooltip_contract.py
+
+      - name: Remove test-generated caches
+        run: |
+          set -Eeuo pipefail
+          find . -path './.git' -prune -o -type d -name '__pycache__' -exec rm -rf {} +
+          rm -rf .pytest_cache
+          rm -f .coverage .coverage.*
+
+      - name: Commit verified manifest and remove temporary workflow
+        run: |
+          set -Eeuo pipefail
+          git config user.name "provoware-release-bot"
+          git config user.email "provoware.one@gmail.com"
+          git add RELEASE_MANIFEST.json .github/workflows/refresh-release-manifest.yml
+          git diff --cached --check
+          git commit -m "Refresh finalized release manifest"
+          git push origin HEAD:cleanup/remove-generated-ci-evidence-20260805
