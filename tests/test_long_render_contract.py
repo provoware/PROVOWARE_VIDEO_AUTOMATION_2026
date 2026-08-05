@@ -61,6 +61,7 @@ def _write_contract(tmp_path: Path, *, target: Path, jobs: int = 2) -> Path:
 
 def _install_fakes(monkeypatch: pytest.MonkeyPatch) -> None:
     import videobatch_fast.long_render_contract as module
+    import videobatch_fast.long_render_execution as execution
 
     monkeypatch.setattr(
         module,
@@ -81,7 +82,7 @@ def _install_fakes(monkeypatch: pytest.MonkeyPatch) -> None:
         kind = "audio" if path.suffix == ".wav" else "image"
         return MediaInfo(path=path, kind=kind, duration=2.0 if kind == "audio" else None, width=64, height=64)
 
-    monkeypatch.setattr(module, "probe_media", fake_probe)
+    monkeypatch.setattr(execution, "probe_media", fake_probe)
     monkeypatch.setattr(module, "verify_output", lambda *_args, **_kwargs: (True, "vollständig geprüft"))
 
 
