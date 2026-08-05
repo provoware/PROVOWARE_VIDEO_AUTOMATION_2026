@@ -552,7 +552,7 @@ class BatchRunner:
 
     def _execute(self, command: list[str], job: PairJob, position: int, total: int) -> JobResult:
         execution = ProcessExecution(
-            emit=self._emit,
+            emit=self._publish_mapping,
             cancelled=self._cancel.is_set,
             set_process=self._set_process,
             terminate=terminate_process_group,

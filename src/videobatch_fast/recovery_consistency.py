@@ -72,6 +72,8 @@ def default_jobs_root() -> Path:
 
 
 def _safe_int(value: object, default: int = 0) -> int:
+    if not isinstance(value, (str, bytes, bytearray, int, float)):
+        return default
     try:
         return int(value)
     except (TypeError, ValueError, OverflowError):
