@@ -1,0 +1,152 @@
+name: Pinned offline quality audit
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pinned-offline-quality-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    if: github.head_ref == 'quality/pinned-offline-gates-20260805'
+    name: Ruff 0.16.1 · MyPy 2.3.0 · Bandit 1.9.4 · pip-audit 2.10.1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out audit branch
+        uses: actions/checkout@v4
+        with:
+          ref: quality/pinned-offline-gates-20260805
+          fetch-depth: 0
+
+      - name: Build exact wheelhouse with explicit bootstrap access
+        env:
+          VIDEOBATCH_ALLOW_PUBLIC_PYPI: '1'
+        run: |
+          set -Eeuo pipefail
+          python3 scripts/toolchain.py build --scope quality --allow-online \
+            2>&1 | tee quality-bootstrap.log
+
+      - name: Verify wheel hashes and install with no index
+        run: |
+          set -Eeuo pipefail
+          python3 scripts/toolchain.py verify --scope quality \
+            2>&1 | tee quality-wheelhouse-verify.log
+          python3 scripts/toolchain.py install --scope quality --replace \
+            2>&1 | tee quality-offline-install.log
+          QUALITY_PYTHON="$(python3 scripts/toolchain.py path --scope quality)"
+          "$QUALITY_PYTHON" - <<'PY' | tee quality-versions.json
+          import importlib.metadata as metadata
+          import json
+          names = ("ruff", "mypy", "bandit", "pip-audit")
+          print(json.dumps({name: metadata.version(name) for name in names}, indent=2, sort_keys=True))
+          PY
+
+      - name: Run all four tools and preserve every result
+        id: gates
+        shell: bash
+        run: |
+          set +e
+          QUALITY_PYTHON="$(python3 scripts/toolchain.py path --scope quality)"
+          BIN_DIR="$(dirname "$QUALITY_PYTHON")"
+          export PATH="$BIN_DIR:$PATH"
+          export PYTHONPATH="$GITHUB_WORKSPACE/src"
+          mkdir -p quality-results
+
+          ruff check src scripts tests >quality-results/ruff.log 2>&1
+          RUFF_RC=$?
+
+          mypy \
+            src/videobatch_fast/naming.py \
+            src/videobatch_fast/archive_service.py \
+            src/videobatch_fast/runner.py \
+            src/videobatch_fast/runner_process.py \
+            src/videobatch_fast/plugin_runtime.py \
+            src/videobatch_fast/os_sandbox.py \
+            src/videobatch_fast/sandbox_seccomp.py \
+            src/videobatch_fast/updates.py \
+            src/videobatch_fast/update_validation.py \
+            src/videobatch_fast/project_state.py \
+            >quality-results/mypy.log 2>&1
+          MYPY_RC=$?
+
+          bandit -q -r src/videobatch_fast -c pyproject.toml \
+            >quality-results/bandit.log 2>&1
+          BANDIT_RC=$?
+
+          pip-audit --no-deps --disable-pip -r requirements.lock \
+            >quality-results/pip-audit.log 2>&1
+          PIP_AUDIT_RC=$?
+
+          python3 - "$RUFF_RC" "$MYPY_RC" "$BANDIT_RC" "$PIP_AUDIT_RC" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          names = ("ruff", "mypy", "bandit", "pip-audit")
+          codes = [int(value) for value in sys.argv[1:]]
+          results = {
+              name: {
+                  "returncode": code,
+                  "status": "pass" if code == 0 else "fail",
+                  "log": f"quality-results/{name}.log",
+              }
+              for name, code in zip(names, codes, strict=True)
+          }
+          payload = {
+              "schema_version": 1,
+              "required_versions": {
+                  "ruff": "0.16.1",
+                  "mypy": "2.3.0",
+                  "bandit": "1.9.4",
+                  "pip-audit": "2.10.1",
+              },
+              "results": results,
+              "overall": "pass" if all(code == 0 for code in codes) else "fail",
+          }
+          Path("quality-results/summary.json").write_text(
+              json.dumps(payload, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps(payload, indent=2, sort_keys=True))
+          PY
+
+          echo "ruff_rc=$RUFF_RC" >> "$GITHUB_OUTPUT"
+          echo "mypy_rc=$MYPY_RC" >> "$GITHUB_OUTPUT"
+          echo "bandit_rc=$BANDIT_RC" >> "$GITHUB_OUTPUT"
+          echo "pip_audit_rc=$PIP_AUDIT_RC" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload complete raw evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: pinned-offline-quality-evidence
+          path: |
+            quality-bootstrap.log
+            quality-wheelhouse-verify.log
+            quality-offline-install.log
+            quality-versions.json
+            quality-results/
+            toolchain_wheelhouse/TOOLCHAIN_WHEELHOUSE_MANIFEST.json
+            toolchain_wheelhouse/requirements-toolchain-resolved.lock
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Enforce required results
+        run: |
+          set -Eeuo pipefail
+          test '${{ steps.gates.outputs.ruff_rc }}' = '0'
+          test '${{ steps.gates.outputs.mypy_rc }}' = '0'
+          test '${{ steps.gates.outputs.bandit_rc }}' = '0'
+          test '${{ steps.gates.outputs.pip_audit_rc }}' = '0'
