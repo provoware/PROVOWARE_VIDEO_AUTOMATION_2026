@@ -12,11 +12,11 @@ export VIDEOBATCH_PIP_AUDIT_CACHE="$AUDIT_CACHE"
 mkdir -p "$EVIDENCE_DIR" "$AUDIT_CACHE"
 cd "$ROOT"
 
-./quality-toolchain.sh build \
+bash ./quality-toolchain.sh build \
   2>&1 | tee "$EVIDENCE_DIR/wheelhouse-build.log"
-./quality-toolchain.sh verify \
+bash ./quality-toolchain.sh verify \
   2>&1 | tee "$EVIDENCE_DIR/wheelhouse-verify.log"
-./quality-toolchain.sh prepare --offline-only --replace \
+bash ./quality-toolchain.sh prepare --offline-only --replace \
   2>&1 | tee "$EVIDENCE_DIR/offline-install-first.log"
 python3 scripts/toolchain.py gate --scope quality \
   2>&1 | tee "$EVIDENCE_DIR/environment-gate.log"
@@ -66,9 +66,9 @@ test -s "$EVIDENCE_DIR/pip-audit-cache-inventory.tsv"
 
 # Recreate the environment after every online preparation step. This proves
 # that the final installation itself uses only the verified local wheelhouse.
-./quality-toolchain.sh prepare --offline-only --replace \
+bash ./quality-toolchain.sh prepare --offline-only --replace \
   2>&1 | tee "$EVIDENCE_DIR/offline-install-final.log"
-./quality-toolchain.sh verify \
+bash ./quality-toolchain.sh verify \
   2>&1 | tee "$EVIDENCE_DIR/wheelhouse-final-verify.log"
 
 QUALITY_PYTHON="$(python3 scripts/toolchain.py path --scope quality --quiet)"
