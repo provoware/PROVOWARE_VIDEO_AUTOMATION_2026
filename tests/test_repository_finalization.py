@@ -1,4 +1,5 @@
 import re
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,10 +36,19 @@ def test_generated_ci_evidence_is_ignored_and_not_committed() -> None:
     }
     assert required_patterns <= set(ignored.splitlines())
 
-    generated_paths = (
-        ROOT / "CI_PACKAGE_METRICS.json",
-        ROOT / "FFMPEG_TOOLCHAIN.json",
-        ROOT / "RELEASE_LITERAL_HYGIENE.json",
-        ROOT / "matrix-logs",
+    tracked = set(
+        subprocess.run(
+            ["git", "ls-files"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.splitlines()
     )
-    assert all(not path.exists() for path in generated_paths)
+    forbidden_files = {
+        "CI_PACKAGE_METRICS.json",
+        "FFMPEG_TOOLCHAIN.json",
+        "RELEASE_LITERAL_HYGIENE.json",
+    }
+    assert forbidden_files.isdisjoint(tracked)
+    assert not any(path.startswith("matrix-logs/") for path in tracked)
