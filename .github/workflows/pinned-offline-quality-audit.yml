@@ -30,6 +30,15 @@ jobs:
           ref: quality/pinned-offline-gates-20260805
           fetch-depth: 0
 
+      - name: Provide required Python Tk runtime
+        run: |
+          set -Eeuo pipefail
+          sudo env DEBIAN_FRONTEND=noninteractive \
+            apt-get -o Acquire::Retries=5 update
+          sudo env DEBIAN_FRONTEND=noninteractive \
+            apt-get -o Acquire::Retries=5 install -y --no-install-recommends python3-tk
+          python3 -c 'import tkinter; print("TKINTER_RUNTIME_OK")'
+
       - name: Build exact wheelhouse with explicit bootstrap access
         env:
           VIDEOBATCH_ALLOW_PUBLIC_PYPI: '1'
