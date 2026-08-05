@@ -75,6 +75,75 @@ permissions:
 
 Der Schritt ist absichtlich fail-closed: Gelb liefert Exitcode 1, Rot Exitcode 2. Für einen reinen Bericht kann der Aufruf in der Workflow-Shell kontrolliert abgefangen und das Ausgabeverzeichnis anschließend als Artefakt hochgeladen werden.
 
+## Verifiziertes Gesamtprojekt-Artefakt
+
+Nach vollständig grünem Preflight, grüner Vierfachmatrix und grünem Abschlussbericht erzeugt der PR-Workflow ein nicht veröffentlichtes Gesamtprojekt-Artefakt. Der Archivjob prüft unmittelbar vor dem Packen erneut:
+
+1. `scripts/build_release_manifest.py --check --json`
+2. `diagnostics/release_readiness/generate_from_evidence.py --check`
+3. `python3 -m compileall -q -f src scripts diagnostics tests`
+4. einen unveränderten Git-Arbeitsbaum
+5. die ZIP-Integrität
+
+Das Artefakt enthält:
+
+- das vollständige, mit `git archive` erzeugte Projekt-ZIP
+- die SHA-256-Datei des ZIPs
+- `VERIFIED_SOURCE_ARTIFACT.json`
+- `release-manifest-check.json`
+- `ARTIFACT_CONTENTS.json`
+
+`ARTIFACT_CONTENTS.json` dokumentiert für jeden Datei-Eintrag im ZIP den Pfad, die unkomprimierte Größe und den SHA-256-Wert. Verzeichniseinträge werden nicht als Dateien gezählt. Doppelte ZIP-Pfade, beschädigte Einträge und unsortierte oder widersprüchliche Inhaltslisten werden fail-closed abgelehnt.
+
+### Inhaltsliste erzeugen
+
+```bash
+python3 scripts/build_artifact_contents.py \
+  PROJEKT_verified.zip \
+  --commit "$GIT_COMMIT" \
+  --output ARTIFACT_CONTENTS.json
+```
+
+### Heruntergeladenes ZIP vollständig prüfen
+
+```bash
+python3 scripts/build_artifact_contents.py \
+  PROJEKT_verified.zip \
+  --check ARTIFACT_CONTENTS.json
+```
+
+Maschinenlesbarer Driftbericht:
+
+```bash
+python3 scripts/build_artifact_contents.py \
+  PROJEKT_verified.zip \
+  --check ARTIFACT_CONTENTS.json \
+  --json
+```
+
+Optional kann der erwartete Commit explizit festgelegt werden:
+
+```bash
+python3 scripts/build_artifact_contents.py \
+  PROJEKT_verified.zip \
+  --check ARTIFACT_CONTENTS.json \
+  --commit "$EXPECTED_COMMIT"
+```
+
+Der Prüfmodus erkennt getrennt:
+
+- `missing`: erwartete Datei fehlt im ZIP
+- `unexpected`: zusätzliche Datei ist im ZIP enthalten
+- `size_changed`: Dateigröße weicht ab
+- `sha256_changed`: Dateiinhalt weicht ab
+- `metadata_changed`: Archivname, Commit, Dateizahl oder Gesamtgröße weichen ab
+
+Exitcodes:
+
+- `0`: ZIP und Inhaltsliste stimmen vollständig überein
+- `1`: reproduzierbare Inhalts- oder Metadatendrift
+- `2`: ZIP, JSON oder Vertragsstruktur ist ungültig
+
 ## Selbsttests
 
 ```bash
@@ -93,3 +162,6 @@ Geprüft werden Rot-, Gelb- und Grünfall, unveränderte Eingabehashes, die atom
 - atomare Ausgabe über temporäre Dateien und `os.replace`
 - HTML vollständig lokal, ohne CDN, JavaScript oder Tracking
 - GitHub-Abfrage nur über validierten Repositorynamen und Commit-SHA
+- Artefaktprüfung ohne Extraktion und ohne Ausführung enthaltener Dateien
+- SHA-256-Berechnung streamend in 1-MiB-Blöcken
+- doppelte ZIP-Pfade und beschädigte ZIP-Einträge werden abgelehnt
