@@ -11,6 +11,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from videobatch_fast.app_events import AppEvent
 from videobatch_fast.archive_service import archive_file, file_hash, recover_archive_transactions
 from videobatch_fast.event_logging import EventLogger
 from videobatch_fast.jobs import build_jobs
@@ -100,17 +101,17 @@ class OutputReservationTests(unittest.TestCase):
 class RunnerTerminalEventTests(unittest.TestCase):
     def test_unexpected_job_exception_still_emits_batch_finished(self):
         with tempfile.TemporaryDirectory() as tmp:
-            events: list[tuple[str, dict]] = []
-            runner = BatchRunner(lambda name, payload: events.append((name, payload)))
+            events: list[AppEvent] = []
+            runner = BatchRunner(events.append)
             runner.operation_id = "test-operation"
             job = _job(Path(tmp))
             with patch.object(runner, "_run_job", side_effect=RuntimeError("boom")):
                 runner._run_batch([job], BatchOptions(output_dir=Path(tmp)))
-            names = [name for name, _ in events]
+            names = [event.name for event in events]
             self.assertIn("job_failed_internal", names)
             self.assertNotIn("batch_failed_internal", names)
             self.assertEqual(names[-1], "batch_finished")
-            final = events[-1][1]
+            final = dict(events[-1].payload)
             self.assertEqual(final["terminal_event"], "batch_completed_with_internal_failures")
             self.assertEqual(final["failures"], 1)
             self.assertEqual(final["unprocessed"], 0)

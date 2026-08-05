@@ -6,6 +6,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
+from videobatch_fast.app_events import AppEvent
 from videobatch_fast.models import BatchOptions, JobResult, MediaInfo, PairJob
 from videobatch_fast.retry_queue import RetryQueueStore, job_identity
 from videobatch_fast.runner import BatchRunner
@@ -122,9 +123,9 @@ def test_corrupt_retry_queue_is_quarantined_and_rebuilt(tmp_path: Path) -> None:
 
 
 def test_runner_continues_and_persists_failed_job(tmp_path: Path) -> None:
-    events: list[tuple[str, dict]] = []
+    events: list[AppEvent] = []
     runner = BatchRunner(
-        lambda name, payload: events.append((name, payload)),
+        events.append,
         retry_queue_path=tmp_path / "retry.json",
     )
     runner.operation_id = "continue-run"
@@ -139,7 +140,7 @@ def test_runner_continues_and_persists_failed_job(tmp_path: Path) -> None:
     with patch.object(runner, "_run_job", side_effect=run_job):
         runner._run_batch(jobs, BatchOptions(output_dir=tmp_path))
 
-    final = events[-1][1]
+    final = dict(events[-1].payload)
     assert final["terminal_event"] == "batch_completed_with_internal_failures"
     assert final["successes"] == 1
     assert final["failures"] == 1
@@ -153,9 +154,9 @@ def test_runner_continues_and_persists_failed_job(tmp_path: Path) -> None:
 
 
 def test_runner_protection_stop_preserves_unstarted_jobs(tmp_path: Path) -> None:
-    events: list[tuple[str, dict]] = []
+    events: list[AppEvent] = []
     runner = BatchRunner(
-        lambda name, payload: events.append((name, payload)),
+        events.append,
         max_consecutive_internal_failures=2,
         retry_queue_path=tmp_path / "retry.json",
     )
@@ -166,7 +167,7 @@ def test_runner_protection_stop_preserves_unstarted_jobs(tmp_path: Path) -> None
     with patch.object(runner, "_run_job", side_effect=RuntimeError("immer kaputt")):
         runner._run_batch(jobs, BatchOptions(output_dir=tmp_path))
 
-    final = events[-1][1]
+    final = dict(events[-1].payload)
     assert final["terminal_event"] == "batch_failed_internal"
     assert final["failures"] == 2
     assert final["unprocessed"] == 1

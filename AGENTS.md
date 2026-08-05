@@ -18,6 +18,7 @@
 10. Produktname, Build, Version und Kanal ausschließlich aus `VERSION.json` lesen.
 11. Abhängigkeiten in Release- und Qualitätsumgebung exakt sperren.
 12. Fehler immer mit Ursache, Auswirkung, automatischer Schutzmaßnahme, Lösung und Alternative ausgeben.
+13. Ereignisproducer liefern `AppEvent`; freie `(name, payload)`-Tupel sind verboten. Nicht migrierte Producer verwenden ausschließlich `EventBuffer.put_legacy`.
 
 ## Qualitätsgrenzen
 
@@ -67,6 +68,7 @@ einer Iteration müssen Kandidat, Umgebung, Zeitpunkt und Ergebnis eindeutig nen
 
 - Registryprüfung
 - interne AST- und Komplexitätsprüfung
+- Ereignisarchitekturprüfung
 - Ruff
 - MyPy
 - pytest-cov

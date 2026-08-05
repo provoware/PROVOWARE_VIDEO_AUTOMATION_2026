@@ -8,7 +8,7 @@ from typing import Any, Callable
 from .preview_service import build_preview
 from .probe import probe_media
 
-Emit = Callable[[tuple[str, dict[str, Any]]], None]
+Emit = Callable[[str, dict[str, Any]], None]
 PreviewBuilder = Callable[[Path, int], Path]
 MediaProber = Callable[[Path], Any]
 
@@ -141,4 +141,4 @@ class SelectionPreviewController:
                 }
                 event_name = "selection_preview_failed"
             if self._is_current(request):
-                self._emit((event_name, payload))
+                self._emit(event_name, payload)

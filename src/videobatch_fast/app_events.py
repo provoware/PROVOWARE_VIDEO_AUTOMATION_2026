@@ -5,7 +5,7 @@ import time
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, replace
 from types import MappingProxyType
-from typing import Any, TypeAlias, overload
+from typing import Any, ClassVar, overload
 
 EVENT_SCHEMA_VERSION = 1
 _EVENT_NAME_RE = re.compile(r"^[a-z][a-z0-9_.-]{1,79}$")
@@ -28,11 +28,29 @@ TERMINAL_EVENT_NAMES = frozenset(
     }
 )
 
-LegacyEvent: TypeAlias = tuple[str, dict[str, Any]]
-
 
 class AppEventError(ValueError):
     """Raised when an event violates the in-process event contract."""
+
+
+class TypedEventPayload(Mapping[str, object]):
+    """Read-only mapping view for frozen payload dataclasses."""
+
+    _field_names: ClassVar[tuple[str, ...]] = ()
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._field_names)
+
+    def __len__(self) -> int:
+        return len(self._field_names)
+
+    def __getitem__(self, key: str) -> object:
+        if key not in self._field_names:
+            raise KeyError(key)
+        return getattr(self, key)
+
+    def as_dict(self) -> dict[str, object]:
+        return {name: getattr(self, name) for name in self._field_names}
 
 
 def _event_name(value: object) -> str:
@@ -49,11 +67,7 @@ def _operation_id(payload: Mapping[str, object]) -> str:
 
 @dataclass(frozen=True, slots=True)
 class AppEvent:
-    """Immutable, versioned event passed between workers and the UI thread.
-
-    The top-level payload is copied and exposed read-only. Existing consumers may
-    still unpack or index an event like the historic ``(name, payload)`` tuple.
-    """
+    """Immutable, versioned event passed between workers and the UI thread."""
 
     name: str
     payload: Mapping[str, object]
@@ -73,7 +87,11 @@ class AppEvent:
             raise AppEventError("Ereignissequenz darf nicht negativ sein.")
         if not isinstance(self.payload, Mapping):
             raise AppEventError("Ereignisnutzdaten müssen eine Zuordnung sein.")
-        payload = MappingProxyType(dict(self.payload))
+        payload: Mapping[str, object]
+        if isinstance(self.payload, TypedEventPayload):
+            payload = self.payload
+        else:
+            payload = MappingProxyType(dict(self.payload))
         operation_id = str(self.operation_id or _operation_id(payload)).strip()[:120] or "general"
         created = int(self.created_monotonic_ns or time.monotonic_ns())
         object.__setattr__(self, "name", name)
@@ -83,6 +101,7 @@ class AppEvent:
 
     @classmethod
     def from_legacy(cls, name: str, payload: Mapping[str, object]) -> AppEvent:
+        """Compatibility adapter used only by EventBuffer.put_legacy()."""
         copied = dict(payload)
         return cls(name=name, payload=copied, operation_id=_operation_id(copied))
 
@@ -99,7 +118,7 @@ class AppEvent:
     def is_terminal(self) -> bool:
         return self.name in TERMINAL_EVENT_NAMES
 
-    def legacy_pair(self) -> LegacyEvent:
+    def legacy_pair(self) -> tuple[str, dict[str, Any]]:
         return self.name, dict(self.payload)
 
     def __iter__(self) -> Iterator[object]:
@@ -118,17 +137,3 @@ class AppEvent:
 
     def __len__(self) -> int:
         return 2
-
-
-EventInput: TypeAlias = AppEvent | LegacyEvent
-
-
-def normalize_event(item: EventInput, *, sequence: int) -> AppEvent:
-    if isinstance(item, AppEvent):
-        return item.with_sequence(sequence)
-    if not isinstance(item, tuple) or len(item) != 2:
-        raise AppEventError("Ereignis muss AppEvent oder ein Paar aus Kennung und Nutzdaten sein.")
-    name, payload = item
-    if not isinstance(name, str) or not isinstance(payload, dict):
-        raise AppEventError("Legacy-Ereignis benötigt str-Kennung und dict-Nutzdaten.")
-    return AppEvent.from_legacy(name, payload).with_sequence(sequence)

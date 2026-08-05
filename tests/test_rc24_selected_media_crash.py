@@ -80,7 +80,7 @@ def test_selection_preview_controller_serializes_and_coalesces(tmp_path: Path) -
         )
 
     controller = SelectionPreviewController(
-        events.append,
+        lambda name, payload: events.append((name, payload)),
         preview_builder=builder,
         media_prober=prober,
     )
@@ -119,7 +119,7 @@ def test_selection_preview_controller_drops_stale_failure(tmp_path: Path) -> Non
         return path
 
     controller = SelectionPreviewController(
-        events.append,
+        lambda name, payload: events.append((name, payload)),
         preview_builder=builder,
         media_prober=lambda path: SimpleNamespace(
             path=path,

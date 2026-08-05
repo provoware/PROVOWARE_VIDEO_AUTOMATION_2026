@@ -32,6 +32,7 @@
     "version_consistency",
     "text_resource_validation",
     "internal_ast_quality",
+    "event_architecture",
     "ruff",
     "mypy",
     "pytest_cov",

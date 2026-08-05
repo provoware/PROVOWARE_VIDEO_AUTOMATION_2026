@@ -3,8 +3,9 @@ from __future__ import annotations
 import queue
 import threading
 from collections import deque
+from collections.abc import Mapping
 
-from .app_events import AppEvent, EventInput, normalize_event
+from .app_events import AppEvent
 
 
 class EventBuffer:
@@ -19,21 +20,27 @@ class EventBuffer:
         self._next_sequence = 1
         self.dropped = 0
 
-    def put(self, item: EventInput) -> None:
+    def put(self, event: AppEvent) -> None:
+        if not isinstance(event, AppEvent):
+            raise TypeError("EventBuffer.put akzeptiert ausschließlich AppEvent; Legacy-Producer verwenden put_legacy.")
         with self._lock:
-            event = normalize_event(item, sequence=self._next_sequence)
+            sequenced = event.with_sequence(self._next_sequence)
             self._next_sequence += 1
-            if event.name == "progress" and self._items and self._items[-1].name == "progress":
-                self._items[-1] = event
+            if sequenced.name == "progress" and self._items and self._items[-1].name == "progress":
+                self._items[-1] = sequenced
                 return
             if len(self._items) >= self.maxsize:
                 if not self._discard_noisy_event():
-                    if event.is_noisy:
+                    if sequenced.is_noisy:
                         self.dropped += 1
                         return
                     self._items.popleft()
                     self.dropped += 1
-            self._items.append(event)
+            self._items.append(sequenced)
+
+    def put_legacy(self, name: str, payload: Mapping[str, object]) -> None:
+        """Only compatibility boundary for producers not yet migrated to AppEvent."""
+        self.put(AppEvent.from_legacy(name, payload))
 
     def _discard_noisy_event(self) -> bool:
         for index, event in enumerate(self._items):

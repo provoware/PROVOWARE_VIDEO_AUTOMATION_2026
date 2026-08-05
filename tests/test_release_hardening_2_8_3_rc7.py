@@ -102,8 +102,8 @@ def test_watchdog_terminates_process_without_activity(tmp_path: Path) -> None:
 def test_event_buffer_coalesces_progress_and_preserves_terminal_event() -> None:
     buffer = EventBuffer(maxsize=10)
     for value in range(30):
-        buffer.put(("progress", {"value": value}))
-    buffer.put(("batch_finished", {"ok": True}))
+        buffer.put_legacy("progress", {"value": value})
+    buffer.put_legacy("batch_finished", {"ok": True})
     items = []
     while True:
         try:

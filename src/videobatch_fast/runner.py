@@ -7,19 +7,28 @@ import threading
 import time
 import traceback
 import uuid
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Callable
 
+from .app_events import AppEvent
 from .command_builder import build_command, resolved_options
 from .job_journal import BatchJournal
 from .models import BatchOptions, JobResult, PairJob
 from .naming import OutputReservation, release_output_reservations, reserve_output_targets
 from .quick_modes import fallback_options, mode_spec
 from .retry_queue import DEFAULT_MAX_ATTEMPTS, DEFAULT_MAX_ENTRIES, RetryQueueStore
+from .runner_events import (
+    BatchFailedInternalPayload,
+    BatchFinishedPayload,
+    BatchStartedPayload,
+    JobFinishedPayload,
+    JobStartedPayload,
+)
 from .runner_process import ProcessExecution
 from .verification import verify_output
 
-EventCallback = Callable[[str, dict], None]
+EventCallback = Callable[[AppEvent], None]
 
 
 def _process_cpu_ticks(pid: int) -> int:
@@ -147,12 +156,29 @@ class BatchRunner:
         if len(self._callback_errors) > 20:
             del self._callback_errors[:-20]
 
-    def _emit(self, name: str, **payload) -> None:
-        payload.setdefault("operation_id", self.operation_id or "general")
+    def _publish(self, event: AppEvent) -> None:
         try:
-            self.callback(name, payload)
+            self.callback(event)
         except Exception as exc:
             self._remember_internal_notice(f"Callbackfehler: {type(exc).__name__}: {exc}")
+
+    def _publish_mapping(self, name: str, **payload: object) -> None:
+        self._publish(
+            AppEvent(
+                name=name,
+                payload=payload,
+                operation_id=self.operation_id or "general",
+            )
+        )
+
+    def _publish_typed(self, name: str, payload: Mapping[str, object]) -> None:
+        self._publish(
+            AppEvent(
+                name=name,
+                payload=payload,
+                operation_id=self.operation_id or "general",
+            )
+        )
 
     def _prepare_retry_queue(self) -> None:
         try:
@@ -181,7 +207,7 @@ class BatchRunner:
         return {"available": True, **queue.summary().as_payload()}
 
     def _emit_retry_queue_update(self, *, entry: dict | None = None) -> None:
-        self._emit(
+        self._publish_mapping(
             "retry_queue_updated",
             entry=entry or {},
             summary=self._retry_queue_summary(),
@@ -201,7 +227,7 @@ class BatchRunner:
         except Exception as exc:
             message = f"Wiederanlaufliste konnte Fehler nicht speichern: {type(exc).__name__}: {exc}"
             self._remember_internal_notice(message)
-            self._emit("log", level="warning", message=message)
+            self._publish_mapping("log", level="warning", message=message)
             return
         self._emit_retry_queue_update(entry=entry)
 
@@ -214,7 +240,7 @@ class BatchRunner:
         except Exception as exc:
             message = f"Wiederanlaufliste konnte Erfolg nicht übernehmen: {type(exc).__name__}: {exc}"
             self._remember_internal_notice(message)
-            self._emit("log", level="warning", message=message)
+            self._publish_mapping("log", level="warning", message=message)
             return
         if changed:
             self._emit_retry_queue_update()
@@ -233,7 +259,7 @@ class BatchRunner:
         except Exception as exc:
             message = f"Wiederanlaufliste konnte offenen Auftrag nicht speichern: {type(exc).__name__}: {exc}"
             self._remember_internal_notice(message)
-            self._emit("log", level="warning", message=message)
+            self._publish_mapping("log", level="warning", message=message)
             return
         self._emit_retry_queue_update(entry=entry)
 
@@ -247,7 +273,7 @@ class BatchRunner:
         except Exception as exc:
             message = f"Journalfehler bei {method}: {type(exc).__name__}: {exc}"
             self._remember_internal_notice(message)
-            self._emit(
+            self._publish_mapping(
                 "log",
                 level="warning",
                 message=(
@@ -301,7 +327,7 @@ class BatchRunner:
         stop_protection = "Originaldateien und bereits abgeschlossene Ausgaben bleiben unverändert."
         consecutive_internal_failures = 0
         try:
-            self._emit("batch_started", total=len(jobs))
+            self._publish_typed("batch_started", BatchStartedPayload(total=len(jobs)))
             for position, job in enumerate(jobs, start=1):
                 if self._cancel.is_set():
                     terminal_event = "batch_cancelled"
@@ -321,7 +347,7 @@ class BatchRunner:
                         and consecutive_internal_failures < self.max_consecutive_internal_failures
                         and not self._cancel.is_set()
                     )
-                    self._emit(
+                    self._publish_mapping(
                         "job_failed_internal",
                         job=job,
                         position=position,
@@ -333,7 +359,10 @@ class BatchRunner:
                         consecutive_failures=consecutive_internal_failures,
                         failure_limit=self.max_consecutive_internal_failures,
                     )
-                    self._emit("job_finished", result=result, position=position, total=len(jobs))
+                    self._publish_typed(
+                        "job_finished",
+                        JobFinishedPayload(result=result, position=position, total=len(jobs)),
+                    )
                     if not continue_allowed:
                         terminal_event = "batch_failed_internal"
                         stop_reason = (
@@ -345,18 +374,20 @@ class BatchRunner:
                             )
                         )
                         stop_protection = protection
-                        self._emit(
+                        self._publish_typed(
                             "batch_failed_internal",
-                            job=job,
-                            position=position,
-                            total=len(jobs),
-                            message=f"{result.message} {stop_reason}",
-                            traceback=internal_error,
-                            protection=protection,
+                            BatchFailedInternalPayload(
+                                job=job,
+                                position=position,
+                                total=len(jobs),
+                                message=f"{result.message} {stop_reason}",
+                                traceback=internal_error,
+                                protection=protection,
+                            ),
                         )
                         break
                     terminal_event = "batch_completed_with_internal_failures"
-                    self._emit(
+                    self._publish_mapping(
                         "log",
                         level="warning",
                         message=(
@@ -380,17 +411,25 @@ class BatchRunner:
                         ),
                         failure_kind="processing",
                     )
-                self._emit("job_finished", result=result, position=position, total=len(jobs))
+                self._publish_typed(
+                    "job_finished",
+                    JobFinishedPayload(result=result, position=position, total=len(jobs)),
+                )
         except Exception as exc:
             terminal_event = "batch_failed_internal"
             internal_error = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))[-16_000:]
             stop_reason = f"Interner Stapelfehler: {type(exc).__name__}: {exc}"
             stop_protection = "Reservierungen und laufende Prozesse werden im Abschlussblock bereinigt."
-            self._emit(
+            self._publish_typed(
                 "batch_failed_internal",
-                message=stop_reason,
-                traceback=internal_error,
-                protection=stop_protection,
+                BatchFailedInternalPayload(
+                    job=None,
+                    position=0,
+                    total=len(jobs),
+                    message=stop_reason,
+                    traceback=internal_error,
+                    protection=stop_protection,
+                ),
             )
         finally:
             process = self._process
@@ -426,24 +465,29 @@ class BatchRunner:
                     )
                 finally:
                     self._journal = None
-            self._emit(
+            self._publish_typed(
                 "batch_finished",
-                terminal_event=terminal_event,
-                cancelled=cancelled,
-                successes=successes,
-                failures=len(results) - successes,
-                unprocessed=max(0, len(jobs) - len(results)),
-                total=len(jobs),
-                elapsed=time.monotonic() - started,
-                results=results,
-                internal_error=internal_error,
-                callback_errors=tuple(self._callback_errors),
-                retry_queue=self._retry_queue_summary(),
+                BatchFinishedPayload(
+                    terminal_event=terminal_event,
+                    cancelled=cancelled,
+                    successes=successes,
+                    failures=len(results) - successes,
+                    unprocessed=max(0, len(jobs) - len(results)),
+                    total=len(jobs),
+                    elapsed=time.monotonic() - started,
+                    results=tuple(results),
+                    internal_error=internal_error,
+                    callback_errors=tuple(self._callback_errors),
+                    retry_queue=self._retry_queue_summary(),
+                ),
             )
 
     def _run_job(self, job: PairJob, position: int, total: int, options: BatchOptions) -> JobResult:
         start = time.monotonic()
-        self._emit("job_started", job=job, position=position, total=total)
+        self._publish_typed(
+            "job_started",
+            JobStartedPayload(job=job, position=position, total=total),
+        )
         selected = resolved_options(job, options)
         command = build_command(job, options)
         result = self._execute(command, job, position, total)
@@ -456,7 +500,7 @@ class BatchRunner:
 
         if not valid and not self._cancel.is_set() and job.fast_path:
             retried = True
-            self._emit(
+            self._publish_mapping(
                 "log",
                 level="warning",
                 message=f"Schnellkopie nicht gültig: {message} · sichere Neucodierung wird einmal versucht.",
@@ -475,7 +519,7 @@ class BatchRunner:
             if safe_options is not None:
                 retried = True
                 fallback_mode = mode_spec(safe_options.quick_mode).label
-                self._emit(
+                self._publish_mapping(
                     "log",
                     level="warning",
                     message=(
