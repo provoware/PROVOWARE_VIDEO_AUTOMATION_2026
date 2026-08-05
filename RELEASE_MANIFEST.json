@@ -1,7 +1,7 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 369,
+  "file_count": 371,
   "files": [
     {
       "mode": "0o644",
@@ -1433,6 +1433,12 @@
     },
     {
       "mode": "0o644",
+      "path": "src/videobatch_fast/recovery_consistency.py",
+      "sha256": "f0ec209c7615be8c845767dccc46f792c841756cb24c1294b239317861fa4a9d",
+      "size": 19984
+    },
+    {
+      "mode": "0o644",
       "path": "src/videobatch_fast/registry.py",
       "sha256": "755e79fb9f6c9f163f318fbe00ac49623b07426690b73fda232b0f86d9d45591",
       "size": 9451
@@ -2069,6 +2075,12 @@
     },
     {
       "mode": "0o644",
+      "path": "tests/test_recovery_consistency.py",
+      "sha256": "f859379b56ebbe7c5b9447dd94651121f248a21ab4fe8a8aa8adb99b03190cf7",
+      "size": 7832
+    },
+    {
+      "mode": "0o644",
       "path": "tests/test_release_2_8.py",
       "sha256": "ea1adcdc0c925c0112d64955403217e28091360cc08bfa5720cb8cfeedf0d723",
       "size": 8209
@@ -2208,8 +2220,8 @@
     {
       "mode": "0o644",
       "path": "videobatch.sh",
-      "sha256": "29b4e2da98e537513424ac14b4a898fa366f9bdfd78dfeb9eb0899f61b673af2",
-      "size": 6585
+      "sha256": "c142803680cd0eb5a5b03aff0b782a1a6e2b2ba5490e5d3e036336fe6224db35",
+      "size": 6865
     },
     {
       "mode": "0o644",
