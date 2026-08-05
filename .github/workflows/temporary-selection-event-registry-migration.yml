@@ -137,7 +137,8 @@ jobs:
             tests/test_rc24_selected_media_crash.py tests/test_release_hardening_2_8_3_rc7.py \
             tests/test_runner_app_events.py
 
-          [[ -e toolchain_wheelhouse/README.md ]] || git checkout "$BASE_SHA" -- toolchain_wheelhouse/README.md
+          git clean -fdx toolchain_wheelhouse
+          git checkout "$BASE_SHA" -- toolchain_wheelhouse
           "$ENV_PYTHON" scripts/build_release_manifest.py
           "$ENV_PYTHON" scripts/validate_release_manifest.py
           "$ENV_PYTHON" - <<'PY'
