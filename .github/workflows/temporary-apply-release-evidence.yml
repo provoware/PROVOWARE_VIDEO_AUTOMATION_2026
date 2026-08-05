@@ -6,6 +6,7 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - .github/scripts/release-evidence-payload.b64
+      - .github/scripts/release-evidence-trigger
       - .github/workflows/temporary-apply-release-evidence.yml
 
 permissions:
@@ -44,6 +45,7 @@ jobs:
             | sha256sum --check --strict
           tar -xzf "$RUNNER_TEMP/release-evidence.tar.gz" -C .
           rm -f .github/scripts/release-evidence-payload.b64
+          rm -f .github/scripts/release-evidence-trigger
           rm -f .github/workflows/temporary-apply-release-evidence.yml
 
       - name: Generate canonical derived evidence
