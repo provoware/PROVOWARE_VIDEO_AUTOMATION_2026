@@ -130,3 +130,5 @@ Die exakt gepinnte Offline-Qualitätswerkzeugkette ausführen und deren Resultat
           fi
           git commit -m 'Unify release evidence into one canonical source'
           git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+
+# synchronize trigger after workflow registration
