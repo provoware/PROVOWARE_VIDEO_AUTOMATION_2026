@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import shlex
+import traceback
 from pathlib import Path
 from tkinter import messagebox
 
@@ -11,7 +12,57 @@ from .quick_modes import mode_spec
 
 class UiEventHandlersMixin:
     def _handle_event(self, name: str, payload: dict) -> None:
-        self.current_operation_id = str(payload.get("operation_id", self.current_operation_id or "general"))
+        self._handle_event_safely(name, payload)
+
+    def _handle_event_safely(self, name: str, payload: dict) -> bool:
+        """Handle one UI event without allowing a faulty handler to stop the event pump."""
+        try:
+            self._dispatch_event(name, payload)
+            return True
+        except Exception as exc:
+            detail = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))[-16_000:]
+            errors = getattr(self, "_ui_event_errors", None)
+            if not isinstance(errors, list):
+                errors = []
+                self._ui_event_errors = errors
+            errors.append(f"{name}: {type(exc).__name__}: {exc}")
+            if len(errors) > 20:
+                del errors[:-20]
+            operation_id = str(payload.get("operation_id", getattr(self, "current_operation_id", "general") or "general"))
+            logger = getattr(self, "logger", None)
+            if logger is not None:
+                try:
+                    logger.write(
+                        "UI_EVENT_HANDLER_FAILED",
+                        "Bedienereignis sicher abgefangen",
+                        f"{name}: {type(exc).__name__}: {exc}",
+                        level="error",
+                        detail=detail,
+                        solution="Die Anwendung läuft weiter. Ereignisprotokoll prüfen und betroffene Aktion erneut ausführen.",
+                        operation_id=operation_id,
+                    )
+                except Exception:
+                    pass
+            status = getattr(self, "status_text", None)
+            if status is not None:
+                try:
+                    status.set("Aktiv · Bedienfehler abgefangen")
+                except Exception:
+                    pass
+            guidance = getattr(self, "guidance_text", None)
+            if guidance is not None:
+                try:
+                    guidance.set(
+                        f"Die Aktion {name} konnte nicht vollständig angezeigt werden. "
+                        "Andere Funktionen bleiben nutzbar; Details wurden protokolliert."
+                    )
+                except Exception:
+                    pass
+            return False
+
+    def _dispatch_event(self, name: str, payload: dict) -> None:
+        current = getattr(self, "current_operation_id", "general") or "general"
+        self.current_operation_id = str(payload.get("operation_id", current))
         handlers = {
             "batch_started": self._handle_batch_started,
             "job_started": self._handle_job_started,
@@ -19,8 +70,10 @@ class UiEventHandlersMixin:
             "progress": self._handle_progress_event,
             "log": self._handle_log_event,
             "job_finished": self._handle_job_finished,
+            "job_failed_internal": self._handle_job_internal_error,
             "batch_failed_internal": self._handle_batch_internal_error,
             "batch_finished": self._handle_batch_finished,
+            "retry_queue_updated": self._handle_retry_queue_updated,
             "preview_ready": self._handle_preview_ready,
             "preview_failed": self._handle_preview_failed,
             "selection_preview_ready": self._handle_selection_preview_ready,
@@ -63,17 +116,63 @@ class UiEventHandlersMixin:
             "Auftrag erfolgreich" if result.success else "Auftrag fehlgeschlagen",
             result.message,
             level="success" if result.success else "error",
-            solution="Nächsten Auftrag verarbeiten." if result.success else "Technische Details und sichere Alternative prüfen.",
+            solution="Nächsten Auftrag verarbeiten." if result.success else "Technische Details und Wiederanlaufliste prüfen.",
+        )
+
+    def _handle_job_internal_error(self, payload: dict) -> None:
+        continue_allowed = bool(payload.get("recoverable"))
+        protection = payload.get("protection", "Schutzmaßnahmen wurden angewendet.")
+        self._event(
+            "JOB_FAILED_INTERNAL",
+            "Einzelauftrag sicher abgefangen",
+            payload.get("message", "Interner Fehler"),
+            level="warning" if continue_allowed else "error",
+            detail=f"{protection}\n\n{payload.get('traceback', '')}",
+            solution=(
+                "Der nächste Auftrag wird automatisch fortgesetzt; Wiederanlaufliste später prüfen."
+                if continue_allowed
+                else "Schutzstopp beachten und Wiederanlaufliste prüfen."
+            ),
         )
 
     def _handle_batch_internal_error(self, payload: dict) -> None:
+        protection = payload.get("protection", "Originaldateien und vorhandene Ausgaben wurden geschützt.")
         self._event(
             "BATCH_FAILED_INTERNAL",
             "Interner Stapelfehler sicher abgefangen",
             payload.get("message", "Interner Fehler"),
             level="error",
-            detail=payload.get("traceback", ""),
-            solution="Diagnosebericht öffnen und Auftrag nach Prüfung erneut starten.",
+            detail=f"{protection}\n\n{payload.get('traceback', '')}",
+            solution="Wiederanlaufliste und Diagnosebericht prüfen; betroffene Aufträge kontrolliert neu starten.",
+        )
+
+    def _handle_retry_queue_updated(self, payload: dict) -> None:
+        summary = payload.get("summary", {})
+        entry = payload.get("entry", {})
+        total = int(summary.get("total", 0) or 0)
+        retryable = int(summary.get("retryable", 0) or 0)
+        blocked = int(summary.get("blocked", 0) or 0)
+        attempts = int(entry.get("attempts", 0) or 0)
+        maximum = int(entry.get("max_attempts", summary.get("max_attempts", 0)) or 0)
+        path = str(summary.get("path", ""))
+        self.guidance_text.set(
+            f"Wiederanlaufliste aktualisiert: {retryable} startbar, {blocked} gesperrt, {total} insgesamt."
+        )
+        self._event(
+            "RETRY_QUEUE_UPDATED",
+            "Wiederanlaufliste aktualisiert",
+            f"{retryable} startbar · {blocked} Versuchslimit erreicht · {total} insgesamt",
+            level="warning" if total else "success",
+            detail=(
+                f"Versuch: {attempts}/{maximum}\n"
+                f"Ursprünglicher Fehler: {entry.get('first_error', '-')}\n"
+                f"Letzter Fehler: {entry.get('latest_error', '-')}\n"
+                f"Schutzmaßnahme: {entry.get('protection', '-')}\n"
+                f"Liste: {path or '-'}"
+            ),
+            solution=(
+                "Nur startbare Einträge kontrolliert erneut ausführen. Gesperrte Einträge zuerst manuell prüfen."
+            ),
         )
 
     def _handle_batch_finished(self, payload: dict) -> None:
@@ -81,20 +180,39 @@ class UiEventHandlersMixin:
         self.start_button.configure(state="normal")
         self.cancel_button.configure(state="disabled")
         self.phase.set("Abgeschlossen" if not payload["cancelled"] else "Abgebrochen")
-        self.status_text.set(f"Fertig · {payload['successes']} erfolgreich · {payload['failures']} fehlgeschlagen")
-        self.guidance_text.set("Videoerstellung abgeschlossen. Ergebnisse prüfen und optional verwendete Dateien sicher aufräumen.")
+        retry = payload.get("retry_queue", {})
+        retryable = int(retry.get("retryable", 0) or 0)
+        blocked = int(retry.get("blocked", 0) or 0)
+        unprocessed = int(payload.get("unprocessed", 0) or 0)
+        suffix = f" · {retryable} Wiederanlauf" if retryable else ""
+        if blocked:
+            suffix += f" · {blocked} gesperrt"
+        self.status_text.set(
+            f"Fertig · {payload['successes']} erfolgreich · {payload['failures']} fehlgeschlagen"
+            f" · {unprocessed} offen{suffix}"
+        )
+        if retryable or blocked:
+            self.guidance_text.set(
+                "Videoerstellung beendet. Fehlerhafte und offene Aufträge stehen mit Fehler, Versuchszahl und "
+                "Schutzmaßnahme in der begrenzten Wiederanlaufliste."
+            )
+        else:
+            self.guidance_text.set("Videoerstellung abgeschlossen. Ergebnisse prüfen und optional verwendete Dateien sicher aufräumen.")
         self._event(
             "BATCH_FINISHED",
             "Stapel abgeschlossen",
-            f"{payload['successes']} erfolgreich · {payload['failures']} fehlgeschlagen",
-            level="success" if not payload["failures"] else "warning",
-            solution="Ausgaben prüfen; optional Dateiablage starten.",
+            (
+                f"{payload['successes']} erfolgreich · {payload['failures']} fehlgeschlagen · "
+                f"{unprocessed} nicht gestartet · {retryable} wiederanlaufbar · {blocked} gesperrt"
+            ),
+            level="success" if not payload["failures"] and not unprocessed else "warning",
+            detail=f"Wiederanlaufliste: {retry.get('path', '-')}",
+            solution="Ausgaben und Wiederanlaufliste prüfen; nur geeignete Einträge kontrolliert erneut starten.",
         )
         self._finish_batch_lists(payload)
         self._autosave_project(force=True)
         if payload["successes"] and not payload["cancelled"] and self.auto_open_output.get():
             self.root.after(350, lambda: self._open_result_folders(payload["results"]))
-
 
     def _open_result_folders(self, results) -> None:
         folders: list[Path] = []
@@ -138,7 +256,6 @@ class UiEventHandlersMixin:
             return
         self.preview_status.set("Vorschau nicht möglich · Datei kann separat geprüft werden")
         self._show_error("PREVIEW_FAILED", payload.get("message", ""))
-
 
     def _handle_selection_preview_ready(self, payload: dict) -> None:
         self._apply_selection_preview(payload)
@@ -191,8 +308,6 @@ class UiEventHandlersMixin:
             f"{passed}/{len(results)} Szenarien erwartungsgemäß\n{failed} fehlgeschlagen\n\nDetails wurden protokolliert.",
         )
         self.guidance_text.set("Anwendungssimulation abgeschlossen. Details stehen in Ereignissen und Protokollen.")
-
-
 
     def _handle_fault_lab_finished(self, payload: dict) -> None:
         results = payload["results"]
