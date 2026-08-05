@@ -79,6 +79,7 @@ class LongRenderAcceptance:
             state = load_state(contract)
             if state.get("state") in TERMINAL_STATES:
                 raise LongRenderContractError("Ein terminal abgeschlossener Lauf darf nicht wiederaufgenommen werden.")
+            self._verify_resume_target(state, target)
             state["resume_count"] = int(state.get("resume_count", 0)) + 1
             verify_input_manifest(state.get("input_manifest", {}), full_hash=True)
         else:
@@ -86,17 +87,17 @@ class LongRenderAcceptance:
                 raise LongRenderContractError(
                     "Zustandsdatei existiert bereits; --resume verwenden oder bewusst archivieren."
                 )
-            state = new_state(contract, target, build_input_manifest(contract))
-
-        run_id = str(state.get("run_id", ""))
-        if not resume:
             for spec in contract.jobs:
                 output = contract.target_dir / spec.output_name
                 if output.exists():
                     raise LongRenderContractError(
                         f"Zieldatei existiert bereits; nichts wird überschrieben: {output}"
                     )
+            state = new_state(contract, target, build_input_manifest(contract))
+            self._state = state
+            write_state(contract, state)
 
+        run_id = str(state.get("run_id", ""))
         created_reservations: list[Path] = []
         try:
             for spec in contract.jobs:
@@ -128,6 +129,31 @@ class LongRenderAcceptance:
         self._state = state
         write_state(contract, state)
         return state
+
+    @staticmethod
+    def _verify_resume_target(state: dict[str, Any], current: dict[str, Any]) -> None:
+        stored = state.get("target")
+        if not isinstance(stored, dict):
+            raise LongRenderContractError("Gespeicherte Zielidentität fehlt; Wiederaufnahme blockiert.")
+        identity_fields = (
+            "mount_point",
+            "filesystem",
+            "source",
+            "external_usb",
+            "device_serial",
+            "filesystem_uuid",
+            "resource_mode",
+            "rehearsal_target",
+        )
+        changed = [field for field in identity_fields if stored.get(field) != current.get(field)]
+        if changed:
+            raise LongRenderContractError(
+                "Zielidentität oder Ressourcenmodus wurde seit dem ersten Lauf verändert: "
+                + ", ".join(changed)
+            )
+        expected_rehearsal = bool(current.get("rehearsal_target") or current.get("resource_mode") != "hard-systemd")
+        if bool(state.get("rehearsal_only")) != expected_rehearsal:
+            raise LongRenderContractError("Der Probelauf-/Physikmodus darf bei Wiederaufnahme nicht wechseln.")
 
     def _verify_completed_output(self, job_id: str, output: Path, record: dict[str, Any]) -> None:
         if not output.is_file():
@@ -184,11 +210,11 @@ class LongRenderAcceptance:
                 job = build_pair_job(spec, output)
                 result = self._execute(job, position, len(contract.jobs))
                 self._account_elapsed()
-                if self._timeout_reason:
-                    return self._pause("paused_timeout", self._timeout_reason)
-                if self._cancelled and not result.success:
-                    return self._pause("paused", "Abbruch angefordert")
                 if not result.success:
+                    if self._timeout_reason:
+                        return self._pause("paused_timeout", self._timeout_reason)
+                    if self._cancelled:
+                        return self._pause("paused", "Abbruch angefordert")
                     record["state"] = "failed"
                     record["last_error"] = result.message
                     record["updated_at"] = utc_now()
@@ -205,6 +231,10 @@ class LongRenderAcceptance:
                 append_event(contract, state, "job_completed", job_id=spec.job_id, output=spec.output_name)
                 write_state(contract, state)
                 write_heartbeat(contract, state)
+                if self._timeout_reason:
+                    return self._pause("paused_timeout", self._timeout_reason)
+                if self._cancelled:
+                    return self._pause("paused", "Abbruch angefordert")
                 if checkpoint_stop_after and completed_this_invocation >= checkpoint_stop_after:
                     return self._pause("paused", "Kontrollierter Checkpoint-Stopp")
             return self._complete()
@@ -355,7 +385,7 @@ class LongRenderAcceptance:
             "input_manifest_digest": (state.get("input_manifest") or {}).get("digest"),
             "output_manifest": state.get("output_manifest"),
             "jobs": state.get("jobs"),
-            "rehearsal_only": bool(self.allow_rehearsal_target or self.allow_soft_limits),
+            "rehearsal_only": bool(state.get("rehearsal_only")),
         }
         atomic_write_json(state_directory(self.contract) / "final-report.json", report)
 
