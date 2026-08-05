@@ -28,6 +28,14 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
+      - name: Run running-state regression test
+        run: |
+          set -Eeuo pipefail
+          python3 -m py_compile \
+            diagnostics/release_readiness/release_readiness_dashboard.py \
+            diagnostics/release_readiness/running_status_selftest.py
+          python3 diagnostics/release_readiness/running_status_selftest.py
+
       - name: Query live CI and generate dashboard
         env:
           TARGET_SHA: ${{ github.event.pull_request.head.sha }}
@@ -52,9 +60,16 @@ jobs:
           assert result['ci']['source'] == 'GitHub REST API', result['ci']
           assert result['ci']['checks'], result['ci']
           assert result['read_only_inputs_verified'] is True, result
+          ci_gate = next(gate for gate in result['gates'] if gate['id'] == 'ci')
+          assert ci_gate['status'] == 'running', ci_gate
+          assert any(
+              item['code'] == 'CI_NOT_FINAL' and 'running' in item['message']
+              for item in result['findings']
+          ), result['findings']
           print(
               'LIVE CI AUDIT PASS · '
-              f"{len(result['ci']['checks'])} checks read · contradictions blocked · inputs unchanged"
+              f"{len(result['ci']['checks'])} checks read · running precise · "
+              'contradictions blocked · inputs unchanged'
           )
           PY
 
