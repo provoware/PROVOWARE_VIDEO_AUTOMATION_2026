@@ -1,7 +1,7 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 371,
+  "file_count": 373,
   "files": [
     {
       "mode": "0o644",
@@ -1169,6 +1169,12 @@
     },
     {
       "mode": "0o644",
+      "path": "src/videobatch_fast/app_events.py",
+      "sha256": "5d2cbd685a2117406690eb314395b7b08297bfe07ac2949f726007128e065fef",
+      "size": 4524
+    },
+    {
+      "mode": "0o644",
       "path": "src/videobatch_fast/archive_service.py",
       "sha256": "1b5908cf36f05dacae1b9bac5514d736a650568e6516edb30101e51d6f34befd",
       "size": 11855
@@ -1236,8 +1242,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/event_buffer.py",
-      "sha256": "0d2e0d63e0d3c4462e9c91658ce3ebb928cfc03017f6c8e43c98140b21670ec3",
-      "size": 1691
+      "sha256": "1b0fd6de70804aa3505e358d7674ec9829e972c120d78f2a4ce5199ce3c4330e",
+      "size": 1777
     },
     {
       "mode": "0o644",
@@ -1868,6 +1874,12 @@
       "path": "tests/test_ab_channel_installer_rc15.py",
       "sha256": "bd6b86617751b3e62520c80e9d2d247471dd03b781dc151b9ae601967052f460",
       "size": 4930
+    },
+    {
+      "mode": "0o644",
+      "path": "tests/test_app_events.py",
+      "sha256": "ed701f9ab3842a1c207e7ba13aeab67f7d5958b85aaeae2c830d297bdb04d9c5",
+      "size": 3280
     },
     {
       "mode": "0o644",
