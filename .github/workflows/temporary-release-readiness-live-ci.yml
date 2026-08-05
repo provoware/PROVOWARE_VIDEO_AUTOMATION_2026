@@ -1,0 +1,75 @@
+name: Temporary release readiness live CI audit
+
+on:
+  pull_request:
+    branches: [main]
+    types: [synchronize]
+    paths:
+      - diagnostics/release_readiness/**
+      - .github/workflows/temporary-release-readiness-live-ci.yml
+
+permissions:
+  contents: read
+  actions: read
+  checks: read
+
+jobs:
+  live-ci-audit:
+    name: Validate live read-only CI ingestion
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      GITHUB_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Check out dashboard branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Query live CI and generate dashboard
+        env:
+          TARGET_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -Eeuo pipefail
+          set +e
+          python3 diagnostics/release_readiness/release_readiness_dashboard.py \
+            --root . \
+            --github-repository "${GITHUB_REPOSITORY}" \
+            --github-sha "${TARGET_SHA}"
+          code=$?
+          set -e
+          test "$code" -eq 2
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          result = json.loads(
+              Path('build/release-readiness/RELEASE_READINESS_STATUS.json').read_text(encoding='utf-8')
+          )
+          assert result['overall_status'] == 'red', result
+          assert result['ci']['source'] == 'GitHub REST API', result['ci']
+          assert result['ci']['checks'], result['ci']
+          assert result['read_only_inputs_verified'] is True, result
+          print(
+              'LIVE CI AUDIT PASS · '
+              f"{len(result['ci']['checks'])} checks read · contradictions blocked · inputs unchanged"
+          )
+          PY
+
+      - name: Publish dashboard in job summary
+        if: always()
+        run: |
+          if [[ -f build/release-readiness/RELEASE_READINESS_DASHBOARD.md ]]; then
+            cat build/release-readiness/RELEASE_READINESS_DASHBOARD.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload live CI dashboard
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-readiness-dashboard-live-ci
+          path: build/release-readiness/*
+          if-no-files-found: error
+          retention-days: 7
