@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import base64
 import hashlib
 import json
 import re
 import urllib.error
 import urllib.request
-import zlib
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any, Mapping
@@ -76,23 +74,8 @@ def read_json(path: Path) -> dict[str, Any]:
         raise EvidenceError(f"Ungültige JSON-Quelle {path}: {exc}") from exc
     if not isinstance(value, dict):
         raise EvidenceError(f"JSON-Wurzel muss ein Objekt sein: {path}")
-    if path.name == "RELEASE_MANIFEST.json" and not isinstance(value.get("files"), list):
-        if value.get("files_encoding") != "zlib+base64+json":
-            raise EvidenceError("Nicht unterstütztes Manifestformat")
-        try:
-            size = int(value["files_uncompressed_size"])
-            if not 0 <= size <= 16 * 1024 * 1024:
-                raise ValueError("ungültige Größe")
-            raw = zlib.decompress(base64.b64decode(str(value["files_payload"]), validate=True))
-            digest = hashlib.sha256(raw).hexdigest()
-            if len(raw) != size or digest != str(value.get("files_payload_sha256", "")):
-                raise ValueError("Nutzlastprüfung fehlgeschlagen")
-            value["files"] = json.loads(raw.decode("utf-8"))
-        except (KeyError, TypeError, ValueError, UnicodeError, json.JSONDecodeError, zlib.error) as exc:
-            raise EvidenceError(f"Ungültige kompakte Manifestnutzlast: {exc}") from exc
-        if not isinstance(value["files"], list):
-            raise EvidenceError("Manifestdateiliste ist keine Liste")
     return value
+
 
 def load_evidence(root: Path) -> tuple[dict[str, dict[str, Any]], dict[str, Path], dict[str, str]]:
     required = {
@@ -230,139 +213,85 @@ def validate_manifest(root: Path, manifest: Mapping[str, Any], findings: list[Fi
 
 def load_ci_snapshot(path: Path | None) -> dict[str, Any]:
     if path is None:
-        return {"schema_version": 1, "status": "unknown", "checks": [], "source": "not supplied"}
-    value = read_json(path)
-    value.setdefault("checks", [])
-    value.setdefault("status", "unknown")
-    value.setdefault("source", str(path))
+        return {"schema_version": 1, "status": "unknown", "source": "not supplied", "checks": []}
+    return read_json(path)
+
+
+def _github_get(url: str, token: str | None) -> dict[str, Any]:
+    headers = {"Accept": "application/vnd.github+json", "User-Agent": "videobatch-release-readiness/1", "X-GitHub-Api-Version": "2022-11-28"}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    request = urllib.request.Request(url, headers=headers, method="GET")
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            value = json.loads(response.read().decode("utf-8"))
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
+        raise EvidenceError(f"GitHub-Leseabfrage fehlgeschlagen: {exc}") from exc
+    if not isinstance(value, dict):
+        raise EvidenceError("GitHub-Antwort ist kein Objekt.")
     return value
 
 
-def github_json(url: str, token: str | None) -> Any:
-    headers = {
-        "Accept": "application/vnd.github+json",
-        "User-Agent": "provoware-release-readiness-dashboard/2",
-        "X-GitHub-Api-Version": "2022-11-28",
-    }
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
-    try:
-        with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=15) as response:
-            return json.loads(response.read().decode("utf-8"))
-    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, json.JSONDecodeError) as exc:
-        raise EvidenceError(f"GitHub-CI-Status nicht lesbar: {exc}") from exc
-
-
 def fetch_github_ci(repository: str, sha: str, token: str | None) -> dict[str, Any]:
-    if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
-        raise EvidenceError(f"Ungültiger GitHub-Repositoryname: {repository}")
-    if not re.fullmatch(r"[0-9a-fA-F]{7,64}", sha):
-        raise EvidenceError(f"Ungültige Commit-SHA: {sha}")
+    if not re.fullmatch(r"[A-Za-z0-9._-]+/[A-Za-z0-9._-]+", repository):
+        raise EvidenceError("Unnültiger GitHub-Repositoryname.")
+    if not re.fullmatch(r"[0-9a-fA-F]{7,40}", sha):
+        raise EvidenceError("Unültige GitHub-Commit-SHA.")
     base = f"https://api.github.com/repos/{repository}"
-    check_payload = github_json(f"{base}/commits/{sha}/check-runs?per_page=100", token)
-    run_payload = github_json(f"{base}/actions/runs?head_sha={sha}&per_page=100", token)
-    checks: list[dict[str, str]] = []
-    for item, kind in [
-        *((item, "check-run") for item in check_payload.get("check_runs", []) if isinstance(check_payload, dict)),
-        *((item, "workflow-run") for item in run_payload.get("workflow_runs", []) if isinstance(run_payload, dict)),
-    ]:
-        raw = item.get("conclusion") or item.get("status") or "unknown"
-        checks.append(
-            {
-                "name": str(item.get("name") or "unnamed"),
-                "status": normalize_status(raw),
-                "raw_status": str(raw),
-                "url": str(item.get("html_url") or ""),
-                "kind": kind,
-            }
-        )
-    statuses = {item["status"] for item in checks}
-    status = (
-        "fail"
-        if "fail" in statuses
-        else "running"
-        if "running" in statuses
-        else "pass"
-        if checks and statuses <= {"pass"}
-        else "unknown"
-    )
-    return {
-        "schema_version": 1,
-        "repository": repository,
-        "sha": sha,
-        "status": status,
-        "checks": checks,
-        "source": "GitHub REST API",
-    }
+    checks_payload = _github_get(f"{base}/commits/{sha}/check-runs?per_page=100", token)
+    runs_payload = _github_get(f"{base}/actions/runs?head_sha={sha}&per_page=100", token)
+    checks: list[dict[str, Any]] = []
+    for check in checks_payload.get("check_runs", []):
+        if isinstance(check, Mapping):
+            raw = check.get("conclusion") or check.get("status")
+            checks.append({"name": str(check.get("name") or "check-run"), "status": normalize_status(raw), "raw_status": str(raw), "url": str(check.get("html_url") or ""), "kind": "check-run"})
+    for run in runs_payload.get("workflow_runs", []):
+        if isinstance(run, Mapping):
+            raw = run.get("conclusion") or run.get("status")
+            checks.append({"name": str(run.get("name") or "workflow-run"), "status": normalize_status(raw), "raw_status": str(raw), "url": str(run.get("html_url") or ""), "kind": "workflow-run"})
+    statuses = [check["status"] for check in checks]
+    status = "fail" if "fail" in statuses else "running" if "running" in statuses else "open" if any(state in {"open", "unknown"} for state in statuses) or not checks else "pass"
+    return {"schema_version": 1, "status": status, "source": "GitHub REST API", "repository": repository, "sha": sha, "checks": checks}
 
 
-def compare_value(
-    findings: list[Finding],
-    code: str,
-    label: str,
-    expected: Any,
-    actual: Any,
-    sources: tuple[str, ...],
-) -> None:
+def compare_value(findings: list[Finding], code: str, label: str, expected: Any, actual: Any, sources: tuple[str, ...]) -> None:
     if expected != actual:
-        findings.append(
-            Finding(
-                "error",
-                code,
-                f"{label}: kanonisch={expected!r}, abgeleitet={actual!r}",
-                sources,
-            )
-        )
+        findings.append(Finding("error", code, f"{label} stimmt nicht: kanonisch {expected!r} · abgeleitet {actual!r}", sources))
 
 
 def readme_release_status(path: Path) -> dict[str, Any]:
     text = path.read_text(encoding="utf-8")
-    begin = text.find("<!-- release-status:start -->")
-    end = text.find("<!-- release-status:end -->")
-    if begin < 0 or end < begin:
-        return {"version": None, "tests_passed": None, "manifest_files": None, "blockers": []}
-    block = text[begin:end]
-    tests = re.search(r"- (\d+)/(\d+) automatisierte Tests bestanden", block)
-    manifest = re.search(r"- Release-Manifest: (\d+) Dateien", block)
-    version = re.search(r"^# .* · ([^\n]+)$", block, flags=re.MULTILINE)
-    gate_start = block.find("### Offene Stable-Gates")
-    gate_text = block[gate_start:] if gate_start >= 0 else ""
-    blockers = re.findall(r"^- ([^\n]+)$", gate_text, flags=re.MULTILINE)
+    version_match = re.search(r"# [\w\-] [\w\-]*(¥)? ([0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+)", text, flags=re.IGNORECASE)
+    test_match = re.search(r"([0-9]+)/([0-9]+) automatisierte Tests bestanden", text)
+    manifest_match = re.search(r"Release-Manifest_`? tragen `?([0-9]+)`Dateien", text)
+    blockers_match = re.search("`stable_blockers`? umfasst `g?([0-9]+)`", text)
     return {
-        "version": version.group(1).strip() if version else None,
-        "tests_passed": int(tests.group(1)) if tests else None,
-        "manifest_files": int(manifest.group(1)) if manifest else None,
-        "blockers": blockers,
+        "version": version_match.group(1) if version_match else None,
+        "tests_passed": int(test_match.group(1)) if test_match else None,
+        "manifest_files": int(manifest_match.group(1)) if manifest_match else None,
+        "blockers": int(blockers_match.group(1)) if blockers_match else None,
     }
 
 
-def analyze(
-    root: Path,
-    documents: Mapping[str, Mapping[str, Any]],
-    ci: Mapping[str, Any],
-) -> tuple[list[Finding], list[Gate]]:
+def analyze(root: Path, documents: Mapping[str, Mapping[str, Any]], ci: Mapping[str, Any]) -> tuple[list[Finding], list[Gate]]:
+    findings: list[Finding] = []
     evidence = documents["evidence"]
     manifest = documents["manifest"]
     development = documents["development"]
     quality = documents["quality"]
     release_files = documents["release_files"]
     build = documents["build"]
-    findings: list[Finding] = []
-    manifest_valid = validate_manifest(root, manifest, findings)
-
     product = evidence.get("product") if isinstance(evidence.get("product"), Mapping) else {}
-    tests = evidence.get("tests") if isinstance(evidence.get("tests"), Mapping) else {}
     canonical_manifest = evidence.get("manifest") if isinstance(evidence.get("manifest"), Mapping) else {}
+    tests = evidence.get("tests") if isinstance(evidence.get("tests"), Mapping) else {}
     canonical_files = evidence.get("release_files") if isinstance(evidence.get("release_files"), Mapping) else {}
     gates_raw = evidence.get("stable_gates") if isinstance(evidence.get("stable_gates"), list) else []
-    canonical_blockers = [
-        f"{gate.get('label')}: {gate.get('reason')}"
-        for gate in gates_raw
-        if isinstance(gate, Mapping) and str(gate.get("status")) != "passed"
-    ]
 
-    compare_value(findings, "VERSION_DRIFT", "Version", product.get("version"), development.get("version"), ("evidence", "development"))
-    compare_value(findings, "QUALITY_VERSION_DRIFT", "Qualitätsversion", product.get("version"), quality.get("build"), ("evidence", "quality"))
+    manifest_valid = validate_manifest(root, manifest, findings)
+    canonical_blockers = [str(item.get("label") or item.get("id") or "Unbenannt") for item in gates_raw if isinstance(item, Mapping) and normalize_status(item.get("status")) != "pass"]
+
+    compare_value(findings, "DEVELOPMENT_VERSION_DRIFT", "Entwicklungsstatus-Version", product.get("version"), development.get("version"), ("evidence", "development"))
+    compare_value(findings, "QUALITY_VERSION_DRIFT", "Qualitätsstatus-Version", product.get("version"), quality.get("build"), ("evidence", "quality"))
     compare_value(findings, "BUILD_VERSION_DRIFT", "Buildbericht-Version", product.get("version"), build.get("version"), ("evidence", "build"))
     compare_value(findings, "RELEASE_FILE_VERSION_DRIFT", "Release-Dateistatus-Version", product.get("version"), release_files.get("version"), ("evidence", "release_files"))
     compare_value(findings, "MANIFEST_COUNT_DRIFT", "Manifest-Dateizahl", canonical_manifest.get("file_count"), manifest.get("file_count"), ("evidence", "manifest"))
@@ -433,7 +362,7 @@ def analyze(
             Finding(
                 "error",
                 "DERIVED_EVIDENCE_DRIFT",
-                "Mindestens eine abgeleitete Release-Datei stimmt nicht mit RELEASE_EVIDENCE.json überein.",
+                "Mindestens ein abgeleitetes Release-Datei stimmt nicht mit RELEASE_EVIDENCE.json überein.",
                 ("evidence",),
             )
         )
@@ -442,7 +371,7 @@ def analyze(
             Finding(
                 "warning",
                 "CI_NOT_FINAL",
-                f"CI ist noch nicht endgültig: {normalize_status(ci.get('status'))} ({ci.get('status', 'unknown')})",
+                f"CI ist noch nicht endgültig: {normalize_status(ci.get('status'))}",
                 ("ci",),
             )
         )

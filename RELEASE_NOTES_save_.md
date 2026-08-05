@@ -34,6 +34,43 @@ Bei einem Vorschaufehler stehen jetzt funktionsfähige Aktionen bereit:
 RC24 wird als vollständiges Projekt-ZIP bereitgestellt. Teil- und Onlineupdates bleiben bis nach
 der Stable-Veröffentlichung ein Nachrelease-System.
 
+Ein als verifiziert gekennzeichnetes Projektartefakt wird ausschließlich nach erfolgreichem
+Read-only-Preflight, vollständig grüner Kubuntu-Vierfachmatrix und erneut bestandenen
+Abschlussverträgen erzeugt. Es wird nicht automatisch als Release veröffentlicht.
+
+## Verifizierbares Gesamtprojekt-Artefakt
+
+Das Prüfartefakt enthält:
+
+- das vollständige Projekt-ZIP aus dem exakt geprüften Git-Commit
+- eine SHA-256-Datei für das gesamte ZIP
+- `ARTIFACT_CONTENTS.json` mit Pfad, unkomprimierter Größe und SHA-256 jeder Datei
+- `VERIFIED_SOURCE_ARTIFACT.json` mit Commit, ZIP-Größe, ZIP-SHA-256 und Vertragsstatus
+- `release-manifest-check.json` mit dem maschinenlesbaren Manifestprüfergebnis
+
+Der neue Prüfmodus von `scripts/build_artifact_contents.py` vergleicht ein heruntergeladenes ZIP
+vollständig gegen die zugehörige Inhaltsliste. Er bricht fail-closed ab bei:
+
+- fehlenden Dateien
+- zusätzlichen Dateien
+- abweichenden Dateigrößen
+- abweichenden SHA-256-Werten
+- abweichendem Archivnamen oder Commit
+- widersprüchlicher Dateizahl oder Gesamtgröße
+- doppelten ZIP-Pfaden
+- beschädigten ZIP-Einträgen
+- ungültiger oder unsortierter JSON-Struktur
+
+Prüfaufruf:
+
+```bash
+python3 scripts/build_artifact_contents.py \
+  PROVOWARE_VIDEO_AUTOMATION_2026_*_verified.zip \
+  --check ARTIFACT_CONTENTS.json
+```
+
+Exitcodes: `0 = vollständig bestätigt`, `1 = reproduzierbare Drift`,
+`2 = beschädigtes oder ungültiges Artefakt beziehungsweise Prüfmanifest`.
 
 ## Finalisierte Projektstruktur und Hilfe
 

@@ -122,13 +122,13 @@ def render_development(value: Mapping[str, Any]) -> dict[str, Any]:
         "version": str(product["version"]),
         "progress_percent": int(progress["percent"]),
         "completed": int(progress["completed"]),
-        "open": int(progress["open"]),
+        "open": int(progress.get("open", 0)),
         "current_todo": str(progress["current_todo"]),
         "status": "yellow" if blockers else "green",
         "stable_ready": not blockers,
         "approved_quality_report": str(value["approved_quality_report"]),
         "stable_blockers": blockers,
-        "total": int(progress["total"]),
+        "total": int(progress.get("total", 0)),
     }
 
 
@@ -176,9 +176,7 @@ def render_quality(value: Mapping[str, Any]) -> dict[str, Any]:
         "external_gates": external,
         "stable_ready": bool(value["stable_ready"]),
         "stable_block_reason": (
-            "Physical KDE session approval and the documented large-media soak remain required."
-            if stable_blockers(value)
-            else ""
+            "External quality tools, physical KDE session acceptance and large-media soak remain required."
         ),
     }
 

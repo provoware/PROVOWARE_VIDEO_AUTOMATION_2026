@@ -35,3 +35,44 @@ Im großen Medienbrowser Dateien markieren und **Auswahl übernehmen + im Ordner
 ## Vorschau-Cache
 
 Der Dialog **Vorschau-Cache** zeigt Größe, Dateizahl, Auslastung und Pfad. Das sichere Leeren entfernt nur eindeutig erkannte VideoBatch-Vorschaubilder; Originalmedien und fremde Dateien bleiben unberührt.
+
+## Heruntergeladenes Projekt-ZIP prüfen
+
+Ein vollständig verifiziertes GitHub-Actions-Artefakt enthält neben dem Projekt-ZIP:
+
+- eine `.sha256`-Datei für das gesamte ZIP
+- `ARTIFACT_CONTENTS.json` mit Pfad, Größe und SHA-256 jeder enthaltenen Datei
+- `VERIFIED_SOURCE_ARTIFACT.json` mit Commit und erfüllten Prüfverträgen
+- `release-manifest-check.json` mit dem Manifestprüfergebnis
+
+### 1. Gesamtes ZIP prüfen
+
+Im Ordner mit ZIP und `.sha256`-Datei:
+
+```bash
+sha256sum --check *.zip.sha256
+```
+
+Erwartetes Ergebnis: `OK`.
+
+### 2. Jede enthaltene Datei prüfen
+
+```bash
+python3 scripts/build_artifact_contents.py \
+  PROVOWARE_VIDEO_AUTOMATION_2026_*_verified.zip \
+  --check ARTIFACT_CONTENTS.json
+```
+
+Erwartetes Ergebnis:
+
+```text
+ARTIFACT-CONTENTS BESTANDEN · <Dateizahl> Dateien · <Bytes> Bytes
+```
+
+Exitcodes:
+
+- `0`: ZIP und Inhaltsliste stimmen vollständig überein
+- `1`: Dateien fehlen, sind zusätzlich vorhanden oder unterscheiden sich bei Größe, SHA-256 oder Metadaten
+- `2`: ZIP oder Inhaltsliste ist beschädigt beziehungsweise strukturell ungültig
+
+Die Prüfung extrahiert und startet keine Datei. Bei Exitcode 1 oder 2 das Archiv nicht ausführen und erneut aus dem zugehörigen grünen GitHub-Actions-Lauf herunterladen.
