@@ -14,7 +14,7 @@ from typing import Callable, Iterator
 
 from .config import DEFAULT_CONFIG, normalize_config
 from .job_journal import BatchJournal, recovery_input_paths
-from .models import BatchOptions, MediaInfo, PairJob
+from .models import BatchOptions, JobResult, MediaInfo, PairJob
 from .runner import terminate_process_group
 from .runner_process import ProcessExecution
 from .safe_io import atomic_write_json, atomic_write_text, quarantine_file
@@ -224,6 +224,120 @@ def _recovery_without_duplicate_completed_jobs(root: Path) -> FaultLabResult:
     return _result("recovery_without_duplicate_completed_jobs", started, ok, "Abgeschlossene Jobs werden bei Recovery nicht doppelt eingereiht.")
 
 
+def _retry_queue_attempt_limit(root: Path) -> FaultLabResult:
+    from .retry_queue import RetryQueueStore
+
+    started = time.monotonic()
+    job = _job(root)
+    queue = RetryQueueStore(root / "retry.json", max_entries=4, max_attempts=2)
+    first = queue.record_failure(
+        JobResult(job, False, 70, 0.1, "ursprünglicher Fehler"),
+        operation_id="fault-1",
+        protection="Originaldateien geschützt.",
+    )
+    second = queue.record_failure(
+        JobResult(job, False, 70, 0.1, "erneuter Fehler"),
+        operation_id="fault-2",
+        protection="Prozesszustand bereinigt.",
+    )
+    ok = (
+        first.get("retry_allowed") is True
+        and second.get("retry_allowed") is False
+        and second.get("state") == "limit_reached"
+        and second.get("attempts") == 2
+        and second.get("first_error") == "ursprünglicher Fehler"
+        and second.get("latest_error") == "erneuter Fehler"
+        and not queue.eligible_entries()
+    )
+    return _result(
+        "retry_queue_attempt_limit",
+        started,
+        ok,
+        "Wiederholungen enden nach zwei Fehlversuchen ohne automatische Endlosschleife.",
+        str(queue.path),
+    )
+
+
+def _retry_queue_preserves_unstarted(root: Path) -> FaultLabResult:
+    from .retry_queue import RetryQueueStore
+
+    started = time.monotonic()
+    queue = RetryQueueStore(root / "retry.json", max_entries=4, max_attempts=2)
+    entry = queue.record_not_started(
+        _job(root),
+        operation_id="fault-open",
+        reason="Schutzstopp nach vorherigem Auftrag.",
+        protection="Dieser Auftrag wurde nicht gestartet; Eingaben blieben unverändert.",
+    )
+    ok = (
+        entry.get("state") == "not_started"
+        and entry.get("attempts") == 0
+        and entry.get("retry_allowed") is True
+        and bool(entry.get("first_error"))
+        and bool(entry.get("protection"))
+    )
+    return _result(
+        "retry_queue_preserves_unstarted",
+        started,
+        ok,
+        "Nicht gestartete Aufträge bleiben ohne verbrauchten Versuch nachvollziehbar erhalten.",
+        str(queue.path),
+    )
+
+
+def _ui_event_handler_isolation(root: Path) -> FaultLabResult:
+    from .ui_event_handlers_mixin import UiEventHandlersMixin
+
+    started = time.monotonic()
+
+    class Value:
+        def __init__(self) -> None:
+            self.value = ""
+
+        def set(self, value: str) -> None:
+            self.value = value
+
+    class Logger:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def write(self, *_args, **_kwargs) -> None:
+            self.calls += 1
+
+    class FakeUi(UiEventHandlersMixin):
+        def __init__(self) -> None:
+            self.current_operation_id = "fault-ui"
+            self._ui_event_errors: list[str] = []
+            self.status_text = Value()
+            self.guidance_text = Value()
+            self.logger = Logger()
+            self.handled: list[str] = []
+
+        def _dispatch_event(self, name: str, payload: dict) -> None:
+            if name == "broken":
+                raise RuntimeError("simulierter Anzeigehandlerfehler")
+            self.handled.append(name)
+
+    ui = FakeUi()
+    failed = ui._handle_event_safely("broken", {"operation_id": "fault-ui"})
+    continued = ui._handle_event_safely("next", {})
+    ok = (
+        failed is False
+        and continued is True
+        and ui.handled == ["next"]
+        and len(ui._ui_event_errors) == 1
+        and ui.logger.calls == 1
+        and "Bedienfehler" in ui.status_text.value
+        and "Andere Funktionen" in ui.guidance_text.value
+    )
+    return _result(
+        "ui_event_handler_isolation",
+        started,
+        ok,
+        "Fehlerhafte UI-Ereignisse werden protokolliert; nachfolgende Ereignisse laufen weiter.",
+    )
+
+
 SCENARIOS: tuple[Callable[[Path], FaultLabResult], ...] = (
     _atomic_write_disk_full,
     _atomic_write_interrupted,
@@ -237,6 +351,9 @@ SCENARIOS: tuple[Callable[[Path], FaultLabResult], ...] = (
     _corrupt_configuration_recovery,
     _corrupt_project_quarantine,
     _recovery_without_duplicate_completed_jobs,
+    _retry_queue_attempt_limit,
+    _retry_queue_preserves_unstarted,
+    _ui_event_handler_isolation,
 )
 
 
