@@ -22,6 +22,8 @@ on:
 
 permissions:
   contents: read
+  issues: write
+  pull-requests: write
 
 concurrency:
   group: offline-quality-${{ github.ref }}
@@ -193,6 +195,46 @@ jobs:
             toolchain_wheelhouse/requirements-toolchain-resolved.lock
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publish result to pull request
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          GATE_EXIT: ${{ steps.offline_gate.outputs.exit_code }}
+        with:
+          script: |
+            const fs = require('fs');
+            let detail = 'Der maschinenlesbare Bericht wurde nicht erzeugt.';
+            const path = 'quality-toolchain-evidence/diagnostics/external_quality_latest.json';
+            if (fs.existsSync(path)) {
+              const report = JSON.parse(fs.readFileSync(path, 'utf8'));
+              const rows = report.results.map(item =>
+                `| ${item.tool} | ${item.version || '—'} | ${item.status} | ${item.returncode ?? '—'} |`
+              );
+              detail = [
+                '| Werkzeug | Version | Status | Exit |',
+                '|---|---:|---|---:|',
+                ...rows,
+              ].join('\n');
+            }
+            const exitCode = process.env.GATE_EXIT || 'missing';
+            const body = [
+              '## Exakte Offline-Qualitätswerkzeugkette',
+              '',
+              `Workflow-Lauf: [${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+              `Commit: \`${context.sha}\``,
+              `Gesamtexit: \`${exitCode}\``,
+              '',
+              detail,
+              '',
+              'Wheelhouse-Manifest, Resolved-Lock, Einzelbefunde und Logs liegen 30 Tage im Artefakt `exact-offline-quality-evidence`.',
+            ].join('\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 52,
+              body,
+            });
 
       - name: Enforce external quality result
         if: always()
