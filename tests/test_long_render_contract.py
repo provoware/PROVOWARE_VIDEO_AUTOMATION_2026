@@ -203,3 +203,84 @@ def test_new_run_never_moves_or_overwrites_existing_output(tmp_path: Path, monke
     with pytest.raises(LongRenderContractError, match="nichts wird überschrieben"):
         controller.prepare(resume=False)
     assert output.read_bytes() == b"existing-user-output"
+
+
+def test_successful_job_is_checkpointed_before_cancel_pause(tmp_path: Path, monkeypatch) -> None:
+    _install_fakes(monkeypatch)
+    target = tmp_path / "target"
+    contract = load_contract(_write_contract(tmp_path, target=target))
+    first = LongRenderAcceptance(
+        contract,
+        allow_rehearsal_target=True,
+        allow_soft_limits=True,
+        executor=None,
+    )
+    calls = 0
+
+    def cancel_after_success(job, _options, _emit, _cancelled):
+        nonlocal calls
+        calls += 1
+        job.output.write_bytes((job.output.name * 5000).encode())
+        first.request_cancel()
+        return JobResult(job, True, 0, 0.01, "ok")
+
+    first.executor = cancel_after_success
+    first.prepare(resume=False)
+    paused = first.run()
+    assert paused["state"] == "paused"
+    assert [item["state"] for item in paused["jobs"]] == ["completed", "pending"]
+    attempts = paused["jobs"][0]["attempts"]
+
+    second = LongRenderAcceptance(
+        contract,
+        allow_rehearsal_target=True,
+        allow_soft_limits=True,
+        executor=_executor,
+    )
+    second.prepare(resume=True)
+    completed = second.run()
+    assert completed["state"] == "completed"
+    assert completed["jobs"][0]["attempts"] == attempts
+    assert calls == 1
+
+
+def test_resume_blocks_changed_target_identity(tmp_path: Path, monkeypatch) -> None:
+    _install_fakes(monkeypatch)
+    import videobatch_fast.long_render_contract as module
+
+    target = tmp_path / "target"
+    contract = load_contract(_write_contract(tmp_path, target=target))
+    first = LongRenderAcceptance(
+        contract,
+        allow_rehearsal_target=True,
+        allow_soft_limits=True,
+        executor=_executor,
+    )
+    first.prepare(resume=False)
+    assert first.run(checkpoint_stop_after=1)["state"] == "paused"
+
+    monkeypatch.setattr(
+        module,
+        "validate_target",
+        lambda _contract, allow_rehearsal_target=False: {
+            "mount_point": "/tmp",
+            "filesystem": "tmpfs",
+            "source": "different-device",
+            "mount_options": ["rw"],
+            "external_usb": False,
+            "write_mib_s": 1.0,
+            "free_gib": 10.0,
+            "device_model": "",
+            "device_serial": "changed",
+            "filesystem_uuid": "",
+            "rehearsal_target": bool(allow_rehearsal_target),
+        },
+    )
+    second = LongRenderAcceptance(
+        contract,
+        allow_rehearsal_target=True,
+        allow_soft_limits=True,
+        executor=_executor,
+    )
+    with pytest.raises(LongRenderContractError, match="Zielidentität"):
+        second.prepare(resume=True)
