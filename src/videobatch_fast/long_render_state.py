@@ -87,6 +87,7 @@ def new_state(contract: LoadedContract, target: dict[str, Any], manifest: dict[s
         "resume_count": 0,
         "elapsed_seconds": 0.0,
         "target": target,
+        "rehearsal_only": bool(target.get("rehearsal_target") or target.get("resource_mode") != "hard-systemd"),
         "limits": asdict(contract.limits),
         "input_manifest": manifest,
         "jobs": [_job_record(item) for item in contract.jobs],
