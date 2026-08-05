@@ -33,3 +33,14 @@ Bei einem Vorschaufehler stehen jetzt funktionsfähige Aktionen bereit:
 
 RC24 wird als vollständiges Projekt-ZIP bereitgestellt. Teil- und Onlineupdates bleiben bis nach
 der Stable-Veröffentlichung ein Nachrelease-System.
+
+
+## Finalisierte Projektstruktur und Hilfe
+
+- releasefertige eigenständige Unterlagen tragen `_save_`
+- README zeigt fertige und unfertige Dateien direkt nebeneinander
+- historische RC-Berichte sind archiviert und aus Auslieferungen ausgeschlossen
+- Changelog-Dubletten und alte visuelle Baseline-Dubletten sind entfernt
+- Tooltips erscheinen verzögert, funktionieren per Tastatur und bleiben im sichtbaren Bildschirm
+- Cache- und Hilfeaktionen erklären vorab Wirkung, Schutz und nächsten Schritt
+- FFmpeg 7+ wird bei atomaren Vorschau-Teildateien explizit auf PNG festgelegt

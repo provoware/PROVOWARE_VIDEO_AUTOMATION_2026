@@ -9,6 +9,8 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 README_START = "<!-- release-status:start -->"
 README_END = "<!-- release-status:end -->"
+FILES_START = "<!-- release-files:start -->"
+FILES_END = "<!-- release-files:end -->"
 
 
 def _object(path: Path) -> dict[str, Any]:
@@ -18,7 +20,7 @@ def _object(path: Path) -> dict[str, Any]:
     return value
 
 
-def _sources(root: Path) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+def _sources(root: Path) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
     version = _object(root / "VERSION.json")
     status = _object(root / "DEVELOPMENT_STATUS.json")
     report_name = str(status.get("approved_quality_report", ""))
@@ -28,7 +30,8 @@ def _sources(root: Path) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]
         raise ValueError("Versionsbezug von Status oder Qualitätsbericht weicht von VERSION.json ab")
     if report.get("status") != "passed":
         raise ValueError("Der benannte Qualitätsbericht ist nicht freigegeben")
-    return version, status, report
+    files = _object(root / "RELEASE_FILE_STATUS.json")
+    return version, status, report, files
 
 
 def _release_block(version: dict[str, Any], status: dict[str, Any], report: dict[str, Any]) -> str:
@@ -54,18 +57,44 @@ def _release_block(version: dict[str, Any], status: dict[str, Any], report: dict
 {README_END}"""
 
 
-def _replace_block(text: str, block: str) -> str:
-    start, end = text.find(README_START), text.find(README_END)
+
+def _file_status_block(contract: dict[str, Any]) -> str:
+    ready = contract.get("ready", [])
+    unfinished = contract.get("unfinished", [])
+    rows = []
+    for index in range(max(len(ready), len(unfinished))):
+        left = ready[index] if index < len(ready) else {}
+        right = unfinished[index] if index < len(unfinished) else {}
+        left_text = f"`{left['path']}`<br>{left.get('label', '')}" if left else "—"
+        right_text = f"`{right['path']}`<br>{right.get('label', '')}: {right.get('reason', '')}" if right else "—"
+        rows.append(f"| {left_text} | {right_text} |")
+    return "\n".join([
+        FILES_START,
+        "## Release-Dateistatus",
+        "",
+        "Der Zusatz `_save_` kennzeichnet ausschließlich eigenständige, freigabefähige Nutzer- und Releaseunterlagen. Python-Module, CI-Workflows, technische Manifeste, Einstiegsskripte und die kanonische README behalten stabile technische Namen, damit Importe und Buildverträge nicht brechen.",
+        "",
+        "| Releasefertig (`_save_`) | Noch nicht releasefertig |",
+        "|---|---|",
+        *rows,
+        FILES_END,
+    ])
+
+def _replace_marked_block(text: str, start_marker: str, end_marker: str, block: str) -> str:
+    start, end = text.find(start_marker), text.find(end_marker)
     if start < 0 or end < start:
-        raise ValueError("README-Markierungen fehlen oder sind vertauscht")
-    return text[:start] + block + text[end + len(README_END) :]
+        raise ValueError(f"README-Markierungen fehlen oder sind vertauscht: {start_marker}")
+    return text[:start] + block + text[end + len(end_marker) :]
 
 
 def render(root: Path = ROOT) -> dict[Path, str]:
-    version, status, report = _sources(root)
+    version, status, report, files = _sources(root)
     block = _release_block(version, status, report)
-    readme = _replace_block((root / "README.md").read_text(encoding="utf-8"), block)
-    return {root / "README.md": readme, root / "STATUS.md": block + "\n"}
+    file_block = _file_status_block(files)
+    readme = (root / "README.md").read_text(encoding="utf-8")
+    readme = _replace_marked_block(readme, README_START, README_END, block)
+    readme = _replace_marked_block(readme, FILES_START, FILES_END, file_block)
+    return {root / "README.md": readme, root / "STATUS.md": block + "\n\n" + file_block + "\n"}
 
 
 def main() -> int:

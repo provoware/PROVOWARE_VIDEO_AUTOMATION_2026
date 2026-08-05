@@ -24,11 +24,13 @@ Diese Übersicht beschreibt das Basisprojekt für Laien, Tester und Entwickler. 
 ├── scripts/                      # Build-, Prüf- und Dokumentationshilfen
 ├── tests/                        # Automatisierte Tests
 ├── docs/                         # Vertiefende technische Dokumentation
+│   └── archive/release-history/  # Historische Nachweise, nicht Bestandteil des Releasepakets
 ├── toolchain_wheelhouse/         # Hinweise zur gesperrten Qualitäts-Werkzeugkette
 ├── visual_inspection/            # Dateien für visuelle Abnahmen
 ├── VERSION.json                  # einzige Quelle für Name, Version, Build und Kanal
 ├── DEVELOPMENT_STATUS.json       # freigegebener Status, Testzahlen und offene Stable-Gates
-├── README.md                     # kurze Start- und Statusübersicht
+├── README.md                     # kanonische Start- und Statusübersicht
+├── RELEASE_FILE_STATUS.json      # maschinenlesbare Einteilung fertig/unfertig
 ├── STATUS.md                     # abgeleitete Statusdatei
 ├── TODO.md                       # nächste Aufgaben und offene Prüfungen
 ├── CHANGELOG.md                  # nachvollziehbare Änderungshistorie
@@ -55,7 +57,8 @@ Diese Übersicht beschreibt das Basisprojekt für Laien, Tester und Entwickler. 
 | `registries/` | Enthält maschinenlesbare Prüfverträge. | Nur mit passender Prüfung. |
 | `scripts/` | Enthält Helfer für Build, Prüfung und Dokumentation. | Ja, aber Build und Prüfung getrennt halten. |
 | `tests/` | Enthält automatische Tests. | Ja, passend zur Codeänderung. |
-| `docs/` | Enthält technische Nachweise und Detailkonzepte. | Ja, wenn Verhalten oder Ablauf erklärt werden muss. |
+| `docs/` | Enthält technische Nachweise; `docs/archive/` bewahrt alte Berichte außerhalb des Releasepakets. | Ja, wenn Verhalten oder Ablauf erklärt werden muss. |
+| `RELEASE_FILE_STATUS.json` | Trennt releasefertige `_save_`-Unterlagen von offenen Gate-Dateien. | Nur zusammen mit README-Validierung. |
 
 ## 4. Was kann im Basisprojekt bereits mitgeliefert werden?
 

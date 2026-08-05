@@ -9,7 +9,7 @@ from pathlib import Path
 
 EXCLUDED = {
     ".git", ".pytest_cache", ".ruff_cache", ".mypy_cache", ".videobatch-venv",
-    "dist", "diagnostics", "visual_actual", "actual", "diff", "__pycache__",
+    "dist", "diagnostics", "visual_actual", "actual", "diff", "__pycache__", "archive",
 }
 BINARY_SUFFIXES = {".png", ".jpg", ".jpeg", ".gif", ".zip", ".whl", ".pyc", ".pem"}
 
@@ -86,13 +86,20 @@ def main() -> int:
     version_path.write_text(json.dumps(version, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     for relative in ("AUTOMATED_DESKTOP_APPROVAL.json", "visual_inspection/live_desktop_approval.png", "RELEASE_MANIFEST.json"):
         (destination / relative).unlink(missing_ok=True)
-    for old_name, new_name in (
-        (f"IMPLEMENTATION_REPORT_{old_build}.md", f"IMPLEMENTATION_REPORT_{stable_version}.md"),
-        (f"CODE_QUALITY_REPORT_{old_build}.md", f"CODE_QUALITY_REPORT_{stable_version}.md"),
-    ):
+    report_renames = (
+        (f"IMPLEMENTATION_REPORT_{old_build}_save_.md", f"IMPLEMENTATION_REPORT_{stable_version}_save_.md"),
+        (f"CODE_QUALITY_REPORT_{old_build}_save_.md", f"CODE_QUALITY_REPORT_{stable_version}_save_.md"),
+        (f"FINAL_AUDIT_{old_build}_save_.md", f"FINAL_AUDIT_{stable_version}_save_.md"),
+        (f"VideoBatch_Fast_{old_build}_BUILD_REPORT_save_.json", f"VideoBatch_Fast_{stable_version}_BUILD_REPORT_save_.json"),
+    )
+    for old_name, new_name in report_renames:
         old = destination / old_name
         if old.exists():
             old.rename(destination / new_name)
+    status_path = destination / "DEVELOPMENT_STATUS.json"
+    status = json.loads(status_path.read_text(encoding="utf-8"))
+    status["approved_quality_report"] = f"VideoBatch_Fast_{stable_version}_BUILD_REPORT_save_.json"
+    status_path.write_text(json.dumps(status, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"STABLE-ARBEITSKOPIE ERZEUGT · {destination}")
     return 0
 

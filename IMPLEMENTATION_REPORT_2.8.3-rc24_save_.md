@@ -42,3 +42,15 @@ und direkte Übergaben beliebiger PNG-Dateien an Tks nativen Decoder.
 Der reale GUI-Stresstest mit 120 schnellen Klicks besteht. Maximal ein Vorschauauftrag
 arbeitet gleichzeitig. Die zuletzt aktive Auswahl bleibt maßgeblich. Architektur-,
 Komplexitäts- und Coverage-Gates sind grün.
+
+
+## Finalbereinigung
+
+- 56 historische RC-Berichte verlustfrei nach `docs/archive/release-history/` verschoben
+- 16 veraltete doppelte visuelle Baselines entfernt
+- zehn eigenständige Releaseunterlagen mit `_save_` gekennzeichnet
+- acht offene Gate-Dateien ausdrücklich als unfertig dokumentiert
+- README und STATUS werden aus `RELEASE_FILE_STATUS.json` zweispaltig erzeugt
+- Portable-, Manifest- und Stable-Kopien schließen das historische Archiv aus
+- Hilfezentrum, Cache-Dialog und Medienauswahl mit präziseren Texten und Tooltips versehen
+- Stable-Promotion benennt künftig alle freigegebenen Berichte konsistent um und aktualisiert den freigegebenen Berichtspfad

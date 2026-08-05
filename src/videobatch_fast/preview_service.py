@@ -277,12 +277,16 @@ def _touch_cache_hit(path: Path) -> None:
 
 def _use_cache_hit(target: Path) -> bool:
     try:
-        if target.exists() and target.stat().st_size > PREVIEW_CACHE_MIN_FILE_BYTES:
+        if not target.exists():
+            return False
+        if target.stat().st_size > PREVIEW_CACHE_MIN_FILE_BYTES:
             _touch_cache_hit(target)
             prune_preview_cache(protected=target)
             return True
     except OSError:
-        target.unlink(missing_ok=True)
+        pass
+    # A truncated or unreadable cache entry must never survive a failed rebuild.
+    target.unlink(missing_ok=True)
     return False
 
 
@@ -319,6 +323,13 @@ def build_preview(source: Path, width: int = 1280) -> Path:
             "1",
             "-vf",
             f"scale='min({max(320, width)},iw)':-2",
+            # The atomic temporary filename deliberately ends in .partial.
+            # Explicitly declare PNG output so FFmpeg 7+ does not infer a format
+            # from that safety suffix.
+            "-f",
+            "image2",
+            "-c:v",
+            "png",
             str(temporary),
         ]
         try:

@@ -27,10 +27,10 @@ Alle Punkte wurden korrigiert und mit Regressionen abgesichert.
 
 ## Audit-Ergebnis
 
-- 272/272 Tests bestanden
-- 2 Sandboxtests korrekt übersprungen, weil der Kernel den realen Namespace-Probelauf blockiert
-- 82,89 % Zeilenabdeckung
-- 66,80 % Branch-Abdeckung
+- 323/323 Tests bestanden
+- 0 übersprungene Tests im finalen Xvfb-Lauf
+- 82,43 % Statement-/Zeilenabdeckung
+- 67,21 % Branch-Abdeckung
 - 18/18 visuelle Szenarien
 - 12/12 Anwendungssimulationen
 - 12/12 Fehlerlabor-Szenarien
@@ -46,4 +46,9 @@ physische KDE-X11-/Wayland-Abnahme und Langzeitrender vollständig grün sind.
 
 ## Frischpaketprüfung
 
-Ein neu entpacktes Vorab-ZIP bestand Manifest, Version, isolierte Kompilierung, Architektur, interne Qualität sowie 272/272 Tests. Der Diagnosepfad wurde dabei absichtlich unter einem noch nicht vorhandenen Elternordner angelegt.
+Ein neu entpacktes Vorab-ZIP bestand Manifest, Version, isolierte Kompilierung, Architektur, interne Qualität sowie 323/323 Tests. Der Diagnosepfad wurde dabei absichtlich unter einem noch nicht vorhandenen Elternordner angelegt.
+
+
+## Repository-Abschluss
+
+Der aktive Projektstamm enthält nur die aktuellen RC24-Nachweise. Frühere Berichte bleiben im historischen Archiv nachvollziehbar, werden jedoch nicht ausgeliefert. Der Release-Dateivertrag, die zweispaltige README-Tabelle und die `_save_`-Kennzeichnung sind maschinell geprüft. Stable bleibt wegen der sechs ausdrücklich genannten externen und physischen Gates gesperrt.
