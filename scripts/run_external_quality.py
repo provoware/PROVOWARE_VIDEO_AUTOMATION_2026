@@ -90,16 +90,17 @@ def _installed_version(name: str) -> str:
         return ""
 
 
-def _command(name: str) -> list[str]:
+def _command(name: str, *, offline: bool) -> list[str]:
     command = list(COMMANDS[name])
     if name == "pip-audit":
         cache_dir = os.environ.get("VIDEOBATCH_PIP_AUDIT_CACHE", "").strip()
-        if not cache_dir:
+        if cache_dir:
+            command[1:1] = ["--cache-dir", cache_dir]
+        elif offline:
             raise RuntimeError(
                 "VIDEOBATCH_PIP_AUDIT_CACHE fehlt; ein Offline-Audit ohne "
                 "vorbereiteten Advisory-Cache ist nicht zulässig."
             )
-        command[1:1] = ["--cache-dir", cache_dir]
     return command
 
 
@@ -173,7 +174,7 @@ def main() -> int:
                 print(f"{'✕' if args.mode == 'required' else '!'} {name}: {error}")
                 continue
             try:
-                command = _command(name)
+                command = _command(name, offline=args.offline)
             except RuntimeError as exc:
                 failed = failed or args.mode == "required"
                 results.append(
