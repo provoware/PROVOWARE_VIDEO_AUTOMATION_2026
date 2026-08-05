@@ -3,8 +3,7 @@ name: Temporary selection event registry migration
 on:
   pull_request:
     branches: [main]
-    paths:
-      - '.github/workflows/temporary-selection-event-registry-migration.yml'
+    paths: ['.github/workflows/temporary-selection-event-registry-migration.yml']
 
 permissions:
   contents: write
@@ -14,8 +13,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:
-      - name: Check out exact PR branch
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: agent/crash-resilience-fault-lab-20260805
           fetch-depth: 0
@@ -39,70 +37,58 @@ jobs:
             matrix-logs/selection-event-registry.y02
           )
           mapfile -t expected_sorted < <(printf '%s\n' "${expected[@]}" | sort)
-          [[ "${changed[*]}" == "${expected_sorted[*]}" ]] || {
-            printf 'Unerwartete parallele Änderungen:\n%s\n' "${changed[*]}" >&2
-            exit 42
-          }
+          [[ "${changed[*]}" == "${expected_sorted[*]}" ]] || exit 42
 
-          cat \
-            matrix-logs/selection-event-registry.x00 \
-            matrix-logs/selection-event-registry.x01 \
-            matrix-logs/selection-event-registry.y00 \
-            matrix-logs/selection-event-registry.y01 \
-            matrix-logs/selection-event-registry.y02 \
-            | base64 --decode > "$RUNNER_TEMP/selection-event-registry.tar.gz"
-          printf '%s  %s\n' "$ARCHIVE_SHA256" "$RUNNER_TEMP/selection-event-registry.tar.gz" \
+          cat matrix-logs/selection-event-registry.{x00,x01,y00,y01,y02} \
+            | base64 --decode > "$RUNNER_TEMP/patch.tar.gz"
+          printf '%s  %s\n' "$ARCHIVE_SHA256" "$RUNNER_TEMP/patch.tar.gz" \
             | sha256sum --check --strict
 
-          ARCHIVE="$RUNNER_TEMP/selection-event-registry.tar.gz" python3 - <<'PY'
+          ARCHIVE="$RUNNER_TEMP/patch.tar.gz" python3 - <<'PY'
           import os
           import tarfile
           from pathlib import PurePosixPath
-
           expected = {
-              'AGENTS.md',
-              'CHANGELOG.md',
-              'TODO.md',
-              'UPDATE_SYSTEM.md',
+              'AGENTS.md', 'CHANGELOG.md', 'TODO.md', 'UPDATE_SYSTEM.md',
               'registries/CODE_QUALITY_REGISTRY.json',
-              'scripts/check_event_architecture.py',
-              'scripts/check_event_registry.py',
-              'src/videobatch_fast/app_events.py',
-              'src/videobatch_fast/event_registry.py',
+              'scripts/check_event_architecture.py', 'scripts/check_event_registry.py',
+              'src/videobatch_fast/app_events.py', 'src/videobatch_fast/event_registry.py',
               'src/videobatch_fast/selection_preview_controller.py',
-              'src/videobatch_fast/selection_preview_events.py',
-              'src/videobatch_fast/ui.py',
-              'src/videobatch_fast/ui_event_handlers_mixin.py',
-              'test.sh',
-              'tests/test_app_events.py',
-              'tests/test_event_architecture_gate.py',
-              'tests/test_event_registry.py',
-              'tests/test_rc24_selected_media_crash.py',
+              'src/videobatch_fast/selection_preview_events.py', 'src/videobatch_fast/ui.py',
+              'src/videobatch_fast/ui_event_handlers_mixin.py', 'test.sh',
+              'tests/test_app_events.py', 'tests/test_event_architecture_gate.py',
+              'tests/test_event_registry.py', 'tests/test_rc24_selected_media_crash.py',
               'tests/test_release_hardening_2_8_3_rc7.py',
               'tests/test_selection_preview_app_events.py',
           }
           with tarfile.open(os.environ['ARCHIVE'], 'r:gz') as handle:
               members = handle.getmembers()
-              names = {member.name for member in members}
+              names = {item.name for item in members}
               if names != expected:
-                  raise SystemExit(
-                      f'Archivinhalt weicht ab: missing={sorted(expected - names)} '
-                      f'extra={sorted(names - expected)}'
-                  )
-              for member in members:
-                  path = PurePosixPath(member.name)
-                  if path.is_absolute() or '..' in path.parts or not member.isfile():
-                      raise SystemExit(f'Unsicherer Archiveintrag: {member.name}')
+                  raise SystemExit(f'Archivinhalt weicht ab: {sorted(names ^ expected)}')
+              for item in members:
+                  path = PurePosixPath(item.name)
+                  if path.is_absolute() or '..' in path.parts or not item.isfile():
+                      raise SystemExit(f'Unsicherer Archiveintrag: {item.name}')
           PY
 
-          tar -xzf "$RUNNER_TEMP/selection-event-registry.tar.gz" -C .
+          tar -xzf "$RUNNER_TEMP/patch.tar.gz" -C .
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('src/videobatch_fast/app_events.py')
+          source = path.read_text(encoding='utf-8')
+          old_import = 'from .event_registry import (\n    EventRegistryError,\n'
+          new_import = 'from .event_registry import (\n    EventPayloadMode,\n    EventRegistryError,\n'
+          old_mode = '        payload: Mapping[str, object]\n        if isinstance(self.payload, TypedEventPayload):\n'
+          new_mode = '        payload: Mapping[str, object]\n        mode: EventPayloadMode\n        if isinstance(self.payload, TypedEventPayload):\n'
+          if source.count(old_import) != 1 or source.count(old_mode) != 1:
+              raise SystemExit('Unerwarteter AppEvent-Typisierungskontext.')
+          path.write_text(source.replace(old_import, new_import).replace(old_mode, new_mode), encoding='utf-8')
+          PY
           chmod 755 test.sh scripts/check_event_architecture.py scripts/check_event_registry.py
-          git rm \
-            .github/workflows/temporary-selection-event-registry-migration.yml \
-            matrix-logs/selection-event-registry.x00 \
-            matrix-logs/selection-event-registry.x01 \
-            matrix-logs/selection-event-registry.y00 \
-            matrix-logs/selection-event-registry.y01 \
+          git rm .github/workflows/temporary-selection-event-registry-migration.yml \
+            matrix-logs/selection-event-registry.x00 matrix-logs/selection-event-registry.x01 \
+            matrix-logs/selection-event-registry.y00 matrix-logs/selection-event-registry.y01 \
             matrix-logs/selection-event-registry.y02
 
           sudo apt-get update
@@ -110,13 +96,9 @@ jobs:
           python3 scripts/toolchain.py prepare --scope quality --auto-repair --quiet
           ENV_PYTHON="$(python3 scripts/toolchain.py path --scope quality --quiet)"
           BIN="$(dirname "$ENV_PYTHON")"
-          test -x "$ENV_PYTHON"
-
-          export PYTHONPATH="$PWD/src"
-          export PYTHONDONTWRITEBYTECODE=1
+          export PYTHONPATH="$PWD/src" PYTHONDONTWRITEBYTECODE=1
           export VIDEOBATCH_DIAGNOSTICS_DIR="$RUNNER_TEMP/diagnostics"
-          export MYPY_CACHE_DIR="$RUNNER_TEMP/mypy-cache"
-          export RUFF_CACHE_DIR="$RUNNER_TEMP/ruff-cache"
+          export MYPY_CACHE_DIR="$RUNNER_TEMP/mypy-cache" RUFF_CACHE_DIR="$RUNNER_TEMP/ruff-cache"
 
           "$ENV_PYTHON" scripts/check_event_architecture.py
           "$ENV_PYTHON" scripts/check_event_registry.py
@@ -124,60 +106,38 @@ jobs:
           "$ENV_PYTHON" scripts/validate_registries.py
           "$ENV_PYTHON" scripts/internal_quality_gate.py
           "$BIN/ruff" check src scripts tests
-          "$BIN/mypy" \
-            src/videobatch_fast/app_events.py \
-            src/videobatch_fast/event_registry.py \
-            src/videobatch_fast/event_buffer.py \
-            src/videobatch_fast/selection_preview_events.py \
-            src/videobatch_fast/selection_preview_controller.py \
-            src/videobatch_fast/runner_events.py \
-            src/videobatch_fast/runner.py \
-            src/videobatch_fast/runner_process.py
+          "$BIN/mypy" src/videobatch_fast/app_events.py src/videobatch_fast/event_registry.py \
+            src/videobatch_fast/event_buffer.py src/videobatch_fast/selection_preview_events.py \
+            src/videobatch_fast/selection_preview_controller.py src/videobatch_fast/runner_events.py \
+            src/videobatch_fast/runner.py src/videobatch_fast/runner_process.py
           xvfb-run -a "$ENV_PYTHON" -m pytest -q -p no:cacheprovider \
-            tests/test_app_events.py \
-            tests/test_event_architecture_gate.py \
-            tests/test_event_registry.py \
-            tests/test_selection_preview_app_events.py \
-            tests/test_rc24_selected_media_crash.py \
-            tests/test_release_hardening_2_8_3_rc7.py \
+            tests/test_app_events.py tests/test_event_architecture_gate.py \
+            tests/test_event_registry.py tests/test_selection_preview_app_events.py \
+            tests/test_rc24_selected_media_crash.py tests/test_release_hardening_2_8_3_rc7.py \
             tests/test_runner_app_events.py
 
-          if [[ ! -e toolchain_wheelhouse/README.md ]]; then
-            git checkout "$BASE_SHA" -- toolchain_wheelhouse/README.md
-          fi
+          [[ -e toolchain_wheelhouse/README.md ]] || git checkout "$BASE_SHA" -- toolchain_wheelhouse/README.md
           "$ENV_PYTHON" scripts/build_release_manifest.py
           "$ENV_PYTHON" scripts/validate_release_manifest.py
-
           "$ENV_PYTHON" - <<'PY'
           import json
           from pathlib import Path
-
-          payload = json.loads(Path('RELEASE_MANIFEST.json').read_text(encoding='utf-8'))
-          files = payload.get('files', [])
-          if payload.get('file_count') != 382 or len(files) != 382:
-              raise SystemExit(f"Manifestzahl falsch: {payload.get('file_count')} / {len(files)}")
+          data = json.loads(Path('RELEASE_MANIFEST.json').read_text(encoding='utf-8'))
+          files = data.get('files', [])
+          if data.get('file_count') != 382 or len(files) != 382:
+              raise SystemExit(f"Manifestzahl falsch: {data.get('file_count')} / {len(files)}")
           paths = {item.get('path') for item in files if isinstance(item, dict)}
           required = {
               'src/videobatch_fast/event_registry.py',
               'src/videobatch_fast/selection_preview_events.py',
-              'scripts/check_event_registry.py',
-              'tests/test_event_registry.py',
+              'scripts/check_event_registry.py', 'tests/test_event_registry.py',
               'tests/test_selection_preview_app_events.py',
           }
-          if not required.issubset(paths):
+          if not required <= paths:
               raise SystemExit(f'Manifestdateien fehlen: {sorted(required - paths)}')
-          forbidden = {
-              '.github/workflows/temporary-selection-event-registry-migration.yml',
-              'matrix-logs/selection-event-registry.x00',
-              'matrix-logs/selection-event-registry.x01',
-              'matrix-logs/selection-event-registry.y00',
-              'matrix-logs/selection-event-registry.y01',
-              'matrix-logs/selection-event-registry.y02',
-          }
-          if paths & forbidden:
-              raise SystemExit(f'Temporäre Dateien im Manifest: {sorted(paths & forbidden)}')
+          if any(path.startswith('matrix-logs/selection-event-registry.') for path in paths):
+              raise SystemExit('Transferdatei im Manifest.')
           PY
-
           git add -A
           git diff --cached --check
           git commit -m 'Migrate selection previews and enforce event registry'
