@@ -20,13 +20,14 @@ jobs:
       PYTHONDONTWRITEBYTECODE: '1'
       PYTHONPATH: 'src:.'
       GH_TOKEN: ${{ github.token }}
+
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
-      - name: Restore audited dashboard source
+      - name: Restore hash-verified audited source
         run: |
           set -Eeuo pipefail
           tmp="$RUNNER_TEMP/canonical-evidence"
@@ -43,11 +44,12 @@ jobs:
           cp "$tmp/source/diagnostics/release_readiness/release_readiness_dashboard.py" diagnostics/release_readiness/
           cp "$tmp/source/diagnostics/release_readiness/ci_status.example.json" diagnostics/release_readiness/
 
-      - name: Synchronize canonical evidence and compatibility logic
+      - name: Synchronize evidence and patch manifest compatibility
         run: |
           set -Eeuo pipefail
           python3 - <<'PY'
           import json
+          import textwrap
           from pathlib import Path
 
           evidence_path = Path('diagnostics/release_readiness/RELEASE_EVIDENCE.json')
@@ -58,74 +60,89 @@ jobs:
               'manifest_regeneration_run_id': 30972953813,
               'matrix_workflow_run_id': 30972953813,
           })
-          data['matrix'].update({'workflow_run_id': 30972953813, 'verified_commit': 'f07deedf8e76a5e0a98f9cae986637d97e11f152'})
+          data['matrix'].update({
+              'workflow_run_id': 30972953813,
+              'verified_commit': 'f07deedf8e76a5e0a98f9cae986637d97e11f152',
+          })
           passed = {'ruff_0_16_1', 'mypy_2_3_0', 'bandit_1_9_4', 'pip_audit_2_10_1'}
           for gate in data['stable_gates']:
               if gate['id'] in passed:
                   gate.update(status='passed', reason='Exakt gepinnter Offline-Lauf bestanden; Workflow 30972392104')
           files = data['release_files']
           if not any(item['path'] == 'QUALITY_GATE_REPORT_2.8.3-rc24_save_.md' for item in files['ready']):
-              files['ready'].insert(7, {'path': 'QUALITY_GATE_REPORT_2.8.3-rc24_save_.md', 'label': 'Exakter Offline-Qualitätsbericht', 'evidence': 'Ruff, MyPy, Bandit und pip-audit vollständig bestanden'})
-          files['unfinished'] = [item for item in files['unfinished'] if item['path'] not in {'QUALITY_GATE_ATTEMPT_2.8.3-rc24.md', 'QUALITY_ENVIRONMENT_STATUS.json'}]
+              files['ready'].insert(7, {
+                  'path': 'QUALITY_GATE_REPORT_2.8.3-rc24_save_.md',
+                  'label': 'Exakter Offline-Qualitätsbericht',
+                  'evidence': 'Ruff, MyPy, Bandit und pip-audit vollständig bestanden',
+              })
+          files['unfinished'] = [
+              item for item in files['unfinished']
+              if item['path'] not in {'QUALITY_GATE_ATTEMPT_2.8.3-rc24.md', 'QUALITY_ENVIRONMENT_STATUS.json'}
+          ]
           data['release_cleanup']['ready_deliverables'] = len(files['ready'])
           data['release_cleanup']['unfinished_gate_files'] = len(files['unfinished'])
           data['manifest']['file_count'] = 365
-          data['progress'] = {'percent': 93, 'completed': 28, 'open': 2, 'total': 30, 'current_todo': 'Physische KDE-Abnahme und Langzeitrender bleiben offen'}
+          data['progress'] = {
+              'percent': 93,
+              'completed': 28,
+              'open': 2,
+              'total': 30,
+              'current_todo': 'Physische KDE-Abnahme und Langzeitrender bleiben offen',
+          }
           evidence_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
           generator = Path('diagnostics/release_readiness/generate_from_evidence.py')
-          text = generator.read_text(encoding='utf-8').replace(
-              'External quality tools, physical KDE session approval and large-media soak remain required.',
-              'Physical KDE session approval and the documented large-media soak remain required.',
+          generator.write_text(
+              generator.read_text(encoding='utf-8').replace(
+                  'External quality tools, physical KDE session approval and large-media soak remain required.',
+                  'Physical KDE session approval and the documented large-media soak remain required.',
+              ),
+              encoding='utf-8',
           )
-          generator.write_text(text, encoding='utf-8')
 
           engine = Path('diagnostics/release_readiness/engine.py')
           text = engine.read_text(encoding='utf-8')
-          text = text.replace('import hashlib\n', 'import base64\nimport hashlib\n', 1).replace('import urllib.request\n', 'import urllib.request\nimport zlib\n', 1)
-          old = '''def read_json(path: Path) -> dict[str, Any]:
-              try:
-                  value = json.loads(path.read_text(encoding="utf-8"))
-              except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-                  raise EvidenceError(f"Ungültige JSON-Quelle {path}: {exc}") from exc
-              if not isinstance(value, dict):
-                  raise EvidenceError(f"JSON-Wurzel muss ein Objekt sein: {path}")
-              return value
-          '''.replace('          ', '')
-          new = '''def read_json(path: Path) -> dict[str, Any]:
-              try:
-                  value = json.loads(path.read_text(encoding="utf-8"))
-              except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-                  raise EvidenceError(f"Ungültige JSON-Quelle {path}: {exc}") from exc
-              if not isinstance(value, dict):
-                  raise EvidenceError(f"JSON-Wurzel muss ein Objekt sein: {path}")
-              if path.name == "RELEASE_MANIFEST.json" and not isinstance(value.get("files"), list):
-                  if value.get("files_encoding") != "zlib+base64+json":
-                      raise EvidenceError("Nicht unterstütztes Manifestformat")
+          if 'import base64\n' not in text:
+              text = text.replace('import hashlib\n', 'import base64\nimport hashlib\n', 1)
+          if 'import zlib\n' not in text:
+              text = text.replace('import urllib.request\n', 'import urllib.request\nimport zlib\n', 1)
+          start = text.index('def read_json(')
+          end = text.index('\n\ndef load_evidence', start)
+          function = textwrap.dedent('''
+              def read_json(path: Path) -> dict[str, Any]:
                   try:
-                      size = int(value["files_uncompressed_size"])
-                      if not 0 <= size <= 16 * 1024 * 1024:
-                          raise ValueError("ungültige Größe")
-                      raw = zlib.decompress(base64.b64decode(str(value["files_payload"]), validate=True))
-                      if len(raw) != size or hashlib.sha256(raw).hexdigest() != str(value.get("files_payload_sha256", "")):
-                          raise ValueError("Nutzlastprüfung fehlgeschlagen")
-                      value["files"] = json.loads(raw.decode("utf-8"))
-                  except (KeyError, TypeError, ValueError, UnicodeError, json.JSONDecodeError, zlib.error) as exc:
-                      raise EvidenceError(f"Ungültige kompakte Manifestnutzlast: {exc}") from exc
-                  if not isinstance(value["files"], list):
-                      raise EvidenceError("Manifestdateiliste ist keine Liste")
-              return value
-          '''.replace('          ', '')
-          if old not in text:
-              raise SystemExit('read_json contract not found')
-          text = text.replace(old, new).replace(
+                      value = json.loads(path.read_text(encoding="utf-8"))
+                  except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+                      raise EvidenceError(f"Ungültige JSON-Quelle {path}: {exc}") from exc
+                  if not isinstance(value, dict):
+                      raise EvidenceError(f"JSON-Wurzel muss ein Objekt sein: {path}")
+                  if path.name == "RELEASE_MANIFEST.json" and not isinstance(value.get("files"), list):
+                      if value.get("files_encoding") != "zlib+base64+json":
+                          raise EvidenceError("Nicht unterstütztes Manifestformat")
+                      try:
+                          size = int(value["files_uncompressed_size"])
+                          if not 0 <= size <= 16 * 1024 * 1024:
+                              raise ValueError("ungültige Größe")
+                          raw = zlib.decompress(base64.b64decode(str(value["files_payload"]), validate=True))
+                          digest = hashlib.sha256(raw).hexdigest()
+                          if len(raw) != size or digest != str(value.get("files_payload_sha256", "")):
+                              raise ValueError("Nutzlastprüfung fehlgeschlagen")
+                          value["files"] = json.loads(raw.decode("utf-8"))
+                      except (KeyError, TypeError, ValueError, UnicodeError, json.JSONDecodeError, zlib.error) as exc:
+                          raise EvidenceError(f"Ungültige kompakte Manifestnutzlast: {exc}") from exc
+                      if not isinstance(value["files"], list):
+                          raise EvidenceError("Manifestdateiliste ist keine Liste")
+                  return value
+          ''').lstrip()
+          text = text[:start] + function.rstrip() + text[end:]
+          text = text.replace(
               'f"CI ist noch nicht endgültig: {ci.get(\'status\', \'unknown\')}"',
               'f"CI ist noch nicht endgültig: {normalize_status(ci.get(\'status\'))} ({ci.get(\'status\', \'unknown\')})"',
           )
           engine.write_text(text, encoding='utf-8')
           PY
 
-      - name: Generate, verify, clean and publish final tree
+      - name: Generate, verify and publish clean final tree
         run: |
           set -Eeuo pipefail
           git fetch --no-tags origin main
