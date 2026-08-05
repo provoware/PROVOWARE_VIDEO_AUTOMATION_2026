@@ -1,22 +1,24 @@
 name: Apply verified RC24 finalization
 
 on:
-  push:
+  pull_request:
     branches:
-      - finalize/rc24-cleanup-verified-20260805
-    paths:
-      - .github/workflows/apply-release-finalization.yml
-      - .github/scripts/finalization_payload/**
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
 
 permissions:
   contents: write
 
 concurrency:
   group: apply-verified-rc24-finalization
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   apply:
+    if: github.head_ref == 'finalize/rc24-cleanup-verified-20260805'
     name: Apply, test, and commit final repository state
     runs-on: ubuntu-24.04
     timeout-minutes: 45
