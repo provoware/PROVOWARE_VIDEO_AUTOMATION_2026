@@ -429,3 +429,99 @@ jobs:
         run: |
           echo "::error title=Vierfachprüfung unvollständig::Mindestens eine Ubuntu-/Anzeige-Kombination ist fehlgeschlagen. Öffne die rote Tabellenzeile im Bericht."
           exit 1
+
+  verified-source-archive:
+    name: Build verified full source archive
+    needs:
+      - preflight
+      - matrix
+      - report
+    if: >-
+      needs.preflight.result == 'success' &&
+      needs.matrix.result == 'success' &&
+      needs.report.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONPYCACHEPREFIX: ${{ runner.temp }}/videobatch-archive-pycache
+
+    steps:
+      - name: Check out exact verified PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Revalidate source contracts
+        run: |
+          set -Eeuo pipefail
+          python3 scripts/build_release_manifest.py --check --json \
+            | tee "$RUNNER_TEMP/release-manifest-check.json"
+          python3 diagnostics/release_readiness/generate_from_evidence.py --check
+          python3 -m compileall -q -f src scripts diagnostics tests
+          status="$(git status --porcelain --untracked-files=all)"
+          if [[ -n "$status" ]]; then
+            printf '%s\n' "$status"
+            echo "::error title=Archive validation wrote repository files::The verified checkout must remain unchanged."
+            exit 1
+          fi
+
+      - name: Build reproducible complete project ZIP
+        env:
+          VERIFIED_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -Eeuo pipefail
+          short_sha="${VERIFIED_SHA:0:12}"
+          project="PROVOWARE_VIDEO_AUTOMATION_2026"
+          archive="${project}_2.8.3-rc24_${short_sha}_verified.zip"
+          git archive \
+            --format=zip \
+            --prefix="${project}/" \
+            --output="$RUNNER_TEMP/$archive" \
+            "$VERIFIED_SHA"
+          unzip -t "$RUNNER_TEMP/$archive"
+          archive_sha256="$(sha256sum "$RUNNER_TEMP/$archive" | awk '{print $1}')"
+          archive_size="$(stat -c '%s' "$RUNNER_TEMP/$archive")"
+          printf '%s  %s\n' "$archive_sha256" "$archive" \
+            > "$RUNNER_TEMP/$archive.sha256"
+          export archive archive_sha256 archive_size VERIFIED_SHA
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          payload = {
+              "schema_version": 1,
+              "status": "verified",
+              "commit": os.environ["VERIFIED_SHA"],
+              "archive": os.environ["archive"],
+              "archive_size": int(os.environ["archive_size"]),
+              "archive_sha256": os.environ["archive_sha256"],
+              "contracts": {
+                  "release_manifest_check": "passed",
+                  "release_evidence_drift_check": "passed",
+                  "python_compileall": "passed",
+                  "kubuntu_matrix": "4/4 passed",
+                  "zip_integrity": "passed",
+              },
+          }
+          Path(os.environ["RUNNER_TEMP"], "VERIFIED_SOURCE_ARTIFACT.json").write_text(
+              json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          PY
+          echo "archive=$archive" >> "$GITHUB_ENV"
+
+      - name: Upload complete verified project artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: verified-full-source-${{ github.event.pull_request.head.sha }}
+          path: |
+            ${{ runner.temp }}/${{ env.archive }}
+            ${{ runner.temp }}/${{ env.archive }}.sha256
+            ${{ runner.temp }}/VERIFIED_SOURCE_ARTIFACT.json
+            ${{ runner.temp }}/release-manifest-check.json
+          if-no-files-found: error
+          retention-days: 30
