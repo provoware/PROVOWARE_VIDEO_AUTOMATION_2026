@@ -1,19 +1,25 @@
 from __future__ import annotations
 
 import threading
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable
 
+from .app_events import AppEvent
+from .models import MediaInfo
 from .preview_service import build_preview
 from .probe import probe_media
+from .selection_preview_events import (
+    SelectionPreviewFailedPayload,
+    SelectionPreviewReadyPayload,
+)
 
-Emit = Callable[[tuple[str, dict[str, Any]]], None]
+EventCallback = Callable[[AppEvent], None]
 PreviewBuilder = Callable[[Path, int], Path]
-MediaProber = Callable[[Path], Any]
+MediaProber = Callable[[Path], MediaInfo]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class SelectionPreviewRequest:
     token: int
     path: Path
@@ -21,12 +27,14 @@ class SelectionPreviewRequest:
     include_image: bool
 
 
-def resolve_tree_selection(tree: Any, path_map: dict[str, Path]) -> Path | None:
+def resolve_tree_selection(tree: object, path_map: dict[str, Path]) -> Path | None:
     """Return the actively clicked row, then fall back to the latest selected row."""
-    selected = tuple(tree.selection())
+    selection = getattr(tree, "selection")
+    focus_value = getattr(tree, "focus")
+    selected = tuple(selection())
     if not selected:
         return None
-    focus = str(tree.focus() or "")
+    focus = str(focus_value() or "")
     if focus in selected and focus in path_map:
         return path_map[focus]
     for item_id in reversed(selected):
@@ -40,12 +48,13 @@ class SelectionPreviewController:
     """Serialize selection previews and publish only the newest request.
 
     Tk widgets are never touched by this worker. Rapid clicks replace the pending
-    request instead of creating parallel FFmpeg processes.
+    request instead of creating parallel FFmpeg processes. The external callback
+    receives exactly one validated ``AppEvent`` per completed current request.
     """
 
     def __init__(
         self,
-        emit: Emit,
+        emit: EventCallback,
         *,
         preview_builder: PreviewBuilder = build_preview,
         media_prober: MediaProber = probe_media,
@@ -57,12 +66,17 @@ class SelectionPreviewController:
         self._pending: SelectionPreviewRequest | None = None
         self._token = 0
         self._closed = False
+        self._callback_errors: list[str] = []
         self._thread = threading.Thread(
             target=self._worker,
             daemon=True,
             name="VideoBatchSelectionPreview",
         )
         self._thread.start()
+
+    @property
+    def callback_errors(self) -> tuple[str, ...]:
+        return tuple(self._callback_errors)
 
     def request(self, path: Path, width: int, *, include_image: bool) -> int:
         with self._condition:
@@ -107,6 +121,46 @@ class SelectionPreviewController:
             self._pending = None
             return request
 
+    def _publish(self, event: AppEvent) -> None:
+        try:
+            self._emit(event)
+        except Exception as exc:
+            self._callback_errors.append(f"{type(exc).__name__}: {exc}")
+            if len(self._callback_errors) > 20:
+                del self._callback_errors[:-20]
+
+    def _ready_event(
+        self,
+        request: SelectionPreviewRequest,
+        preview_path: Path | None,
+        info: MediaInfo,
+        size_bytes: int,
+    ) -> AppEvent:
+        return AppEvent(
+            name="selection_preview_ready",
+            payload=SelectionPreviewReadyPayload(
+                token=request.token,
+                path=request.path,
+                preview=preview_path,
+                info=info,
+                size_bytes=size_bytes,
+                include_image=request.include_image,
+            ),
+            operation_id=f"selection-preview-{request.token}",
+        )
+
+    def _failed_event(self, request: SelectionPreviewRequest, exc: Exception) -> AppEvent:
+        return AppEvent(
+            name="selection_preview_failed",
+            payload=SelectionPreviewFailedPayload(
+                token=request.token,
+                path=request.path,
+                message=f"{type(exc).__name__}: {exc}",
+                include_image=request.include_image,
+            ),
+            operation_id=f"selection-preview-{request.token}",
+        )
+
     def _worker(self) -> None:
         while True:
             request = self._next_request()
@@ -122,23 +176,9 @@ class SelectionPreviewController:
                 try:
                     size_bytes = request.path.stat().st_size
                 except OSError:
-                    size_bytes = int(getattr(info, "size_bytes", 0) or 0)
-                payload = {
-                    "token": request.token,
-                    "path": request.path,
-                    "preview": preview_path,
-                    "info": info,
-                    "size_bytes": size_bytes,
-                    "include_image": request.include_image,
-                }
-                event_name = "selection_preview_ready"
+                    size_bytes = int(info.size_bytes or 0)
+                event = self._ready_event(request, preview_path, info, size_bytes)
             except Exception as exc:
-                payload = {
-                    "token": request.token,
-                    "path": request.path,
-                    "message": f"{type(exc).__name__}: {exc}",
-                    "include_image": request.include_image,
-                }
-                event_name = "selection_preview_failed"
+                event = self._failed_event(request, exc)
             if self._is_current(request):
-                self._emit((event_name, payload))
+                self._publish(event)

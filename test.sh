@@ -36,6 +36,8 @@ fi
 "$ENV_PYTHON" "$ROOT_DIR/scripts/validate_registries.py"
 "$ENV_PYTHON" "$ROOT_DIR/scripts/architecture_audit.py"
 "$ENV_PYTHON" "$ROOT_DIR/scripts/internal_quality_gate.py"
+"$ENV_PYTHON" "$ROOT_DIR/scripts/check_event_architecture.py"
+"$ENV_PYTHON" "$ROOT_DIR/scripts/check_event_registry.py"
 "$ENV_PYTHON" "$ROOT_DIR/scripts/validate_text_resources.py"
 "$ENV_PYTHON" "$ROOT_DIR/scripts/validate_quick_modes.py"
 "$ENV_PYTHON" "$ROOT_DIR/scripts/verify_plugins.py"

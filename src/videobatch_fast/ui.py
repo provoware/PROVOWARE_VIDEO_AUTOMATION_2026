@@ -85,7 +85,7 @@ class VideoBatchFastUI(UiResolutionMixin, UiAccessMediaMixin, UiSelectionPreview
         self.media_view: list[Path] = []
         self.jobs: list[PairJob] = []
         self.tree_path_map: dict[str, Path] = {}
-        self.runner = BatchRunner(lambda name, payload: self.events.put((name, payload)))
+        self.runner = BatchRunner(self.events.put)
         self.logger = EventLogger()
         self.playlist = Playlist(repeat=str(self.config.get("playlist_repeat", "off")), shuffle=bool(self.config.get("playlist_shuffle", False)))
         self.audio_player = AudioPlayer()

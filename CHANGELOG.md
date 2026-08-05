@@ -4,6 +4,14 @@ Alle wichtigen Änderungen dieses Projekts werden hier in zusammengefasster, chr
 
 ## Unveröffentlicht · RC24-Finalbereinigung
 
+- `BatchRunner` vollständig auf direkte, versionierte `AppEvent`-Ausgabe migriert
+- typisierte Pflicht-Payloads für Start, Auftrag, Fehler und Stapelabschluss ergänzt
+- Legacy-Ereignisse auf `EventBuffer.put_legacy` als einzige Kompatibilitätsgrenze begrenzt
+- AST-Wächter gegen neue freie `(name, payload)`-Ereignistupel ergänzt
+- `SelectionPreviewController` vollständig auf direkte typisierte `AppEvent`-Ausgabe migriert
+- Pflicht-Payloads für erfolgreiche und fehlgeschlagene Auswahlvorschauen ergänzt
+- zentrales Ereignisregister für Kennungen, Payloadtypen, Handler und Klassifizierungen eingeführt
+- fail-closed Vollständigkeitsprüfer für Producer, UI-Handler, Terminalstatus und Vertragstests ergänzt
 - releasefertige eigenständige Unterlagen eindeutig mit `_save_` gekennzeichnet
 - maschinenlesbaren Release-Dateistatus und zweispaltige README-Übersicht ergänzt
 - historische RC-Berichte verlustfrei aus dem Projektstamm archiviert und aus Releasepaketen ausgeschlossen

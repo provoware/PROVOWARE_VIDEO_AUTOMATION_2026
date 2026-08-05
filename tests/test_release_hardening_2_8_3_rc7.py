@@ -9,11 +9,13 @@ from unittest import mock
 
 import pytest
 
+from videobatch_fast.app_events import AppEvent
 from videobatch_fast.event_buffer import EventBuffer
 from videobatch_fast.ffmpeg_capabilities import _parse_encoders, _parse_filters, required_filter_names
 from videobatch_fast.instance_lock import ApplicationLock, InstanceAlreadyRunning
 from videobatch_fast.job_journal import BatchJournal, recoverable_batches
 from videobatch_fast.models import JobResult, MediaInfo, PairJob
+from videobatch_fast.runner_events import BatchFinishedPayload
 from videobatch_fast.runner_process import ProcessExecution, _ProgressState
 from videobatch_fast.safe_io import atomic_write_json, quarantine_file, read_json
 from videobatch_fast.task_manager import TaskManager
@@ -101,18 +103,36 @@ def test_watchdog_terminates_process_without_activity(tmp_path: Path) -> None:
 
 def test_event_buffer_coalesces_progress_and_preserves_terminal_event() -> None:
     buffer = EventBuffer(maxsize=10)
+    job_marker = object()
     for value in range(30):
-        buffer.put(("progress", {"value": value}))
-    buffer.put(("batch_finished", {"ok": True}))
+        buffer.put(AppEvent("progress", {"snapshot": value, "job": job_marker}))
+    buffer.put(
+        AppEvent(
+            "batch_finished",
+            BatchFinishedPayload(
+                terminal_event="batch_finished",
+                cancelled=False,
+                successes=0,
+                failures=0,
+                unprocessed=0,
+                total=0,
+                elapsed=0.0,
+                results=(),
+                internal_error="",
+                callback_errors=(),
+                retry_queue={},
+            ),
+        )
+    )
     items = []
     while True:
         try:
             items.append(buffer.get_nowait())
         except __import__("queue").Empty:
             break
-    assert items[-1][0] == "batch_finished"
-    progress = [item for item in items if item[0] == "progress"]
-    assert len(progress) == 1 and progress[0][1]["value"] == 29
+    assert items[-1].name == "batch_finished"
+    progress = [item for item in items if item.name == "progress"]
+    assert len(progress) == 1 and progress[0].payload["snapshot"] == 29
 
 
 def test_task_manager_prevents_duplicate_and_waits() -> None:

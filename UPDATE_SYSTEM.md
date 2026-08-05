@@ -33,3 +33,11 @@ Keine Änderung am Updateprotokoll. Die Iteration verbessert nur Hilfe, Startfee
 ## Folge-Iteration · globale Standards und Basisabhängigkeiten
 
 Keine Änderung am A/B-Updateprotokoll. Für das Basisprojekt gelten weiterhin vollständige Projekt-ZIPs als sicherer Hauptweg vor Stable. Mitlieferbar sind feste Python-Laufzeitpakete, öffentliche Schlüssel, Textkataloge, Themes, Referenzdaten und offline vorbereitete Qualitätswerkzeuge. Systemabhängige Bestandteile wie FFmpeg, Display-Server und Desktop-Pakete werden nur nach Plattform-, Lizenz-, Hash- und Rauchtestprüfung gebündelt.
+
+## Folge-Iteration · typisierte Ereignisarchitektur
+
+Keine Änderung am signierten Channel-, A/B- oder Rollback-Protokoll. Der `BatchRunner` liefert intern nur noch versionierte `AppEvent`-Objekte. Nicht migrierte UI-Producer dürfen den alten Nutzdatenkanal ausschließlich über `EventBuffer.put_legacy` verwenden; ein AST-Gate verhindert neue freie Ereignistupel.
+
+## Folge-Iteration · Auswahlvorschau und Ereignisregister
+
+Keine Änderung am signierten Channel-, A/B- oder Rollback-Protokoll. Der `SelectionPreviewController` liefert erfolgreiche und fehlgeschlagene Ergebnisse ausschließlich als typisierte `AppEvent`-Objekte. Ein zentrales Ereignisregister verbindet Erzeuger, Payloadverträge, UI-Handler sowie Terminal- und Noisy-Klassifizierung. Der Vollständigkeitsprüfer blockiert unbekannte, unbehandelte oder nicht getestete Ereignisse vor einer Releasefreigabe.

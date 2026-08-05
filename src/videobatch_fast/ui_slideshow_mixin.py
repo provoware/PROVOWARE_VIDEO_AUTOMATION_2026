@@ -256,9 +256,9 @@ class UiSlideshowMixin:
         def worker() -> None:
             try:
                 analysis = analyze_audio(path, refresh=refresh)
-                self.events.put(("waveform_ready", {"path": path, "analysis": analysis}))
+                self.events.put_legacy("waveform_ready", {"path": path, "analysis": analysis})
             except Exception as exc:
-                self.events.put(("waveform_failed", {"path": path, "message": str(exc)}))
+                self.events.put_legacy("waveform_failed", {"path": path, "message": str(exc)})
 
         if not self.tasks.start(f"waveform-{hash(path)}", worker):
             self.slideshow_analysis_pending.discard(path)

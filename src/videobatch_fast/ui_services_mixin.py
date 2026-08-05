@@ -106,7 +106,7 @@ class UiServicesMixin:
             target = state_dir() / "fault_lab" / "latest.json"
             target.parent.mkdir(parents=True, exist_ok=True)
             atomic_write_json(target, payload)
-            self.events.put(("fault_lab_finished", {"results": results, "report": target}))
+            self.events.put_legacy("fault_lab_finished", {"results": results, "report": target})
 
         if not self.tasks.start("fault-lab", worker):
             self.guidance_text.set(text("fault_lab.already_running"))
@@ -124,7 +124,7 @@ class UiServicesMixin:
         def worker() -> None:
             recovered = recover_archive_transactions(project)
             if recovered:
-                self.events.put(("log", {"level": "warning", "message": f"Dateiablage · {len(recovered)} unvollständige Transaktion(en) sicher geprüft."}))
+                self.events.put_legacy("log", {"level": "warning", "message": f"Dateiablage · {len(recovered)} unvollständige Transaktion(en) sicher geprüft."})
             successful = [result for result in results if result.success]
             all_jobs = [result.job for result in results]
             success_jobs = [result.job for result in successful]
@@ -145,7 +145,7 @@ class UiServicesMixin:
                 message += f" {len(failures)} Datei(en) blieben sicher am Ursprungsort."
             if manifest:
                 message += f" Bericht: {manifest}"
-            self.events.put(("archive_finished", {"message": message, "failures": failures}))
+            self.events.put_legacy("archive_finished", {"message": message, "failures": failures})
 
         self.tasks.start("archive", worker)
         self.guidance_text.set("Verwendete Dateien werden jetzt kopiert, geprüft und erst danach am Ursprungsort entfernt.")
@@ -280,9 +280,9 @@ class UiServicesMixin:
                 package_path,
                 install_root,
                 build_label(),
-                progress=lambda phase, detail: self.events.put(("log", {"level": "info", "message": f"Update · {phase}: {detail}"})),
+                progress=lambda phase, detail: self.events.put_legacy("log", {"level": "info", "message": f"Update · {phase}: {detail}"}),
             )
-            self.events.put(("update_finished", {"result": result}))
+            self.events.put_legacy("update_finished", {"result": result})
 
         self.tasks.start("update", worker)
 
@@ -291,7 +291,7 @@ class UiServicesMixin:
 
         def worker() -> None:
             from .assurance import run_scenarios
-            self.events.put(("assurance_finished", {"results": run_scenarios()}))
+            self.events.put_legacy("assurance_finished", {"results": run_scenarios()})
 
         self.tasks.start("assurance", worker)
 

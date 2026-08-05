@@ -1,7 +1,7 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 365,
+  "file_count": 382,
   "files": [
     {
       "mode": "0o644",
@@ -54,8 +54,8 @@
     {
       "mode": "0o644",
       "path": "AGENTS.md",
-      "sha256": "fee0fd4bf233139b680686a9eac45de6cca7148288d370d7dfcf3072b66420ff",
-      "size": 3449
+      "sha256": "9cd9628c771b10ee67555abf66e7bf7d933a0491729eacc5905bf6fda928dafb",
+      "size": 3947
     },
     {
       "mode": "0o644",
@@ -78,8 +78,8 @@
     {
       "mode": "0o644",
       "path": "CHANGELOG.md",
-      "sha256": "70e638d9f5633ae0383c32aef71b9f65428957ab2f7eb9bd5627847dccfa01a0",
-      "size": 2382
+      "sha256": "dd9dd17ac584cc620d2215d156a29ac7df0e5a5367bf55571a84ce30a303fec0",
+      "size": 3106
     },
     {
       "mode": "0o644",
@@ -120,8 +120,8 @@
     {
       "mode": "0o644",
       "path": "FAULT_LAB_CONTRACT.json",
-      "sha256": "1bf5725cadaef32448070a6db451f967c329a94011994c80e4e3ceab5f8b5196",
-      "size": 598
+      "sha256": "7eaaffe0fff2bdb9909f2acd7c04f0c6151205d802ca6e66f31e59bf07491b78",
+      "size": 842
     },
     {
       "mode": "0o644",
@@ -288,8 +288,8 @@
     {
       "mode": "0o644",
       "path": "TODO.md",
-      "sha256": "b4d8456f0617a5dffc2670d7b7c04865c86a49e1800fac3b5190ff6c2e45bfcc",
-      "size": 1052
+      "sha256": "c7abe40d00825f62a1789b0199ce3743fe0e144015fc3695515aec4d21ebf53e",
+      "size": 1541
     },
     {
       "mode": "0o644",
@@ -300,8 +300,8 @@
     {
       "mode": "0o644",
       "path": "UPDATE_SYSTEM.md",
-      "sha256": "06f7eb99bf28260855aeee4aa9c868fdd249161ef7364910f0e59e7f2aa6ced8",
-      "size": 2616
+      "sha256": "a7adaacecfbd64f74e2fbc6fb2dd34120d0822aa2fe2f1272a7f4d260d46327b",
+      "size": 3498
     },
     {
       "mode": "0o644",
@@ -546,8 +546,8 @@
     {
       "mode": "0o644",
       "path": "registries/CODE_QUALITY_REGISTRY.json",
-      "sha256": "60ca3d1f21780c15b8e5b46f1a9796fe23e3ebfb3d0d77b6b8b1f8fc520dba1a",
-      "size": 1715
+      "sha256": "4a6e6d72b41e8ba1ee85807d5b54320e0a7367837d26f3f20ce6a43a38ee9a7a",
+      "size": 1881
     },
     {
       "mode": "0o644",
@@ -868,6 +868,18 @@
       "size": 14578
     },
     {
+      "mode": "0o755",
+      "path": "scripts/check_event_architecture.py",
+      "sha256": "516fb4415a6b983727a1f946854ffc3202577b4a840acdee48285f86710ce5b9",
+      "size": 7467
+    },
+    {
+      "mode": "0o755",
+      "path": "scripts/check_event_registry.py",
+      "sha256": "53e481718413c130f8627b0f696a81ad9074677c06d9388f0b31c9c714abf06e",
+      "size": 12416
+    },
+    {
       "mode": "0o644",
       "path": "scripts/check_release_literal_hygiene.py",
       "sha256": "351b13a19efd73cd36cb657891139e003d3d91f171266ba513bbc8600783456e",
@@ -1169,6 +1181,12 @@
     },
     {
       "mode": "0o644",
+      "path": "src/videobatch_fast/app_events.py",
+      "sha256": "3324042bf9b92ebc538546e65ca460046040d45d3e4052ef7d34a84f205bbac7",
+      "size": 5280
+    },
+    {
+      "mode": "0o644",
       "path": "src/videobatch_fast/archive_service.py",
       "sha256": "1b5908cf36f05dacae1b9bac5514d736a650568e6516edb30101e51d6f34befd",
       "size": 11855
@@ -1236,8 +1254,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/event_buffer.py",
-      "sha256": "0d2e0d63e0d3c4462e9c91658ce3ebb928cfc03017f6c8e43c98140b21670ec3",
-      "size": 1691
+      "sha256": "8a16a092e549c0081fd55da868032c34f1a6fa4141a3b4d01424c25cb4afdb32",
+      "size": 2175
     },
     {
       "mode": "0o644",
@@ -1247,9 +1265,15 @@
     },
     {
       "mode": "0o644",
+      "path": "src/videobatch_fast/event_registry.py",
+      "sha256": "c5f758e9a629a7505d4619121d7d2a81e3a68a4fd9021e257e06bf3e6291880b",
+      "size": 8682
+    },
+    {
+      "mode": "0o644",
       "path": "src/videobatch_fast/fault_lab.py",
-      "sha256": "5212f1dd397933a8992ca1df6852db068748ad1ad9e152bebaee23f84657008d",
-      "size": 10965
+      "sha256": "a966d417ef15eb819460ce3bdd7faf7800a68bc0df733e780addb0c75d80c4df",
+      "size": 14842
     },
     {
       "mode": "0o644",
@@ -1433,15 +1457,39 @@
     },
     {
       "mode": "0o644",
+      "path": "src/videobatch_fast/recovery_consistency.py",
+      "sha256": "770920b72ab6d4572026d95df62853fc94b4d851d05c55072dc8b3bdf8a9abae",
+      "size": 20074
+    },
+    {
+      "mode": "0o644",
       "path": "src/videobatch_fast/registry.py",
       "sha256": "755e79fb9f6c9f163f318fbe00ac49623b07426690b73fda232b0f86d9d45591",
       "size": 9451
     },
     {
       "mode": "0o644",
+      "path": "src/videobatch_fast/retry_diagnostics.py",
+      "sha256": "a606c1d8da62be59c517325a254d58d852ad1e271926f01fbed60beb1698e3a3",
+      "size": 11005
+    },
+    {
+      "mode": "0o644",
+      "path": "src/videobatch_fast/retry_queue.py",
+      "sha256": "cd9af847fa9d7de481609b21492ae202038c6a767a1eb5ebc612004eae9e8880",
+      "size": 9089
+    },
+    {
+      "mode": "0o644",
       "path": "src/videobatch_fast/runner.py",
-      "sha256": "cce706af7358b2b31f0f5f4397122b9607cb4e50afb9a55de170f051911dfac1",
-      "size": 11706
+      "sha256": "987d6f7a4898279d07040edf7b2b2eb1df5a1701ce4f9c5d953e32530bdbede7",
+      "size": 23259
+    },
+    {
+      "mode": "0o644",
+      "path": "src/videobatch_fast/runner_events.py",
+      "sha256": "124dcb16db0621cbd3b4c55304f7277de3150f56f6418704384f809e77b9666a",
+      "size": 3733
     },
     {
       "mode": "0o644",
@@ -1464,8 +1512,14 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/selection_preview_controller.py",
-      "sha256": "64cb2c9f6a9289bfd247a5b7be6dd0a718769bfacb15b884e5b19cd340ae880b",
-      "size": 4830
+      "sha256": "56cb22fb28943c998ba30c525fa79be597390712e78f79c88e825875d8c5fd08",
+      "size": 6190
+    },
+    {
+      "mode": "0o644",
+      "path": "src/videobatch_fast/selection_preview_events.py",
+      "sha256": "dbde83f6c3b63b6b1d408cc7bbdc63011273d2b3f20f109f34920cbc5e64a64f",
+      "size": 1763
     },
     {
       "mode": "0o644",
@@ -1500,8 +1554,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/task_manager.py",
-      "sha256": "aae7ffd710631f00d9c79424ea65f86385229c258e272ad2ed81098c9bc80f62",
-      "size": 1789
+      "sha256": "2aa222bce65ce182aeded3abedf90f6509828afdc5bbf563960b00cb91eb81f5",
+      "size": 2676
     },
     {
       "mode": "0o644",
@@ -1524,8 +1578,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/ui.py",
-      "sha256": "6b649013072067a2d2c6c70577a031e33e7a39deda772b4301da17ba7fcd6450",
-      "size": 33744
+      "sha256": "9519f2788b71b3d261e19814ed31929619858469de55dacbd2b2eb6911c79d2d",
+      "size": 33705
     },
     {
       "mode": "0o644",
@@ -1560,8 +1614,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/ui_event_handlers_mixin.py",
-      "sha256": "950c33294e67ac0d3fe6124fd998ff2cfa8d0a14f0ccb646995c2c94bb60dc20",
-      "size": 10388
+      "sha256": "799e4842e223787faab023765ebab8c957171648357a095ebdd68c4a4640b874",
+      "size": 15265
     },
     {
       "mode": "0o644",
@@ -1596,14 +1650,14 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/ui_services_mixin.py",
-      "sha256": "1ca56efd170ed81997a416e0d7e0a3fe355a327ed09fad2e41bec46a4ad665d1",
-      "size": 23320
+      "sha256": "1eed9d8e6233c95d9d5294d2ad68c371872d7ed586f3d2a1c3cd199213c87047",
+      "size": 23350
     },
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/ui_slideshow_mixin.py",
-      "sha256": "98961c47e88eed0834514331c22d13a6aad427700a9b8b42ca7921e1f04f5ac9",
-      "size": 19397
+      "sha256": "ec8c2d65abc0bf7bd0cb6f882dc8dbf3ca45eefdb8c51ae951268665b4a7cfe4",
+      "size": 19407
     },
     {
       "mode": "0o644",
@@ -1686,8 +1740,8 @@
     {
       "mode": "0o755",
       "path": "test.sh",
-      "sha256": "579b9e73d94447ef973cda0ee7d43fba11eb7eeb573b5bbd012e6aaae0abaebb",
-      "size": 3402
+      "sha256": "1349b8c56c6b5d9b993dfe9c65d1951b57d9e6ec1d7423befcf36eab14fff981",
+      "size": 3522
     },
     {
       "mode": "0o644",
@@ -1853,6 +1907,12 @@
     },
     {
       "mode": "0o644",
+      "path": "tests/test_app_events.py",
+      "sha256": "ddf491da5c0feedf3d85b54505aac3b0a9e120be21588c0e7bafce4abc0d3014",
+      "size": 4560
+    },
+    {
+      "mode": "0o644",
       "path": "tests/test_autonomous_bootstrap_2_8_3_rc8.py",
       "sha256": "41e547622765eeccd0b37fb25607de59c15c93f7ceff262770ca058f71353d94",
       "size": 4252
@@ -1871,6 +1931,18 @@
     },
     {
       "mode": "0o644",
+      "path": "tests/test_event_architecture_gate.py",
+      "sha256": "7f79d066a8558863cc77f4c57665767d08bce3f44ab1691470fc9dd9ab9e8cbe",
+      "size": 3522
+    },
+    {
+      "mode": "0o644",
+      "path": "tests/test_event_registry.py",
+      "sha256": "c2e07cd5501cdc4f3f5f50fea4819afe777543247aa1ee2a21d72f95826c34fc",
+      "size": 2649
+    },
+    {
+      "mode": "0o644",
       "path": "tests/test_generated_media_2_3.py",
       "sha256": "02832b88a50991f2a78894215088cdff4ddf25344b25af6e7c967f1966ca36ff",
       "size": 1352
@@ -1878,8 +1950,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_hardening_2_8_2.py",
-      "sha256": "e12a7902158a908bb0d54b2cc7b4bbbd93a0dc8abd555a53a4de0d4e2d82064e",
-      "size": 10832
+      "sha256": "97c92eb7dddcab9523fdcbd4e49652d6ec505f4b30e2fa9a702e18484bc0f34c",
+      "size": 10978
     },
     {
       "mode": "0o644",
@@ -1920,7 +1992,7 @@
     {
       "mode": "0o644",
       "path": "tests/test_portable_runtime_and_fault_lab_rc12.py",
-      "sha256": "5ca314d9913a7139963b244e811314489c5814a025ac6bf491a457c47db3af44",
+      "sha256": "0c252bec062e55b924eedf25ffb7837c423b182ef8871cffebc2b49e398fcd27",
       "size": 3004
     },
     {
@@ -2040,8 +2112,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_rc24_selected_media_crash.py",
-      "sha256": "de5f544d8f0b96dc7c4e858d7f400fdc0103e57d949f6cee7ceb4632d51fdfb5",
-      "size": 8005
+      "sha256": "ed283978bd82332156edf637fb6e1c9a3ef2a2fa2c9f6e377966d5e181daa525",
+      "size": 8219
     },
     {
       "mode": "0o644",
@@ -2054,6 +2126,12 @@
       "path": "tests/test_real_quick_modes_2_2.py",
       "sha256": "20e8fd64e0d9ed5e26b3b32ba8a543962fcc7357be8c4da6162e7e57c45243dd",
       "size": 2157
+    },
+    {
+      "mode": "0o644",
+      "path": "tests/test_recovery_consistency.py",
+      "sha256": "f859379b56ebbe7c5b9447dd94651121f248a21ab4fe8a8aa8adb99b03190cf7",
+      "size": 7832
     },
     {
       "mode": "0o644",
@@ -2088,8 +2166,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_release_hardening_2_8_3_rc7.py",
-      "sha256": "253f85ea1bd489d25d60c75a3acfda795892aef8bd8f6b8a252bb75ef98cf562",
-      "size": 9755
+      "sha256": "b5ecd0e1e5250a06eb3d877612675f1009cbbd26e5f3392b45f4ebbe8d45d06a",
+      "size": 10369
     },
     {
       "mode": "0o644",
@@ -2102,6 +2180,30 @@
       "path": "tests/test_repository_finalization.py",
       "sha256": "2503443fcd8e204968a9fedb4dc33194958f9a35c2ef84d4181d09293b4785c9",
       "size": 2356
+    },
+    {
+      "mode": "0o644",
+      "path": "tests/test_retry_queue_diagnostics.py",
+      "sha256": "ded48f3d48ebd011788222925278b58862e21e2e73a2046065cac42f3ee232dc",
+      "size": 7093
+    },
+    {
+      "mode": "0o644",
+      "path": "tests/test_retry_queue_resilience.py",
+      "sha256": "8067003f0461ede7b3c316c8b4514952f4ee0b54991cba6ab50f12aa2ed4ed76",
+      "size": 9120
+    },
+    {
+      "mode": "0o644",
+      "path": "tests/test_runner_app_events.py",
+      "sha256": "c4703409eec81ce032c12adc68a0cf8e3db2517b4e379ec2d58e0f97130f9ffd",
+      "size": 4445
+    },
+    {
+      "mode": "0o644",
+      "path": "tests/test_selection_preview_app_events.py",
+      "sha256": "e640188a7710bf15a81513d2a669c14a4d7abf1de063827542c061c3d2139798",
+      "size": 5407
     },
     {
       "mode": "0o644",
@@ -2184,8 +2286,8 @@
     {
       "mode": "0o644",
       "path": "videobatch.sh",
-      "sha256": "5c9218243e0cb2907a7c766793f5c45ec27651284555b75a88be303374d4fef6",
-      "size": 6323
+      "sha256": "c142803680cd0eb5a5b03aff0b782a1a6e2b2ba5490e5d3e036336fe6224db35",
+      "size": 6865
     },
     {
       "mode": "0o644",
