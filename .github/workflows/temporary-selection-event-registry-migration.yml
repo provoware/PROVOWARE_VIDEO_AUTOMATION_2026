@@ -86,36 +86,6 @@ jobs:
               raise SystemExit('Unerwarteter AppEvent-Typisierungskontext.')
           path.write_text(source.replace(old_import, new_import).replace(old_mode, new_mode), encoding='utf-8')
 
-          path = Path('src/videobatch_fast/selection_preview_controller.py')
-          source = path.read_text(encoding='utf-8')
-          source = source.replace('import threading\n', 'import threading\nimport time\n', 1)
-          source = source.replace(
-              'from .preview_service import build_preview\n',
-              'from .preview_service import PreviewError, build_preview\n',
-              1,
-          )
-          marker = '''    def _worker(self) -> None:\n'''
-          helper = '''    def _build_preview(self, request: SelectionPreviewRequest) -> Path | None:\n        if not request.include_image:\n            return None\n        for attempt in range(2):\n            try:\n                return self._preview_builder(request.path, request.width)\n            except PreviewError:\n                if attempt or not self._is_current(request):\n                    raise\n                time.sleep(0.05)\n        raise RuntimeError("Vorschauwiederholung endete ohne Ergebnis.")\n\n'''
-          old_worker = '''                preview_path = (\n                    self._preview_builder(request.path, request.width)\n                    if request.include_image\n                    else None\n                )\n'''
-          if source.count(marker) != 1 or source.count(old_worker) != 1:
-              raise SystemExit('Unerwarteter Controller-Härtungskontext.')
-          source = source.replace(marker, helper + marker, 1)
-          source = source.replace(old_worker, '                preview_path = self._build_preview(request)\n', 1)
-          path.write_text(source, encoding='utf-8')
-
-          path = Path('tests/test_selection_preview_app_events.py')
-          source = path.read_text(encoding='utf-8')
-          source = source.replace(
-              'from videobatch_fast.models import MediaInfo\n',
-              'from videobatch_fast.models import MediaInfo\nfrom videobatch_fast.preview_service import PreviewError\n',
-              1,
-          )
-          marker = '\ndef test_callback_failure_is_isolated_and_recorded'
-          added = '''\n\ndef test_transient_preview_error_is_retried_once(tmp_path: Path) -> None:\n    source = tmp_path / "image.png"\n    source.write_bytes(b"image")\n    preview = tmp_path / "preview.png"\n    events: list[AppEvent] = []\n    done = threading.Event()\n    attempts = 0\n\n    def builder(_path: Path, _width: int) -> Path:\n        nonlocal attempts\n        attempts += 1\n        if attempts == 1:\n            raise PreviewError("temporary cache race")\n        return preview\n\n    def emit(event: AppEvent) -> None:\n        events.append(event)\n        done.set()\n\n    controller = SelectionPreviewController(\n        emit,\n        preview_builder=builder,\n        media_prober=lambda path: MediaInfo(path, "image", size_bytes=path.stat().st_size),\n    )\n    controller.request(source, 640, include_image=True)\n    _wait_for_event(done, controller)\n\n    assert attempts == 2\n    assert [event.name for event in events] == ["selection_preview_ready"]\n\n\ndef test_non_preview_error_is_not_retried(tmp_path: Path) -> None:\n    source = tmp_path / "image.png"\n    source.write_bytes(b"image")\n    events: list[AppEvent] = []\n    done = threading.Event()\n    attempts = 0\n\n    def builder(_path: Path, _width: int) -> Path:\n        nonlocal attempts\n        attempts += 1\n        raise RuntimeError("programming error")\n\n    def emit(event: AppEvent) -> None:\n        events.append(event)\n        done.set()\n\n    controller = SelectionPreviewController(emit, preview_builder=builder)\n    controller.request(source, 640, include_image=True)\n    _wait_for_event(done, controller)\n\n    assert attempts == 1\n    assert [event.name for event in events] == ["selection_preview_failed"]\n'''
-          if source.count(marker) != 1:
-              raise SystemExit('Unerwarteter Vorschautest-Kontext.')
-          path.write_text(source.replace(marker, added + marker, 1), encoding='utf-8')
-
           path = Path('tests/test_rc24_selected_media_crash.py')
           source = path.read_text(encoding='utf-8')
           old = '''    root = Tk()\n    root.geometry("1280x820+0+0")\n    app = VideoBatchFastUI(root)\n'''
@@ -139,7 +109,11 @@ jobs:
             matrix-logs/selection-event-registry.y02
 
           sudo apt-get update
-          sudo apt-get install -y python3-tk xvfb
+          sudo apt-get install -y ffmpeg python3-tk xvfb
+          command -v ffmpeg
+          command -v ffprobe
+          ffmpeg -version | head -1
+          ffprobe -version | head -1
           python3 scripts/toolchain.py prepare --scope quality --auto-repair --quiet
           ENV_PYTHON="$(python3 scripts/toolchain.py path --scope quality --quiet)"
           BIN="$(dirname "$ENV_PYTHON")"
