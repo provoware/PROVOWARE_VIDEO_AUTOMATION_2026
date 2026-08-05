@@ -1,7 +1,7 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 370,
+  "file_count": 365,
   "files": [
     {
       "mode": "0o644",
@@ -20,42 +20,6 @@
       "path": ".github/ci/kubuntu-packages.txt",
       "sha256": "84f415d0a0e6e2cea1d3c9886d137014c177f429445911a85abc7ec39ce7e189",
       "size": 76
-    },
-    {
-      "mode": "0o644",
-      "path": ".github/scripts/finalization_payload/00-00.b64",
-      "sha256": "58362aa89daf043db1ae0735e21ae99a99970d5e09a1cee56a5dc1266bb0eec5",
-      "size": 2200
-    },
-    {
-      "mode": "0o644",
-      "path": ".github/scripts/finalization_payload/00-01.b64",
-      "sha256": "2a1b667e1620b2118446f28d21760b557d0fc7fd482be68b88657f9516bd4679",
-      "size": 2200
-    },
-    {
-      "mode": "0o644",
-      "path": ".github/scripts/finalization_payload/00-02.b64",
-      "sha256": "576562feca217e930e44c9579cfca8b3ac31ac041602014f4d8de90ef5e86dbb",
-      "size": 2200
-    },
-    {
-      "mode": "0o644",
-      "path": ".github/scripts/finalization_payload/00-03.b64",
-      "sha256": "0dbf87e09f0154c5718abc885dd84f4222051b5bfb2abd1eaa34384967f8a024",
-      "size": 2200
-    },
-    {
-      "mode": "0o644",
-      "path": ".github/scripts/finalization_payload/01.b64",
-      "sha256": "2b757a93fd51f816a8a4a9454b1bd093b4bfc68b611d02290e4366a8bcd465a1",
-      "size": 8800
-    },
-    {
-      "mode": "0o644",
-      "path": ".github/scripts/finalization_payload/02.b64",
-      "sha256": "8dba79ddfb936b79cba055dc5f78a99f379573df897cc2dab674e4fb3f0ba18a",
-      "size": 8636
     },
     {
       "mode": "0o644",
@@ -84,8 +48,8 @@
     {
       "mode": "0o644",
       "path": ".gitignore",
-      "sha256": "1053dc9cc8e41715a8c7e891cfcb3eba84b3371e9893273353e9e5411b7c317e",
-      "size": 139
+      "sha256": "3a80f85c956d92a99d26cd6dca4655ef8b58078979f65f98537c7f9f4a375d63",
+      "size": 592
     },
     {
       "mode": "0o644",
@@ -150,8 +114,8 @@
     {
       "mode": "0o644",
       "path": "FAIL_MEMORY_PASS.md",
-      "sha256": "b094c6c803943dbb7236f89468a93554df1a4353f141b922a7cb9e53f871e593",
-      "size": 3570
+      "sha256": "17e08dd216efcb7aee8c969203a68399b3e02d57952a573afc6fe287bb864b03",
+      "size": 4535
     },
     {
       "mode": "0o644",
@@ -870,8 +834,8 @@
     {
       "mode": "0o644",
       "path": "scripts/build_release_manifest.py",
-      "sha256": "6291c5ef53889d1c86fc84e09a4685db8bf718ae76688d5991cc18a7c4de1e0f",
-      "size": 2817
+      "sha256": "6d28d62f824f0f996e9584ab57f32d948296081ee7cf713bc3266363692df8ca",
+      "size": 2387
     },
     {
       "mode": "0o644",
@@ -954,8 +918,8 @@
     {
       "mode": "0o644",
       "path": "scripts/kubuntu_matrix_smoke.sh",
-      "sha256": "a3b938adb991890dfa5d60e79b0a4b42e78dd188cf1c548e25c4de545d338a05",
-      "size": 1687
+      "sha256": "95e8c7ec3ffbe01ea48e1d2e72ada87d137ffd45ea04ae37f07c7f516dc6a592",
+      "size": 1851
     },
     {
       "mode": "0o644",
@@ -992,6 +956,12 @@
       "path": "scripts/register_plugin_public_key.py",
       "sha256": "ee82bda31c3ddf05125a7b9102bd6522560ec9577e0f8e253603e9f5c29c68c5",
       "size": 2231
+    },
+    {
+      "mode": "0o644",
+      "path": "scripts/release_file_contract.py",
+      "sha256": "a543b7a5c315ed409060f8a40581244b2b3676e0d4a1c315a8ab5c19f6e56223",
+      "size": 1860
     },
     {
       "mode": "0o755",
@@ -1098,8 +1068,8 @@
     {
       "mode": "0o644",
       "path": "scripts/validate_release_manifest.py",
-      "sha256": "4b7cbcad9c18af89129f312af07274ae0439e4c769229710caf3c74a2b2c1e49",
-      "size": 2730
+      "sha256": "2b7868cf393a6693b82771b5e429153326973dfa9b89e59b41d71e7f8fe84786",
+      "size": 2103
     },
     {
       "mode": "0o644",
@@ -2130,8 +2100,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_repository_finalization.py",
-      "sha256": "954106a0f07d7e1dbcd0b709918a6b4046005dfa4c4e28a8b1fec49def452cd8",
-      "size": 932
+      "sha256": "2503443fcd8e204968a9fedb4dc33194958f9a35c2ef84d4181d09293b4785c9",
+      "size": 2356
     },
     {
       "mode": "0o644",
