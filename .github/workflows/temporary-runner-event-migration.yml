@@ -89,6 +89,12 @@ jobs:
 
           tar -xzf "$RUNNER_TEMP/runner-event-migration.tar.gz" -C .
           chmod 755 test.sh scripts/check_event_architecture.py
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('UPDATE_SYSTEM.md')
+          path.write_text(path.read_text(encoding='utf-8').rstrip() + '\n', encoding='utf-8')
+          PY
           git rm \
             .github/workflows/temporary-runner-event-migration.yml \
             matrix-logs/runner-event-migration.part00 \
