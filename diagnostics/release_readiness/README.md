@@ -75,13 +75,14 @@ permissions:
 
 Der Schritt ist absichtlich fail-closed: Gelb liefert Exitcode 1, Rot Exitcode 2. Für einen reinen Bericht kann der Aufruf in der Workflow-Shell kontrolliert abgefangen und das Ausgabeverzeichnis anschließend als Artefakt hochgeladen werden.
 
-## Selbsttest
+## Selbsttests
 
 ```bash
 python3 diagnostics/release_readiness/selftest.py
+python3 diagnostics/release_readiness/running_status_selftest.py
 ```
 
-Geprüft werden Rot-, Gelb- und Grünfall, unveränderte Eingabehashes sowie die atomare Erzeugung aller drei Ausgabeformate.
+Geprüft werden Rot-, Gelb- und Grünfall, unveränderte Eingabehashes, die atomare Erzeugung aller drei Ausgabeformate sowie die präzise Einstufung eines laufenden GitHub-Status als **LÄUFT** statt **UNBEKANNT**.
 
 ## Sicherheitsgrenzen
 
