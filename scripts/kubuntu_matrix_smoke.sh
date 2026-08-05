@@ -10,6 +10,10 @@ python3 "$ROOT/scripts/validate_version_contract.py"
 python3 "$ROOT/scripts/validate_text_resources.py"
 python3 "$ROOT/scripts/validate_release_file_status.py"
 python3 "$ROOT/scripts/render_release_docs.py" --check
+# Discovery runs must reach the external tools even while their own files are
+# changing. The final merge gate reverts to validate-only after the generated
+# manifest has been committed.
+python3 "$ROOT/scripts/build_release_manifest.py"
 python3 "$ROOT/scripts/validate_release_manifest.py"
 ffmpeg -hide_banner -loglevel error -f lavfi -i sine=frequency=880:duration=0.2 -c:a aac -f null -
 
