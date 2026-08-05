@@ -1,5 +1,5 @@
-from pathlib import Path
 import re
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -21,3 +21,24 @@ def test_changelog_has_one_title_and_unique_version_headings() -> None:
 def test_temporary_audit_workflow_is_not_part_of_final_tree() -> None:
     assert not (ROOT / ".github/workflows/repository-release-audit.yml").exists()
     assert not (ROOT / ".github/scripts/apply_release_finalization.py").exists()
+
+
+def test_generated_ci_evidence_is_ignored_and_not_committed() -> None:
+    ignored = (ROOT / ".gitignore").read_text(encoding="utf-8")
+    required_patterns = {
+        "/CI_PACKAGE_METRICS.json",
+        "/FFMPEG_TOOLCHAIN.json",
+        "/RELEASE_LITERAL_HYGIENE.json",
+        "/matrix-status-*.json",
+        "/matrix-logs/",
+        "/dist-matrix-*/",
+    }
+    assert required_patterns <= set(ignored.splitlines())
+
+    generated_paths = (
+        ROOT / "CI_PACKAGE_METRICS.json",
+        ROOT / "FFMPEG_TOOLCHAIN.json",
+        ROOT / "RELEASE_LITERAL_HYGIENE.json",
+        ROOT / "matrix-logs",
+    )
+    assert all(not path.exists() for path in generated_paths)
