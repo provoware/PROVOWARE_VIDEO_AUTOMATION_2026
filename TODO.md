@@ -12,6 +12,8 @@
 - [x] Typisierten und versionierten `AppEvent`-Vertrag als zentrale UI-Ereignisgrenze eingeführt.
 - [x] `BatchRunner` vollständig auf direkte `AppEvent`-Ausgabe mit typisierten Kern-Payloads migriert.
 - [x] AST-Wächter blockiert neue freie `(name, payload)`-Ereignistupel außerhalb der Legacy-Grenze.
+- [x] `SelectionPreviewController` auf direkte `AppEvent`-Ausgabe mit zwei Pflicht-Payloads migriert.
+- [x] Zentrales Ereignisregister und Vollständigkeitsgate für Producer, Handler, Payloadtypen, Terminalstatus und Vertragstests ergänzt.
 - [x] Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4 und pip-audit 2.10.1 gebunden ausgeführt.
 
 ## Noch offene Stable-Gates

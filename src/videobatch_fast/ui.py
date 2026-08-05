@@ -78,7 +78,7 @@ class VideoBatchFastUI(UiResolutionMixin, UiAccessMediaMixin, UiSelectionPreview
         self._initialize_workspace_layout_store(self.project_state.get("workspace_layout_profiles", {}))
         self.events = EventBuffer(maxsize=2000)
         self.tasks = TaskManager()
-        self.selection_previews = SelectionPreviewController(self.events.put_legacy)
+        self.selection_previews = SelectionPreviewController(self.events.put)
         self.audios: list[Path] = []
         self.media: list[Path] = []
         self.audio_view: list[Path] = []

@@ -37,7 +37,7 @@ def test_gate_allows_explicit_legacy_adapter(tmp_path: Path) -> None:
     source = tmp_path / "source"
     source.mkdir()
     (source / "legacy_producer.py").write_text(
-        'def publish(self, payload):\n    self.events.put_legacy("job_started", payload)\n',
+        'def publish(self, payload):\n    self.events.put_legacy("archive_finished", payload)\n',
         encoding="utf-8",
     )
     output = tmp_path / "report.json"
@@ -51,7 +51,7 @@ def test_gate_rejects_legacy_factory_bypass(tmp_path: Path) -> None:
     source = tmp_path / "source"
     source.mkdir()
     (source / "bypass.py").write_text(
-        'def publish(AppEvent, payload):\n    return AppEvent.from_legacy("job_started", payload)\n',
+        'def publish(AppEvent, payload):\n    return AppEvent.from_legacy("archive_finished", payload)\n',
         encoding="utf-8",
     )
     output = tmp_path / "report.json"
@@ -60,6 +60,39 @@ def test_gate_rejects_legacy_factory_bypass(tmp_path: Path) -> None:
 
     assert result.returncode == 1
     assert "ARCH_LEGACY_ADAPTER_BYPASS" in codes
+
+
+def test_gate_rejects_selection_preview_legacy_wiring(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "ui.py").write_text(
+        'def build(self, SelectionPreviewController):\n'
+        '    return SelectionPreviewController(self.events.put_legacy)\n',
+        encoding="utf-8",
+    )
+    output = tmp_path / "report.json"
+    result = _run(source, output)
+    codes = {item["code"] for item in json.loads(output.read_text(encoding="utf-8"))["findings"]}
+
+    assert result.returncode == 1
+    assert "ARCH_SELECTION_PREVIEW_LEGACY_WIRING" in codes
+
+
+def test_gate_rejects_selection_preview_multi_argument_callback(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "selection_preview_controller.py").write_text(
+        'class SelectionPreviewController:\n'
+        '    def publish(self, name, payload):\n'
+        '        self._emit(name, payload)\n',
+        encoding="utf-8",
+    )
+    output = tmp_path / "report.json"
+    result = _run(source, output)
+    codes = {item["code"] for item in json.loads(output.read_text(encoding="utf-8"))["findings"]}
+
+    assert result.returncode == 1
+    assert "ARCH_SELECTION_PREVIEW_EMIT_CONTRACT" in codes
 
 
 def test_current_source_tree_has_no_uncontrolled_legacy_events(tmp_path: Path) -> None:

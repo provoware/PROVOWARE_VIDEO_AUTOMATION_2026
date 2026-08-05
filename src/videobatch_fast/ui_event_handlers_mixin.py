@@ -5,6 +5,7 @@ import traceback
 from pathlib import Path
 from tkinter import messagebox
 
+from .event_registry import EventRegistryError, build_event_handlers
 from .text_resources import text
 from .models import PairJob
 from .quick_modes import mode_spec
@@ -63,31 +64,14 @@ class UiEventHandlersMixin:
     def _dispatch_event(self, name: str, payload: dict) -> None:
         current = getattr(self, "current_operation_id", "general") or "general"
         self.current_operation_id = str(payload.get("operation_id", current))
-        handlers = {
-            "batch_started": self._handle_batch_started,
-            "job_started": self._handle_job_started,
-            "command": self._handle_command,
-            "progress": self._handle_progress_event,
-            "log": self._handle_log_event,
-            "job_finished": self._handle_job_finished,
-            "job_failed_internal": self._handle_job_internal_error,
-            "batch_failed_internal": self._handle_batch_internal_error,
-            "batch_finished": self._handle_batch_finished,
-            "retry_queue_updated": self._handle_retry_queue_updated,
-            "preview_ready": self._handle_preview_ready,
-            "preview_failed": self._handle_preview_failed,
-            "selection_preview_ready": self._handle_selection_preview_ready,
-            "selection_preview_failed": self._handle_selection_preview_failed,
-            "archive_finished": self._handle_archive_finished,
-            "update_finished": self._handle_update_finished,
-            "assurance_finished": self._handle_assurance_finished,
-            "fault_lab_finished": self._handle_fault_lab_finished,
-            "waveform_ready": self._handle_waveform_ready,
-            "waveform_failed": self._handle_waveform_failed,
-        }
+        handlers = getattr(self, "_app_event_handlers", None)
+        if not isinstance(handlers, dict):
+            handlers = build_event_handlers(self)
+            self._app_event_handlers = handlers
         handler = handlers.get(name)
-        if handler is not None:
-            handler(payload)
+        if handler is None:
+            raise EventRegistryError(f"Kein UI-Handler für AppEvent {name!r} registriert.")
+        handler(payload)
 
     def _handle_batch_started(self, payload: dict) -> None:
         self._log("info", f"Stapel mit {payload['total']} Auftrag/Aufträgen gestartet.")

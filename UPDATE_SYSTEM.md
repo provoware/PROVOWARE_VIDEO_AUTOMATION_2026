@@ -37,3 +37,7 @@ Keine Änderung am A/B-Updateprotokoll. Für das Basisprojekt gelten weiterhin v
 ## Folge-Iteration · typisierte Ereignisarchitektur
 
 Keine Änderung am signierten Channel-, A/B- oder Rollback-Protokoll. Der `BatchRunner` liefert intern nur noch versionierte `AppEvent`-Objekte. Nicht migrierte UI-Producer dürfen den alten Nutzdatenkanal ausschließlich über `EventBuffer.put_legacy` verwenden; ein AST-Gate verhindert neue freie Ereignistupel.
+
+## Folge-Iteration · Auswahlvorschau und Ereignisregister
+
+Keine Änderung am signierten Channel-, A/B- oder Rollback-Protokoll. Der `SelectionPreviewController` liefert erfolgreiche und fehlgeschlagene Ergebnisse ausschließlich als typisierte `AppEvent`-Objekte. Ein zentrales Ereignisregister verbindet Erzeuger, Payloadverträge, UI-Handler sowie Terminal- und Noisy-Klassifizierung. Der Vollständigkeitsprüfer blockiert unbekannte, unbehandelte oder nicht getestete Ereignisse vor einer Releasefreigabe.

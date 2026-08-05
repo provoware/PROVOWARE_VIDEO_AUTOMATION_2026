@@ -8,6 +8,7 @@ from types import SimpleNamespace
 import pytest
 from PIL import Image
 
+from videobatch_fast.app_events import AppEvent
 from videobatch_fast.preview_service import PreviewError, load_preview_bitmap
 from videobatch_fast.selection_preview_controller import (
     SelectionPreviewController,
@@ -46,7 +47,7 @@ def test_selection_preview_controller_serializes_and_coalesces(tmp_path: Path) -
     for path in paths:
         Image.new("RGB", (48, 32), (20, 60, 120)).save(path)
 
-    events: list[tuple[str, dict]] = []
+    events: list[AppEvent] = []
     active = 0
     maximum_active = 0
     lock = threading.Lock()
@@ -80,7 +81,7 @@ def test_selection_preview_controller_serializes_and_coalesces(tmp_path: Path) -
         )
 
     controller = SelectionPreviewController(
-        lambda name, payload: events.append((name, payload)),
+        events.append,
         preview_builder=builder,
         media_prober=prober,
     )
@@ -95,9 +96,9 @@ def test_selection_preview_controller_serializes_and_coalesces(tmp_path: Path) -
         time.sleep(0.01)
 
     assert events
-    assert events[-1][0] == "selection_preview_ready"
-    assert events[-1][1]["path"] == paths[-1]
-    assert all(payload["path"] != paths[0] for _, payload in events)
+    assert events[-1].name == "selection_preview_ready"
+    assert events[-1].payload["path"] == paths[-1]
+    assert all(event.payload["path"] != paths[0] for event in events)
     assert maximum_active == 1
     assert controller.shutdown()
 
@@ -107,7 +108,7 @@ def test_selection_preview_controller_drops_stale_failure(tmp_path: Path) -> Non
     valid = tmp_path / "valid.png"
     broken.write_bytes(b"broken")
     Image.new("RGB", (20, 20), "white").save(valid)
-    events: list[tuple[str, dict]] = []
+    events: list[AppEvent] = []
     started = threading.Event()
     release = threading.Event()
 
@@ -119,7 +120,7 @@ def test_selection_preview_controller_drops_stale_failure(tmp_path: Path) -> Non
         return path
 
     controller = SelectionPreviewController(
-        lambda name, payload: events.append((name, payload)),
+        events.append,
         preview_builder=builder,
         media_prober=lambda path: SimpleNamespace(
             path=path,
@@ -140,8 +141,8 @@ def test_selection_preview_controller_drops_stale_failure(tmp_path: Path) -> Non
     while not events and time.monotonic() < deadline:
         time.sleep(0.01)
 
-    assert [name for name, _ in events] == ["selection_preview_ready"]
-    assert events[0][1]["path"] == valid
+    assert [event.name for event in events] == ["selection_preview_ready"]
+    assert events[0].payload["path"] == valid
     assert controller.shutdown()
 
 
@@ -188,6 +189,10 @@ def test_main_selected_media_list_rapid_clicks_remain_stable(
     root = Tk()
     root.geometry("1280x820+0+0")
     app = VideoBatchFastUI(root)
+    preview_errors: list[str] = []
+    app._show_solution_dialog = (
+        lambda _definition, detail="": preview_errors.append(str(detail))
+    )
     app._append_paths(images, audio=False)
     root.update_idletasks()
 
@@ -212,7 +217,7 @@ def test_main_selected_media_list_rapid_clicks_remain_stable(
         time.sleep(0.01)
 
     assert app.preview_source == images[-1]
-    assert app.preview_status.get() == "Vorschau bereit"
+    assert app.preview_status.get() == "Vorschau bereit", preview_errors
     assert app.preview_photo is not None
 
     app._cancel_pending_selection_preview()

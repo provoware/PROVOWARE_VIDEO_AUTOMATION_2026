@@ -1,32 +1,23 @@
 from __future__ import annotations
 
-import re
 import time
 from collections.abc import Iterator, Mapping
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Any, ClassVar, overload
 
-EVENT_SCHEMA_VERSION = 1
-_EVENT_NAME_RE = re.compile(r"^[a-z][a-z0-9_.-]{1,79}$")
-
-NOISY_EVENT_NAMES = frozenset({"log", "progress"})
-TERMINAL_EVENT_NAMES = frozenset(
-    {
-        "archive_finished",
-        "assurance_finished",
-        "batch_finished",
-        "fault_lab_finished",
-        "job_finished",
-        "preview_failed",
-        "preview_ready",
-        "selection_preview_failed",
-        "selection_preview_ready",
-        "update_finished",
-        "waveform_failed",
-        "waveform_ready",
-    }
+from .event_registry import (
+    EventPayloadMode,
+    EventRegistryError,
+    noisy_event_names,
+    terminal_event_names,
+    validate_event_payload,
 )
+
+EVENT_SCHEMA_VERSION = 1
+
+NOISY_EVENT_NAMES = noisy_event_names()
+TERMINAL_EVENT_NAMES = terminal_event_names()
 
 
 class AppEventError(ValueError):
@@ -53,13 +44,6 @@ class TypedEventPayload(Mapping[str, object]):
         return {name: getattr(self, name) for name in self._field_names}
 
 
-def _event_name(value: object) -> str:
-    name = str(value).strip()
-    if not _EVENT_NAME_RE.fullmatch(name):
-        raise AppEventError(f"Ungültige Ereigniskennung: {name!r}")
-    return name
-
-
 def _operation_id(payload: Mapping[str, object]) -> str:
     value = str(payload.get("operation_id", "general") or "general").strip()
     return value[:120] or "general"
@@ -77,7 +61,7 @@ class AppEvent:
     schema_version: int = EVENT_SCHEMA_VERSION
 
     def __post_init__(self) -> None:
-        name = _event_name(self.name)
+        name = str(self.name).strip()
         if self.schema_version != EVENT_SCHEMA_VERSION:
             raise AppEventError(
                 f"Nicht unterstützte Ereignisschema-Version {self.schema_version}; "
@@ -88,10 +72,17 @@ class AppEvent:
         if not isinstance(self.payload, Mapping):
             raise AppEventError("Ereignisnutzdaten müssen eine Zuordnung sein.")
         payload: Mapping[str, object]
+        mode: EventPayloadMode
         if isinstance(self.payload, TypedEventPayload):
             payload = self.payload
+            mode = "typed"
         else:
             payload = MappingProxyType(dict(self.payload))
+            mode = "mapping"
+        try:
+            validate_event_payload(name, payload, mode=mode)
+        except EventRegistryError as exc:
+            raise AppEventError(str(exc)) from exc
         operation_id = str(self.operation_id or _operation_id(payload)).strip()[:120] or "general"
         created = int(self.created_monotonic_ns or time.monotonic_ns())
         object.__setattr__(self, "name", name)
@@ -103,12 +94,30 @@ class AppEvent:
     def from_legacy(cls, name: str, payload: Mapping[str, object]) -> AppEvent:
         """Compatibility adapter used only by EventBuffer.put_legacy()."""
         copied = dict(payload)
-        return cls(name=name, payload=copied, operation_id=_operation_id(copied))
+        try:
+            validate_event_payload(str(name).strip(), copied, mode="legacy")
+        except EventRegistryError as exc:
+            raise AppEventError(str(exc)) from exc
+        event = cls.__new__(cls)
+        object.__setattr__(event, "name", str(name).strip())
+        object.__setattr__(event, "payload", MappingProxyType(copied))
+        object.__setattr__(event, "operation_id", _operation_id(copied))
+        object.__setattr__(event, "sequence", 0)
+        object.__setattr__(event, "created_monotonic_ns", time.monotonic_ns())
+        object.__setattr__(event, "schema_version", EVENT_SCHEMA_VERSION)
+        return event
 
     def with_sequence(self, sequence: int) -> AppEvent:
         if sequence < 1:
             raise AppEventError("Gepufferte Ereignisse benötigen eine positive Sequenz.")
-        return replace(self, sequence=sequence)
+        event = type(self).__new__(type(self))
+        object.__setattr__(event, "name", self.name)
+        object.__setattr__(event, "payload", self.payload)
+        object.__setattr__(event, "operation_id", self.operation_id)
+        object.__setattr__(event, "sequence", sequence)
+        object.__setattr__(event, "created_monotonic_ns", self.created_monotonic_ns)
+        object.__setattr__(event, "schema_version", self.schema_version)
+        return event
 
     @property
     def is_noisy(self) -> bool:

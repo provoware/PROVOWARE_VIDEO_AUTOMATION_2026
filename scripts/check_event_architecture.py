@@ -63,6 +63,35 @@ def _is_direct_event_tuple(call: ast.Call) -> bool:
     return event_target and _looks_like_event_name(event_name) and _looks_like_payload(payload)
 
 
+def _selection_preview_wiring(call: ast.Call) -> Finding | None:
+    chain = _attribute_chain(call.func)
+    if chain.rsplit(".", 1)[-1] != "SelectionPreviewController":
+        return None
+    if not call.args:
+        return Finding(
+            "ARCH_SELECTION_PREVIEW_CALLBACK_MISSING",
+            "",
+            call.lineno,
+            "SelectionPreviewController benötigt EventBuffer.put als direkten AppEvent-Empfänger.",
+        )
+    callback = _attribute_chain(call.args[0])
+    if callback.endswith(".put_legacy"):
+        return Finding(
+            "ARCH_SELECTION_PREVIEW_LEGACY_WIRING",
+            "",
+            call.lineno,
+            "SelectionPreviewController darf nicht mehr mit EventBuffer.put_legacy verdrahtet werden.",
+        )
+    if not callback.endswith(".put"):
+        return Finding(
+            "ARCH_SELECTION_PREVIEW_CALLBACK_CONTRACT",
+            "",
+            call.lineno,
+            "SelectionPreviewController muss direkt an EventBuffer.put verdrahtet sein.",
+        )
+    return None
+
+
 def inspect_file(path: Path, *, display_path: str | None = None) -> list[Finding]:
     relative = display_path or path.name
     source = path.read_text(encoding="utf-8")
@@ -99,6 +128,30 @@ def inspect_file(path: Path, *, display_path: str | None = None) -> list[Finding
                     "BatchRunner-Callbacks müssen genau ein AppEvent erhalten.",
                 )
             )
+        if path.name == "selection_preview_controller.py":
+            if chain == "self._emit" and len(node.args) != 1:
+                findings.append(
+                    Finding(
+                        "ARCH_SELECTION_PREVIEW_EMIT_CONTRACT",
+                        relative,
+                        node.lineno,
+                        "SelectionPreviewController muss genau ein AppEvent an seinen Callback übergeben.",
+                    )
+                )
+            if chain.endswith("put_legacy"):
+                findings.append(
+                    Finding(
+                        "ARCH_SELECTION_PREVIEW_LEGACY_CALL",
+                        relative,
+                        node.lineno,
+                        "SelectionPreviewController darf put_legacy nicht verwenden.",
+                    )
+                )
+        wiring = _selection_preview_wiring(node)
+        if wiring is not None:
+            findings.append(
+                Finding(wiring.code, relative, wiring.line, wiring.message)
+            )
     return findings
 
 
@@ -123,10 +176,11 @@ def main(argv: list[str] | None = None) -> int:
     source_root = args.source_root.expanduser().resolve()
     findings = inspect_tree(source_root)
     report = {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": "pass" if not findings else "fail",
         "source_root": str(source_root),
         "allowed_legacy_adapter": "EventBuffer.put_legacy",
+        "migrated_producers": ["BatchRunner", "SelectionPreviewController"],
         "findings": [asdict(item) for item in findings],
     }
     output = args.output

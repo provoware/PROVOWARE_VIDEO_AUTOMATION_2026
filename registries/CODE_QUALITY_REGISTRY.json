@@ -1,5 +1,5 @@
 {
-  "contract_version": "code-quality-2.8.3-rc11-v2",
+  "contract_version": "code-quality-2.8.3-rc11-v3",
   "dependency_policy": {
     "exact_versions_required": true,
     "offline_install_required_for_stable": true,
@@ -12,8 +12,10 @@
   },
   "maintainability_policy": {
     "background_tasks_require_bounded_shutdown": true,
+    "central_event_registry_required": true,
     "durable_state_writes_use_safe_io": true,
     "interrupted_batch_journal_required": true,
+    "migrated_event_producers_forbid_legacy_adapter": true,
     "single_instance_lock_required": true,
     "visible_ui_texts_must_be_externalized": true
   },
@@ -33,6 +35,7 @@
     "text_resource_validation",
     "internal_ast_quality",
     "event_architecture",
+    "event_registry_completeness",
     "ruff",
     "mypy",
     "pytest_cov",
