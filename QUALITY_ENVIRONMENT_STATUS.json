@@ -1,7 +1,17 @@
 {
   "schema_version": 2,
-  "generated_from": "diagnostics/release_readiness/RELEASE_EVIDENCE.json",
   "build": "2.8.3-rc24",
+  "quality_run": {
+    "status": "passed",
+    "workflow_run": 30972392104,
+    "commit": "2e33a2c00a0b2e7aa44f3db38a0a60a2d6998710",
+    "artifact": "pinned-offline-quality-evidence",
+    "artifact_id": 8917005198,
+    "artifact_sha256": "4bc19bb1f3d935f8fab4b197ba9b6a1e5dc3e962b7bc11e28a41a3c5c95b58fd",
+    "wheel_count": 47,
+    "offline_installation": true,
+    "hash_locked_installation": true
+  },
   "runtime_start": {
     "status": "passed",
     "architecture": "content-addressed user environment",
@@ -16,79 +26,24 @@
   "internal_gates": {
     "tests": {
       "passed": 323,
-      "failed": 0,
-      "skipped": 0
+      "failed": 0
     },
     "total_coverage_percent": 82.43,
-    "branch_measurement": true,
-    "application_simulations": "12/12",
-    "fault_lab": "12/12",
-    "visual_scenarios": "18/18",
-    "isolated_visual_regression": "passed",
-    "architecture_findings": 0,
-    "internal_quality_findings": 0,
-    "maximum_complexity": 29,
-    "release_manifest_files": 366,
-    "branch_coverage_percent": 67.21
-  },
-  "external_gates": {
-    "ruff_0_16_1": {
-      "status": "passed",
-      "run_id": 30970510650,
-      "offline_guard": true,
-      "findings": 0
-    },
-    "mypy_2_3_0": {
-      "status": "passed",
-      "run_id": 30970510650,
-      "offline_guard": true,
-      "findings": 0,
-      "files": 10
-    },
-    "bandit_1_9_4": {
-      "status": "passed",
-      "run_id": 30970510650,
-      "offline_guard": true,
-      "findings": 0
-    },
-    "pip_audit_2_10_1": {
-      "status": "passed",
-      "run_id": 30970510650,
-      "offline_guard": true,
-      "known_vulnerabilities": 0
-    },
-    "wheelhouse": {
-      "status": "passed",
-      "wheel_count": 47,
-      "hashed": true,
-      "offline_reinstall": true
-    },
     "branch_coverage_percent": 67.21,
-    "combined_coverage_percent": 79.46,
-    "application_simulations": "12/12",
-    "fault_lab": "12/12",
+    "branch_measurement": true,
     "visual_scenarios": "18/18",
-    "isolated_visual_regression": "passed",
     "architecture_findings": 0,
     "internal_quality_findings": 0,
     "maximum_complexity": 29,
-    "release_manifest_files": 365,
-    "kubuntu_matrix": {
-      "status": "passed",
-      "passed_targets": 4,
-      "total_targets": 4,
-      "workflow_run_id": 30972953813,
-      "verified_commit": "f07deedf8e76a5e0a98f9cae986637d97e11f152",
-      "scope_note": "Headless deterministic CI matrix; not a substitute for physical KDE acceptance."
-    }
+    "release_manifest_files": 365
   },
   "external_gates": {
     "ruff_0_16_1": "passed",
     "mypy_2_3_0": "passed",
     "bandit_1_9_4": "passed",
     "pip_audit_2_10_1": "passed",
-    "physical_kde_x11_wayland": "Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless",
-    "large_media_soak": "Realer Lauf auf langsamem externem Ziel fehlt"
+    "physical_kde_x11_wayland": "required",
+    "large_media_soak": "required"
   },
   "stable_ready": false,
   "stable_block_reason": "Physical KDE session approval and the documented large-media soak remain required."

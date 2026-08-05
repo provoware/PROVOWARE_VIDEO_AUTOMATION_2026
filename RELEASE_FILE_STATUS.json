@@ -1,6 +1,5 @@
 {
-  "schema_version": 2,
-  "generated_from": "diagnostics/release_readiness/RELEASE_EVIDENCE.json",
+  "schema_version": 1,
   "version": "2.8.3-rc24",
   "scope": "standalone_release_deliverables",
   "ready_suffix": "_save_",
@@ -44,7 +43,7 @@
     {
       "path": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md",
       "label": "Exakter Offline-Qualitätsbericht",
-      "evidence": "Ruff, MyPy, Bandit und pip-audit vollständig bestanden"
+      "evidence": "Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4 und pip-audit 2.10.1 vollständig bestanden"
     },
     {
       "path": "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md",
@@ -59,7 +58,7 @@
     {
       "path": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
       "label": "Maschinenlesbarer Buildbericht",
-      "evidence": "Aus der kanonischen RELEASE_EVIDENCE.json erzeugt"
+      "evidence": "Freigegebene RC24-Qualitätsquelle"
     }
   ],
   "unfinished": [

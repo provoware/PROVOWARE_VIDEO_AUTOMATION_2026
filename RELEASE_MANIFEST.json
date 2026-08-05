@@ -100,10 +100,10 @@
       "size": 4976
     },
     {
-      "mode": "0o600",
+      "mode": "0o644",
       "path": "DEVELOPMENT_STATUS.json",
-      "sha256": "a48aa3221e300231acaee4ff46560f88d6d4c624d62ab299f7ed12c35405cab0",
-      "size": 670
+      "sha256": "0c8a3cbf5d5f91b7acc8e98b498abd15fb5d9002a13bd6f0de3080e6823158d3",
+      "size": 587
     },
     {
       "mode": "0o644",
@@ -196,10 +196,10 @@
       "size": 10608
     },
     {
-      "mode": "0o600",
+      "mode": "0o644",
       "path": "QUALITY_ENVIRONMENT_STATUS.json",
-      "sha256": "24fa79860503d3d71de83b85801a66387880e6323395d230bfde8c14cf13d889",
-      "size": 1795
+      "sha256": "e302975c4f84b18d193e80e42c26b48a66d372b17e72d63304bb92633d57f862",
+      "size": 1563
     },
     {
       "mode": "0o644",
@@ -214,10 +214,10 @@
       "size": 8005
     },
     {
-      "mode": "0o600",
+      "mode": "0o644",
       "path": "README.md",
-      "sha256": "638d14afaa5c5e254958cf1f3bcc63b8d96d7201b36fe1f47067d8a178e5381b",
-      "size": 8138
+      "sha256": "ca6f0cd22c6eea7eb84347e374613c6d5716347ed3432894f3c13ad17be6f2b8",
+      "size": 7487
     },
     {
       "mode": "0o644",
@@ -226,10 +226,10 @@
       "size": 597
     },
     {
-      "mode": "0o600",
+      "mode": "0o644",
       "path": "RELEASE_FILE_STATUS.json",
-      "sha256": "ae8e47955b04bc5b99f6feaf3c40810de4f3d54b4772695f824a8b26e80a4774",
-      "size": 3342
+      "sha256": "e380f82baed66ec917edb4a3ee0948436093106ec5e62a77aae6c232b731bdca",
+      "size": 3278
     },
     {
       "mode": "0o644",
@@ -334,10 +334,10 @@
       "size": 254
     },
     {
-      "mode": "0o600",
+      "mode": "0o644",
       "path": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
-      "sha256": "1d3055f7c64239f4340590f31e65826c5d4a20ea3bcb851ef99207bc716d23e6",
-      "size": 2898
+      "sha256": "6b76b006caf39cca7fa845169b794141836df9adb537c19ef608ba511a617a57",
+      "size": 2512
     },
     {
       "mode": "0o644",
