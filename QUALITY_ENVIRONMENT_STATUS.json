@@ -1,6 +1,17 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "build": "2.8.3-rc24",
+  "quality_run": {
+    "status": "passed",
+    "workflow_run": 30972392104,
+    "commit": "2e33a2c00a0b2e7aa44f3db38a0a60a2d6998710",
+    "artifact": "pinned-offline-quality-evidence",
+    "artifact_id": 8917005198,
+    "artifact_sha256": "4bc19bb1f3d935f8fab4b197ba9b6a1e5dc3e962b7bc11e28a41a3c5c95b58fd",
+    "wheel_count": 47,
+    "offline_installation": true,
+    "hash_locked_installation": true
+  },
   "runtime_start": {
     "status": "passed",
     "architecture": "content-addressed user environment",
@@ -14,28 +25,26 @@
   },
   "internal_gates": {
     "tests": {
-      "passed": 253,
+      "passed": 323,
       "failed": 0
     },
-    "total_coverage_percent": 79,
+    "total_coverage_percent": 82.43,
+    "branch_coverage_percent": 67.21,
     "branch_measurement": true,
-    "application_simulations": "12/12",
-    "fault_lab": "12/12",
-    "visual_scenarios": "17/17",
-    "isolated_visual_regression": "passed",
+    "visual_scenarios": "18/18",
     "architecture_findings": 0,
     "internal_quality_findings": 0,
     "maximum_complexity": 29,
-    "release_manifest_files": 367
+    "release_manifest_files": 365
   },
   "external_gates": {
-    "ruff_0_16_1": "not installed in isolated build environment",
-    "mypy_2_3_0": "not installed in isolated build environment",
-    "bandit_1_9_4": "not installed in isolated build environment",
-    "pip_audit_2_10_1": "not installed in isolated build environment",
+    "ruff_0_16_1": "passed",
+    "mypy_2_3_0": "passed",
+    "bandit_1_9_4": "passed",
+    "pip_audit_2_10_1": "passed",
     "physical_kde_x11_wayland": "required",
     "large_media_soak": "required"
   },
   "stable_ready": false,
-  "stable_block_reason": "External quality tools, physical KDE session approval and large-media soak remain required."
+  "stable_block_reason": "Physical KDE session approval and the documented large-media soak remain required."
 }
