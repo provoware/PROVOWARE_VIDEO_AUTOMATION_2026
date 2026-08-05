@@ -33,6 +33,15 @@ def label(status: str) -> str:
     return {"green": "GRÜN", "yellow": "GELB", "red": "ROT", "pass": "PASS", "open": "OFFEN", "fail": "FEHLER", "unknown": "UNBEKANNT", "running": "LÄUFT"}.get(status, status.upper())
 
 
+def canonicalize_ci_status(ci: Mapping[str, Any]) -> dict[str, Any]:
+    """Map GitHub's aggregate `running` state to the engine's canonical in-progress token."""
+    normalized = dict(ci)
+    if str(normalized.get("status") or "").strip().lower() == "running":
+        normalized["raw_status"] = normalized.get("status")
+        normalized["status"] = "in_progress"
+    return normalized
+
+
 def markdown(result: Mapping[str, Any]) -> str:
     release, summary = result["release"], result["summary"]
     lines = [
@@ -113,6 +122,7 @@ def generate(args: argparse.Namespace) -> int:
         ci = fetch_github_ci(args.github_repository, args.github_sha, os.environ.get(args.github_token_env))
     else:
         ci = load_ci_snapshot(None)
+    ci = canonicalize_ci_status(ci)
     findings, gates = analyze(root, documents, ci)
     findings.extend(unchanged_findings(paths, hashes))
     generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
