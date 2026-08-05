@@ -10,8 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_release_file_contract_is_complete_and_consistent() -> None:
     contract = validate(ROOT)
-    assert len(contract["ready"]) == 10
-    assert len(contract["unfinished"]) == 8
+    assert len(contract["ready"]) == 11
+    assert len(contract["unfinished"]) == 6
 
 
 def test_ready_files_use_save_marker_and_unfinished_files_do_not() -> None:
