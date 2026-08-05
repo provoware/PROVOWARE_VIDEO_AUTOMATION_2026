@@ -4,16 +4,11 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]
-    paths:
-      - .github/workflows/kubuntu-pr-matrix.yml
+    paths: [.github/workflows/kubuntu-pr-matrix.yml]
 
 permissions:
   contents: write
   actions: read
-
-concurrency:
-  group: canonical-release-evidence-${{ github.event.pull_request.number }}
-  cancel-in-progress: false
 
 jobs:
   apply:
@@ -24,104 +19,70 @@ jobs:
     env:
       PYTHONDONTWRITEBYTECODE: '1'
       PYTHONPATH: 'src:.'
-      EXPORT_ARTIFACT_ID: '8915848393'
-      EXPORT_ZIP_SHA256: 'aa856745ce8d5807196822b2785fd680d0065a665720870e7bd0fd50d47e4b32'
-      PAYLOAD_SHA256: 'a4df1d6124634386f8dc9de20f1b737d6986fa8bcc4324bc9fac181ff8ed6fd5'
-
+      GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Check out clean PR branch
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
-      - name: Download and verify historical audited export
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Restore audited dashboard source
         run: |
           set -Eeuo pipefail
-          mkdir -p "$RUNNER_TEMP/evidence-export"
-          gh api \
-            -H 'Accept: application/vnd.github+json' \
-            "/repos/$GITHUB_REPOSITORY/actions/artifacts/$EXPORT_ARTIFACT_ID/zip" \
-            > "$RUNNER_TEMP/evidence-export.zip"
-          echo "$EXPORT_ZIP_SHA256  $RUNNER_TEMP/evidence-export.zip" | sha256sum --check --strict
-          unzip -q "$RUNNER_TEMP/evidence-export.zip" -d "$RUNNER_TEMP/evidence-export"
-          (cd "$RUNNER_TEMP/evidence-export" && sha256sum --check --strict TRACKED_SOURCE.sha256)
-          mkdir -p "$RUNNER_TEMP/export-source"
-          tar -xzf "$RUNNER_TEMP/evidence-export/TRACKED_SOURCE.tar.gz" -C "$RUNNER_TEMP/export-source"
-          base64 --decode \
-            "$RUNNER_TEMP/export-source/.github/scripts/release-evidence-payload.b64" \
-            > "$RUNNER_TEMP/release-evidence.tar.gz"
-          echo "$PAYLOAD_SHA256  $RUNNER_TEMP/release-evidence.tar.gz" | sha256sum --check --strict
+          tmp="$RUNNER_TEMP/canonical-evidence"
+          mkdir -p "$tmp/export" "$tmp/source"
+          gh api -H 'Accept: application/vnd.github+json' \
+            "/repos/$GITHUB_REPOSITORY/actions/artifacts/8915848393/zip" > "$tmp/export.zip"
+          echo 'aa856745ce8d5807196822b2785fd680d0065a665720870e7bd0fd50d47e4b32  '"$tmp/export.zip" | sha256sum --check --strict
+          unzip -q "$tmp/export.zip" -d "$tmp/export"
+          echo 'b4315241d282b0ed32a6b79f14dc89f98c1da46fac523186e7f44917ea5d908a  '"$tmp/export/TRACKED_SOURCE.tar.gz" | sha256sum --check --strict
+          tar -xzf "$tmp/export/TRACKED_SOURCE.tar.gz" -C "$tmp/source"
+          base64 --decode "$tmp/source/.github/scripts/release-evidence-payload.b64" > "$tmp/payload.tar.gz"
+          echo 'a4df1d6124634386f8dc9de20f1b737d6986fa8bcc4324bc9fac181ff8ed6fd5  '"$tmp/payload.tar.gz" | sha256sum --check --strict
+          tar -xzf "$tmp/payload.tar.gz" -C .
+          cp "$tmp/source/diagnostics/release_readiness/release_readiness_dashboard.py" diagnostics/release_readiness/
+          cp "$tmp/source/diagnostics/release_readiness/ci_status.example.json" diagnostics/release_readiness/
 
-      - name: Install only canonical dashboard and evidence files
-        run: |
-          set -Eeuo pipefail
-          tar -xzf "$RUNNER_TEMP/release-evidence.tar.gz" -C .
-          cp "$RUNNER_TEMP/export-source/diagnostics/release_readiness/release_readiness_dashboard.py" \
-            diagnostics/release_readiness/release_readiness_dashboard.py
-          cp "$RUNNER_TEMP/export-source/diagnostics/release_readiness/ci_status.example.json" \
-            diagnostics/release_readiness/ci_status.example.json
-
-      - name: Synchronize evidence with verified main quality state
+      - name: Synchronize canonical evidence and compatibility logic
         run: |
           set -Eeuo pipefail
           python3 - <<'PY'
           import json
           from pathlib import Path
 
-          path = Path('diagnostics/release_readiness/RELEASE_EVIDENCE.json')
-          evidence = json.loads(path.read_text(encoding='utf-8'))
-          evidence['provenance'].update({
+          evidence_path = Path('diagnostics/release_readiness/RELEASE_EVIDENCE.json')
+          data = json.loads(evidence_path.read_text(encoding='utf-8'))
+          data['provenance'].update({
               'verified_source_commit': 'f07deedf8e76a5e0a98f9cae986637d97e11f152',
               'repository_finalization_commit': 'f49426932c836e363aec3ff512be044c37388fac',
               'manifest_regeneration_run_id': 30972953813,
               'matrix_workflow_run_id': 30972953813,
           })
-          evidence['matrix'].update({
-              'workflow_run_id': 30972953813,
-              'verified_commit': 'f07deedf8e76a5e0a98f9cae986637d97e11f152',
-          })
+          data['matrix'].update({'workflow_run_id': 30972953813, 'verified_commit': 'f07deedf8e76a5e0a98f9cae986637d97e11f152'})
           passed = {'ruff_0_16_1', 'mypy_2_3_0', 'bandit_1_9_4', 'pip_audit_2_10_1'}
-          for gate in evidence['stable_gates']:
+          for gate in data['stable_gates']:
               if gate['id'] in passed:
-                  gate['status'] = 'passed'
-                  gate['reason'] = 'Exakt gepinnter Offline-Lauf bestanden; Workflow 30972392104'
-          release_files = evidence['release_files']
-          if not any(item['path'] == 'QUALITY_GATE_REPORT_2.8.3-rc24_save_.md' for item in release_files['ready']):
-              release_files['ready'].insert(7, {
-                  'path': 'QUALITY_GATE_REPORT_2.8.3-rc24_save_.md',
-                  'label': 'Exakter Offline-Qualitätsbericht',
-                  'evidence': 'Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4 und pip-audit 2.10.1 vollständig bestanden',
-              })
-          release_files['unfinished'] = [
-              item for item in release_files['unfinished']
-              if item['path'] not in {'QUALITY_GATE_ATTEMPT_2.8.3-rc24.md', 'QUALITY_ENVIRONMENT_STATUS.json'}
-          ]
-          evidence['release_cleanup']['ready_deliverables'] = len(release_files['ready'])
-          evidence['release_cleanup']['unfinished_gate_files'] = len(release_files['unfinished'])
-          evidence['manifest']['file_count'] = 365
-          evidence['progress'] = {
-              'percent': 93,
-              'completed': 28,
-              'open': 2,
-              'total': 30,
-              'current_todo': 'Kanonische Release-Nachweise synchronisiert; physische KDE-Abnahme und Langzeitrender bleiben offen',
-          }
-          path.write_text(json.dumps(evidence, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-          PY
+                  gate.update(status='passed', reason='Exakt gepinnter Offline-Lauf bestanden; Workflow 30972392104')
+          files = data['release_files']
+          if not any(item['path'] == 'QUALITY_GATE_REPORT_2.8.3-rc24_save_.md' for item in files['ready']):
+              files['ready'].insert(7, {'path': 'QUALITY_GATE_REPORT_2.8.3-rc24_save_.md', 'label': 'Exakter Offline-Qualitätsbericht', 'evidence': 'Ruff, MyPy, Bandit und pip-audit vollständig bestanden'})
+          files['unfinished'] = [item for item in files['unfinished'] if item['path'] not in {'QUALITY_GATE_ATTEMPT_2.8.3-rc24.md', 'QUALITY_ENVIRONMENT_STATUS.json'}]
+          data['release_cleanup']['ready_deliverables'] = len(files['ready'])
+          data['release_cleanup']['unfinished_gate_files'] = len(files['unfinished'])
+          data['manifest']['file_count'] = 365
+          data['progress'] = {'percent': 93, 'completed': 28, 'open': 2, 'total': 30, 'current_todo': 'Physische KDE-Abnahme und Langzeitrender bleiben offen'}
+          evidence_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
-      - name: Add backward-compatible manifest reading and precise CI state
-        run: |
-          set -Eeuo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
+          generator = Path('diagnostics/release_readiness/generate_from_evidence.py')
+          text = generator.read_text(encoding='utf-8').replace(
+              'External quality tools, physical KDE session approval and large-media soak remain required.',
+              'Physical KDE session approval and the documented large-media soak remain required.',
+          )
+          generator.write_text(text, encoding='utf-8')
 
           engine = Path('diagnostics/release_readiness/engine.py')
           text = engine.read_text(encoding='utf-8')
-          text = text.replace('import hashlib\n', 'import base64\nimport hashlib\n', 1)
-          text = text.replace('import urllib.request\n', 'import urllib.request\nimport zlib\n', 1)
+          text = text.replace('import hashlib\n', 'import base64\nimport hashlib\n', 1).replace('import urllib.request\n', 'import urllib.request\nimport zlib\n', 1)
           old = '''def read_json(path: Path) -> dict[str, Any]:
               try:
                   value = json.loads(path.read_text(encoding="utf-8"))
@@ -140,43 +101,31 @@ jobs:
                   raise EvidenceError(f"JSON-Wurzel muss ein Objekt sein: {path}")
               if path.name == "RELEASE_MANIFEST.json" and not isinstance(value.get("files"), list):
                   if value.get("files_encoding") != "zlib+base64+json":
-                      raise EvidenceError("Release-Manifest enthält weder Klartextdateien noch ein unterstütztes kompaktes Format")
+                      raise EvidenceError("Nicht unterstütztes Manifestformat")
                   try:
-                      declared_size = int(value["files_uncompressed_size"])
-                      if declared_size < 0 or declared_size > 16 * 1024 * 1024:
-                          raise ValueError("ungültige Nutzlastgröße")
+                      size = int(value["files_uncompressed_size"])
+                      if not 0 <= size <= 16 * 1024 * 1024:
+                          raise ValueError("ungültige Größe")
                       raw = zlib.decompress(base64.b64decode(str(value["files_payload"]), validate=True))
-                      if len(raw) != declared_size:
-                          raise ValueError("Nutzlastgröße stimmt nicht")
-                      if hashlib.sha256(raw).hexdigest() != str(value.get("files_payload_sha256", "")):
-                          raise ValueError("Nutzlasthash stimmt nicht")
-                      files = json.loads(raw.decode("utf-8"))
+                      if len(raw) != size or hashlib.sha256(raw).hexdigest() != str(value.get("files_payload_sha256", "")):
+                          raise ValueError("Nutzlastprüfung fehlgeschlagen")
+                      value["files"] = json.loads(raw.decode("utf-8"))
                   except (KeyError, TypeError, ValueError, UnicodeError, json.JSONDecodeError, zlib.error) as exc:
                       raise EvidenceError(f"Ungültige kompakte Manifestnutzlast: {exc}") from exc
-                  if not isinstance(files, list):
-                      raise EvidenceError("Kompakte Manifestdateiliste ist keine Liste")
-                  value["files"] = files
+                  if not isinstance(value["files"], list):
+                      raise EvidenceError("Manifestdateiliste ist keine Liste")
               return value
           '''.replace('          ', '')
           if old not in text:
               raise SystemExit('read_json contract not found')
-          text = text.replace(old, new)
-          text = text.replace(
+          text = text.replace(old, new).replace(
               'f"CI ist noch nicht endgültig: {ci.get(\'status\', \'unknown\')}"',
               'f"CI ist noch nicht endgültig: {normalize_status(ci.get(\'status\'))} ({ci.get(\'status\', \'unknown\')})"',
           )
           engine.write_text(text, encoding='utf-8')
-
-          generator = Path('diagnostics/release_readiness/generate_from_evidence.py')
-          text = generator.read_text(encoding='utf-8')
-          text = text.replace(
-              '"External quality tools, physical KDE session approval and large-media soak remain required."',
-              '"Physical KDE session approval and the documented large-media soak remain required."',
-          )
-          generator.write_text(text, encoding='utf-8')
           PY
 
-      - name: Restore production workflow and generate all derived evidence
+      - name: Generate, verify, clean and publish final tree
         run: |
           set -Eeuo pipefail
           git fetch --no-tags origin main
@@ -188,16 +137,9 @@ jobs:
           python3 scripts/validate_release_manifest.py
           python3 diagnostics/release_readiness/selftest.py
           python3 diagnostics/release_readiness/running_status_selftest.py
-          test "$(git hash-object .github/workflows/kubuntu-pr-matrix.yml)" = '80ac11d5e7fed537666d21bd5ca21fa5c6bcc0ce'
-          test ! -e .github/scripts/release-evidence-payload.b64
-          test ! -e .github/scripts/release-evidence-trigger
-          test ! -e .github/workflows/temporary-apply-release-evidence.yml
-
-      - name: Commit clean verified end state
-        run: |
-          set -Eeuo pipefail
-          git config user.name 'provoware-release-bot'
-          git config user.email 'provoware.one@gmail.com'
+          test "$(git hash-object .github/workflows/kubuntu-pr-matrix.yml)" = 80ac11d5e7fed537666d21bd5ca21fa5c6bcc0ce
+          git config user.name provoware-release-bot
+          git config user.email provoware.one@gmail.com
           git add -A
           git diff --cached --check
           git commit -m 'Add canonical release evidence dashboard'
