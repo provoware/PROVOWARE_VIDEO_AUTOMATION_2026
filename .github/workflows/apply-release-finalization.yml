@@ -80,6 +80,13 @@ jobs:
           python3 scripts/internal_quality_gate.py
           python3 -m pytest -q
 
+      - name: Remove test-generated caches
+        run: |
+          set -Eeuo pipefail
+          find . -path './.git' -prune -o -type d -name '__pycache__' -exec rm -rf {} +
+          rm -rf .pytest_cache
+          rm -f .coverage
+
       - name: Confirm repository cleanup invariants
         run: |
           set -Eeuo pipefail
