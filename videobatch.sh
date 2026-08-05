@@ -22,6 +22,7 @@ VideoBatch Fast – automatischer zentraler Einstieg
   ./videobatch.sh finalize        autonom prüfen und Stable-ZIP erzeugen
   ./videobatch.sh fault-lab       isoliertes Stabilitäts- und Recoverylabor
   ./videobatch.sh retry-status    Wiederanlaufliste vollständig lesend anzeigen
+  ./videobatch.sh recovery-check  Wiederanlauf und Journale vollständig lesend vergleichen
   ./videobatch.sh portable-build  portable Offline-Ausgabe erzeugen
   ./videobatch.sh logs            letzten Start- und Toolchainbericht anzeigen
   ./videobatch.sh help            diese Hilfe anzeigen
@@ -146,6 +147,10 @@ case "$ACTION" in
   retry-status|wiederanlauf-diagnose)
     export PYTHONPATH="$ROOT_DIR/src${PYTHONPATH:+:$PYTHONPATH}"
     exec "$BOOTSTRAP_PYTHON" -m videobatch_fast.retry_diagnostics "$@"
+    ;;
+  recovery-check|wiederanlauf-konsistenz)
+    export PYTHONPATH="$ROOT_DIR/src${PYTHONPATH:+:$PYTHONPATH}"
+    exec "$BOOTSTRAP_PYTHON" -m videobatch_fast.recovery_consistency "$@"
     ;;
   portable-build)
     require_system
