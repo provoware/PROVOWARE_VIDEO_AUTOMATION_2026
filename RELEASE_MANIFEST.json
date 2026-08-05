@@ -1,7 +1,7 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 367,
+  "file_count": 369,
   "files": [
     {
       "mode": "0o644",
@@ -1439,6 +1439,12 @@
     },
     {
       "mode": "0o644",
+      "path": "src/videobatch_fast/retry_diagnostics.py",
+      "sha256": "a606c1d8da62be59c517325a254d58d852ad1e271926f01fbed60beb1698e3a3",
+      "size": 11005
+    },
+    {
+      "mode": "0o644",
       "path": "src/videobatch_fast/retry_queue.py",
       "sha256": "cd9af847fa9d7de481609b21492ae202038c6a767a1eb5ebc612004eae9e8880",
       "size": 9089
@@ -2111,6 +2117,12 @@
     },
     {
       "mode": "0o644",
+      "path": "tests/test_retry_queue_diagnostics.py",
+      "sha256": "ded48f3d48ebd011788222925278b58862e21e2e73a2046065cac42f3ee232dc",
+      "size": 7093
+    },
+    {
+      "mode": "0o644",
       "path": "tests/test_retry_queue_resilience.py",
       "sha256": "69af51f9e968e754477c6cc132b2c32b38c9590a2be81e845b93039a6608d9d9",
       "size": 9144
@@ -2196,8 +2208,8 @@
     {
       "mode": "0o644",
       "path": "videobatch.sh",
-      "sha256": "5c9218243e0cb2907a7c766793f5c45ec27651284555b75a88be303374d4fef6",
-      "size": 6323
+      "sha256": "29b4e2da98e537513424ac14b4a898fa366f9bdfd78dfeb9eb0899f61b673af2",
+      "size": 6585
     },
     {
       "mode": "0o644",
