@@ -24,6 +24,12 @@ permissions:
   contents: read
   actions: read
 
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: '1'
+  PIP_NO_INPUT: '1'
+  PYTHONHASHSEED: '0'
+  PYTHONUTF8: '1'
+
 concurrency:
   group: kubuntu-pr-matrix-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -43,15 +49,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
 
       - name: Install exact Ruff syntax checker
         run: |
           set -Eeuo pipefail
-          python3 -m pip install \
-            --disable-pip-version-check \
-            --no-input \
-            ruff==0.16.1
-          test "$(ruff --version)" = "ruff 0.16.1"
+          python3 -m pip install ruff==0.16.1
+          test "$(python3 -m ruff --version)" = "ruff 0.16.1"
 
       - name: Compile Python without repository writes
         run: |
@@ -61,14 +65,15 @@ jobs:
       - name: Run Ruff syntax and undefined-name gate
         run: |
           set -Eeuo pipefail
-          ruff check src scripts diagnostics tests \
+          python3 -m ruff check src scripts diagnostics tests \
             --select E9,F63,F7,F82 \
             --no-cache
 
-      - name: Validate release manifest
+      - name: Check release manifest and emit exact drift records
         run: |
           set -Eeuo pipefail
-          python3 scripts/validate_release_manifest.py
+          python3 scripts/build_release_manifest.py --check --json \
+            | tee "$RUNNER_TEMP/release-manifest-drift.json"
 
       - name: Validate canonical evidence schema
         run: |
@@ -90,9 +95,15 @@ jobs:
           python3 diagnostics/release_readiness/generate_from_evidence.py --check
 
       - name: Prove repository remained unchanged
+        if: always()
         run: |
           set -Eeuo pipefail
-          test -z "$(git status --porcelain --untracked-files=all)"
+          status="$(git status --porcelain --untracked-files=all)"
+          if [[ -n "$status" ]]; then
+            printf '%s\n' "$status"
+            echo "::error title=Read-only preflight wrote repository files::The preflight must leave the checkout unchanged."
+            exit 1
+          fi
 
   matrix:
     name: ${{ matrix.os }} / ${{ matrix.session }}
@@ -118,6 +129,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
 
       - name: Prepare cached Kubuntu dependencies
         uses: ./.github/actions/kubuntu-package-cache
