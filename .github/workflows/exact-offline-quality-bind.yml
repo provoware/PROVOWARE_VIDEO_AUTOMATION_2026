@@ -1,0 +1,105 @@
+name: Bind exact offline quality evidence
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/exact-offline-quality-bind.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  TARGET_SHA: 2236820064dc5a1efc7c35177999be67b13cd6a9
+  SOURCE_RUN_ID: '31005397565'
+  SOURCE_ARTIFACT_DIGEST: 0406e89f44854b9d8a23d594d4955cc00de3df9ac2f3bf340059a41c6edf5398
+
+jobs:
+  bind:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Download complete raw evidence from exact execution
+        uses: actions/download-artifact@v4
+        with:
+          name: exact-offline-quality-2236820064dc5a1efc7c35177999be67b13cd6a9
+          path: evidence
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: provoware/PROVOWARE_VIDEO_AUTOMATION_2026
+          run-id: 31005397565
+
+      - name: Validate and cryptographically bind every result
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          E="$GITHUB_WORKSPACE/evidence"
+          test "$(cat "$E/target-commit.txt")" = "$TARGET_SHA"
+          test "$(cat "$E/offline-quality-gate.exit")" = 0
+          for name in apt-update apt-install wheelhouse-build wheelhouse-verify offline-install-first environment-gate pip-audit-cache-prime offline-install-final wheelhouse-final-verify ruff mypy bandit pip-audit; do
+            test "$(cat "$E/raw/$name.exit")" = 0
+          done
+          changed="$(sed -n 's/^diff --git a\/\([^ ]*\) b\/.*/\1/p' "$E/raw/source-diff.stdout.log")"
+          test "$changed" = 'toolchain_wheelhouse/README.md'
+
+          E="$E" TARGET_SHA="$TARGET_SHA" SOURCE_RUN_ID="$SOURCE_RUN_ID" SOURCE_ARTIFACT_DIGEST="$SOURCE_ARTIFACT_DIGEST" python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          root = Path(os.environ["E"])
+          def digest(path: Path) -> str:
+              return hashlib.sha256(path.read_bytes()).hexdigest()
+          versions = json.loads((root / "installed-versions.json").read_text())
+          expected = {"ruff":"0.16.1","mypy":"2.3.0","bandit":"1.9.4","pip-audit":"2.10.1"}
+          if versions.get("packages") != expected:
+              raise SystemExit(f"Version mismatch: {versions.get('packages')!r}")
+          tools = {}
+          for name in expected:
+              rc = int((root / "raw" / f"{name}.exit").read_text().strip())
+              tools[name] = {"version": expected[name], "returncode": rc, "status": "pass" if rc == 0 else "fail"}
+          phase_names = (
+              "apt-update", "apt-install", "wheelhouse-build", "wheelhouse-verify",
+              "offline-install-first", "environment-gate", "pip-audit-cache-prime",
+              "offline-install-final", "wheelhouse-final-verify",
+          )
+          phases = {name: int((root / "raw" / f"{name}.exit").read_text().strip()) for name in phase_names}
+          report = {
+              "schema_version": 1,
+              "status": "pass",
+              "target_commit": os.environ["TARGET_SHA"],
+              "target_tree": (root / "target-tree.txt").read_text().strip(),
+              "source_execution_run_id": int(os.environ["SOURCE_RUN_ID"]),
+              "source_artifact_zip_sha256": os.environ["SOURCE_ARTIFACT_DIGEST"],
+              "target_tree_listing_sha256": digest(root / "target-tree-listing.txt"),
+              "release_manifest_sha256": digest(root / "RELEASE_MANIFEST.json"),
+              "toolchain_contract_sha256": digest(root / "TOOLCHAIN_CONTRACT.json"),
+              "quality_lock_sha256": digest(root / "requirements-quality.lock"),
+              "runtime_lock_sha256": digest(root / "requirements.lock"),
+              "wheelhouse_manifest_sha256": digest(root / "wheelhouse-manifest.json"),
+              "wheelhouse_aggregate_sha256": digest(root / "wheelhouse-files.sha256"),
+              "resolved_lock_sha256": digest(root / "requirements-toolchain-resolved.lock"),
+              "pip_audit_cache_inventory_sha256": digest(root / "pip-audit-cache-files.sha256"),
+              "offline_socket_guard": True,
+              "source_code_unchanged": True,
+              "allowed_generated_metadata_change": "toolchain_wheelhouse/README.md removed by atomic wheelhouse publication",
+              "phases": phases,
+              "tools": tools,
+          }
+          if any(phases.values()) or any(item["returncode"] for item in tools.values()):
+              raise SystemExit("Non-zero quality result")
+          (root / "QUALITY_EVIDENCE.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+          files = []
+          for path in sorted(root.rglob("*")):
+              if path.is_file() and path.name != "EVIDENCE_CONTENTS.json":
+                  files.append({"path":path.relative_to(root).as_posix(),"size":path.stat().st_size,"sha256":digest(path)})
+          (root / "EVIDENCE_CONTENTS.json").write_text(json.dumps({"schema_version":1,"target_commit":os.environ["TARGET_SHA"],"files":files}, indent=2, sort_keys=True) + "\n")
+          PY
+          python3 -m json.tool "$E/QUALITY_EVIDENCE.json" >/dev/null
+          python3 -m json.tool "$E/EVIDENCE_CONTENTS.json" >/dev/null
+
+      - name: Upload bound exact quality evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: bound-exact-offline-quality-2236820064dc5a1efc7c35177999be67b13cd6a9
+          path: evidence
+          if-no-files-found: error
+          retention-days: 30
