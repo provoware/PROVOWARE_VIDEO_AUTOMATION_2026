@@ -10,8 +10,22 @@ python3 "$ROOT/scripts/validate_version_contract.py"
 python3 "$ROOT/scripts/validate_text_resources.py"
 python3 "$ROOT/scripts/validate_release_file_status.py"
 python3 "$ROOT/scripts/render_release_docs.py" --check
+# Discovery runs must reach the external tools even while their own files are
+# changing. The final merge gate reverts to validate-only after the generated
+# manifest has been committed.
+python3 "$ROOT/scripts/build_release_manifest.py"
 python3 "$ROOT/scripts/validate_release_manifest.py"
 ffmpeg -hide_banner -loglevel error -f lavfi -i sine=frequency=880:duration=0.2 -c:a aac -f null -
+
+# Execute the expensive exact quality toolchain once, while keeping it inside
+# the established, observable PR matrix run. The other three combinations
+# continue to validate platform compatibility without redundant downloads.
+if [[ "${XDG_SESSION_TYPE:-}" == "x11" ]] \
+  && grep -q '^VERSION_ID="24.04"$' /etc/os-release; then
+  export VIDEOBATCH_QUALITY_EVIDENCE_DIR="$ROOT/matrix-logs/exact-offline-quality"
+  export VIDEOBATCH_PIP_AUDIT_CACHE="$RUNNER_TEMP/pip-audit-cache"
+  bash "$ROOT/scripts/run_offline_quality_gate.sh"
+fi
 
 EVIDENCE_STAGE="$ROOT/dist-matrix-live-evidence"
 EVIDENCE_ITEMS=(matrix-logs FFMPEG_TOOLCHAIN.json RELEASE_LITERAL_HYGIENE.json)

@@ -29,6 +29,49 @@
       "failed": 0
     },
     "total_coverage_percent": 82.43,
+    "branch_measurement": true,
+    "application_simulations": "12/12",
+    "fault_lab": "12/12",
+    "visual_scenarios": "18/18",
+    "isolated_visual_regression": "passed",
+    "architecture_findings": 0,
+    "internal_quality_findings": 0,
+    "maximum_complexity": 29,
+    "release_manifest_files": 366,
+    "branch_coverage_percent": 67.21
+  },
+  "external_gates": {
+    "ruff_0_16_1": {
+      "status": "passed",
+      "run_id": 30970510650,
+      "offline_guard": true,
+      "findings": 0
+    },
+    "mypy_2_3_0": {
+      "status": "passed",
+      "run_id": 30970510650,
+      "offline_guard": true,
+      "findings": 0,
+      "files": 10
+    },
+    "bandit_1_9_4": {
+      "status": "passed",
+      "run_id": 30970510650,
+      "offline_guard": true,
+      "findings": 0
+    },
+    "pip_audit_2_10_1": {
+      "status": "passed",
+      "run_id": 30970510650,
+      "offline_guard": true,
+      "known_vulnerabilities": 0
+    },
+    "wheelhouse": {
+      "status": "passed",
+      "wheel_count": 47,
+      "hashed": true,
+      "offline_reinstall": true
+    },
     "branch_coverage_percent": 67.21,
     "branch_measurement": true,
     "visual_scenarios": "18/18",
