@@ -1,0 +1,167 @@
+name: Verified full source artifact
+
+on:
+  workflow_run:
+    workflows:
+      - Kubuntu compatibility matrix PR validation
+    types:
+      - completed
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: '1'
+  PIP_NO_INPUT: '1'
+  PYTHONHASHSEED: '0'
+  PYTHONUTF8: '1'
+
+jobs:
+  verified-source-artifact:
+    name: Build verified source artifact with content index
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONPYCACHEPREFIX: ${{ runner.temp }}/videobatch-artifact-pycache
+      VERIFIED_SHA: ${{ github.event.workflow_run.head_sha }}
+
+    steps:
+      - name: Check out exact successful workflow head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.VERIFIED_SHA }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Revalidate source contracts
+        run: |
+          set -Eeuo pipefail
+          python3 scripts/build_release_manifest.py --check --json \
+            | tee "$RUNNER_TEMP/release-manifest-check.json"
+          python3 diagnostics/release_readiness/generate_from_evidence.py --check
+          python3 -m compileall -q -f src scripts diagnostics tests
+          status="$(git status --porcelain --untracked-files=all)"
+          if [[ -n "$status" ]]; then
+            printf '%s\n' "$status"
+            echo "::error title=Artifact validation wrote repository files::The verified checkout must remain unchanged."
+            exit 1
+          fi
+
+      - name: Build and inspect complete project ZIP
+        run: |
+          set -Eeuo pipefail
+          short_sha="${VERIFIED_SHA:0:12}"
+          project="PROVOWARE_VIDEO_AUTOMATION_2026"
+          archive="${project}_2.8.3-rc24_${short_sha}_verified.zip"
+          archive_path="$RUNNER_TEMP/$archive"
+
+          git archive \
+            --format=zip \
+            --prefix="${project}/" \
+            --output="$archive_path" \
+            "$VERIFIED_SHA"
+          unzip -t "$archive_path"
+
+          export archive archive_path VERIFIED_SHA
+          python3 - <<'PY'
+          from __future__ import annotations
+
+          import hashlib
+          import json
+          import os
+          import zipfile
+          from pathlib import Path
+
+          archive_path = Path(os.environ["archive_path"])
+          entries: list[dict[str, object]] = []
+          with zipfile.ZipFile(archive_path, "r") as source:
+              for info in sorted(source.infolist(), key=lambda item: item.filename):
+                  if info.is_dir():
+                      continue
+                  digest = hashlib.sha256()
+                  with source.open(info, "r") as handle:
+                      while chunk := handle.read(1024 * 1024):
+                          digest.update(chunk)
+                  entries.append(
+                      {
+                          "path": info.filename,
+                          "size": info.file_size,
+                          "sha256": digest.hexdigest(),
+                      }
+                  )
+
+          payload = {
+              "schema_version": 1,
+              "archive": os.environ["archive"],
+              "commit": os.environ["VERIFIED_SHA"],
+              "file_count": len(entries),
+              "total_uncompressed_size": sum(int(item["size"]) for item in entries),
+              "entries": entries,
+          }
+          output = Path(os.environ["RUNNER_TEMP"], "ARTIFACT_CONTENTS.json")
+          output.write_text(
+              json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+
+          verification = json.loads(output.read_text(encoding="utf-8"))
+          if verification != payload:
+              raise SystemExit("ARTIFACT_CONTENTS round-trip verification failed")
+          PY
+
+          archive_sha256="$(sha256sum "$archive_path" | awk '{print $1}')"
+          archive_size="$(stat -c '%s' "$archive_path")"
+          printf '%s  %s\n' "$archive_sha256" "$archive" \
+            > "$RUNNER_TEMP/$archive.sha256"
+
+          export archive_sha256 archive_size
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          contents = json.loads(
+              Path(os.environ["RUNNER_TEMP"], "ARTIFACT_CONTENTS.json").read_text(
+                  encoding="utf-8"
+              )
+          )
+          payload = {
+              "schema_version": 2,
+              "status": "verified",
+              "commit": os.environ["VERIFIED_SHA"],
+              "archive": os.environ["archive"],
+              "archive_size": int(os.environ["archive_size"]),
+              "archive_sha256": os.environ["archive_sha256"],
+              "archive_file_count": int(contents["file_count"]),
+              "artifact_contents": "ARTIFACT_CONTENTS.json",
+              "contracts": {
+                  "release_manifest_check": "passed",
+                  "release_evidence_drift_check": "passed",
+                  "python_compileall": "passed",
+                  "upstream_kubuntu_workflow": "passed",
+                  "zip_integrity": "passed",
+                  "zip_content_hashes": "passed",
+              },
+          }
+          Path(os.environ["RUNNER_TEMP"], "VERIFIED_SOURCE_ARTIFACT.json").write_text(
+              json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          PY
+          echo "archive=$archive" >> "$GITHUB_ENV"
+
+      - name: Upload verified full project artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: verified-full-source-${{ env.VERIFIED_SHA }}
+          path: |
+            ${{ runner.temp }}/${{ env.archive }}
+            ${{ runner.temp }}/${{ env.archive }}.sha256
+            ${{ runner.temp }}/ARTIFACT_CONTENTS.json
+            ${{ runner.temp }}/VERIFIED_SOURCE_ARTIFACT.json
+            ${{ runner.temp }}/release-manifest-check.json
+          if-no-files-found: error
+          retention-days: 30
