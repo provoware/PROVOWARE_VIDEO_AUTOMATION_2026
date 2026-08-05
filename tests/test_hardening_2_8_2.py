@@ -107,11 +107,13 @@ class RunnerTerminalEventTests(unittest.TestCase):
             with patch.object(runner, "_run_job", side_effect=RuntimeError("boom")):
                 runner._run_batch([job], BatchOptions(output_dir=Path(tmp)))
             names = [name for name, _ in events]
-            self.assertIn("batch_failed_internal", names)
+            self.assertIn("job_failed_internal", names)
+            self.assertNotIn("batch_failed_internal", names)
             self.assertEqual(names[-1], "batch_finished")
             final = events[-1][1]
-            self.assertEqual(final["terminal_event"], "batch_failed_internal")
+            self.assertEqual(final["terminal_event"], "batch_completed_with_internal_failures")
             self.assertEqual(final["failures"], 1)
+            self.assertEqual(final["unprocessed"], 0)
 
 
 class ArchiveJournalTests(unittest.TestCase):
