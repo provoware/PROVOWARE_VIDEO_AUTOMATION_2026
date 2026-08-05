@@ -15,6 +15,7 @@ from .job_journal import BatchJournal
 from .models import BatchOptions, JobResult, PairJob
 from .naming import OutputReservation, release_output_reservations, reserve_output_targets
 from .quick_modes import fallback_options, mode_spec
+from .retry_queue import DEFAULT_MAX_ATTEMPTS, DEFAULT_MAX_ENTRIES, RetryQueueStore
 from .runner_process import ProcessExecution
 from .verification import verify_output
 
@@ -66,11 +67,26 @@ def terminate_process_group(
 
 
 class BatchRunner:
-    def __init__(self, callback: EventCallback, *, max_consecutive_internal_failures: int = 2) -> None:
+    def __init__(
+        self,
+        callback: EventCallback,
+        *,
+        max_consecutive_internal_failures: int = 2,
+        max_retry_attempts: int = DEFAULT_MAX_ATTEMPTS,
+        max_retry_entries: int = DEFAULT_MAX_ENTRIES,
+        retry_queue_path: Path | None = None,
+    ) -> None:
         if max_consecutive_internal_failures < 1:
             raise ValueError("Die interne Fehlerschwelle muss mindestens eins betragen.")
+        if max_retry_attempts < 1:
+            raise ValueError("Die Wiederholungsgrenze muss mindestens eins betragen.")
+        if max_retry_entries < 1:
+            raise ValueError("Die Wiederanlaufliste muss mindestens einen Eintrag erlauben.")
         self.callback = callback
         self.max_consecutive_internal_failures = max_consecutive_internal_failures
+        self.max_retry_attempts = max_retry_attempts
+        self.max_retry_entries = max_retry_entries
+        self.retry_queue_path = Path(retry_queue_path) if retry_queue_path is not None else None
         self._cancel = threading.Event()
         self._process: subprocess.Popen[str] | None = None
         self._thread: threading.Thread | None = None
@@ -78,6 +94,7 @@ class BatchRunner:
         self._callback_errors: list[str] = []
         self.operation_id = ""
         self._journal: BatchJournal | None = None
+        self._retry_queue: RetryQueueStore | None = None
 
     @property
     def running(self) -> bool:
@@ -89,6 +106,7 @@ class BatchRunner:
         self._cancel.clear()
         self._callback_errors.clear()
         self.operation_id = uuid.uuid4().hex[:16]
+        self._prepare_retry_queue()
         try:
             self._reservations = reserve_output_targets(job.output for job in jobs)
             self._journal = BatchJournal(self.operation_id, jobs, options)
@@ -135,6 +153,89 @@ class BatchRunner:
             self.callback(name, payload)
         except Exception as exc:
             self._remember_internal_notice(f"Callbackfehler: {type(exc).__name__}: {exc}")
+
+    def _prepare_retry_queue(self) -> None:
+        try:
+            self._retry_queue = RetryQueueStore(
+                self.retry_queue_path,
+                max_entries=self.max_retry_entries,
+                max_attempts=self.max_retry_attempts,
+            )
+        except Exception as exc:
+            self._retry_queue = None
+            self._remember_internal_notice(
+                f"Wiederanlaufliste konnte nicht geöffnet werden: {type(exc).__name__}: {exc}"
+            )
+
+    def _retry_queue_summary(self) -> dict:
+        queue = self._retry_queue
+        if queue is None:
+            return {
+                "available": False,
+                "total": 0,
+                "retryable": 0,
+                "blocked": 0,
+                "max_entries": self.max_retry_entries,
+                "max_attempts": self.max_retry_attempts,
+            }
+        return {"available": True, **queue.summary().as_payload()}
+
+    def _emit_retry_queue_update(self, *, entry: dict | None = None) -> None:
+        self._emit(
+            "retry_queue_updated",
+            entry=entry or {},
+            summary=self._retry_queue_summary(),
+        )
+
+    def _queue_failure(self, result: JobResult, *, protection: str, failure_kind: str) -> None:
+        queue = self._retry_queue
+        if queue is None:
+            return
+        try:
+            entry = queue.record_failure(
+                result,
+                operation_id=self.operation_id or "general",
+                protection=protection,
+                failure_kind=failure_kind,
+            )
+        except Exception as exc:
+            message = f"Wiederanlaufliste konnte Fehler nicht speichern: {type(exc).__name__}: {exc}"
+            self._remember_internal_notice(message)
+            self._emit("log", level="warning", message=message)
+            return
+        self._emit_retry_queue_update(entry=entry)
+
+    def _queue_success(self, job: PairJob) -> None:
+        queue = self._retry_queue
+        if queue is None:
+            return
+        try:
+            changed = queue.record_success(job)
+        except Exception as exc:
+            message = f"Wiederanlaufliste konnte Erfolg nicht übernehmen: {type(exc).__name__}: {exc}"
+            self._remember_internal_notice(message)
+            self._emit("log", level="warning", message=message)
+            return
+        if changed:
+            self._emit_retry_queue_update()
+
+    def _queue_not_started(self, job: PairJob, *, reason: str, protection: str) -> None:
+        queue = self._retry_queue
+        if queue is None:
+            return
+        try:
+            entry = queue.record_not_started(
+                job,
+                operation_id=self.operation_id or "general",
+                reason=reason,
+                protection=protection,
+            )
+        except Exception as exc:
+            message = f"Wiederanlaufliste konnte offenen Auftrag nicht speichern: {type(exc).__name__}: {exc}"
+            self._remember_internal_notice(message)
+            self._emit("log", level="warning", message=message)
+            return
+        self._emit_retry_queue_update(entry=entry)
 
     def _journal_call(self, method: str, *args) -> bool:
         journal = self._journal
@@ -196,12 +297,15 @@ class BatchRunner:
         results: list[JobResult] = []
         internal_error = ""
         terminal_event = "batch_finished"
+        stop_reason = ""
+        stop_protection = "Originaldateien und bereits abgeschlossene Ausgaben bleiben unverändert."
         consecutive_internal_failures = 0
         try:
             self._emit("batch_started", total=len(jobs))
             for position, job in enumerate(jobs, start=1):
                 if self._cancel.is_set():
                     terminal_event = "batch_cancelled"
+                    stop_reason = "Der Stapel wurde vor diesem Auftrag kontrolliert abgebrochen."
                     break
                 self._journal_call("mark_started", job.index)
                 try:
@@ -211,6 +315,7 @@ class BatchRunner:
                     result, internal_error, recovered, protection = self._internal_job_failure(job, exc)
                     results.append(result)
                     self._journal_call("mark_finished", result)
+                    self._queue_failure(result, protection=protection, failure_kind="internal")
                     continue_allowed = (
                         recovered
                         and consecutive_internal_failures < self.max_consecutive_internal_failures
@@ -231,7 +336,7 @@ class BatchRunner:
                     self._emit("job_finished", result=result, position=position, total=len(jobs))
                     if not continue_allowed:
                         terminal_event = "batch_failed_internal"
-                        reason = (
+                        stop_reason = (
                             "Der Prozesszustand konnte nicht sicher bereinigt werden."
                             if not recovered
                             else (
@@ -239,12 +344,13 @@ class BatchRunner:
                                 "aufeinanderfolgenden internen Fehlern wurde erreicht."
                             )
                         )
+                        stop_protection = protection
                         self._emit(
                             "batch_failed_internal",
                             job=job,
                             position=position,
                             total=len(jobs),
-                            message=f"{result.message} {reason}",
+                            message=f"{result.message} {stop_reason}",
                             traceback=internal_error,
                             protection=protection,
                         )
@@ -263,15 +369,28 @@ class BatchRunner:
                 consecutive_internal_failures = 0
                 results.append(result)
                 self._journal_call("mark_finished", result)
+                if result.success:
+                    self._queue_success(result.job)
+                else:
+                    self._queue_failure(
+                        result,
+                        protection=(
+                            "Originalmedien blieben unverändert. Eine unvollständige Ausgabe wird beim "
+                            "Wiederanlauf neu reserviert und nicht überschrieben."
+                        ),
+                        failure_kind="processing",
+                    )
                 self._emit("job_finished", result=result, position=position, total=len(jobs))
         except Exception as exc:
             terminal_event = "batch_failed_internal"
             internal_error = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))[-16_000:]
+            stop_reason = f"Interner Stapelfehler: {type(exc).__name__}: {exc}"
+            stop_protection = "Reservierungen und laufende Prozesse werden im Abschlussblock bereinigt."
             self._emit(
                 "batch_failed_internal",
-                message=f"Interner Stapelfehler: {type(exc).__name__}: {exc}",
+                message=stop_reason,
                 traceback=internal_error,
-                protection="Reservierungen und laufende Prozesse werden im Abschlussblock bereinigt.",
+                protection=stop_protection,
             )
         finally:
             process = self._process
@@ -283,6 +402,16 @@ class BatchRunner:
             cancelled = self._cancel.is_set()
             if cancelled:
                 terminal_event = "batch_cancelled"
+                stop_reason = stop_reason or "Der Stapel wurde vom Nutzer kontrolliert abgebrochen."
+            pending_jobs = jobs[len(results) :]
+            if pending_jobs:
+                reason = stop_reason or "Der Auftrag wurde wegen eines vorherigen Schutzstopps nicht gestartet."
+                for pending in pending_jobs:
+                    self._queue_not_started(
+                        pending,
+                        reason=reason,
+                        protection=stop_protection,
+                    )
             successes = sum(result.success for result in results)
             if self._journal is not None:
                 try:
@@ -309,6 +438,7 @@ class BatchRunner:
                 results=results,
                 internal_error=internal_error,
                 callback_errors=tuple(self._callback_errors),
+                retry_queue=self._retry_queue_summary(),
             )
 
     def _run_job(self, job: PairJob, position: int, total: int, options: BatchOptions) -> JobResult:
