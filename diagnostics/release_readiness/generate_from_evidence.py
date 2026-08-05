@@ -122,7 +122,7 @@ def render_development(value: Mapping[str, Any]) -> dict[str, Any]:
         "version": str(product["version"]),
         "progress_percent": int(progress["percent"]),
         "completed": int(progress["completed"]),
-        "open": int(progress.get("open", 0))
+        "open": int(progress.get("open", 0)),
         "current_todo": str(progress["current_todo"]),
         "status": "yellow" if blockers else "green",
         "stable_ready": not blockers,
@@ -218,7 +218,7 @@ def render_build(value: Mapping[str, Any]) -> dict[str, Any]:
             "workflow_run_id": int(matrix["workflow_run_id"]),
             "verified_commit": str(matrix["verified_commit"]),
             "scope_note": str(matrix["scope_note"]),
-      },
+        },
         "stable_blockers": stable_blockers(value),
         "stable_ready": bool(value["stable_ready"]),
         "status": "passed",
