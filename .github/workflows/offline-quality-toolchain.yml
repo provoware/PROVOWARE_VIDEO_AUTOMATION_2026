@@ -1,6 +1,9 @@
 name: Exact offline quality toolchain
 
 on:
+  push:
+    branches:
+      - quality/offline-toolchain-gates-20260805
   pull_request:
     branches:
       - main
