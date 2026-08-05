@@ -10,3 +10,21 @@ __pycache__/
 .videobatch-venv/
 build/
 dist/
+
+# Generated CI evidence belongs in GitHub Actions artifacts, not source control.
+/CI_PACKAGE_METRICS.json
+/FFMPEG_TOOLCHAIN.json
+/RELEASE_LITERAL_HYGIENE.json
+/KUBUNTU_CACHE_STATUS.json
+/KUBUNTU_CACHE_STATUS.md
+/KUBUNTU_MATRIX_SUMMARY.json
+/KUBUNTU_MATRIX_SUMMARY.md
+/KUBUNTU_PR_MATRIX_SUMMARY.json
+/KUBUNTU_PR_MATRIX_SUMMARY.md
+/cache-inventory.json
+/matrix-status-*.json
+/matrix-status/
+/matrix-logs/
+/warmup-metrics/
+/release-audit/
+/dist-matrix-*/
