@@ -5,23 +5,10 @@ import hashlib
 import json
 from pathlib import Path, PurePosixPath
 
+from release_file_contract import included_release_file
+
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "RELEASE_MANIFEST.json"
-EXCLUDE_PARTS = {"__pycache__", ".git", ".pytest_cache", ".venv", ".quality-venv", ".videobatch-venv", ".quality-toolchain-backups", "build", "dist", "visual_actual", "quarantine", "keys", "diagnostics", "actual", "diff"}
-EXCLUDE_SUFFIXES = {".pyc", ".pyo", ".pvak", ".coverage"}
-EXCLUDE_FILES = {"RELEASE_MANIFEST.json", "STABLE_UPDATE_MANIFEST.json", "modern_visual_contact_sheet.png", ".coverage"}
-
-
-def included(path: Path) -> bool:
-    rel = path.relative_to(ROOT)
-    return (
-        path.is_file()
-        and not path.is_symlink()
-        and rel.as_posix() not in EXCLUDE_FILES
-        and not path.name.startswith(".coverage.")
-        and path.suffix not in EXCLUDE_SUFFIXES
-        and not any(part in EXCLUDE_PARTS for part in rel.parts)
-    )
 
 
 def main() -> int:
@@ -47,7 +34,11 @@ def main() -> int:
         expected_mode = str(item.get("mode", ""))
         if expected_mode and oct(path.stat().st_mode & 0o777) != expected_mode:
             errors.append(f"Modus: {rel}")
-    actual = {path.relative_to(ROOT).as_posix() for path in ROOT.rglob("*") if included(path)}
+    actual = {
+        path.relative_to(ROOT).as_posix()
+        for path in ROOT.rglob("*")
+        if included_release_file(ROOT, path)
+    }
     for rel in sorted(actual - listed):
         errors.append(f"nicht manifestiert: {rel}")
     for rel in sorted(listed - actual):
@@ -59,7 +50,10 @@ def main() -> int:
         for error in errors[:100]:
             print(f"✕ {error}")
         return 1
-    print(f"RELEASE-MANIFEST BESTANDEN · {len(listed)} Dateien · keine unregistrierten Nutzdateien")
+    print(
+        f"RELEASE-MANIFEST BESTANDEN · {len(listed)} Dateien · "
+        "keine unregistrierten Nutzdateien"
+    )
     return 0
 
 
