@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "status": "unknown",
+  "source": "manual or CI-generated snapshot",
+  "checks": [
+    {
+      "name": "kubuntu-pr-matrix",
+      "status": "unknown",
+      "raw_status": "not supplied",
+      "url": "",
+      "kind": "workflow-run"
+    }
+  ]
+}
