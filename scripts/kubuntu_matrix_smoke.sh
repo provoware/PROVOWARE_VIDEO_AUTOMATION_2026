@@ -8,6 +8,9 @@ python3 -m pytest -q
 bash "$ROOT/videobatch.sh" fault-lab
 python3 "$ROOT/scripts/validate_version_contract.py"
 python3 "$ROOT/scripts/validate_text_resources.py"
+python3 "$ROOT/scripts/validate_release_file_status.py"
+python3 "$ROOT/scripts/render_release_docs.py" --check
+python3 "$ROOT/scripts/validate_release_manifest.py"
 ffmpeg -hide_banner -loglevel error -f lavfi -i sine=frequency=880:duration=0.2 -c:a aac -f null -
 
 EVIDENCE_STAGE="$ROOT/dist-matrix-live-evidence"
