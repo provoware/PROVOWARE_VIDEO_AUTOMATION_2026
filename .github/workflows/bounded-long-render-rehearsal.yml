@@ -1,0 +1,177 @@
+name: Bounded resumable long-render rehearsal
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'src/videobatch_fast/long_render_contract.py'
+      - 'scripts/run_long_render_acceptance.py'
+      - 'scripts/build_long_render_contract.py'
+      - 'tests/test_long_render_contract.py'
+      - '.github/workflows/bounded-long-render-rehearsal.yml'
+      - 'docs/LONG_RENDER_2.8.3-rc24.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONPATH: ${{ github.workspace }}/src
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  rehearsal:
+    name: Controlled checkpoint and resume
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out candidate
+        uses: actions/checkout@v4
+
+      - name: Install deterministic FFmpeg runtime
+        run: |
+          set -Eeuo pipefail
+          sudo env DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=5 update
+          sudo env DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=5 install -y --no-install-recommends ffmpeg
+          ffmpeg -version | head -1
+          ffprobe -version | head -1
+
+      - name: Generate fixed rehearsal media and bound contract
+        run: |
+          set -Eeuo pipefail
+          mkdir -p rehearsal/inputs rehearsal/target
+          colors=(red blue green yellow magenta cyan orange purple pink brown gray white)
+          for index in $(seq 1 12); do
+            color="${colors[$((index - 1))]}"
+            ffmpeg -v error -y -f lavfi -i "color=c=${color}:s=640x360:d=0.1" \
+              -frames:v 1 "rehearsal/inputs/image-$(printf '%02d' "$index").png"
+          done
+          for index in $(seq 1 6); do
+            frequency=$((180 + index * 55))
+            ffmpeg -v error -y -f lavfi -i "sine=frequency=${frequency}:duration=4" \
+              -c:a pcm_s16le "rehearsal/inputs/audio-$(printf '%02d' "$index").wav"
+          done
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('rehearsal').resolve()
+          inputs = root / 'inputs'
+          jobs = []
+          for index in range(1, 7):
+              jobs.append({
+                  'id': f'{index:03d}',
+                  'audio': str(inputs / f'audio-{index:02d}.wav'),
+                  'media': [
+                      str(inputs / f'image-{index * 2 - 1:02d}.png'),
+                      str(inputs / f'image-{index * 2:02d}.png'),
+                  ],
+                  'output': f'long-render-{index:03d}.mp4',
+              })
+          contract = {
+              'schema_version': 1,
+              'candidate': '2.8.3-rc24',
+              'target_dir': str(root / 'target'),
+              'limits': {
+                  'cpu_percent': 50,
+                  'memory_mb': 1024,
+                  'invocation_timeout_seconds': 600,
+                  'total_timeout_seconds': 1200,
+                  'heartbeat_seconds': 5,
+              },
+              'target': {
+                  'require_external': True,
+                  'required_filesystem': 'ext4',
+                  'max_write_mib_s': 35.0,
+                  'min_free_gib': 500.0,
+                  'require_hard_limits': True,
+              },
+              'options': {
+                  'resolution': 'Original',
+                  'profile': 'turbo',
+                  'fps': 12,
+                  'max_threads': 1,
+                  'audio_bitrate': '128k',
+                  'slideshow_transition': 'none',
+              },
+              'jobs': jobs,
+          }
+          (root / 'contract.json').write_text(json.dumps(contract, indent=2) + '\n', encoding='utf-8')
+          PY
+
+      - name: Stop at a durable checkpoint
+        run: |
+          set +e
+          python3 scripts/run_long_render_acceptance.py \
+            --contract rehearsal/contract.json \
+            --allow-rehearsal-target \
+            --allow-soft-limits \
+            --checkpoint-stop-after 2 \
+            | tee rehearsal/checkpoint-run.json
+          result=${PIPESTATUS[0]}
+          set -e
+          test "$result" = '75'
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          state = json.loads(Path('rehearsal/target/.provoware-long-render/state.json').read_text())
+          assert state['state'] == 'paused'
+          assert [item['state'] for item in state['jobs']].count('completed') == 2
+          assert state['terminal_event'] == ''
+          PY
+
+      - name: Resume the identical contract and complete
+        run: |
+          set -Eeuo pipefail
+          python3 scripts/run_long_render_acceptance.py \
+            --contract rehearsal/contract.json \
+            --resume \
+            --allow-rehearsal-target \
+            --allow-soft-limits \
+            | tee rehearsal/resume-run.json
+
+      - name: Verify hashes, evidence and cleanup
+        run: |
+          set -Eeuo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('rehearsal/target/.provoware-long-render')
+          state = json.loads((root / 'state.json').read_text())
+          report = json.loads((root / 'final-report.json').read_text())
+          assert state['state'] == 'completed'
+          assert state['terminal_event'] == 'run_completed'
+          assert state['resume_count'] == 1
+          assert len(state['output_manifest']['entries']) == 6
+          assert report['rehearsal_only'] is True
+          assert report['target']['resource_mode'] == 'soft-rehearsal'
+          assert len(list((root / 'heartbeats').glob('heartbeat-*.json'))) >= 3
+          assert not list(Path('rehearsal/target').glob('.*.longrender.lock'))
+          assert not list(Path('rehearsal/target').glob('*.partial'))
+          terminal = [item for item in state['events'] if item['name'] == 'run_completed']
+          assert len(terminal) == 1
+          for entry in state['input_manifest']['entries']:
+              path = Path(entry['path'])
+              assert path.is_file()
+              assert path.stat().st_size == entry['size']
+          for entry in state['output_manifest']['entries']:
+              assert Path(entry['path']).is_file()
+              assert len(entry['sha256']) == 64
+          print('LONG_RENDER_REHEARSAL_OK')
+          PY
+
+      - name: Upload bounded rehearsal evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: bounded-long-render-rehearsal
+          path: |
+            rehearsal/contract.json
+            rehearsal/checkpoint-run.json
+            rehearsal/resume-run.json
+            rehearsal/target/.provoware-long-render/
+          if-no-files-found: error
+          retention-days: 30
