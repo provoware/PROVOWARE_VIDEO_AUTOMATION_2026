@@ -603,7 +603,7 @@ class UiWorkspaceGridMixin:
             button.grid(row=index, column=0, sticky="ew", padx=3, pady=2)
             grid.columnconfigure(0, weight=1)
             self.mode_buttons[key] = button
-            Tooltip(button, f"{spec.description}\nGeschwindigkeit: {spec.speed_class}")
+            Tooltip(button, text("help.quick_mode", description=spec.description, speed=spec.speed_class))
         ttk.Label(tab, textvariable=self.quick_mode_note, style="Status.TLabel", wraplength=420).pack(fill="x", pady=(5, 0))
         return tab
 

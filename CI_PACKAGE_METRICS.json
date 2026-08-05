@@ -1,0 +1,33 @@
+{
+  "schema_version": 3,
+  "mode": "matrix",
+  "os": "ubuntu-24.04",
+  "session": "x11",
+  "cache_week": "2026-W32",
+  "apt_cache_exact_hit": true,
+  "apt_cache_restored": true,
+  "pip_cache_exact_hit": true,
+  "pip_cache_restored": true,
+  "requested_packages": 8,
+  "planned_new_packages": 441,
+  "download_summary": "0 B/288 MB",
+  "apt_seconds": 42,
+  "pip_seconds": 9,
+  "apt_cache_before_bytes": 287960916,
+  "apt_cache_after_bytes": 287960916,
+  "pip_cache_before_bytes": 47242149,
+  "pip_cache_after_bytes": 47240124,
+  "apt_update_success": true,
+  "apt_simulation_success": true,
+  "apt_success": true,
+  "pip_success": true,
+  "verification_success": true,
+  "verified_tools": [
+    "python3",
+    "ffmpeg",
+    "ffprobe",
+    "Xvfb",
+    "weston",
+    "plasma-workspace"
+  ]
+}

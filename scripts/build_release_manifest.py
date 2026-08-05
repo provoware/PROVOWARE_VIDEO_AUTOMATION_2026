@@ -10,7 +10,7 @@ from videobatch_fast.visual_approval import approval_fingerprint, inspection_man
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "RELEASE_MANIFEST.json"
-EXCLUDE_PARTS = {"__pycache__", ".git", ".pytest_cache", ".venv", ".quality-venv", ".videobatch-venv", ".quality-toolchain-backups", "build", "dist", "visual_actual", "quarantine", "keys", "diagnostics", "actual", "diff"}
+EXCLUDE_PARTS = {"__pycache__", ".git", ".pytest_cache", ".venv", ".quality-venv", ".videobatch-venv", ".quality-toolchain-backups", "build", "dist", "visual_actual", "quarantine", "keys", "diagnostics", "actual", "diff", "archive"}
 EXCLUDE_SUFFIXES = {".pyc", ".pyo", ".pvak", ".coverage"}
 EXCLUDE_FILES = {"RELEASE_MANIFEST.json", "STABLE_UPDATE_MANIFEST.json", "modern_visual_contact_sheet.png", ".coverage"}
 

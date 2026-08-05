@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from tkinter import BOTH, LEFT, RIGHT, X, Button, Canvas, Label, StringVar, Text, Toplevel, ttk
+from tkinter import BOTH, LEFT, RIGHT, X, Button, Canvas, Label, StringVar, TclError, Text, Toplevel, ttk
 from typing import Callable
 
 from .error_handling import ErrorDefinition
@@ -8,28 +8,86 @@ from .text_resources import text
 
 
 class Tooltip:
-    def __init__(self, widget, message: str) -> None:
-        self.widget = widget
-        self.message = message
-        self.window = None
-        widget.bind("<Enter>", self._show, add=True)
-        widget.bind("<Leave>", self._hide, add=True)
-        widget.bind("<FocusIn>", self._show, add=True)
-        widget.bind("<FocusOut>", self._hide, add=True)
+    """Accessible delayed tooltip that never blocks or escapes the visible screen."""
 
-    def _show(self, _event=None) -> None:
+    def __init__(
+        self,
+        widget,
+        message: str,
+        *,
+        delay_ms: int = 350,
+        wraplength: int = 420,
+    ) -> None:
+        self.widget = widget
+        self.message = message.strip()
+        self.delay_ms = max(0, int(delay_ms))
+        self.wraplength = max(180, int(wraplength))
+        self.window = None
+        self._after_id = None
+        widget.bind("<Enter>", self._schedule, add=True)
+        widget.bind("<Leave>", self._hide, add=True)
+        widget.bind("<FocusIn>", self._schedule, add=True)
+        widget.bind("<FocusOut>", self._hide, add=True)
+        widget.bind("<Destroy>", self._hide, add=True)
+
+    def _schedule(self, _event=None) -> None:
+        if self.window or self._after_id is not None or not self.message:
+            return
+        try:
+            self._after_id = self.widget.after(self.delay_ms, self._show)
+        except TclError:
+            self._after_id = None
+
+    def _show(self) -> None:
+        self._after_id = None
         if self.window or not self.message:
             return
-        self.window = Toplevel(self.widget)
-        self.window.wm_overrideredirect(True)
-        x = self.widget.winfo_rootx() + 12
-        y = self.widget.winfo_rooty() + self.widget.winfo_height() + 6
-        self.window.wm_geometry(f"+{x}+{y}")
-        Label(self.window, text=self.message, justify="left", background="#fff7cf", foreground="#1a1a1a", relief="solid", borderwidth=1, padx=8, pady=6, wraplength=420).pack()
+        try:
+            if not self.widget.winfo_exists():
+                return
+            window = Toplevel(self.widget)
+            window.wm_overrideredirect(True)
+            label = Label(
+                window,
+                text=self.message,
+                justify="left",
+                background="#fff7cf",
+                foreground="#1a1a1a",
+                relief="solid",
+                borderwidth=1,
+                padx=8,
+                pady=6,
+                wraplength=self.wraplength,
+            )
+            label.pack()
+            window.update_idletasks()
+            screen_width = max(1, self.widget.winfo_screenwidth())
+            screen_height = max(1, self.widget.winfo_screenheight())
+            width = window.winfo_reqwidth()
+            height = window.winfo_reqheight()
+            x = self.widget.winfo_rootx() + 12
+            y = self.widget.winfo_rooty() + self.widget.winfo_height() + 6
+            if x + width > screen_width - 8:
+                x = max(8, screen_width - width - 8)
+            if y + height > screen_height - 8:
+                y = max(8, self.widget.winfo_rooty() - height - 6)
+            window.wm_geometry(f"+{x}+{y}")
+            self.window = window
+        except TclError:
+            self.window = None
 
     def _hide(self, _event=None) -> None:
-        if self.window:
-            self.window.destroy()
+        if self._after_id is not None:
+            try:
+                self.widget.after_cancel(self._after_id)
+            except TclError:
+                pass
+            self._after_id = None
+        if self.window is not None:
+            try:
+                self.window.destroy()
+            except TclError:
+                pass
             self.window = None
 
 
@@ -203,14 +261,26 @@ class HelpCenterDialog:
 
         buttons = ttk.Frame(outer)
         buttons.pack(fill=X, pady=(10, 0))
-        ttk.Button(buttons, text=text("help_center.refresh"), command=self._refresh).pack(side=LEFT)
+        refresh_button = ttk.Button(buttons, text=text("help_center.refresh"), command=self._refresh)
+        refresh_button.pack(side=LEFT)
+        Tooltip(refresh_button, text("help_center.tooltip.refresh"))
         self.copy_label = StringVar(value=text("help_center.copy_status"))
-        ttk.Button(buttons, textvariable=self.copy_label, command=self._copy_status).pack(side=LEFT, padx=(6, 0))
-        ttk.Button(buttons, text=text("help_center.logs"), command=on_open_logs).pack(side=LEFT, padx=(6, 0))
-        ttk.Button(buttons, text=text("help_center.manual"), command=on_open_manual).pack(side=LEFT, padx=(6, 0))
+        copy_button = ttk.Button(buttons, textvariable=self.copy_label, command=self._copy_status)
+        copy_button.pack(side=LEFT, padx=(6, 0))
+        Tooltip(copy_button, text("help_center.tooltip.copy"))
+        logs_button = ttk.Button(buttons, text=text("help_center.logs"), command=on_open_logs)
+        logs_button.pack(side=LEFT, padx=(6, 0))
+        Tooltip(logs_button, text("help_center.tooltip.logs"))
+        manual_button = ttk.Button(buttons, text=text("help_center.manual"), command=on_open_manual)
+        manual_button.pack(side=LEFT, padx=(6, 0))
+        Tooltip(manual_button, text("help_center.tooltip.manual"))
         if on_run_fault_lab is not None:
-            ttk.Button(buttons, text=text("help_center.fault_lab"), command=on_run_fault_lab).pack(side=LEFT, padx=(6, 0))
-        ttk.Button(buttons, text=text("help_center.close"), style="Accent.TButton", command=self.window.destroy).pack(side=RIGHT)
+            fault_button = ttk.Button(buttons, text=text("help_center.fault_lab"), command=on_run_fault_lab)
+            fault_button.pack(side=LEFT, padx=(6, 0))
+            Tooltip(fault_button, text("help_center.tooltip.fault_lab"))
+        close_button = ttk.Button(buttons, text=text("help_center.close"), style="Accent.TButton", command=self.window.destroy)
+        close_button.pack(side=RIGHT)
+        Tooltip(close_button, text("help_center.tooltip.close"))
         self.window.bind("<Escape>", lambda _event: self.window.destroy())
 
     @staticmethod

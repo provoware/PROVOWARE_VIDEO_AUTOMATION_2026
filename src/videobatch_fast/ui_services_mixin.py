@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import time
 from dataclasses import asdict
@@ -37,20 +38,39 @@ class UiServicesMixin:
         except Exception as exc:
             return text("help_center.blocked", detail=str(exc))
 
+    def _open_local_help_target(self, target: Path) -> None:
+        opener = shutil.which("xdg-open")
+        if not opener:
+            messagebox.showerror(
+                text("help_center.title"),
+                text("help_center.open_missing", path=str(target)),
+                parent=self.root,
+            )
+            return
+        try:
+            subprocess.Popen(
+                [opener, str(target)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        except OSError as exc:
+            messagebox.showerror(
+                text("help_center.title"),
+                text("help_center.open_failed", detail=str(exc), path=str(target)),
+                parent=self.root,
+            )
+
     def _open_help_logs(self) -> None:
         target = state_dir() / "logs"
         target.mkdir(parents=True, exist_ok=True)
-        try:
-            subprocess.Popen(["xdg-open", str(target)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except OSError as exc:
-            messagebox.showerror(text("help_center.title"), str(exc), parent=self.root)
+        self._open_local_help_target(target)
 
     def _open_help_manual(self) -> None:
-        target = Path(__file__).resolve().parents[2] / "README.md"
-        try:
-            subprocess.Popen(["xdg-open", str(target)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except OSError as exc:
-            messagebox.showerror(text("help_center.title"), str(exc), parent=self.root)
+        root = Path(__file__).resolve().parents[2]
+        target = root / "START_HIER_save_.md"
+        if not target.is_file():
+            target = root / "README.md"
+        self._open_local_help_target(target)
 
     def _show_help_center(self) -> None:
         HelpCenterDialog(

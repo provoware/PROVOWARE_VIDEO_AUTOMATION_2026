@@ -18,7 +18,7 @@ liegen ausschließlich in XDG-Benutzerpfaden.
 - `README.md`: Nutzerstart
 - `STATUS.md`: aktueller Releasezustand
 - `DEVELOPMENT_STATUS.json`: maschinenlesbarer Fortschritt
-- `TEST_REPORT.md`: geprüfte Ergebnisse
+- `TEST_REPORT_save_.md`: geprüfte Ergebnisse
 
 Keine Python-Datei darf 700 Zeilen überschreiten. UI-freie Logik bleibt von Tkinter
 getrennt. Hintergrundarbeiter dürfen Tk-Widgets niemals direkt verändern.
@@ -136,7 +136,7 @@ SemVer:
 - RC-Suffix: noch nicht Stable-freigegeben
 
 Bei jeder Iteration müssen mindestens `VERSION.json`, `manifest.json`,
-`CHANGELOG.md`, `STATUS.md`, `TEST_REPORT.md` und `DEVELOPMENT_STATUS.json`
+`CHANGELOG.md`, `STATUS.md`, `TEST_REPORT_save_.md` und `DEVELOPMENT_STATUS.json`
 konsistent sein.
 
 ## 10. Stable-Grenze
@@ -145,3 +145,8 @@ Ein Release Candidate darf nicht als Stable bezeichnet werden, solange externe
 Qualitätswerkzeuge, physische KDE-X11-/Wayland-Abnahme oder vorgeschriebene
 Langzeittests offen sind. Automatisierte Xvfb-Prüfungen ersetzen keine physische
 Desktopfreigabe.
+
+
+## Release-Dateinamen
+
+Der Zusatz `_save_` ist ausschließlich für eigenständige freigabefähige Nutzer- und Releaseunterlagen vorgesehen. Importierte Module, Skripte, CI-Dateien, Manifeste und kanonische Einstiegspunkte werden nicht umbenannt. Der Vertrag wird durch `RELEASE_FILE_STATUS.json` und `scripts/validate_release_file_status.py` geprüft.

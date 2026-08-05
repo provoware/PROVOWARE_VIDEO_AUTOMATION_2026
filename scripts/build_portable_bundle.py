@@ -22,7 +22,7 @@ from portable_runtime import runtime_smoke_test, sha256_file, write_manifest
 RUNTIME_DISTRIBUTIONS = ("cryptography", "Pillow", "cffi", "pycparser")
 EXCLUDE_PROJECT = {
     ".coverage", ".git", ".github", ".pytest_cache", ".mypy_cache", ".ruff_cache", "diagnostics",
-    "dist", "toolchain_wheelhouse", "visual_inspection/captures", "tests/baselines",
+    "dist", "toolchain_wheelhouse", "visual_inspection/captures", "tests/baselines", "docs/archive",
 }
 
 

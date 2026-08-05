@@ -191,8 +191,11 @@ def test_media_dialog_exposes_cache_diagnostics_without_audio_clutter() -> None:
         encoding="utf-8"
     )
 
-    assert 'text="Vorschau-Cache"' in layout
+    assert 'text("preview_cache.button")' in layout
+    catalog = (ROOT / "resources/texts/ui-media.json").read_text(encoding="utf-8")
+    assert '"preview_cache.button": "Vorschau-Cache"' in catalog
     assert "if not dialog.audio" in layout
-    assert 'text="Status aktualisieren"' in layout
-    assert 'text="Vorschau-Cache leeren"' in layout
-    assert "Originalmedien" in layout
+    assert 'text("preview_cache.refresh")' in layout
+    assert 'text("preview_cache.clear")' in layout
+    assert '"preview_cache.intro"' in catalog
+    assert "Originalmedien" in catalog

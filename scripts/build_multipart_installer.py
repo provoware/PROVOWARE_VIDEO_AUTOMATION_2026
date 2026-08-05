@@ -313,7 +313,7 @@ def main() -> int:
     for name in ("ab_installer.py", "ab_launcher.py", "ab_contract.py"):
         shutil.copy2(source_root / "scripts" / name, output / name)
         os.chmod(output / name, 0o755)
-    shutil.copy2(source_root / "AUTOINSTALLATION.md", output / "LIES_MICH_INSTALLATION.md")
+    shutil.copy2(source_root / "AUTOINSTALLATION_save_.md", output / "LIES_MICH_INSTALLATION.md")
     report = {
         "status": "passed",
         "version": options.version,
