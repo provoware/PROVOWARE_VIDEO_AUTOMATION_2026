@@ -6,13 +6,13 @@
   "progress_percent": 93,
   "completed": 28,
   "open": 2,
-  "current_todo": "Physische KDE-Abnahme und Langzeitrender bleiben offen",
-  "status": "yellow",
+  "current_todo": "Exakt gepinnte Offline-Qualitätswerkzeugkette vollständig bestanden",
+  "status": "green",
   "stable_ready": false,
   "approved_quality_report": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
   "stable_blockers": [
-    "Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless",
-    "Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt"
+    "physische KDE-X11-/Wayland-Abnahme",
+    "Langzeitrender mit großer Medienauswahl und langsamem externem Ziel"
   ],
   "total": 30
 }
