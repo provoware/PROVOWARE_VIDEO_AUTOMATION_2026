@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+env:
+  BASE_SHA: b08516bb9d83a7cc4235eac8f489901b0a8c9657
+  ARCHIVE_SHA256: ad4b5e09a2f0ccf5b4816e5e7b80d78e180b560224a7d6f163534865ab23bfee
+
 jobs:
   migrate:
     runs-on: ubuntu-24.04
@@ -17,16 +21,11 @@ jobs:
         with:
           ref: agent/crash-resilience-fault-lab-20260805
           fetch-depth: 0
-      - name: Apply verified event migration atomically
+
+      - name: Verify archive and prepare candidate
         shell: bash
-        env:
-          BASE_SHA: b08516bb9d83a7cc4235eac8f489901b0a8c9657
-          ARCHIVE_SHA256: ad4b5e09a2f0ccf5b4816e5e7b80d78e180b560224a7d6f163534865ab23bfee
         run: |
           set -Eeuo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" HEAD | sort)
           expected=(
             .github/workflows/temporary-selection-event-registry-migration.yml
@@ -75,7 +74,6 @@ jobs:
           tar -xzf "$RUNNER_TEMP/patch.tar.gz" -C .
           python3 - <<'PY'
           from pathlib import Path
-
           path = Path('src/videobatch_fast/app_events.py')
           source = path.read_text(encoding='utf-8')
           old_import = 'from .event_registry import (\n    EventRegistryError,\n'
@@ -116,18 +114,28 @@ jobs:
           ffprobe -version | head -1
           python3 scripts/toolchain.py prepare --scope quality --auto-repair --quiet
           ENV_PYTHON="$(python3 scripts/toolchain.py path --scope quality --quiet)"
-          BIN="$(dirname "$ENV_PYTHON")"
-          export PYTHONPATH="$PWD/src" PYTHONDONTWRITEBYTECODE=1
-          export VIDEOBATCH_DIAGNOSTICS_DIR="$RUNNER_TEMP/diagnostics"
-          export MYPY_CACHE_DIR="$RUNNER_TEMP/mypy-cache" RUFF_CACHE_DIR="$RUNNER_TEMP/ruff-cache"
+          test -x "$ENV_PYTHON"
+          {
+            printf 'ENV_PYTHON=%s\n' "$ENV_PYTHON"
+            printf 'QUALITY_BIN=%s\n' "$(dirname "$ENV_PYTHON")"
+            printf 'PYTHONPATH=%s/src\n' "$PWD"
+            printf 'PYTHONDONTWRITEBYTECODE=1\n'
+            printf 'VIDEOBATCH_DIAGNOSTICS_DIR=%s/diagnostics\n' "$RUNNER_TEMP"
+            printf 'MYPY_CACHE_DIR=%s/mypy-cache\n' "$RUNNER_TEMP"
+            printf 'RUFF_CACHE_DIR=%s/ruff-cache\n' "$RUNNER_TEMP"
+          } >> "$GITHUB_ENV"
 
+      - name: Run typed event quality contracts
+        shell: bash
+        run: |
+          set -Eeuo pipefail
           "$ENV_PYTHON" scripts/check_event_architecture.py
           "$ENV_PYTHON" scripts/check_event_registry.py
           "$ENV_PYTHON" scripts/verify_compile_isolated.py
           "$ENV_PYTHON" scripts/validate_registries.py
           "$ENV_PYTHON" scripts/internal_quality_gate.py
-          "$BIN/ruff" check src scripts tests
-          "$BIN/mypy" src/videobatch_fast/app_events.py src/videobatch_fast/event_registry.py \
+          "$QUALITY_BIN/ruff" check src scripts tests
+          "$QUALITY_BIN/mypy" src/videobatch_fast/app_events.py src/videobatch_fast/event_registry.py \
             src/videobatch_fast/event_buffer.py src/videobatch_fast/selection_preview_events.py \
             src/videobatch_fast/selection_preview_controller.py src/videobatch_fast/runner_events.py \
             src/videobatch_fast/runner.py src/videobatch_fast/runner_process.py
@@ -137,6 +145,10 @@ jobs:
             tests/test_rc24_selected_media_crash.py tests/test_release_hardening_2_8_3_rc7.py \
             tests/test_runner_app_events.py
 
+      - name: Build manifest and publish atomic product commit
+        shell: bash
+        run: |
+          set -Eeuo pipefail
           git clean -fdx toolchain_wheelhouse
           git checkout "$BASE_SHA" -- toolchain_wheelhouse
           "$ENV_PYTHON" scripts/build_release_manifest.py
@@ -160,7 +172,9 @@ jobs:
           if any(path.startswith('matrix-logs/selection-event-registry.') for path in paths):
               raise SystemExit('Transferdatei im Manifest.')
           PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
           git diff --cached --check
           git commit -m 'Migrate selection previews and enforce event registry'
-          git push origin HEAD:agent/crash-resilience-fault-lab-20260805
+          timeout 120 git push origin HEAD:agent/crash-resilience-fault-lab-20260805
