@@ -1,0 +1,209 @@
+name: Temporary typed runner final exact quality
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/temporary-typed-runner-final-quality.yml'
+
+permissions:
+  contents: read
+
+env:
+  TARGET_SHA: 28a4921a335a9d0309106ab5dcb91df70effc8cc
+
+jobs:
+  quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - name: Check out exact corrected candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_SHA }}
+          path: candidate
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Execute exact offline quality contract
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          ROOT="$GITHUB_WORKSPACE/candidate"
+          E="$GITHUB_WORKSPACE/typed-runner-final-evidence"
+          CACHE="$E/pip-audit-cache"
+          GUARD="$RUNNER_TEMP/offline-guard"
+          export XDG_DATA_HOME="$RUNNER_TEMP/xdg-data"
+          export XDG_STATE_HOME="$RUNNER_TEMP/xdg-state"
+          export PYTHONDONTWRITEBYTECODE=1
+          mkdir -p "$E/raw" "$CACHE" "$GUARD" "$XDG_DATA_HOME" "$XDG_STATE_HOME"
+
+          run_logged() {
+            local name="$1"
+            shift
+            set +e
+            "$@" >"$E/raw/${name}.stdout.log" 2>"$E/raw/${name}.stderr.log"
+            local rc=$?
+            set -e
+            printf '%s\n' "$rc" >"$E/raw/${name}.exit"
+            cat "$E/raw/${name}.stdout.log" "$E/raw/${name}.stderr.log" >"$E/raw/${name}.combined.log"
+            return "$rc"
+          }
+
+          run_logged apt-update sudo apt-get update
+          run_logged apt-install sudo apt-get install -y python3-tk xvfb
+          dpkg-query -W -f='${Package}\t${Version}\n' python3-tk xvfb >"$E/system-packages.tsv"
+
+          cd "$ROOT"
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          test -z "$(git status --porcelain --untracked-files=no)"
+          git rev-parse HEAD >"$E/target-commit.txt"
+          git rev-parse 'HEAD^{tree}' >"$E/target-tree.txt"
+          git ls-tree -r --full-tree HEAD >"$E/target-tree-listing.txt"
+          cp RELEASE_MANIFEST.json TOOLCHAIN_CONTRACT.json requirements-quality.lock requirements.lock "$E/"
+
+          run_logged wheelhouse-build bash ./quality-toolchain.sh build
+          run_logged wheelhouse-verify bash ./quality-toolchain.sh verify
+          cp toolchain_wheelhouse/TOOLCHAIN_WHEELHOUSE_MANIFEST.json "$E/wheelhouse-manifest.json"
+          cp toolchain_wheelhouse/requirements-toolchain-resolved.lock "$E/requirements-toolchain-resolved.lock"
+          find toolchain_wheelhouse -type f -printf '%P\0' | sort -z | while IFS= read -r -d '' rel; do
+            sha256sum "toolchain_wheelhouse/$rel"
+          done >"$E/wheelhouse-files.sha256"
+
+          run_logged offline-install-first bash ./quality-toolchain.sh prepare --offline-only --replace
+          run_logged environment-gate python3 scripts/toolchain.py gate --scope quality
+          QUALITY_PYTHON="$(python3 scripts/toolchain.py path --scope quality --quiet)"
+          test -x "$QUALITY_PYTHON"
+
+          run_logged pip-audit-cache-prime "$QUALITY_PYTHON" -m pip_audit \
+            --cache-dir "$CACHE" --no-deps --disable-pip --progress-spinner off \
+            -r requirements.lock
+          find "$CACHE" -type f -printf '%P\0' | sort -z | while IFS= read -r -d '' rel; do
+            sha256sum "$CACHE/$rel"
+          done >"$E/pip-audit-cache-files.sha256"
+          test -s "$E/pip-audit-cache-files.sha256"
+
+          run_logged offline-install-final bash ./quality-toolchain.sh prepare --offline-only --replace
+          run_logged wheelhouse-final-verify bash ./quality-toolchain.sh verify
+          QUALITY_PYTHON="$(python3 scripts/toolchain.py path --scope quality --quiet)"
+          BIN="$(dirname "$QUALITY_PYTHON")"
+
+          "$QUALITY_PYTHON" - <<'PY' >"$E/installed-versions.json"
+          import importlib.metadata as md
+          import json, platform, sys
+          expected = {"ruff":"0.16.1","mypy":"2.3.0","bandit":"1.9.4","pip-audit":"2.10.1"}
+          actual = {name: md.version(name) for name in expected}
+          if actual != expected:
+              raise SystemExit(f"Version mismatch: {actual!r}")
+          print(json.dumps({"python":sys.version,"platform":platform.platform(),"packages":actual}, indent=2, sort_keys=True))
+          PY
+
+          cat >"$GUARD/sitecustomize.py" <<'PY'
+          import errno
+          import socket
+          def blocked(*_args, **_kwargs):
+              raise OSError(errno.ENETUNREACH, "OFFLINE_QUALITY_NETWORK_BLOCKED")
+          class OfflineSocket(socket.socket):
+              def connect(self, *_args, **_kwargs):
+                  return blocked()
+              def connect_ex(self, *_args, **_kwargs):
+                  return errno.ENETUNREACH
+          socket.socket = OfflineSocket
+          socket.create_connection = blocked
+          PY
+          export PYTHONPATH="$GUARD:$ROOT/src"
+
+          run_logged ruff "$BIN/ruff" check src scripts tests
+          run_logged mypy "$BIN/mypy" \
+            src/videobatch_fast/app_events.py \
+            src/videobatch_fast/event_buffer.py \
+            src/videobatch_fast/runner_events.py \
+            src/videobatch_fast/runner.py \
+            src/videobatch_fast/runner_process.py \
+            src/videobatch_fast/retry_queue.py \
+            src/videobatch_fast/recovery_consistency.py \
+            src/videobatch_fast/project_state.py
+          run_logged bandit "$BIN/bandit" -q -r src/videobatch_fast -c pyproject.toml
+          run_logged pip-audit "$BIN/pip-audit" \
+            --cache-dir "$CACHE" --no-deps --disable-pip --progress-spinner off \
+            -r requirements.lock
+          run_logged event-architecture "$QUALITY_PYTHON" scripts/check_event_architecture.py
+          run_logged pytest xvfb-run -a "$QUALITY_PYTHON" -m pytest -q \
+            tests/test_app_events.py \
+            tests/test_runner_app_events.py \
+            tests/test_event_architecture_gate.py \
+            tests/test_release_hardening_2_8_3_rc7.py \
+            tests/test_retry_queue_resilience.py \
+            tests/test_retry_queue_diagnostics.py \
+            tests/test_recovery_consistency.py
+          run_logged compileall "$QUALITY_PYTHON" -m compileall -q \
+            src/videobatch_fast scripts/check_event_architecture.py \
+            tests/test_app_events.py tests/test_runner_app_events.py tests/test_event_architecture_gate.py
+          run_logged isolated-compile "$QUALITY_PYTHON" scripts/verify_compile_isolated.py
+          run_logged internal-quality env VIDEOBATCH_DIAGNOSTICS_DIR="$E/internal-quality" "$QUALITY_PYTHON" scripts/internal_quality_gate.py
+          run_logged architecture-audit env VIDEOBATCH_DIAGNOSTICS_DIR="$E/architecture" "$QUALITY_PYTHON" scripts/architecture_audit.py
+
+          changed="$(git diff --name-only)"
+          test "$changed" = 'toolchain_wheelhouse/README.md'
+          git diff >"$E/raw/generated-metadata.diff"
+          git status --porcelain --untracked-files=no >"$E/tracked-status.txt"
+
+          E="$E" TARGET_SHA="$TARGET_SHA" "$QUALITY_PYTHON" - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          root = Path(os.environ["E"])
+          def digest(path: Path) -> str:
+              return hashlib.sha256(path.read_bytes()).hexdigest()
+          expected = {"ruff":"0.16.1","mypy":"2.3.0","bandit":"1.9.4","pip-audit":"2.10.1"}
+          versions = json.loads((root / "installed-versions.json").read_text())
+          phase_names = (
+              "apt-update", "apt-install", "wheelhouse-build", "wheelhouse-verify",
+              "offline-install-first", "environment-gate", "pip-audit-cache-prime",
+              "offline-install-final", "wheelhouse-final-verify",
+          )
+          check_names = (
+              "ruff", "mypy", "bandit", "pip-audit", "event-architecture", "pytest",
+              "compileall", "isolated-compile", "internal-quality", "architecture-audit",
+          )
+          phases = {name: int((root / "raw" / f"{name}.exit").read_text()) for name in phase_names}
+          checks = {name: int((root / "raw" / f"{name}.exit").read_text()) for name in check_names}
+          if versions["packages"] != expected or any(phases.values()) or any(checks.values()):
+              raise SystemExit("Non-zero final typed runner evidence result")
+          report = {
+              "schema_version": 1,
+              "status": "pass",
+              "scope": "corrected typed BatchRunner producer, mandatory payloads, explicit legacy boundary and AST gate",
+              "target_commit": os.environ["TARGET_SHA"],
+              "target_tree": (root / "target-tree.txt").read_text().strip(),
+              "target_tree_listing_sha256": digest(root / "target-tree-listing.txt"),
+              "release_manifest_sha256": digest(root / "RELEASE_MANIFEST.json"),
+              "toolchain_contract_sha256": digest(root / "TOOLCHAIN_CONTRACT.json"),
+              "quality_lock_sha256": digest(root / "requirements-quality.lock"),
+              "runtime_lock_sha256": digest(root / "requirements.lock"),
+              "wheelhouse_manifest_sha256": digest(root / "wheelhouse-manifest.json"),
+              "wheelhouse_aggregate_sha256": digest(root / "wheelhouse-files.sha256"),
+              "resolved_lock_sha256": digest(root / "requirements-toolchain-resolved.lock"),
+              "pip_audit_cache_inventory_sha256": digest(root / "pip-audit-cache-files.sha256"),
+              "offline_socket_guard": True,
+              "source_code_unchanged": True,
+              "allowed_generated_metadata_change": "toolchain_wheelhouse/README.md removed by atomic wheelhouse publication",
+              "phases": phases,
+              "checks": checks,
+              "tools": {name:{"version":version,"returncode":checks[name]} for name, version in expected.items()},
+          }
+          (root / "QUALITY_EVIDENCE.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+          files = []
+          for path in sorted(root.rglob("*")):
+              if path.is_file() and path.name != "EVIDENCE_CONTENTS.json":
+                  files.append({"path":path.relative_to(root).as_posix(),"size":path.stat().st_size,"sha256":digest(path)})
+          (root / "EVIDENCE_CONTENTS.json").write_text(json.dumps({"schema_version":1,"target_commit":os.environ["TARGET_SHA"],"files":files}, indent=2, sort_keys=True) + "\n")
+          PY
+          python3 -m json.tool "$E/QUALITY_EVIDENCE.json" >/dev/null
+          python3 -m json.tool "$E/EVIDENCE_CONTENTS.json" >/dev/null
+      - name: Upload final typed runner evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: typed-runner-final-exact-quality-28a4921a335a9d0309106ab5dcb91df70effc8cc
+          path: typed-runner-final-evidence
+          if-no-files-found: error
+          retention-days: 30
