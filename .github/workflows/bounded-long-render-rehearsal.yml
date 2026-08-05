@@ -173,5 +173,6 @@ jobs:
             rehearsal/checkpoint-run.json
             rehearsal/resume-run.json
             rehearsal/target/.provoware-long-render/
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 30
