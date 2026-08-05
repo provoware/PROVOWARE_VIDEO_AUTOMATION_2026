@@ -1,0 +1,262 @@
+{
+  "schema_version": 1,
+  "product": {
+    "name": "VideoBatch Fast",
+    "version": "2.8.3-rc24",
+    "channel": "rc",
+    "iteration": 24,
+    "build_date": "2026-08-05"
+  },
+  "provenance": {
+    "canonical_source": "diagnostics/release_readiness/RELEASE_EVIDENCE.json",
+    "verified_source_commit": "ef003d2c01fa94b899d0ebac9947f1795dd23e8f",
+    "repository_finalization_commit": "76689511d2c35bb2ef626e96cb513c3d3672b20c",
+    "manifest_regeneration_run_id": 30965984513,
+    "matrix_workflow_run_id": 30966067548,
+    "evidence_regression_base_head": "f05bafb53938b7a2e99095d525830c737c0f89de",
+    "evidence_regression_method": "four deterministic pytest partitions; 325/325 passed"
+  },
+  "manifest": {
+    "path": "RELEASE_MANIFEST.json",
+    "file_count": 365,
+    "status": "passed"
+  },
+  "tests": {
+    "passed": 325,
+    "failed": 0,
+    "skipped": 0,
+    "line_coverage_percent": 82.43,
+    "branch_coverage_percent": 67.21,
+    "combined_coverage_percent": 79.46,
+    "assurance_scenarios": "12/12",
+    "fault_lab": "12/12",
+    "visual_scenarios": "18/18",
+    "targeted_rc24": "27/27 finalization and preview regressions",
+    "selected_media_click_stress": "120 rapid selection changes, passed",
+    "full_regression": "325/325",
+    "full_regression_groups": [
+      98,
+      89,
+      83,
+      55
+    ],
+    "test_environment": "Xvfb X11 on exact exported PR tree"
+  },
+  "matrix": {
+    "status": "passed",
+    "passed_targets": 4,
+    "total_targets": 4,
+    "workflow_run_id": 30966067548,
+    "verified_commit": "ef003d2c01fa94b899d0ebac9947f1795dd23e8f",
+    "targets": [
+      {
+        "os": "ubuntu-22.04",
+        "session": "x11",
+        "status": "passed"
+      },
+      {
+        "os": "ubuntu-22.04",
+        "session": "wayland",
+        "status": "passed"
+      },
+      {
+        "os": "ubuntu-24.04",
+        "session": "x11",
+        "status": "passed"
+      },
+      {
+        "os": "ubuntu-24.04",
+        "session": "wayland",
+        "status": "passed"
+      }
+    ],
+    "scope_note": "Headless deterministic CI matrix; not a substitute for physical KDE acceptance."
+  },
+  "runtime_start": {
+    "status": "passed",
+    "architecture": "content-addressed user environment",
+    "quality_tools_block_start": false,
+    "interactive_questions": false,
+    "ffmpeg_aac_detection": "real smoke test",
+    "ui_ready_handshake": true,
+    "safe_mode_retry": true,
+    "system_python_fallback": "verified imports only",
+    "existing_instance_focus": true
+  },
+  "internal_quality": {
+    "architecture_findings": 0,
+    "internal_files_checked": 203,
+    "internal_findings": 0,
+    "internal_function_count": 1602,
+    "largest_python_file_lines": 683,
+    "maximum_complexity": 29
+  },
+  "release_cleanup": {
+    "historical_reports_archived": 56,
+    "obsolete_visual_baselines_removed": 16,
+    "ready_deliverables": 10,
+    "unfinished_gate_files": 8,
+    "release_archive_excluded": true,
+    "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe"
+  },
+  "release_files": {
+    "ready_suffix": "_save_",
+    "policy": "Only standalone user and release deliverables receive _save_. Source modules, CI workflows, canonical manifests, entrypoints and README retain stable technical names.",
+    "ready": [
+      {
+        "path": "START_HIER_save_.md",
+        "label": "Schnellstart",
+        "evidence": "Geprüfter Nutzerstart und sichere erste Schritte"
+      },
+      {
+        "path": "AUTOINSTALLATION_save_.md",
+        "label": "Installationsanleitung",
+        "evidence": "Benutzerpfade, A/B-Slots und Berechtigungsschutz dokumentiert"
+      },
+      {
+        "path": "PROJEKTORDNERSTRUKTUR_save_.md",
+        "label": "Projektübersicht",
+        "evidence": "Ordner, Start, Sicherheit und Funktionen beschrieben"
+      },
+      {
+        "path": "RELEASE_NOTES_save_.md",
+        "label": "Releasehinweise",
+        "evidence": "Aktueller RC24-Funktionsstand dokumentiert"
+      },
+      {
+        "path": "TEST_REPORT_save_.md",
+        "label": "Testbericht",
+        "evidence": "Automatisierte und offene Prüfungen getrennt ausgewiesen"
+      },
+      {
+        "path": "FRESH_PACKAGE_REPORT_save_.md",
+        "label": "Paketbericht",
+        "evidence": "Saubere Paketprüfung für RC24 dokumentiert"
+      },
+      {
+        "path": "CODE_QUALITY_REPORT_2.8.3-rc24_save_.md",
+        "label": "Codequalitätsbericht",
+        "evidence": "Interne Qualitätsprüfung ohne Befund"
+      },
+      {
+        "path": "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md",
+        "label": "Implementierungsbericht",
+        "evidence": "Umgesetzte Funktions- und Sicherheitsverträge dokumentiert"
+      },
+      {
+        "path": "FINAL_AUDIT_2.8.3-rc24_save_.md",
+        "label": "RC-Abschlussaudit",
+        "evidence": "RC-Gates und offene Stable-Gates ehrlich getrennt"
+      },
+      {
+        "path": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
+        "label": "Maschinenlesbarer Buildbericht",
+        "evidence": "Aus der kanonischen RELEASE_EVIDENCE.json erzeugt"
+      }
+    ],
+    "unfinished": [
+      {
+        "path": "TODO.md",
+        "label": "Offene Arbeitsliste",
+        "reason": "Enthält bewusst die verbleibenden Stable-Gates"
+      },
+      {
+        "path": "QUALITY_GATE_ATTEMPT_2.8.3-rc24.md",
+        "label": "Externe Qualitätswerkzeuge",
+        "reason": "Ruff, MyPy, Bandit und pip-audit sind noch nicht abschließend ausgeführt"
+      },
+      {
+        "path": "STABLE_GATE_ITERATION_2.8.3-rc24_2026-08-04.md",
+        "label": "Stable-Freigabeiteration",
+        "reason": "Stable-Freigabe ist ausdrücklich noch blockiert"
+      },
+      {
+        "path": "docs/LONG_RENDER_2.8.3-rc24.md",
+        "label": "Langzeitrender",
+        "reason": "Realer Langzeitrender mit großer Auswahl und langsamem Ziel fehlt"
+      },
+      {
+        "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
+        "label": "Stable-Abnahmenachweis",
+        "reason": "Physische Desktop- und Langzeitnachweise fehlen"
+      },
+      {
+        "path": "VISUAL_DESKTOP_APPROVAL.md",
+        "label": "Desktop-Sichtprüfung",
+        "reason": "Physische KDE-X11-/Wayland-Abnahme bleibt offen"
+      },
+      {
+        "path": "QUALITY_ENVIRONMENT_STATUS.json",
+        "label": "Qualitätsumgebung",
+        "reason": "Exakte Offline-Werkzeugumgebung ist nicht vollständig freigegeben"
+      },
+      {
+        "path": "VISUAL_INSPECTION_MANIFEST.json",
+        "label": "Visuelles Prüfmanifest",
+        "reason": "Aktueller physischer Lauf ist nicht vollständig bestätigt"
+      }
+    ]
+  },
+  "stable_gates": [
+    {
+      "id": "ruff_0_16_1",
+      "label": "Ruff 0.16.1",
+      "status": "open",
+      "reason": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen"
+    },
+    {
+      "id": "mypy_2_3_0",
+      "label": "MyPy 2.3.0",
+      "status": "open",
+      "reason": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen"
+    },
+    {
+      "id": "bandit_1_9_4",
+      "label": "Bandit 1.9.4",
+      "status": "open",
+      "reason": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen"
+    },
+    {
+      "id": "pip_audit_2_10_1",
+      "label": "pip-audit 2.10.1",
+      "status": "open",
+      "reason": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen"
+    },
+    {
+      "id": "physical_kde_x11_wayland",
+      "label": "Physische KDE-X11-/Wayland-Abnahme",
+      "status": "open",
+      "reason": "Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless"
+    },
+    {
+      "id": "large_media_soak",
+      "label": "Langzeitrender mit großer Medienauswahl",
+      "status": "open",
+      "reason": "Realer Lauf auf langsamem externem Ziel fehlt"
+    }
+  ],
+  "stable_ready": false,
+  "progress": {
+    "percent": 80,
+    "completed": 24,
+    "open": 6,
+    "total": 30,
+    "current_todo": "Kanonische Release-Nachweise synchronisiert; externe Stable-Gates bleiben offen"
+  },
+  "approved_quality_report": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
+  "artifact_policy": "full-project-zip-before-stable",
+  "deterministic_build": "passed; two independent builds byte-identical",
+  "critical_fix": {
+    "area": "already-selected project media list",
+    "root_cause": "unbounded per-click preview threads and FFmpeg processes plus unvalidated direct Tk image decoding",
+    "resolution": [
+      "single serial preview controller",
+      "180 ms debounce",
+      "generation tokens",
+      "Pillow validation before ImageTk",
+      "main-thread-only Tk updates",
+      "explicit PNG output for FFmpeg 7+ atomic partial files",
+      "invalid cache targets removed before regeneration"
+    ]
+  }
+}
