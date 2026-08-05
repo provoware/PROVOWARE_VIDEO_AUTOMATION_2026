@@ -34,6 +34,8 @@ jobs:
       - name: Reconstruct and verify transformation
         run: |
           set -Eeuo pipefail
+          wc -c .github/scripts/finalization_payload/*.b64
+          sha256sum .github/scripts/finalization_payload/*.b64
           cat .github/scripts/finalization_payload/*.b64 \
             | base64 --decode \
             | gzip --decompress \
