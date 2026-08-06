@@ -1,7 +1,7 @@
 {
   "canonical_reference": {
     "path": "docs/design/VIDEOBATCH_CANONICAL_UI_REFERENCE.svg",
-    "sha256": "7e610f9c0e97205dbddd5eea0e8f87ba6547adbc8dae126a1095779ea13500d2"
+    "sha256": "7508d42271c8a3818edc84b212da6359621279aa5640ebef10bae3bb5070458a"
   },
   "effective_date": "2026-08-06",
   "font_profiles": {
@@ -25,7 +25,7 @@
   "manifest_id": "VB-GFX-1.0",
   "manifest_poster": {
     "path": "docs/design/VIDEOBATCH_GRAPHICS_MANIFEST_POSTER.svg",
-    "sha256": "f4a4b10eb8df9eca7bbfa1ea7500f5ee494a5b408fb50810ba087e06a0cf0684"
+    "sha256": "98539f3dfe86c6b39c14ee4bc76a0d840b98781e3b355eb423394c078d381ad5"
   },
   "radius_px": {"card": 16, "drawer": 24, "input": 10, "pill": 999},
   "required_modules": ["media", "queue", "effects", "scheduler", "render_proof", "diagnostics", "backup", "project_folder", "settings"],
