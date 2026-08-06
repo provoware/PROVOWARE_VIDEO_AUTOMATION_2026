@@ -11,6 +11,7 @@ on:
       - .github/workflows/design-manifest-gate.yml
       - docs/design/**
       - diagnostics/checkpoint2/**
+      - diagnostics/checkpoint3/**
       - scripts/validate_design_manifest.py
       - src/videobatch_fast/app.py
       - src/videobatch_fast/canonical_*.py
@@ -53,6 +54,8 @@ jobs:
             src/videobatch_fast/app.py \
             src/videobatch_fast/canonical_ui.py \
             src/videobatch_fast/canonical_kpi.py \
+            src/videobatch_fast/canonical_kpi_state.py \
+            src/videobatch_fast/canonical_kpi_detail_mixin.py \
             src/videobatch_fast/canonical_shell_contract.py \
             src/videobatch_fast/canonical_shell_chrome.py \
             src/videobatch_fast/canonical_shell_workspace.py \
@@ -60,6 +63,7 @@ jobs:
             tests/test_design_manifest_contract.py \
             tests/test_canonical_application_shell_contract.py \
             tests/test_canonical_kpi_contract.py
+          python3 -m pytest -q tests/test_canonical_kpi_contract.py
           python3 scripts/validate_design_manifest.py --json \
             | tee "$RUNNER_TEMP/design-manifest.json"
           python3 scripts/build_release_manifest.py --check --json \
@@ -91,6 +95,7 @@ jobs:
       PYTHONDONTWRITEBYTECODE: '1'
       PYTHONUTF8: '1'
       PYTHONPATH: src
+      EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
 
     steps:
       - name: Check out exact PR head
@@ -137,6 +142,7 @@ jobs:
           set -Eeuo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          from types import SimpleNamespace
           from tkinter import Tk
 
           from videobatch_fast.canonical_shell_contract import (
@@ -146,15 +152,52 @@ jobs:
           )
           from videobatch_fast.canonical_ui import CanonicalVideoBatchFastUI
 
+          class FakeRetryStore:
+              def __init__(self, source: Path, *, enabled: bool = True) -> None:
+                  self.path = Path("retry-evidence") / "retry_queue.json"
+                  self._entry = {
+                      "state": "failed",
+                      "retry_allowed": True,
+                      "audio": str(source),
+                      "media": str(source),
+                      "media_sequence": [],
+                      "latest_error": "Encoder meldet kontrollierten Testfehler",
+                      "first_error": "Encoder meldet kontrollierten Testfehler",
+                  }
+                  self.enabled = enabled
+
+              def summary(self):
+                  return SimpleNamespace(
+                      retryable=1 if self.enabled else 0,
+                      blocked=0,
+                      total=1 if self.enabled else 0,
+                  )
+
+              def entries(self):
+                  return (self._entry,) if self.enabled else ()
+
+              def eligible_entries(self):
+                  return (self._entry,) if self.enabled else ()
+
           root = Tk()
           root.geometry("1024x680")
           app = CanonicalVideoBatchFastUI(root)
           root.update_idletasks()
+          existing = Path("README.md")
+          missing = Path("checkpoint3-intentionally-missing-source.png")
+          app._kpi_retry_store = FakeRetryStore(existing, enabled=False)
+          app.audios = []
+          app.media = []
+          app.jobs = []
+          app.last_results = []
+          app._refresh_kpi_cards()
 
           assert root.minsize() == (1024, 680)
           assert len(app._shell_nav_buttons) == len(SHELL_NAVIGATION)
           assert len(app._shell_action_buttons) == 7
           assert len(app._shell_kpi_buttons) == 4
+          assert len(app._shell_kpi_cause_vars) == 4
+          assert len(app._shell_kpi_updated_vars) == 4
           assert app.main_notebook.index("end") == 6
           assert app._shell_kpi_status_vars["media"].get() == "Leer"
           assert str(app._shell_kpi_buttons["scheduler"].cget("state")) == "disabled"
@@ -164,21 +207,75 @@ jobs:
               root.update_idletasks()
               assert app.main_notebook.index(app.main_notebook.select()) == page_index
 
-          existing = Path("README.md")
+          app.audios = [existing]
+          app.media = [missing]
+          app.jobs = []
+          app.last_results = []
+          app._refresh_kpi_cards()
+          assert app._shell_kpi_status_vars["media"].get() == "Wiederherstellung nötig"
+          assert "nicht mehr vorhanden" in app._shell_kpi_cause_vars["media"].get()
+          assert app._shell_kpi_buttons["media"].cget("text") == "Fehlende entfernen"
+          app._shell_kpi_buttons["media"].invoke()
+          root.update_idletasks()
+          assert missing not in app.media
+
+          app._kpi_retry_store = FakeRetryStore(existing, enabled=True)
           app.audios = [existing]
           app.media = [existing]
-          app.jobs = [object(), object()]
+          app.jobs = [object()]
+          app.last_results = [SimpleNamespace(success=False, message="Encoder meldet kontrollierten Testfehler")]
           app._refresh_kpi_cards()
+          assert app._shell_kpi_status_vars["queue"].get() == "Wiederherstellung nötig"
+          assert "Encoder" in app._shell_kpi_cause_vars["queue"].get()
+          assert app._shell_kpi_buttons["queue"].cget("text") == "Wiederanlauf laden"
+          app._shell_kpi_buttons["queue"].invoke()
           root.update_idletasks()
-          assert app.shell_media_kpi.get() == "2"
-          assert app._shell_kpi_status_vars["media"].get() == "Bereit"
-          assert app.shell_queue_kpi.get() == "2"
-          assert app._shell_kpi_status_vars["queue"].get() == "Startbereit"
+          assert app.main_notebook.index(app.main_notebook.select()) == 4
+          assert existing in app.audios and existing in app.media
 
-          app.visual_effect.set("ken_burns")
-          app.transition.set("fade")
+          app.visual_effect.set("ungueltiger-effekt")
+          app.transition.set("none")
           app._refresh_kpi_cards()
-          assert app._shell_kpi_status_vars["effects"].get() == "Aktiv"
+          assert app._shell_kpi_status_vars["effects"].get() == "Wiederherstellung nötig"
+          assert app._shell_kpi_buttons["effects"].cget("text") == "Automatik herstellen"
+          app._shell_kpi_buttons["effects"].invoke()
+          root.update_idletasks()
+          assert app.quick_mode.get() == "smart_auto"
+          assert app.visual_effect.get() == "none"
+          assert app.transition.get() == "none"
+
+          app._kpi_retry_store = FakeRetryStore(existing, enabled=False)
+          for index in range(160):
+              phase = index % 4
+              app.last_results = []
+              app.jobs = []
+              app.visual_effect.set("none")
+              app.transition.set("none")
+              if phase == 0:
+                  app.audios = [existing]
+                  app.media = [existing]
+                  app.jobs = [object()]
+              elif phase == 1:
+                  app.audios = [existing]
+                  app.media = [missing]
+              elif phase == 2:
+                  app.audios = [existing]
+                  app.media = [existing]
+                  app.jobs = [object()]
+                  app.last_results = [SimpleNamespace(success=False, message="Schneller Queue-Testfehler")]
+              else:
+                  app.audios = [existing]
+                  app.media = [existing]
+                  app.visual_effect.set("hardtechno" if index % 8 else "ungueltig")
+              app._refresh_kpi_cards()
+              root.update_idletasks()
+
+          history_before = dict(app._kpi_detail_history["media"])
+          app._refresh_kpi_cards()
+          assert app._kpi_detail_history["media"]["updated_at"] == history_before["updated_at"]
+          persisted = app._collect_project_state()["meta"]["canonical_kpi"]
+          assert set(persisted) == {"media", "queue", "effects", "scheduler"}
+          assert all(value["updated_at"] for value in persisted.values())
 
           for page_index in range(6):
               app._select_shell_page(page_index)
@@ -202,22 +299,133 @@ jobs:
           assert root.winfo_height() >= 680
           root.destroy()
           print("CHECKPOINT2_CANONICAL_SHELL_OK")
-          print("CHECKPOINT3_CANONICAL_KPI_ITERATION_OK")
+          print("CHECKPOINT3_KPI_DETAIL_RECOVERY_SEQUENCE_OK")
           PY
 
-      - name: Collect display logs
+      - name: Collect exact cell evidence
         if: always()
+        env:
+          CELL_OS: ${{ matrix.os }}
+          CELL_SESSION: ${{ matrix.session }}
+          CELL_STATUS: ${{ job.status }}
         run: |
           set -Eeuo pipefail
           mkdir -p checkpoint2-logs
           test ! -f /tmp/xvfb.log || cp /tmp/xvfb.log checkpoint2-logs/xvfb.log
           test ! -f /tmp/weston.log || cp /tmp/weston.log checkpoint2-logs/weston.log
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          payload = {
+              "schema_version": 1,
+              "os": os.environ["CELL_OS"],
+              "session": os.environ["CELL_SESSION"],
+              "status": os.environ["CELL_STATUS"],
+              "head_sha": os.environ["EXPECTED_HEAD_SHA"],
+          }
+          target = Path(
+              f"checkpoint2-logs/matrix-status-{payload['os']}-{payload['session']}.json"
+          )
+          target.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          PY
 
       - name: Upload focused evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: checkpoint2-${{ matrix.os }}-${{ matrix.session }}
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 14
           path: checkpoint2-logs/*
+
+  matrix-summary:
+    name: Checkpoint 2 canonical shell matrix
+    if: always()
+    needs: [preflight, shell-matrix]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      PREFLIGHT_RESULT: ${{ needs.preflight.result }}
+      MATRIX_RESULT: ${{ needs.shell-matrix.result }}
+
+    steps:
+      - name: Download four-cell evidence
+        uses: actions/download-artifact@v4
+        with:
+          pattern: checkpoint2-ubuntu-*
+          path: matrix-evidence
+          merge-multiple: true
+
+      - name: Enforce exact four-cell success on one head
+        run: |
+          set -Eeuo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          expected = {
+              ("ubuntu-22.04", "x11"),
+              ("ubuntu-22.04", "wayland"),
+              ("ubuntu-24.04", "x11"),
+              ("ubuntu-24.04", "wayland"),
+          }
+          records = {}
+          for path in Path("matrix-evidence").glob("matrix-status-*.json"):
+              value = json.loads(path.read_text(encoding="utf-8"))
+              records[(value["os"], value["session"])] = value
+          missing = sorted(expected - set(records))
+          failed = sorted(key for key, value in records.items() if value.get("status") != "success")
+          wrong_head = sorted(
+              key for key, value in records.items()
+              if value.get("head_sha") != os.environ["EXPECTED_HEAD_SHA"]
+          )
+          passed = (
+              os.environ["PREFLIGHT_RESULT"] == "success"
+              and os.environ["MATRIX_RESULT"] == "success"
+              and not missing
+              and not failed
+              and not wrong_head
+          )
+          summary = {
+              "schema_version": 1,
+              "status": "passed" if passed else "failed",
+              "head_sha": os.environ["EXPECTED_HEAD_SHA"],
+              "preflight": os.environ["PREFLIGHT_RESULT"],
+              "matrix": os.environ["MATRIX_RESULT"],
+              "missing": missing,
+              "failed": failed,
+              "wrong_head": wrong_head,
+              "results": [records[key] for key in sorted(records)],
+          }
+          Path("CHECKPOINT2_CANONICAL_SHELL_MATRIX.json").write_text(
+              json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          lines = [
+              "# Checkpoint 2 canonical shell matrix",
+              "",
+              f"**Status:** {summary['status']}",
+              f"**Head:** `{summary['head_sha']}`",
+              "",
+          ]
+          for key in sorted(expected):
+              value = records.get(key, {"status": "missing"})
+              lines.append(f"- {key[0]} / {key[1]}: {value['status']}")
+          report = "\n".join(lines) + "\n"
+          Path("CHECKPOINT2_CANONICAL_SHELL_MATRIX.md").write_text(report, encoding="utf-8")
+          Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(report, encoding="utf-8")
+          raise SystemExit(0 if passed else 1)
+          PY
+
+      - name: Upload consolidated matrix report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkpoint2-canonical-shell-matrix-${{ github.event.pull_request.head.sha }}
+          if-no-files-found: error
+          retention-days: 30
+          path: CHECKPOINT2_CANONICAL_SHELL_MATRIX.*

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from tkinter import Tk
 
+from .canonical_kpi_detail_mixin import CanonicalKpiDetailMixin
 from .canonical_shell_chrome import CanonicalShellChromeMixin
 from .canonical_shell_workspace import CanonicalShellWorkspaceMixin
 from .error_handling import error_definition
@@ -11,6 +12,7 @@ from .ui_components import SolutionDialog
 
 
 class CanonicalVideoBatchFastUI(
+    CanonicalKpiDetailMixin,
     CanonicalShellWorkspaceMixin,
     CanonicalShellChromeMixin,
     VideoBatchFastUI,
