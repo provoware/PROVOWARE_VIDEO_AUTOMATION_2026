@@ -1,0 +1,54 @@
+{
+  "checkpoint": 2,
+  "completed_at": "2026-08-06T16:00:00+02:00",
+  "design_contract": {
+    "run_id": 31111557085,
+    "status": "passed",
+    "checks": [
+      "compileall",
+      "reference_hash_attestation",
+      "fail_closed_manifest_validation",
+      "canonical_shell_contract",
+      "read_only_proof",
+      "deterministic_release_manifest_candidate"
+    ]
+  },
+  "fixed_defects": [
+    {
+      "id": "CP2-STARTUP-EVENT-ORDER",
+      "resolution": "Ignore and safely resynchronize notebook events until shell title and all navigation buttons exist.",
+      "verified_in_all_runtime_cells": true
+    },
+    {
+      "id": "CP2-THEME-SELECTOR-DRIFT",
+      "resolution": "Synchronize the visible canonical theme selector immediately after a runtime theme change.",
+      "verified_in_all_runtime_cells": true
+    },
+    {
+      "id": "CP1-REFERENCE-HASH-DRIFT",
+      "resolution": "Replace incorrect design-token hashes with values attested by the read-only CI gate.",
+      "verified": true
+    }
+  ],
+  "functional_contract": {
+    "existing_pages_retained": 6,
+    "navigation_entries": 8,
+    "primary_actions": 7,
+    "scheduler_state": "visible_disabled_until_checkpoint_5",
+    "themes_exercised": 4,
+    "font_profiles_exercised": 3,
+    "minimum_window": "1024x680"
+  },
+  "runtime_matrix": {
+    "run_id": 31111557026,
+    "preflight": "passed",
+    "cells": [
+      {"os": "ubuntu-22.04", "session": "x11", "job_id": 92650401650, "status": "passed"},
+      {"os": "ubuntu-22.04", "session": "wayland", "job_id": 92650401587, "status": "passed"},
+      {"os": "ubuntu-24.04", "session": "x11", "job_id": 92650401519, "status": "passed"},
+      {"os": "ubuntu-24.04", "session": "wayland", "job_id": 92650401589, "status": "passed"}
+    ]
+  },
+  "schema_version": 1,
+  "status": "PASSED"
+}
