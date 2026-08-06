@@ -1,0 +1,55 @@
+name: PR ancestry guard
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-ancestry-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  ancestry:
+    name: PR ancestry guard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      PYTHONDONTWRITEBYTECODE: '1'
+
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fetch and verify exact base
+        run: |
+          set -Eeuo pipefail
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          git fetch --no-tags origin "$BASE_SHA"
+          test "$(git rev-parse FETCH_HEAD)" = "$BASE_SHA"
+
+      - name: Enforce ancestry contract
+        run: |
+          set -Eeuo pipefail
+          python3 scripts/check_pr_ancestry.py \
+            --base "$BASE_SHA" \
+            --head "$HEAD_SHA" \
+            --report PR_ANCESTRY_REPORT.json
+
+      - name: Upload ancestry evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-ancestry-${{ github.event.pull_request.head.sha }}
+          path: PR_ANCESTRY_REPORT.json
+          if-no-files-found: error
+          retention-days: 30

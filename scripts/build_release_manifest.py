@@ -45,7 +45,17 @@ def expected_files() -> list[dict[str, Any]]:
     ]
 
 
-def build_payload() -> dict[str, Any]:
+def files_digest(files: Sequence[Mapping[str, Any]]) -> str:
+    encoded = json.dumps(
+        list(files),
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return sha256_bytes(encoded)
+
+
+def build_payload(*, compact: bool = False) -> dict[str, Any]:
     files = expected_files()
     visual_path = ROOT / "VISUAL_INSPECTION_MANIFEST.json"
     visual = (
@@ -55,8 +65,8 @@ def build_payload() -> dict[str, Any]:
     )
     approval = verify_visual_approval(visual, ROOT) if visual else None
     version = version_info()
-    return {
-        "schema_version": 2,
+    payload: dict[str, Any] = {
+        "schema_version": 3 if compact else 2,
         "name": str(version.get("name", "provoware - videoautomation - 2026")),
         "version": str(version.get("version", "0.0.0")),
         "build": str(version.get("build", version.get("version", "0.0.0"))),
@@ -70,8 +80,17 @@ def build_payload() -> dict[str, Any]:
             "key_id": approval.key_id if approval else "",
         },
         "file_count": len(files),
-        "files": files,
     }
+    if compact:
+        payload.update(
+            {
+                "representation": "compact",
+                "files_sha256": files_digest(files),
+            }
+        )
+    else:
+        payload["files"] = files
+    return payload
 
 
 def load_manifest() -> dict[str, Any]:
@@ -99,39 +118,47 @@ def records_by_path(value: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
     return result
 
 
-def drift_report(current: Mapping[str, Any], expected: Mapping[str, Any]) -> dict[str, Any]:
-    current_records = records_by_path(current)
-    expected_records = records_by_path(expected)
-    changes: list[dict[str, Any]] = []
+def manifest_is_compact(value: Mapping[str, Any]) -> bool:
+    return value.get("representation") == "compact"
 
-    for path in sorted(set(current_records) | set(expected_records)):
-        actual = current_records.get(path)
-        wanted = expected_records.get(path)
-        if actual == wanted:
-            continue
-        if actual is None:
-            kind = "missing"
-        elif wanted is None:
-            kind = "unexpected"
-        else:
-            kind = "changed"
-        changes.append(
-            {
-                "kind": kind,
-                "path": path,
-                "actual": actual,
-                "expected": wanted,
-            }
-        )
+
+def drift_report(current: Mapping[str, Any], expected: Mapping[str, Any]) -> dict[str, Any]:
+    changes: list[dict[str, Any]] = []
+    current_compact = manifest_is_compact(current)
+    expected_compact = manifest_is_compact(expected)
+    if not current_compact and not expected_compact:
+        current_records = records_by_path(current)
+        expected_records = records_by_path(expected)
+        for path in sorted(set(current_records) | set(expected_records)):
+            actual = current_records.get(path)
+            wanted = expected_records.get(path)
+            if actual == wanted:
+                continue
+            if actual is None:
+                kind = "missing"
+            elif wanted is None:
+                kind = "unexpected"
+            else:
+                kind = "changed"
+            changes.append(
+                {
+                    "kind": kind,
+                    "path": path,
+                    "actual": actual,
+                    "expected": wanted,
+                }
+            )
 
     metadata_fields = (
         "schema_version",
+        "representation",
         "name",
         "version",
         "build",
         "channel",
         "visual_approval",
         "file_count",
+        "files_sha256",
     )
     metadata = [
         {
@@ -146,6 +173,7 @@ def drift_report(current: Mapping[str, Any], expected: Mapping[str, Any]) -> dic
         "schema_version": 1,
         "status": "passed" if not changes and not metadata else "drift",
         "manifest": MANIFEST.relative_to(ROOT).as_posix(),
+        "representation": "compact" if expected_compact else "full",
         "file_changes": changes,
         "metadata_changes": metadata,
     }
@@ -206,6 +234,11 @@ def parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Prüfergebnis als deterministisches JSON auf stdout ausgeben.",
     )
+    result.add_argument(
+        "--compact",
+        action="store_true",
+        help="Kompaktes Manifest mit kanonischem Gesamt-SHA-256 erzeugen oder prüfen.",
+    )
     return result
 
 
@@ -213,8 +246,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser().parse_args(argv)
     if args.json and not args.check:
         parser().error("--json erfordert --check")
-    payload = build_payload()
-    return check_manifest(payload, json_output=bool(args.json)) if args.check else write_manifest(payload)
+    compact = bool(args.compact)
+    if args.check and not compact:
+        try:
+            compact = manifest_is_compact(load_manifest())
+        except ManifestContractError:
+            compact = False
+    payload = build_payload(compact=compact)
+    return (
+        check_manifest(payload, json_output=bool(args.json))
+        if args.check
+        else write_manifest(payload)
+    )
 
 
 if __name__ == "__main__":

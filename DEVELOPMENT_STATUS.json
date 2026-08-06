@@ -1,21 +1,22 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
+  "generated_from": "diagnostics/release_readiness/RELEASE_EVIDENCE.json",
   "iteration": 24,
   "version": "2.8.3-rc24",
   "progress_percent": 80,
   "completed": 24,
   "open": 6,
-  "current_todo": "RC24-Dateien, Hilfe, Cache und Repositorystruktur final bereinigt",
-  "status": "green",
+  "current_todo": "Kanonische Release-Nachweise synchronisiert; externe Stable-Gates bleiben offen",
+  "status": "yellow",
   "stable_ready": false,
   "approved_quality_report": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
   "stable_blockers": [
-    "Ruff 0.16.1",
-    "MyPy 2.3.0",
-    "Bandit 1.9.4",
-    "pip-audit 2.10.1",
-    "physische KDE-X11-/Wayland-Abnahme",
-    "Langzeitrender mit großer Medienauswahl und langsamem externem Ziel"
+    "Ruff 0.16.1: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
+    "MyPy 2.3.0: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
+    "Bandit 1.9.4: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
+    "pip-audit 2.10.1: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
+    "Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless",
+    "Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt"
   ],
   "total": 30
 }
