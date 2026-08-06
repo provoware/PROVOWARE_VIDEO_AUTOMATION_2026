@@ -44,6 +44,8 @@ jobs:
           git fetch --no-tags origin main
           test "$(git rev-parse origin/main)" = "$EXPECTED_MAIN_SHA"
           git merge-base --is-ancestor "$EXPECTED_MAIN_SHA" origin/main
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Merge exact main fail-closed
         run: |
@@ -51,9 +53,11 @@ jobs:
           if ! git merge --no-ff --no-commit "$EXPECTED_MAIN_SHA"; then
             git status --short
             git merge --abort || true
-            echo "::error title=Main synchronization conflict::No automatic conflict resolution is permitted."
+            echo "::error title=Main synchronization failed::The exact main commit could not be merged; no automatic conflict resolution is permitted."
             exit 1
           fi
+          test -f .git/MERGE_HEAD
+          test "$(cat .git/MERGE_HEAD)" = "$EXPECTED_MAIN_SHA"
           rm -- .github/workflows/sync-checkpoint2-with-main.yml
 
       - name: Regenerate and validate merged release contract
@@ -93,8 +97,6 @@ jobs:
           EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -Eeuo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "merge: synchronize Checkpoint 2 branch with current main"
           test "$(git rev-parse HEAD^1)" = "$EXPECTED_HEAD_SHA"
           test "$(git rev-parse HEAD^2)" = "$EXPECTED_MAIN_SHA"
