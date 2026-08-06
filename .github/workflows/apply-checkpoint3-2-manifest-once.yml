@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: checkpoint3-2-manifest-${{ github.event.pull_request.number }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   apply:
@@ -29,21 +29,22 @@ jobs:
       PYTHONPATH: src
 
     steps:
-      - name: Check out exact writable PR branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0
-          persist-credentials: true
-
-      - name: Verify immutable event and main ancestry
+      - name: Fetch exact writable branch without external actions
         env:
+          GH_TOKEN: ${{ github.token }}
           EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           set -Eeuo pipefail
-          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD_SHA"
-          git fetch --no-tags origin main
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --no-tags --prune origin \
+            "+refs/heads/${HEAD_REF}:refs/remotes/origin/${HEAD_REF}" \
+            "+refs/heads/main:refs/remotes/origin/main"
+          test "$(git rev-parse origin/${HEAD_REF})" = "$EXPECTED_HEAD_SHA"
           test "$(git rev-parse origin/main)" = "$EXPECTED_MAIN_SHA"
+          git checkout -B "$HEAD_REF" "origin/$HEAD_REF"
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD_SHA"
           git merge-base --is-ancestor "$EXPECTED_MAIN_SHA" HEAD
 
       - name: Generate final release manifest without this workflow
@@ -81,10 +82,12 @@ jobs:
           git diff --cached --check
 
       - name: Commit and push exact final manifest
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           set -Eeuo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "chore: resynchronize Checkpoint 3.2 release manifest"
           python3 scripts/build_release_manifest.py --check --json
-          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+          git push origin "HEAD:${HEAD_REF}"
