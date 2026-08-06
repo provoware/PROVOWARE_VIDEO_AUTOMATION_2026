@@ -219,7 +219,6 @@ def _monitor_application(
 def main() -> int:
     enabled = debug_enabled_from_config(default=True)
     RUNTIME.set_enabled(enabled)
-    os.environ["VIDEOBATCH_DEBUG"] = "1" if enabled else "0"
     os.environ.setdefault("VIDEOBATCH_DEBUG_DIR", str(ROOT / "debugging"))
 
     watchdog_dir = STATE / "debugging" / "watchdog"
@@ -244,6 +243,7 @@ def main() -> int:
     command = [sys.executable, str(ROOT / "scripts" / "bootstrap.py"), *sys.argv[1:]]
     environment = {
         **os.environ,
+        "VIDEOBATCH_DEBUG": "1" if enabled else "0",
         "PYTHONPATH": os.pathsep.join(
             part for part in (str(SRC), os.environ.get("PYTHONPATH", "")) if part
         ),
