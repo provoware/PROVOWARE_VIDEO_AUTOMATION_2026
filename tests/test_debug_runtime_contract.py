@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 from videobatch_fast.config import DEFAULT_CONFIG, normalize_config
@@ -107,17 +106,34 @@ def test_debug_controls_are_visible_and_persistent() -> None:
         assert label in source
     assert 'self.config["debug_mode"] = enabled' in source
     assert "RUNTIME.set_enabled(enabled)" in source
+    assert "ab dem nächsten Programmstart vollständig aktiv" in source
+
+
+def test_interactive_dialog_supports_solution_and_action_selection() -> None:
+    source = (ROOT / "src/videobatch_fast/debug_runtime.py").read_text(encoding="utf-8")
+    for token in (
+        "LÖSUNG?",
+        "selected_solution",
+        "Ausgewählte Lösung kopieren",
+        "Interaktive Aktion auswählen:",
+        "Ausgewählte Aktion ausführen",
+    ):
+        assert token in source
 
 
 def test_launchers_route_normal_start_through_debug_wrapper() -> None:
     start_here = (ROOT / "STARTEN.sh").read_text(encoding="utf-8")
     start = (ROOT / "start.sh").read_text(encoding="utf-8")
     launcher = (ROOT / "scripts/debug_launcher.py").read_text(encoding="utf-8")
+    videobatch = (ROOT / "videobatch.sh").read_text(encoding="utf-8")
     assert "scripts/debug_launcher.py" in start_here
     assert 'exec "$ROOT_DIR/STARTEN.sh"' in start
     assert "_monitor_application" in launcher
     assert "PROZESSABSTURZ" in launcher
     assert "UI_READY pid=" in launcher
+    assert "bootstrap_*.log" in videobatch
+    assert "application_*.log" in videobatch
+    assert "MENSCHLICHER DEBUGBERICHT" in videobatch
 
 
 def test_debugging_folder_does_not_version_generated_reports() -> None:
