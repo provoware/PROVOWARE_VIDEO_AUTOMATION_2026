@@ -1,0 +1,61 @@
+name: PR ancestry repair bootstrap
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-ancestry-bootstrap-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  export-current-tree:
+    name: Export exact PR tree and generated manifest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/scripts
+
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Generate exact release manifest
+        run: |
+          set -Eeuo pipefail
+          cp RELEASE_MANIFEST.json "$RUNNER_TEMP/RELEASE_MANIFEST.before.json"
+          python3 scripts/build_release_manifest.py
+          cp RELEASE_MANIFEST.json "$RUNNER_TEMP/RELEASE_MANIFEST.generated.json"
+          git restore -- RELEASE_MANIFEST.json
+
+      - name: Export exact full source tree
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -Eeuo pipefail
+          archive="$RUNNER_TEMP/PROVOWARE_VIDEO_AUTOMATION_2026-${HEAD_SHA}.zip"
+          git archive --format=zip --prefix=PROVOWARE_VIDEO_AUTOMATION_2026/ --output="$archive" "$HEAD_SHA"
+          unzip -t "$archive"
+          sha256sum "$archive" > "$archive.sha256"
+          echo "archive=$archive" >> "$GITHUB_ENV"
+
+      - name: Upload repair inputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-ancestry-repair-inputs-${{ github.event.pull_request.head.sha }}
+          path: |
+            ${{ env.archive }}
+            ${{ env.archive }}.sha256
+            ${{ runner.temp }}/RELEASE_MANIFEST.before.json
+            ${{ runner.temp }}/RELEASE_MANIFEST.generated.json
+          if-no-files-found: error
+          retention-days: 7
