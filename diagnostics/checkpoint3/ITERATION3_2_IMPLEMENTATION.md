@@ -9,7 +9,7 @@ Die vier kanonischen KPI-Karten werden von reinen Momentaufnahmen zu nachvollzie
 - Ausgangs-`main`: `b9a3663a7b229ace00b43f01415ecc4d39adbe14`
 - Arbeitsbranch: `agent/checkpoint3-kpi-detail-recovery-20260806`
 - PR: `#67`
-- Branchanlage und erster Diff: `behind_by = 0`
+- Branchanlage und Abschlussdiff: `behind_by = 0`
 
 ## Umgesetzt
 
@@ -44,6 +44,15 @@ Jede Zelle Ubuntu 22.04/24.04 × X11/Wayland führt schnelle Sequenzen aus:
 6. Persistenz- und Zeitstempelprüfung
 
 Der Abschlussjob akzeptiert ausschließlich vier erfolgreiche Zellen auf exakt demselben PR-Head.
+
+## Abschlussprüfung
+
+- Release-Manifest aus dem vollständigen PR-Baum deterministisch erzeugt
+- temporärer Manifestworkflow vollständig entfernt
+- sechs reine Zustands- und Persistenztests lokal bestanden
+- reale Tk-Wiederherstellungssequenz direkt in jeder der vier Matrixzellen verankert
+- abschließender Diagnosecommit verändert den Release-Dateisatz nicht
+- sämtliche GitHub-Gates müssen denselben finalen PR-Head prüfen
 
 ## Stabile Statuskontexte
 
