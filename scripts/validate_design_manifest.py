@@ -15,6 +15,7 @@ REFERENCE_PATH = DESIGN_DIR / "VIDEOBATCH_CANONICAL_UI_REFERENCE.svg"
 POSTER_PATH = DESIGN_DIR / "VIDEOBATCH_GRAPHICS_MANIFEST_POSTER.svg"
 SHELL_PATHS = (
     ROOT / "src" / "videobatch_fast" / "canonical_ui.py",
+    ROOT / "src" / "videobatch_fast" / "canonical_kpi.py",
     ROOT / "src" / "videobatch_fast" / "canonical_shell_contract.py",
     ROOT / "src" / "videobatch_fast" / "canonical_shell_chrome.py",
     ROOT / "src" / "videobatch_fast" / "canonical_shell_workspace.py",
@@ -48,6 +49,8 @@ REQUIRED_PAGE_BUILDERS = (
     "_build_production_page",
     "_build_help_page",
 )
+REQUIRED_KPI_STATES = ("empty", "ready", "loading", "success", "warning", "error", "disabled")
+REQUIRED_KPI_ACTIONS = ("Medien öffnen", "Queue öffnen", "Effekte öffnen", "Checkpoint 5")
 
 
 def _file_sha256(path: Path) -> str:
@@ -90,6 +93,14 @@ def _validate_shell(root: Path, errors: list[str]) -> None:
     for label, value in (("Kompakt", 90), ("Standard", 105), ("Groß", 125)):
         if f'"{label}": {value}' not in shell:
             errors.append(f"Shell-Schriftprofil fehlt: {label}={value}")
+    for state in REQUIRED_KPI_STATES:
+        if f'"{state}"' not in shell:
+            errors.append(f"KPI-Zustand fehlt: {state}")
+    for action in REQUIRED_KPI_ACTIONS:
+        if action not in shell:
+            errors.append(f"KPI-Aktion fehlt: {action}")
+    if "build_kpi_snapshots(" not in shell or "self._refresh_kpi_cards()" not in shell:
+        errors.append("KPI-Karten sind nicht an den realen Zustandsvertrag gebunden")
 
     if "from .canonical_ui import run_app" not in app:
         errors.append("App-Einstieg verwendet nicht die kanonische Shell")
@@ -100,6 +111,8 @@ def _validate_shell(root: Path, errors: list[str]) -> None:
         errors.append("GitHub-Actions-Gate hat keinen stabilen Namen")
     if "python3 scripts/validate_design_manifest.py --json" not in workflow:
         errors.append("GitHub-Actions-Gate führt den Manifestvalidator nicht aus")
+    if "tests/test_canonical_kpi_contract.py" not in workflow:
+        errors.append("GitHub-Actions-Gate führt den KPI-Vertragstest nicht aus")
     if "pull_request:" not in workflow or "push:" not in workflow:
         errors.append("GitHub-Actions-Gate ist nicht für PR und main-Push aktiv")
     if "Prove gate remained read-only" not in workflow:
