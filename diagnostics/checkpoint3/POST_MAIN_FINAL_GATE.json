@@ -1,0 +1,19 @@
+{
+  "checkpoint": 3,
+  "iteration": 1,
+  "purpose": "Trigger final exact-head validation after merging current main accfcf08732964a9a2df25223acfdd10608b8d09 and synchronizing the release manifest.",
+  "main_sha": "accfcf08732964a9a2df25223acfdd10608b8d09",
+  "manifest_head_before_trigger": "1570739d982521b9afa6568e2ead681816683b67",
+  "release_set_excluded": true,
+  "required_checks": [
+    "ancestry_behind_zero",
+    "release_manifest_read_only",
+    "design_manifest_contract",
+    "canonical_kpi_contract",
+    "ubuntu-22.04/x11",
+    "ubuntu-22.04/wayland",
+    "ubuntu-24.04/x11",
+    "ubuntu-24.04/wayland"
+  ],
+  "schema_version": 1
+}
