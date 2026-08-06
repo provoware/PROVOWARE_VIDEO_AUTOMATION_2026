@@ -2,13 +2,13 @@ name: Secure Kubuntu owner dispatch
 
 on:
   issue_comment:
-    types:
-      - created
+    types: [created]
 
 permissions:
   actions: write
   contents: read
   issues: write
+  pull-requests: read
 
 concurrency:
   group: kubuntu-owner-comment-dispatch
@@ -21,38 +21,68 @@ jobs:
       github.event.issue.number == 12 &&
       github.event.comment.author_association == 'OWNER' &&
       (github.event.comment.body == '/run-kubuntu-main' ||
-       github.event.comment.body == '/run-kubuntu-cache-warmup')
-    runs-on: ubuntu-latest
-
+       github.event.comment.body == '/run-kubuntu-cache-warmup' ||
+       startsWith(github.event.comment.body, '/run-kubuntu-pr '))
+    runs-on: ubuntu-24.04
     steps:
-      - name: Select protected workflow
+      - name: Resolve protected target
         id: select
         env:
           COMMAND: ${{ github.event.comment.body }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -Eeuo pipefail
+          requested_sha=''
           case "$COMMAND" in
             /run-kubuntu-main)
-              echo "workflow=kubuntu-build-matrix.yml" >> "$GITHUB_OUTPUT"
-              echo "label=Produktive Kubuntu-Matrix" >> "$GITHUB_OUTPUT"
-              echo "arguments=-f report_issue=12" >> "$GITHUB_OUTPUT"
+              workflow=kubuntu-build-matrix.yml
+              label='Produktive Kubuntu-Matrix'
+              ref=main
+              arguments='-f report_issue=12'
               ;;
             /run-kubuntu-cache-warmup)
-              echo "workflow=kubuntu-cache-warmup.yml" >> "$GITHUB_OUTPUT"
-              echo "label=Kubuntu-Cache-Warmup" >> "$GITHUB_OUTPUT"
-              echo "arguments=" >> "$GITHUB_OUTPUT"
+              workflow=kubuntu-cache-warmup.yml
+              label='Kubuntu-Cache-Warmup'
+              ref=main
+              arguments=''
+              ;;
+            /run-kubuntu-pr\ *)
+              pr_number="${COMMAND#'/run-kubuntu-pr '}"
+              [[ "$pr_number" =~ ^[1-9][0-9]*$ ]] || {
+                echo "::error title=Ungültige PR-Nummer::$pr_number"
+                exit 64
+              }
+              pr_json="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$pr_number")"
+              test "$(jq -r '.state' <<< "$pr_json")" = open
+              test "$(jq -r '.base.ref' <<< "$pr_json")" = main
+              test "$(jq -r '.head.repo.full_name' <<< "$pr_json")" = "$GITHUB_REPOSITORY"
+              base_sha="$(jq -r '.base.sha' <<< "$pr_json")"
+              requested_sha="$(jq -r '.head.sha' <<< "$pr_json")"
+              head_ref="$(jq -r '.head.ref' <<< "$pr_json")"
+              workflow=kubuntu-pr-validation.yml
+              label="Vertrauenswürdige PR-Abnahme #$pr_number"
+              ref=main
+              arguments="-f pr_number=$pr_number -f base_sha=$base_sha -f head_sha=$requested_sha -f head_ref=$head_ref -f report_issue=12"
               ;;
             *)
               echo "::error title=Unbekannter Owner-Befehl::$COMMAND"
               exit 64
               ;;
           esac
+          {
+            echo "workflow=$workflow"
+            echo "label=$label"
+            echo "ref=$ref"
+            echo "requested_sha=$requested_sha"
+            echo "arguments=$arguments"
+          } >> "$GITHUB_OUTPUT"
 
-      - name: Dispatch workflow on main
+      - name: Dispatch selected revision
         id: dispatch
         env:
           GH_TOKEN: ${{ github.token }}
           WORKFLOW: ${{ steps.select.outputs.workflow }}
+          REF: ${{ steps.select.outputs.ref }}
           ARGUMENTS: ${{ steps.select.outputs.arguments }}
         run: |
           set -Eeuo pipefail
@@ -60,65 +90,52 @@ jobs:
           read -r -a extra_args <<< "$ARGUMENTS"
           gh workflow run "$WORKFLOW" \
             --repo "$GITHUB_REPOSITORY" \
-            --ref main \
+            --ref "$REF" \
             "${extra_args[@]}"
           echo "started_at=$started_at" >> "$GITHUB_OUTPUT"
 
-      - name: Resolve dispatched run and publish link
+      - name: Resolve and publish dispatched run
         env:
           GH_TOKEN: ${{ github.token }}
           WORKFLOW: ${{ steps.select.outputs.workflow }}
           LABEL: ${{ steps.select.outputs.label }}
+          REF: ${{ steps.select.outputs.ref }}
+          REQUESTED_SHA: ${{ steps.select.outputs.requested_sha }}
           STARTED_AT: ${{ steps.dispatch.outputs.started_at }}
         run: |
           set -Eeuo pipefail
-          run_json=""
-          for attempt in $(seq 1 12); do
+          run_json=''
+          for attempt in $(seq 1 18); do
             run_json="$(
               gh run list \
                 --repo "$GITHUB_REPOSITORY" \
                 --workflow "$WORKFLOW" \
-                --branch main \
+                --branch "$REF" \
                 --event workflow_dispatch \
-                --limit 20 \
+                --limit 30 \
                 --json databaseId,createdAt,status,url,headSha \
               | jq -c --arg started "$STARTED_AT" \
                   '[.[] | select(.createdAt >= $started)] | sort_by(.createdAt) | reverse | .[0] // empty'
             )"
-            if [[ -n "$run_json" ]]; then
-              break
-            fi
+            test -z "$run_json" || break
             sleep 5
           done
-
-          if [[ -z "$run_json" ]]; then
-            cat > run-comment.md <<EOF
-          ⚠️ **${LABEL} wurde ausgelöst**, aber die Run-ID war innerhalb von 60 Sekunden noch nicht abrufbar.
-
-          Unter **Actions** läuft die Prüfung dennoch weiter. Es ist keine erneute Auslösung erforderlich.
-          EOF
-            gh issue comment 12 \
-              --repo "$GITHUB_REPOSITORY" \
-              --body-file run-comment.md
-            echo "::warning title=Run-ID noch nicht sichtbar::Der Workflow wurde ausgelöst, aber noch nicht in der Run-Liste gefunden."
-            exit 0
-          fi
-
+          test -n "$run_json" || {
+            echo "::error title=Run nicht auffindbar::Der Workflow wurde ausgelöst, aber kein passender Run registriert."
+            exit 1
+          }
           run_id="$(jq -r '.databaseId' <<< "$run_json")"
           run_url="$(jq -r '.url' <<< "$run_json")"
           run_status="$(jq -r '.status' <<< "$run_json")"
-          head_sha="$(jq -r '.headSha' <<< "$run_json")"
+          workflow_sha="$(jq -r '.headSha' <<< "$run_json")"
           cat > run-comment.md <<EOF
           🚦 **${LABEL} gestartet**
 
           - Run: [${run_id}](${run_url})
           - Status: \`${run_status}\`
-          - Branch: \`main\`
-          - Commit: \`${head_sha}\`
+          - Vertrauenswürdiger Workflow-Commit: \`${workflow_sha}\`
+          - Geprüfter PR-Commit: \`${REQUESTED_SHA:-nicht zutreffend}\`
 
-          Die Abschlussauswertung erfolgt automatisch.
+          Der Abnahmeworkflow validiert Base- und PR-Head-SHA vor jeder weiteren Prüfung.
           EOF
-          gh issue comment 12 \
-            --repo "$GITHUB_REPOSITORY" \
-            --body-file run-comment.md
-          echo "::notice title=Geschützter Workflow gestartet::${LABEL}, Run ${run_id}, Status ${run_status}."
+          gh issue comment 12 --repo "$GITHUB_REPOSITORY" --body-file run-comment.md
