@@ -30,6 +30,23 @@ def _latest_file(directory: Path, pattern: str) -> Path | None:
         return None
 
 
+def _latest_file_since(directory: Path, pattern: str, since: float) -> Path | None:
+    try:
+        candidates = [
+            path
+            for path in directory.glob(pattern)
+            if path.is_file()
+            and not path.is_symlink()
+            and path.stat().st_mtime >= since - 0.5
+        ]
+    except OSError:
+        return None
+    try:
+        return max(candidates, key=lambda path: path.stat().st_mtime, default=None)
+    except OSError:
+        return None
+
+
 def _tail(path: Path | None, limit: int = 20_000) -> str:
     if path is None:
         return ""
@@ -143,22 +160,23 @@ def _monitor_application(
     application_log: Path | None,
     bootstrap_log: Path | None,
     clean_marker: Path,
+    started_at: float,
 ) -> None:
     RUNTIME.verbose(
         f"Der laufende Anwendungsprozess wird überwacht · PID {pid}.",
-        "Der Starter liest den Application-Log fortlaufend und prüft, ob der Prozess regulär oder unerwartet endet.",
+        "Der Starter liest ausschließlich den Log dieser Startsitzung und prüft, ob der Prozess regulär oder unerwartet endet.",
         str(application_log or "Application-Log noch nicht gefunden"),
         "Debugmodus im Tool ausschalten, wenn diese ausführliche Terminalbegleitung nicht mehr gewünscht ist.",
     )
     offset = 0
     while _process_exists(pid):
-        current_enabled = debug_enabled_from_config(default=True)
-        if not current_enabled:
+        if not debug_enabled_from_config(default=True):
             RUNTIME.set_enabled(False)
             return
-        latest = _latest_file(STATE / "logs", "application_*.log")
-        if latest is not None:
-            application_log = latest
+        if application_log is None:
+            application_log = _latest_file_since(
+                STATE / "logs", "application_*.log", started_at
+            )
         offset = _stream_file(application_log, offset, prefix="APP")
         time.sleep(0.2)
 
@@ -217,15 +235,18 @@ def _monitor_application(
 
 
 def main() -> int:
+    started_at = time.time()
     enabled = debug_enabled_from_config(default=True)
     RUNTIME.set_enabled(enabled)
     os.environ.setdefault("VIDEOBATCH_DEBUG_DIR", str(ROOT / "debugging"))
+    os.environ.pop("VIDEOBATCH_DEBUG_CLEAN_MARKER", None)
 
     watchdog_dir = STATE / "debugging" / "watchdog"
     watchdog_dir.mkdir(parents=True, exist_ok=True)
     clean_marker = watchdog_dir / f"clean_{os.getpid()}_{time.time_ns()}.marker"
     clean_marker.unlink(missing_ok=True)
-    os.environ["VIDEOBATCH_DEBUG_CLEAN_MARKER"] = str(clean_marker)
+    if enabled:
+        os.environ["VIDEOBATCH_DEBUG_CLEAN_MARKER"] = str(clean_marker)
 
     RUNTIME.verbose(
         "VideoBatch-Start wurde angefordert.",
@@ -243,7 +264,6 @@ def main() -> int:
     command = [sys.executable, str(ROOT / "scripts" / "bootstrap.py"), *sys.argv[1:]]
     environment = {
         **os.environ,
-        "VIDEOBATCH_DEBUG": "1" if enabled else "0",
         "PYTHONPATH": os.pathsep.join(
             part for part in (str(SRC), os.environ.get("PYTHONPATH", "")) if part
         ),
@@ -278,7 +298,7 @@ def main() -> int:
     bootstrap_log: Path | None = None
     bootstrap_offset = 0
     while process.poll() is None:
-        latest = _latest_file(STATE / "logs", "bootstrap_*.log")
+        latest = _latest_file_since(STATE / "logs", "bootstrap_*.log", started_at)
         if latest is not None:
             if latest != bootstrap_log:
                 bootstrap_log = latest
@@ -327,7 +347,7 @@ def main() -> int:
         return 0
 
     pid = _ready_pid(bootstrap_log)
-    application_log = _latest_file(STATE / "logs", "application_*.log")
+    application_log = _latest_file_since(STATE / "logs", "application_*.log", started_at)
     if pid is None:
         RUNTIME.verbose(
             "Die Anwendung läuft, ihre Prozess-ID konnte aber nicht aus dem Bootstrap-Log gelesen werden.",
@@ -338,7 +358,7 @@ def main() -> int:
         )
         return 0
 
-    _monitor_application(pid, application_log, bootstrap_log, clean_marker)
+    _monitor_application(pid, application_log, bootstrap_log, clean_marker, started_at)
     return 0
 
 
