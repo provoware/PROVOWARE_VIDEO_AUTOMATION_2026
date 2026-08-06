@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from tkinter import StringVar, ttk
+from tkinter import StringVar, TclError, ttk
 from typing import Callable
 
+from .canonical_kpi import build_kpi_snapshots
 from .canonical_shell_contract import CANONICAL_THEME_LABELS, FONT_PROFILES, SHELL_NAVIGATION
 from .theme import COLORS, apply_theme, available_themes, best_text_color, safe_text_color
 from .versioning import build_label
@@ -35,6 +36,22 @@ class CanonicalShellChromeMixin:
             "ShellKpiHint.TLabel", background=COLORS["panel"], foreground=COLORS["muted"],
             font=("DejaVu Sans", max(9, round(10 * factor))),
         )
+        state_colors = {
+            "empty": COLORS["muted"],
+            "ready": COLORS["accent2"],
+            "loading": COLORS["warning"],
+            "success": COLORS["success"],
+            "warning": COLORS["warning"],
+            "error": COLORS["danger"],
+            "disabled": COLORS["disabled"],
+        }
+        for state, color in state_colors.items():
+            style.configure(
+                f"ShellKpiState{state.title()}.TLabel",
+                background=COLORS["panel"],
+                foreground=safe_text_color(COLORS["panel"], color),
+                font=("DejaVu Sans", max(9, round(10 * factor)), "bold"),
+            )
         style.configure(
             "ShellNav.TButton", background=COLORS["toolbar"], foreground=toolbar_text,
             padding=(12, 10), anchor="w", relief="flat", borderwidth=0,
@@ -121,22 +138,91 @@ class CanonicalShellChromeMixin:
         row.grid(row=1, column=0, sticky="ew", pady=(0, 11))
         for column in range(4):
             row.columnconfigure(column, weight=1, uniform="kpi")
-        self.shell_media_kpi = StringVar(value="0")
-        self.shell_queue_kpi = StringVar(value="0")
-        self.shell_effect_kpi = StringVar(value="Automatik")
-        self.shell_scheduler_kpi = StringVar(value="Nicht geplant")
+
+        self._shell_kpi_value_vars = {key: StringVar(value="–") for key in ("media", "queue", "effects", "scheduler")}
+        self._shell_kpi_detail_vars = {key: StringVar(value="Wird ermittelt") for key in self._shell_kpi_value_vars}
+        self._shell_kpi_status_vars = {key: StringVar(value="Prüfung") for key in self._shell_kpi_value_vars}
+        self.shell_media_kpi = self._shell_kpi_value_vars["media"]
+        self.shell_queue_kpi = self._shell_kpi_value_vars["queue"]
+        self.shell_effect_kpi = self._shell_kpi_value_vars["effects"]
+        self.shell_scheduler_kpi = self._shell_kpi_value_vars["scheduler"]
+        self._shell_kpi_status_labels = {}
+        self._shell_kpi_buttons = {}
+
         cards = (
-            ("Medien", self.shell_media_kpi, "Audio, Bilder und Videos"),
-            ("Queue", self.shell_queue_kpi, "vorbereitete Aufträge"),
-            ("Effekte", self.shell_effect_kpi, "aktiver Look"),
-            ("Startzeituhr", self.shell_scheduler_kpi, "vollständig in Checkpoint 5"),
+            ("media", "Medien", 1, "Medien öffnen"),
+            ("queue", "Queue", 4, "Queue öffnen"),
+            ("effects", "Effekte", 3, "Effekte öffnen"),
+            ("scheduler", "Startzeituhr", None, "Checkpoint 5"),
         )
-        for column, (title, variable, hint) in enumerate(cards):
+        for column, (key, title, page_index, action_label) in enumerate(cards):
             card = ttk.Frame(row, style="ShellCard.TFrame", padding=(14, 11))
             card.grid(row=0, column=column, sticky="nsew", padx=4)
             ttk.Label(card, text=title, style="ShellKpiHint.TLabel").pack(anchor="w")
-            ttk.Label(card, textvariable=variable, style="ShellKpi.TLabel").pack(anchor="w", pady=(4, 1))
-            ttk.Label(card, text=hint, style="ShellKpiHint.TLabel").pack(anchor="w")
+            ttk.Label(card, textvariable=self._shell_kpi_value_vars[key], style="ShellKpi.TLabel").pack(
+                anchor="w", pady=(4, 1)
+            )
+            ttk.Label(
+                card,
+                textvariable=self._shell_kpi_detail_vars[key],
+                style="ShellKpiHint.TLabel",
+                wraplength=220,
+                justify="left",
+            ).pack(anchor="w")
+            status = ttk.Label(
+                card,
+                textvariable=self._shell_kpi_status_vars[key],
+                style="ShellKpiStateEmpty.TLabel",
+            )
+            status.pack(anchor="w", pady=(6, 5))
+            self._shell_kpi_status_labels[key] = status
+            button = ttk.Button(
+                card,
+                text=action_label,
+                style="Ghost.TButton",
+                command=(lambda index=page_index: self._select_shell_page(index)) if page_index is not None else None,
+            )
+            button.pack(fill="x")
+            self._shell_kpi_buttons[key] = button
+
+        self._refresh_kpi_cards()
+        self._shell_kpi_poll_id = self.root.after(1000, self._poll_shell_kpis)
+
+    def _refresh_kpi_cards(self) -> None:
+        if not hasattr(self, "_shell_kpi_value_vars"):
+            return
+        paths = tuple(getattr(self, "audios", ())) + tuple(getattr(self, "media", ()))
+        missing_sources = sum(1 for path in paths if not path.is_file())
+        last_results = tuple(getattr(self, "last_results", ()))
+        failed_jobs = sum(1 for result in last_results if not bool(getattr(result, "success", False)))
+        active_tasks = self.tasks.active_names() if hasattr(self, "tasks") else ()
+        snapshots = build_kpi_snapshots(
+            audio_count=len(getattr(self, "audios", ())),
+            media_count=len(getattr(self, "media", ())),
+            missing_sources=missing_sources,
+            job_count=len(getattr(self, "jobs", ())),
+            completed_jobs=len(last_results),
+            failed_jobs=failed_jobs,
+            active_tasks=active_tasks,
+            visual_effect=self.visual_effect.get(),
+            transition=self.transition.get(),
+            quick_mode=self.quick_mode.get(),
+        )
+        for key, snapshot in snapshots.items():
+            self._shell_kpi_value_vars[key].set(snapshot.value)
+            self._shell_kpi_detail_vars[key].set(snapshot.detail)
+            self._shell_kpi_status_vars[key].set(snapshot.status)
+            self._shell_kpi_status_labels[key].configure(style=f"ShellKpiState{snapshot.state.title()}.TLabel")
+            self._shell_kpi_buttons[key].configure(state="normal" if snapshot.action_enabled else "disabled")
+
+    def _poll_shell_kpis(self) -> None:
+        try:
+            if not self.root.winfo_exists():
+                return
+            self._refresh_kpi_cards()
+            self._shell_kpi_poll_id = self.root.after(1000, self._poll_shell_kpis)
+        except TclError:
+            return
 
     def _build_shell_actions(self, parent) -> None:
         bar = ttk.Frame(parent, style="ShellHeader.TFrame", padding=(8, 6))
@@ -188,3 +274,4 @@ class CanonicalShellChromeMixin:
     def _refresh_theme_widgets(self) -> None:
         super()._refresh_theme_widgets()
         self._configure_shell_styles()
+        self._refresh_kpi_cards()
