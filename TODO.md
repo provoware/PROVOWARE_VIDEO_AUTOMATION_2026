@@ -42,7 +42,7 @@ Die kanonische Referenz ist `docs/design/VIDEOBATCH_CANONICAL_UI_REFERENCE.svg`.
 
 - [x] **UI-P2-001 – Layoutvertragstests:** Breakpoints, Spaltenrechner, Bildschirmgeometrie, Pflichtzonen, Scrollbereich, MRO und lokale Prüfmodi besitzen statische Tests.
 - [ ] **UI-P2-002 – Reale KDE-Sichtprüfung:** Screenshots bei 1024×768, 1366×768, 1500×920 und 1920×1080 sowie bei 90 %, 105 % und 125 % Schriftprofil dokumentieren.
-- [ ] **UI-P2-003 – Überlagerungswächter:** Nach `update_idletasks()` Widget-Rechtecke auf negative Größe, Überschneidung von Geschwistern und außerhalb des sichtbaren Containers liegende Primäraktionen prüfen.
+- [x] **UI-P2-003 – Überlagerungswächter:** Der vorhandene GUI-Rundtrip instanziiert die kanonische Anwendung und prüft Kopfzeile, KPI-Karten, Aktionsleiste, Dashboardkarten und Hilfeeinstiege auf Überschneidung sowie Verlassen ihrer Container.
 - [ ] **UI-P2-004 – Mustervergleich ohne Merge-Gate:** Lokales Prüfwerkzeug erzeugt einen Bericht über Zonen, Maße und Abweichungen; es blockiert keinen Merge automatisch.
 - [ ] **UI-P2-005 – Historische und aktuelle Referenzen trennen:** Alte Screenshots bleiben Nachweise; nur eine ausdrücklich gekennzeichnete kanonische Referenz steuert neue Untermodule.
 
