@@ -19,6 +19,32 @@ DASHBOARD_COLUMN_WEIGHTS = (22, 48, 30)
 SIDEBAR_WIDTH = 220
 
 
+def dashboard_layout_mode(content_width: int) -> str:
+    """Return the canonical dashboard mode for the usable content width."""
+    width = max(0, int(content_width))
+    if width <= DASHBOARD_STACKED_MAX:
+        return "stacked"
+    if width <= DASHBOARD_TWO_COLUMN_MAX:
+        return "two_columns"
+    return "three_columns"
+
+
+def responsive_column_count(
+    available_width: int,
+    requested_item_width: int,
+    maximum: int,
+    *,
+    minimum_item_width: int = 145,
+) -> int:
+    """Fit complete controls without ever returning zero or too many columns."""
+    limit = max(1, int(maximum))
+    available = max(0, int(available_width))
+    requested = max(int(minimum_item_width), int(requested_item_width))
+    if available <= 0:
+        return 1
+    return max(1, min(limit, available // requested))
+
+
 @dataclass(frozen=True)
 class ShellNavigationItem:
     key: str
