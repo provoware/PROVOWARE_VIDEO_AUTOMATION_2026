@@ -1,70 +1,95 @@
-# Offene Punkte nach RC24-Finalbereinigung
+# TODO – aktueller Arbeitsplan
 
-## Aktueller Schwerpunkt: Musterabgleich und robuste Desktop-Oberfläche
+## Schwerpunkt
 
-Die kanonische Referenz ist `docs/design/VIDEOBATCH_CANONICAL_UI_REFERENCE.svg`. Die folgenden Punkte stammen aus dem direkten Vergleich zwischen Referenz, Designmanifest, aktuellem Tk-Aufbau und der gemeldeten realen KDE-Darstellung.
+Aktuell haben **Start-/Absturzstabilität** und der reale **Soll/Ist-Bildvergleich** Vorrang vor weiteren Features.
 
-**Statusregel:** Ein abgehakter Punkt bedeutet, dass die Codeänderung und ein statischer Vertrag vorliegen. Die reale Sichtabnahme unter KDE bleibt gesammelt unter `UI-P2-002` offen.
+Verbindliche visuelle Arbeitsliste:
 
-### P0 – sichtbare Layoutfehler und Blocker
+`VIDEOBATCH_BILDVERGLEICH_CHECKLISTE_2026-08-07.txt`
 
-- [x] **UI-P0-001 – Kanonisches Dashboard statt alter Einzelseite:** Quellen, Render-Queue und Jobdetails liegen gleichzeitig in einem echten, datenangebundenen Arbeitsbereich; der bisherige geführte Startassistent bleibt separat erreichbar.
-- [x] **UI-P0-002 – Kontrolliertes vertikales Scrollen:** Das Dashboard besitzt einen eigenen Canvas-Scrollbereich; der Footer und die Navigation bleiben fest.
-- [x] **UI-P0-003 – Responsive Spaltenumschaltung:** Reine, getestete Breakpoints steuern drei Spalten, zwei Spalten und kontrolliertes Stapeln.
-- [x] **UI-P0-004 – Kopfzeile verdichten:** Theme- und Schriftwahl wurden aus dem Header entfernt; Suche und Bedienung brechen nur bei tatsächlich fehlender Breite kontrolliert um.
-- [x] **UI-P0-005 – KPI-Karten gegen Schriftüberlauf härten:** Detailtexte verwenden reale Kartenbreiten, KPI-Karten wechseln zwischen vier, zwei und einer Spalte, Wiederherstellungsaktionen bleiben kompakt.
-- [x] **UI-P0-006 – Aktionsleiste nach Wunschbreite umbrechen:** Die Spaltenzahl wird aus verfügbarer Breite und `winfo_reqwidth()` berechnet.
-- [x] **UI-P0-007 – Hilfeeinstiege responsiv anordnen:** Die fünf „Ich möchte …“-Aktionen verwenden einen zentral getesteten Spaltenrechner.
-- [x] **UI-P0-008 – Mindestgrößen und gespeicherte Geometrie begrenzen:** Gespeicherte Größe und Position werden auf sichtbare Bildschirmgrenzen normalisiert.
-- [x] **TC-P0-001 – Lokale Prüfung nicht durch fehlendes Wheelhouse blockieren:** `verify_release.sh` verwendet standardmäßig die vorhandene bestätigte Qualitätsumgebung; `--strict` bleibt der reproduzierbare Stable-Pfad.
-- [x] **TC-P0-002 – Verständliche Wheelhouse-Diagnose:** Lokale Qualitätsprüfung, Kernprüfung und strenge Wheelhouse-/Signaturprüfung sind in Hilfe und Ausgabe eindeutig getrennt.
+Die Checkliste enthält die detaillierten Einzelbefunde `UI-001` bis `UI-081` sowie die reale Endabnahme `A-001` bis `A-022`. Diese Punkte werden hier bewusst **nicht dupliziert**. `TODO.md` steuert nur Reihenfolge, Arbeitsstatus und Abschlussnachweise.
 
-### P1 – funktionale Unterschiede zum Muster
+## Statusregel – ab jetzt verbindlich
 
-- [x] **UI-P1-001 – Quellenkarte an reale Medien- und Projektdaten binden:** Anzahl, fehlende Pfade, Projektname, Ausgabeziel und bis zu einhundert reale Quelldateien werden angezeigt.
-- [x] **UI-P1-002 – Queue-Tabelle im Dashboard:** Reale Jobs mit Name, Effekt, Status und Fortschritt sowie eine lokale Suche werden angezeigt.
-- [x] **UI-P1-003 – Jobdetail- und Vorschaukarte:** Reale Vorschauvariablen, ausgewählter Auftrag, Effekt, Modus, Auflösung, Codec und Ziel werden verwendet.
-- [x] **UI-P1-004 – Scheduler sichtbar, aber ehrlich deaktiviert:** Die Startzeituhr bleibt bis Checkpoint 5 sichtbar deaktiviert; kein Attrappenstart wurde ergänzt.
-- [x] **UI-P1-005 – Darstellungskarte aus dem Header verschieben:** Theme und Schriftprofil befinden sich in einem eigenen Dashboardbereich.
-- [x] **UI-P1-006 – Footer auf eine kompakte Statuszeile begrenzen:** Führungstext wird einzeilig begrenzt; der Systemzustand bleibt separat sichtbar.
-- [ ] **UI-P1-007 – Sidebar-Systemwerte vervollständigen:** Das Muster zeigt CPU, RAM, GPU und Cache. Nur tatsächlich messbare Werte dürfen ergänzt werden; unbekannte GPU-Beschleunigung darf nicht erfunden werden.
-- [x] **UI-P1-008 – Typografie konsistent skalieren:** Shelltitel, KPI-Werte, Hinweise, Navigation und kompakte Aktionen verwenden zentrale Profile für 90 %, 105 % und 125 %.
-- [ ] **UI-P1-009 – Referenz-Hashangaben synchronisieren:** Textmanifest und Designtokens enthalten unterschiedliche SHA-256-Angaben für dieselben SVG-Referenzen. Die tatsächlichen Dateihashes müssen lokal ermittelt und genau einmal übernommen werden.
-- [ ] **UI-P1-010 – Reale Laufzeitbadges im Header:** FFmpeg-Version, Cachezustand und verfügbare Beschleunigung wie im Muster anzeigen; nur aus echten Diagnosedaten.
-- [ ] **UI-P1-011 – Livefortschritt in der Dashboard-Queue:** Laufender Einzel- und Gesamtfortschritt soll aus den bestehenden Progressvariablen in die passende Tabellenzeile gespiegelt werden.
-- [ ] **UI-P1-012 – Jobdetailregister:** Vorschau, Effekte und Ausgabe als klar getrennte, tastaturerreichbare Detailbereiche abbilden, ohne die bestehende Vorschauseite zu duplizieren.
-- [ ] **UI-P1-013 – Backupstatus und sichere Aktion:** Das Muster besitzt Backupstatus und Schalter. Nur vorhandene, bestätigte Backupfunktionen dürfen angebunden werden.
-- [ ] **UI-P1-014 – Reichere Footerkennzahlen:** CPU, RAM, FFmpeg, Cache, Projektordner und Backup wie im Muster nur dann anzeigen, wenn die Werte ohne Pollinglast und ohne Attrappen verfügbar sind.
-- [ ] **UI-P1-015 – Icon- und Akzentkonsistenz:** Kartenicons, farbige Akzentlinien und Zustands-Pills an die Referenz annähern; keine externen Bildabhängigkeiten.
-- [ ] **UI-P1-016 – Pixelabstände nach realen Screenshots feinjustieren:** Karteninnenabstände, Tabellenzeilen, Sidebarhöhe und Vorschauanteil erst nach der KDE-Matrix endgültig festlegen.
+- `[x]` bedeutet: Implementierung **und** passende reale/automatisierte Abnahme sind nachgewiesen.
+- Ein statischer Vertrag allein schließt keinen sichtbaren UI-Punkt mehr ab.
+- Ein GitHub-Status `mergeable` ist keine Laufzeit- oder Sichtabnahme.
+- Ein realer Screenshot, Crashbericht oder Test, der einen früheren Haken widerlegt, **öffnet den Punkt wieder**.
+- Frühere visuelle Häkchen aus der Vorabimplementierung gelten deshalb nicht mehr als Endabnahme; die Bildvergleichscheckliste ist für die aktuelle Oberfläche maßgeblich.
 
-### P2 – nachhaltige Absicherung
+## P0 – zuerst: Startabsturz real reproduzieren
 
-- [x] **UI-P2-001 – Layoutvertragstests:** Breakpoints, Spaltenrechner, Bildschirmgeometrie, Pflichtzonen, Scrollbereich, MRO und lokale Prüfmodi besitzen statische Tests.
-- [ ] **UI-P2-002 – Reale KDE-Sichtprüfung:** Screenshots bei 1024×768, 1366×768, 1500×920 und 1920×1080 sowie bei 90 %, 105 % und 125 % Schriftprofil dokumentieren.
-- [x] **UI-P2-003 – Überlagerungswächter:** Der vorhandene GUI-Rundtrip instanziiert die kanonische Anwendung und prüft Kopfzeile, KPI-Karten, Aktionsleiste, Dashboardkarten und Hilfeeinstiege auf Überschneidung sowie Verlassen ihrer Container.
-- [ ] **UI-P2-004 – Mustervergleich ohne Merge-Gate:** Lokales Prüfwerkzeug erzeugt einen Bericht über Zonen, Maße und Abweichungen; es blockiert keinen Merge automatisch.
-- [ ] **UI-P2-005 – Historische und aktuelle Referenzen trennen:** Alte Screenshots bleiben Nachweise; nur eine ausdrücklich gekennzeichnete kanonische Referenz steuert neue Untermodule.
+- [ ] **RUN-P0-001 – Aktuellen `main` auf dem Kubuntu-Zielsystem starten:** `./STARTEN.sh` mit aktivem Debugmodus ausführen.
+- [ ] **RUN-P0-002 – Absturzbericht sichern:** Bei erneutem Abbruch den automatisch erzeugten TXT-Bericht aus `debugging/` und die relevante Konsolenausgabe als primäre Ursache verwenden.
+- [ ] **RUN-P0-003 – Nur den ersten realen Crashbefund korrigieren:** Keine Layout-, Architektur- oder Toolchainumbauten, bevor der konkrete Startfehler eingegrenzt ist.
+- [ ] **RUN-P0-004 – Regulären Abschluss gegen Crash unterscheiden:** Nach dem Fix Start, kurze Bedienung und normales Schließen prüfen; der Wächter darf einen normalen Abschluss nicht als Absturz melden.
 
-## Erledigt
+## P0/P1/P2 – `VIDEOBATCH_BILDVERGLEICH_CHECKLISTE_2026-08-07.txt` abarbeiten
 
-- [x] Projektstamm von historischen RC-Berichten bereinigt; Nachweise verlustfrei archiviert.
-- [x] Doppelte veraltete visuelle Baselines entfernt.
-- [x] Releasefertige eigenständige Unterlagen mit `_save_` gekennzeichnet.
-- [x] Fertig/unfertig maschinenlesbar in `RELEASE_FILE_STATUS.json` und zweispaltig in README dokumentiert.
-- [x] Vorschauerzeugung für FFmpeg 7+ und beschädigte Cacheziele gehärtet.
-- [x] Hilfe-, Cache- und Auswahltexte zentralisiert und Tooltips verbessert.
-- [x] Ubuntu 22.04/24.04 × X11/Wayland als verpflichtende PR-Matrix etabliert.
-- [x] Typisierten und versionierten `AppEvent`-Vertrag als zentrale UI-Ereignisgrenze eingeführt.
-- [x] `BatchRunner` vollständig auf direkte `AppEvent`-Ausgabe mit typisierten Kern-Payloads migriert.
-- [x] AST-Wächter blockiert neue freie `(name, payload)`-Ereignistupel außerhalb der Legacy-Grenze.
-- [x] `SelectionPreviewController` auf direkte `AppEvent`-Ausgabe mit zwei Pflicht-Payloads migriert.
-- [x] Zentrales Ereignisregister und Vollständigkeitsgate für Producer, Handler, Payloadtypen, Terminalstatus und Vertragstests ergänzt.
-- [x] Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4 und pip-audit 2.10.1 gebunden ausgeführt.
+### Vorbedingung
+
+- [ ] **BV-000 – Bildzuordnung final bestätigen:** Die vereinbarte Uploadreihenfolge lautet *Muster zuerst, aktuelle Oberfläche zweitens*. Die vorhandene Checkliste bezeichnet im Kopf aktuell `Bild 1` als IST und `Bild 2` als SOLL. Vor einem Pixelpatch wird die Zuordnung anhand der Originalbilder/Filenames einmal eindeutig bestätigt. Die fachlichen Soll/Ist-Befunde werden nicht aus Vermutung umgedreht.
+- [ ] **BV-001 – Ausgangszustand sichern:** Fenstergröße, Screenshotauflösung, KDE-Skalierung, Schriftprofil, Theme und X11/Wayland für den realen IST-Screenshot dokumentieren.
+
+### Empfohlene Reihenfolge aus der Checkliste
+
+- [ ] **BV-010 – UI-003 bis UI-012:** Höhenbudget, Clipping und sichtbaren Hauptarbeitsbereich korrigieren. **P0 zuerst.**
+- [ ] **BV-011 – UI-041, UI-045, UI-052, UI-054:** echte Drei-Spalten-Kernoberfläche herstellen und real prüfen.
+- [ ] **BV-012 – UI-004, UI-013 bis UI-019:** kompakte Topbar nach Muster herstellen.
+- [ ] **BV-013 – UI-028 bis UI-036:** KPI-Karten vollständig verdichten; Diagnoseprosa aus der Primäransicht entfernen.
+- [ ] **BV-014 – UI-020 bis UI-027:** Sidebar strukturell und visuell angleichen; nur echte Systemdaten anzeigen.
+- [ ] **BV-015 – UI-037 bis UI-040:** Actionbar auf kompakte, vollständig lesbare Bedienung bringen.
+- [ ] **BV-016 – UI-042 bis UI-058:** Quellen-, Queue- und Detailfunktionen strukturell und visuell angleichen.
+- [ ] **BV-017 – UI-059 bis UI-063:** Schedulerstruktur angleichen; funktional bis Checkpoint 5 weiterhin sichtbar gesperrt lassen.
+- [ ] **BV-018 – UI-064 bis UI-071:** Footer und Systemmetriken angleichen; keine erfundenen Werte.
+- [ ] **BV-019 – UI-072 bis UI-081:** Pixel-, Farb-, Icon- und Stil-Feinschliff erst nach stabiler Geometrie.
+- [ ] **BV-020 – A-001 bis A-022:** vollständige reale visuelle Endabnahme durchführen.
+- [ ] **BV-021 – Finale TXT-Auswertung:** vollständige Bildervergleichsauswertung mit erledigten/offenen IDs und realen Prüfwerten ausgeben.
+
+## P0 – Überlagerung und Clipping als eigene Abnahmeklasse
+
+Diese Punkte dürfen nicht durch Scrollen oder kleinere Schrift lediglich verdeckt werden:
+
+- [ ] **LAY-P0-001 – Schrift unter anderem Element:** kein Label/Text darf hinter Button, Entry, Treeview, Canvas oder Nachbarkarte liegen.
+- [ ] **LAY-P0-002 – Containergrenzen:** Primäraktionen und Pflichtinformationen bleiben vollständig innerhalb ihres vorgesehenen Containers.
+- [ ] **LAY-P0-003 – Text-Clipping:** keine abgeschnittenen letzten Zeilen, Buttontexte oder Tabellenköpfe.
+- [ ] **LAY-P0-004 – Vertikales Höhenbudget:** Header + KPI + Actionbar dürfen den Kernarbeitsbereich nicht aus dem normalen Viewport verdrängen.
+- [ ] **LAY-P0-005 – Proportionsfehler:** Quellen, Queue und Jobdetails erhalten die aus dem bestätigten Muster abgeleiteten relativen Flächenanteile.
+- [ ] **LAY-P0-006 – Resize-/Schriftrobustheit:** 90 %, 105 % und 125 % sowie kleine/mittlere/große Fenster ohne Überlagerung prüfen.
+
+## P2 – geometrischen GUI-Wächter nach der Bildkorrektur erweitern
+
+- [ ] **GUARD-P2-001 – Sollzonen aus echten Messungen ableiten:** Header, KPI, Hauptarbeitsbereich, Sidebar und Footer anhand der bestätigten Referenz messen.
+- [ ] **GUARD-P2-002 – Mindestabstände ableiten:** nur tatsächlich gemessene Mindestabstände und sinnvolle Toleranzen festlegen; keine erfundenen Pixelwerte.
+- [ ] **GUARD-P2-003 – Bestehenden GUI-Rundtrip erweitern:** Zonen, Mindestabstände, Clipping und Containerüberschreitung in den vorhandenen Test integrieren; **kein neuer GitHub-Workflow**.
+- [ ] **GUARD-P2-004 – Menschliche Fehlermeldung:** der Wächter nennt Zone, Istwert, Sollbereich/Toleranz und den nächstmöglichen Reparaturhinweis.
+- [ ] **GUARD-P2-005 – Reale KDE-Gegenprobe:** automatisierter Wächter und echter Screenshot müssen übereinstimmen, bevor die Bildkorrektur abgeschlossen wird.
+
+## Entwicklungsweise – Effizienzkorrekturen
+
+- [x] **DEV-001 – `AGENTS.md` auf Minimalpatch-Prinzip umgestellt:** reproduzieren → eingrenzen → minimal korrigieren → gezielt prüfen → real abnehmen.
+- [x] **DEV-002 – Scope-Churn entfernt:** keine Pflicht mehr, in jeder Iteration pauschal README, CHANGELOG, Hilfe, Startlogik und Erscheinungsbild gleichzeitig zu ändern.
+- [x] **DEV-003 – Workflow-Proliferation untersagt:** lokale Design-/Dokumentations-/Bildprüfungen werden nicht ohne echten Bedarf zu neuen Required-Checks.
+- [x] **DEV-004 – Release-Manifest auf einen finalen Lauf begrenzt:** keine Regeneration zwischen Einzelpatches.
+- [x] **DEV-005 – Codesparsamkeit priorisiert:** bestehende Module/Tests wiederverwenden; neue Datei/Mixin/Abstraktion nur bei klarer Verantwortungsgrenze.
+- [ ] **DEV-006 – Ab nächstem Codepatch Patchbudget anwenden:** bevorzugt höchstens 3 Produktdateien + 1 fokussierte Testdatei pro Einzelbefund.
+- [ ] **DEV-007 – Ab nächstem Codepatch reale Ursache zuerst:** kein neuer struktureller Umbau, solange ein aktueller Crashbericht oder Screenshotbefund noch nicht eingegrenzt ist.
+
+## Bereits vorhandene technische Grundlagen
+
+- [x] Typisierter `AppEvent`-Vertrag und Ereignisregister vorhanden.
+- [x] BatchRunner und SelectionPreviewController auf typisierte Kernereignisse migriert.
+- [x] AST-/Ereignisarchitekturwächter vorhanden.
+- [x] Dokumentations-Schnellprüfung über `./test.sh --docs` vorhanden.
+- [x] Lokale Qualitätsprüfung und strenger Stable-Pfad getrennt.
+- [x] Persistenter menschlicher Debugmodus mit TXT-Absturzberichten vorhanden.
+- [x] Bestehender GUI-Rundtrip besitzt eine grundlegende Überlagerungsprüfung; seine Sollwerte werden erst nach der realen Bildkorrektur erweitert.
 
 ## Noch offene Stable-Gates
 
-- [ ] Physische KDE-Abnahme unter X11 und Wayland dokumentieren.
-- [ ] Langzeitrender mit großer Medienauswahl und langsamem externem Ziel durchführen.
+- [ ] **Physische KDE-Abnahme unter X11 und Wayland** für den finalen, korrigierten UI-Stand dokumentieren.
+- [ ] **Langzeitrender** mit großer Medienauswahl und langsamem externem Ziel durchführen.
+- [ ] `RELEASE_MANIFEST.json` erst **nach** finalem Code-/UI-/Startnachweis genau einmal regenerieren und anschließend read-only verifizieren.
 
-Stable bleibt bis zum vollständigen Nachweis der beiden bewusst geparkten Realabnahmen gesperrt.
+Stable bleibt gesperrt, bis diese realen Nachweise auf demselben unveränderten Kandidaten vorliegen.
