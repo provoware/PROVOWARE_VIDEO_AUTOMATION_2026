@@ -1,0 +1,22 @@
+{
+  "checkpoint": 3,
+  "iteration": 1,
+  "purpose": "Trigger exact-head validation of real KPI states, navigation actions, manifest integrity and the four-way Kubuntu shell matrix.",
+  "main_sha": "049376fc8273a17f97d8b211d550ec8e9b6be4ca",
+  "release_manifest_synchronized": true,
+  "release_set_excluded": true,
+  "required_checks": [
+    "design_manifest_contract",
+    "canonical_kpi_contract",
+    "release_manifest_read_only",
+    "ubuntu-22.04/x11",
+    "ubuntu-22.04/wayland",
+    "ubuntu-24.04/x11",
+    "ubuntu-24.04/wayland"
+  ],
+  "expected_runtime_markers": [
+    "CHECKPOINT2_CANONICAL_SHELL_OK",
+    "CHECKPOINT3_CANONICAL_KPI_ITERATION_OK"
+  ],
+  "schema_version": 1
+}

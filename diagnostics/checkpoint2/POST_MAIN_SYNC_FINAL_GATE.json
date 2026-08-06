@@ -1,0 +1,17 @@
+{
+  "checkpoint": 2,
+  "purpose": "Trigger one final exact-head revalidation after the controlled two-parent merge of main commit 049376fc8273a17f97d8b211d550ec8e9b6be4ca.",
+  "main_sha": "049376fc8273a17f97d8b211d550ec8e9b6be4ca",
+  "merge_head_before_trigger": "ae6c5ae6148e16840fe1c69eb4f7a704f61f369b",
+  "release_set_excluded": true,
+  "required_checks": [
+    "ancestry_ahead_zero_behind",
+    "release_manifest_read_only",
+    "design_manifest_contract",
+    "ubuntu-22.04/x11",
+    "ubuntu-22.04/wayland",
+    "ubuntu-24.04/x11",
+    "ubuntu-24.04/wayland"
+  ],
+  "schema_version": 1
+}
