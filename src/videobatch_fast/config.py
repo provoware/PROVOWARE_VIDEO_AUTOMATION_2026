@@ -54,13 +54,12 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "auto_open_output": True,
     "workflow_layout_mode": DEFAULT_WORKFLOW_LAYOUT_MODE,
     "current_project_file": str(default_project_file()),
+    "debug_mode": True,
 }
-
 
 
 def config_file() -> Path:
     return config_dir() / "config.json"
-
 
 
 def _normalize_area_zoom(raw: Any) -> dict[str, int]:
@@ -72,6 +71,7 @@ def _normalize_area_zoom(raw: Any) -> dict[str, int]:
         except (TypeError, ValueError):
             result[area] = 100
     return result
+
 
 def _bounded_int(value: Any, default: int, minimum: int, maximum: int) -> int:
     try:
@@ -125,6 +125,7 @@ def _normalize_ui_fields(result: dict[str, Any]) -> None:
     result["archive_used"] = bool(result.get("archive_used", False))
     result["playlist_shuffle"] = bool(result.get("playlist_shuffle", False))
     result["auto_open_output"] = bool(result.get("auto_open_output", True))
+    result["debug_mode"] = bool(result.get("debug_mode", True))
 
 
 def _normalize_file_fields(result: dict[str, Any]) -> None:

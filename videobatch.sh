@@ -29,7 +29,7 @@ VideoBatch Fast – automatischer zentraler Einstieg
   ./videobatch.sh retry-status    Wiederanlaufliste vollständig lesend anzeigen
   ./videobatch.sh recovery-check  Wiederanlauf und Journale vollständig lesend vergleichen
   ./videobatch.sh portable-build  portable Offline-Ausgabe erzeugen
-  ./videobatch.sh logs            letzten Start- und Toolchainbericht anzeigen
+  ./videobatch.sh logs            Bootstrap-, App-, Debug- und Toolchainprotokolle anzeigen
   ./videobatch.sh help            diese Hilfe anzeigen
 
 Option für vollständig offline:
@@ -83,16 +83,54 @@ toolchain_python() {
 
 start_application() {
   require_system
-  exec "$BOOTSTRAP_PYTHON" "$ROOT_DIR/scripts/bootstrap.py"
+  exec "$BOOTSTRAP_PYTHON" "$ROOT_DIR/scripts/debug_launcher.py"
+}
+
+latest_log() {
+  local directory="$1" pattern="$2"
+  find "$directory" -maxdepth 1 -type f -name "$pattern" -printf '%T@ %p\n' 2>/dev/null \
+    | sort -nr | head -n1 | cut -d' ' -f2-
+}
+
+latest_debug_report() {
+  find "$ROOT_DIR/debugging" "$STATE_ROOT/debugging" -maxdepth 1 -type f -name '*.txt' -printf '%T@ %p\n' 2>/dev/null \
+    | sort -nr | head -n1 | cut -d' ' -f2-
 }
 
 show_logs() {
-  local start_log tool_log
-  start_log="$(find "$STATE_ROOT/logs" -maxdepth 1 -type f -name 'start_*.log' -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -n1 | cut -d' ' -f2-)"
-  tool_log="$(find "$STATE_ROOT/toolchain" -maxdepth 1 -type f -name '*.log' -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -n1 | cut -d' ' -f2-)"
-  [[ -n "$start_log" ]] && { printf '\nLETZTER STARTBERICHT: %s\n' "$start_log"; tail -n 80 "$start_log"; }
-  [[ -n "$tool_log" ]] && { printf '\nLETZTER TOOLCHAINBERICHT: %s\n' "$tool_log"; tail -n 80 "$tool_log"; }
-  [[ -n "$start_log$tool_log" ]] || printf 'Noch keine Protokolle vorhanden.\n'
+  local start_log tool_log bootstrap_log application_log debug_report found=0
+  start_log="$(latest_log "$STATE_ROOT/logs" 'start_*.log')"
+  bootstrap_log="$(latest_log "$STATE_ROOT/logs" 'bootstrap_*.log')"
+  application_log="$(latest_log "$STATE_ROOT/logs" 'application_*.log')"
+  tool_log="$(latest_log "$STATE_ROOT/toolchain" '*.log')"
+  debug_report="$(latest_debug_report)"
+
+  if [[ -n "$bootstrap_log" ]]; then
+    found=1
+    printf '\nLETZTER BOOTSTRAP-LOG: %s\n' "$bootstrap_log"
+    tail -n 120 "$bootstrap_log"
+  fi
+  if [[ -n "$application_log" ]]; then
+    found=1
+    printf '\nLETZTER APPLICATION-LOG: %s\n' "$application_log"
+    tail -n 160 "$application_log"
+  fi
+  if [[ -n "$debug_report" ]]; then
+    found=1
+    printf '\nLETZTER MENSCHLICHER DEBUGBERICHT: %s\n' "$debug_report"
+    tail -n 200 "$debug_report"
+  fi
+  if [[ -n "$start_log" ]]; then
+    found=1
+    printf '\nLETZTER STARTBERICHT: %s\n' "$start_log"
+    tail -n 80 "$start_log"
+  fi
+  if [[ -n "$tool_log" ]]; then
+    found=1
+    printf '\nLETZTER TOOLCHAINBERICHT: %s\n' "$tool_log"
+    tail -n 80 "$tool_log"
+  fi
+  [[ "$found" == 1 ]] || printf 'Noch keine VideoBatch-Protokolle vorhanden.\n'
 }
 
 require_project

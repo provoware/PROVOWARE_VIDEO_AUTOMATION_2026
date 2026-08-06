@@ -10,6 +10,6 @@ case "${1:-}" in
   --backup-approval-key) shift; exec "$ROOT_DIR/videobatch.sh" backup-approval-key "$@" ;;
   --status) shift; exec "$ROOT_DIR/videobatch.sh" startup-status "$@" ;;
   --doctor) shift; exec "$ROOT_DIR/videobatch.sh" doctor "$@" ;;
-  "") exec "$ROOT_DIR/videobatch.sh" start ;;
-  *) exec "$ROOT_DIR/videobatch.sh" start "$@" ;;
+  "") exec "$ROOT_DIR/STARTEN.sh" ;;
+  *) exec "$ROOT_DIR/STARTEN.sh" "$@" ;;
 esac
