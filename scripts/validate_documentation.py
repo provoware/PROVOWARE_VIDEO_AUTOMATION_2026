@@ -18,6 +18,7 @@ HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")
 LINK_RE = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 VERSION_RE = re.compile(r"(?<![\w.-])(\d+\.\d+\.\d+(?:-rc\d+)?)(?![\w.-])")
 ALLOWED_CATEGORIES = frozenset({"active", "technical", "historical", "internal"})
+STRICT_CATEGORIES = frozenset({"active", "technical"})
 
 
 @dataclass(frozen=True)
@@ -28,7 +29,11 @@ class Finding:
     line: int | None = None
 
     def as_dict(self) -> dict[str, Any]:
-        value: dict[str, Any] = {"code": self.code, "path": self.path, "message": self.message}
+        value: dict[str, Any] = {
+            "code": self.code,
+            "path": self.path,
+            "message": self.message,
+        }
         if self.line is not None:
             value["line"] = self.line
         return value
@@ -50,7 +55,9 @@ def current_version() -> str:
 
 
 def release_markdown_files() -> set[str]:
-    sys.path.insert(0, str(ROOT / "scripts"))
+    scripts_path = str(ROOT / "scripts")
+    if scripts_path not in sys.path:
+        sys.path.insert(0, scripts_path)
     from release_file_contract import included_release_file
 
     return {
@@ -115,13 +122,20 @@ def normalize_link_target(raw: str) -> str:
     return unquote(target)
 
 
-def validate_link(source: Path, raw_target: str, heading_cache: dict[Path, set[str]]) -> str | None:
+def validate_link(
+    source: Path,
+    raw_target: str,
+    heading_cache: dict[Path, set[str]],
+) -> str | None:
     target = normalize_link_target(raw_target)
     if not target or target.startswith(("http://", "https://", "mailto:", "tel:")):
         return None
     if target.startswith("#"):
         anchor = target[1:]
-        available = heading_cache.setdefault(source, {slug for _, _, slug in headings(source)})
+        available = heading_cache.setdefault(
+            source,
+            {slug for _, _, slug in headings(source)},
+        )
         return None if not anchor or anchor in available else f"Anker #{anchor} existiert in derselben Datei nicht"
 
     file_part, separator, anchor = target.partition("#")
@@ -133,7 +147,10 @@ def validate_link(source: Path, raw_target: str, heading_cache: dict[Path, set[s
     if not resolved.is_file():
         return f"Zieldatei fehlt: {file_part}"
     if separator and anchor and resolved.suffix.lower() == ".md":
-        available = heading_cache.setdefault(resolved, {slug for _, _, slug in headings(resolved)})
+        available = heading_cache.setdefault(
+            resolved,
+            {slug for _, _, slug in headings(resolved)},
+        )
         if anchor not in available:
             return f"Anker #{anchor} fehlt in {resolved.relative_to(ROOT).as_posix()}"
     return None
@@ -149,57 +166,133 @@ def validate() -> dict[str, Any]:
     actual = release_markdown_files()
     classified = set(map(str, documents))
     for path in sorted(actual - classified):
-        findings.append(Finding("DOC_UNCLASSIFIED", path, "Release-relevante Markdown-Datei ist nicht klassifiziert"))
+        findings.append(
+            Finding(
+                "DOC_UNCLASSIFIED",
+                path,
+                "Release-relevante Markdown-Datei ist nicht klassifiziert",
+            )
+        )
     for path in sorted(classified - actual):
-        findings.append(Finding("DOC_CLASSIFIED_MISSING", path, "Klassifizierte Markdown-Datei fehlt oder gehört nicht zum Release-Satz"))
+        findings.append(
+            Finding(
+                "DOC_CLASSIFIED_MISSING",
+                path,
+                "Klassifizierte Markdown-Datei fehlt oder gehört nicht zum Release-Satz",
+            )
+        )
 
     version = current_version()
     heading_cache: dict[Path, set[str]] = {}
     checked_links = 0
+    strictly_checked = 0
 
     for rel_path in sorted(actual & classified):
         entry = documents[rel_path]
         if not isinstance(entry, dict):
-            findings.append(Finding("DOC_CLASSIFICATION_INVALID", rel_path, "Klassifikation muss ein JSON-Objekt sein"))
-            continue
-        category = str(entry.get("category") or "")
-        if category not in ALLOWED_CATEGORIES:
-            findings.append(Finding("DOC_CATEGORY_INVALID", rel_path, f"Unbekannte Kategorie: {category!r}"))
+            findings.append(
+                Finding(
+                    "DOC_CLASSIFICATION_INVALID",
+                    rel_path,
+                    "Klassifikation muss ein JSON-Objekt sein",
+                )
+            )
             continue
 
+        category = str(entry.get("category") or "")
+        if category not in ALLOWED_CATEGORIES:
+            findings.append(
+                Finding(
+                    "DOC_CATEGORY_INVALID",
+                    rel_path,
+                    f"Unbekannte Kategorie: {category!r}",
+                )
+            )
+            continue
+
+        # Historische Nachweise und interne Notizen werden nur auf Existenz und
+        # Klassifikation geprüft. Ihre alten Überschriften, Links und Versionen
+        # bleiben unverändert, damit der damalige Beweisstand nicht umgedeutet wird.
+        if category not in STRICT_CATEGORIES:
+            continue
+
+        strictly_checked += 1
         path = ROOT / rel_path
         text = path.read_text(encoding="utf-8")
         doc_headings = headings(path)
-        slugs: dict[str, int] = {}
         titles = {title.casefold() for _, title, _ in doc_headings}
+        slugs: dict[str, int] = {}
+
         for line, title, slug in doc_headings:
-            if slug in slugs:
-                findings.append(Finding("DOC_DUPLICATE_HEADING", rel_path, f"Überschrift erzeugt denselben Anker wie Zeile {slugs[slug]}: {title}", line))
+            if not slug:
+                findings.append(
+                    Finding(
+                        "DOC_EMPTY_HEADING_ANCHOR",
+                        rel_path,
+                        f"Überschrift erzeugt keinen stabilen Anker: {title}",
+                        line,
+                    )
+                )
+            elif slug in slugs:
+                findings.append(
+                    Finding(
+                        "DOC_DUPLICATE_HEADING",
+                        rel_path,
+                        f"Überschrift erzeugt denselben Anker wie Zeile {slugs[slug]}: {title}",
+                        line,
+                    )
+                )
             else:
                 slugs[slug] = line
 
-        required = entry.get("required_sections", [])
         if category == "active":
+            required = entry.get("required_sections", [])
             if not isinstance(required, list) or not required:
-                findings.append(Finding("DOC_REQUIRED_SECTIONS_MISSING", rel_path, "Aktive Anleitung besitzt keine Pflichtabschnittsliste"))
+                findings.append(
+                    Finding(
+                        "DOC_REQUIRED_SECTIONS_MISSING",
+                        rel_path,
+                        "Aktive Anleitung besitzt keine Pflichtabschnittsliste",
+                    )
+                )
             else:
                 for section in required:
                     if str(section).casefold() not in titles:
-                        findings.append(Finding("DOC_REQUIRED_SECTION", rel_path, f"Pflichtabschnitt fehlt: {section}"))
+                        findings.append(
+                            Finding(
+                                "DOC_REQUIRED_SECTION",
+                                rel_path,
+                                f"Pflichtabschnitt fehlt: {section}",
+                            )
+                        )
+
             for match in VERSION_RE.finditer(text):
                 found = match.group(1)
                 if found != version:
                     line = text.count("\n", 0, match.start()) + 1
-                    findings.append(Finding("DOC_STALE_VERSION", rel_path, f"Veraltete Versionsangabe {found}; aktuell ist {version}", line))
+                    findings.append(
+                        Finding(
+                            "DOC_STALE_VERSION",
+                            rel_path,
+                            f"Veraltete Versionsangabe {found}; aktuell ist {version}",
+                            line,
+                        )
+                    )
 
-        if category in {"active", "technical"}:
-            cleaned = "\n".join(strip_code_fences(text.splitlines()))
-            for match in LINK_RE.finditer(cleaned):
-                checked_links += 1
-                problem = validate_link(path, match.group(1), heading_cache)
-                if problem:
-                    line = cleaned.count("\n", 0, match.start()) + 1
-                    findings.append(Finding("DOC_BROKEN_LINK", rel_path, problem, line))
+        cleaned = "\n".join(strip_code_fences(text.splitlines()))
+        for match in LINK_RE.finditer(cleaned):
+            checked_links += 1
+            problem = validate_link(path, match.group(1), heading_cache)
+            if problem:
+                line = cleaned.count("\n", 0, match.start()) + 1
+                findings.append(
+                    Finding(
+                        "DOC_BROKEN_LINK",
+                        rel_path,
+                        problem,
+                        line,
+                    )
+                )
 
     return {
         "schema_version": 1,
@@ -207,31 +300,55 @@ def validate() -> dict[str, Any]:
         "current_version": version,
         "classified_documents": len(classified),
         "release_markdown_documents": len(actual),
+        "strictly_checked_documents": strictly_checked,
         "checked_links": checked_links,
         "findings": [finding.as_dict() for finding in findings],
     }
 
 
 def main(argv: Iterable[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Prüft den VideoBatch-Dokumentationsvertrag fail-closed.")
-    parser.add_argument("--json", action="store_true", help="Maschinenlesbares JSON ausgeben.")
+    parser = argparse.ArgumentParser(
+        description="Prüft den VideoBatch-Dokumentationsvertrag fail-closed."
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Maschinenlesbares JSON ausgeben.",
+    )
     args = parser.parse_args(list(argv) if argv is not None else None)
     try:
         report = validate()
     except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
-        report = {"schema_version": 1, "status": "invalid", "findings": [{"code": "DOC_VALIDATOR_INVALID", "path": "", "message": str(exc)}]}
+        report = {
+            "schema_version": 1,
+            "status": "invalid",
+            "findings": [
+                {
+                    "code": "DOC_VALIDATOR_INVALID",
+                    "path": "",
+                    "message": str(exc),
+                }
+            ],
+        }
 
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
     elif report["status"] == "passed":
-        print(f"DOKUMENTATION BESTANDEN · {report['release_markdown_documents']} Dateien · {report['checked_links']} interne Links")
+        print(
+            "DOKUMENTATION BESTANDEN · "
+            f"{report['release_markdown_documents']} klassifiziert · "
+            f"{report['strictly_checked_documents']} streng geprüft · "
+            f"{report['checked_links']} interne Links"
+        )
     else:
         print("DOKUMENTATION FEHLERHAFT")
         for finding in report.get("findings", []):
             location = finding.get("path", "")
             if finding.get("line"):
                 location += f":{finding['line']}"
-            print(f"✕ {finding['code']} · {location} · {finding['message']}")
+            print(
+                f"✕ {finding['code']} · {location} · {finding['message']}"
+            )
     return 0 if report["status"] == "passed" else 1
 
 
