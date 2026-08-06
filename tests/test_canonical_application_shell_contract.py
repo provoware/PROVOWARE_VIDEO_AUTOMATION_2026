@@ -12,6 +12,8 @@ SHELLS = tuple((ROOT / "src/videobatch_fast" / name) for name in (
     "canonical_shell_contract.py",
     "canonical_shell_chrome.py",
     "canonical_shell_workspace.py",
+    "canonical_dashboard_mixin.py",
+    "canonical_help_status_mixin.py",
     "canonical_window_mixin.py",
     "window_geometry.py",
 ))
@@ -105,3 +107,5 @@ def test_canonical_dashboard_has_all_required_visual_zones() -> None:
     assert "dashboard_layout_mode" in source
     assert "responsive_column_count" in source
     assert "normalize_window_geometry" in source
+    assert "CanonicalDashboardMixin" in source
+    assert "CanonicalHelpStatusMixin" in source
