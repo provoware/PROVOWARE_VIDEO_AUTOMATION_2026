@@ -28,7 +28,7 @@ class CanonicalDebugMixin:
             card,
             text=(
                 "Aktiv: Start und Fehler werden in der Konsole mit WAS, WIE, WO und LÖSUNG erklärt. "
-                "Absturzberichte landen automatisch im Projektordner debugging."
+                "Absturzberichte landen bevorzugt automatisch im Projektordner debugging."
             ),
             style="Hint.TLabel",
             wraplength=360,
@@ -56,9 +56,15 @@ class CanonicalDebugMixin:
         RUNTIME.set_enabled(enabled)
         self._save_settings()
         self.guidance_text.set(
-            "Debugmodus ist aktiv. Fehler werden ausführlich erklärt und lokal protokolliert."
+            (
+                "Debugmodus ist aktiv: App-Fehler werden ab sofort ausführlich erklärt. "
+                "Der externe Prozesswächter ist ab dem nächsten Programmstart vollständig aktiv."
+            )
             if enabled
-            else "Debugmodus ist ausgeschaltet. Die ausführliche Konsolenausgabe ist deaktiviert."
+            else (
+                "Debugmodus ist ausgeschaltet. Die ausführliche Konsolenausgabe und der externe Wächter "
+                "beenden sich kontrolliert; die Einstellung bleibt gespeichert."
+            )
         )
 
     def _create_manual_debug_report(self) -> None:
@@ -83,7 +89,7 @@ class CanonicalDebugMixin:
             self.guidance_text.set("Debugging-Ordner wurde geöffnet.")
         else:
             self.guidance_text.set(
-                "Debugging-Ordner konnte nicht automatisch geöffnet werden. Der Pfad steht im Konsolenprotokoll."
+                "Debugging-Ordner konnte nicht automatisch geöffnet werden. Die Konsole enthält den technischen Grund."
             )
 
     def _debug_context(self) -> dict[str, object]:
@@ -114,7 +120,9 @@ class CanonicalDebugMixin:
                 context[label] = "<nicht lesbar>"
         try:
             context["Fenstergeometrie"] = self.root.geometry()
-            context["Aktiver Tab"] = int(self.main_notebook.index(self.main_notebook.select()))
+            context["Aktiver Tab"] = int(
+                self.main_notebook.index(self.main_notebook.select())
+            )
         except Exception:
             pass
         return context
