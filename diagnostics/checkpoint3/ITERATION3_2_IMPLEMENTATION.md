@@ -4,6 +4,13 @@
 
 Die vier kanonischen KPI-Karten werden von reinen Momentaufnahmen zu nachvollziehbaren, projektbezogen persistenten Zustandsanzeigen erweitert.
 
+## Exakte Basis
+
+- Ausgangs-`main`: `b9a3663a7b229ace00b43f01415ecc4d39adbe14`
+- Arbeitsbranch: `agent/checkpoint3-kpi-detail-recovery-20260806`
+- PR: `#67`
+- Branchanlage und erster Diff: `behind_by = 0`
+
 ## Umgesetzt
 
 - persistente Detailzustände im vorhandenen Projekt-Metabereich `meta.canonical_kpi`
@@ -37,3 +44,13 @@ Jede Zelle Ubuntu 22.04/24.04 × X11/Wayland führt schnelle Sequenzen aus:
 6. Persistenz- und Zeitstempelprüfung
 
 Der Abschlussjob akzeptiert ausschließlich vier erfolgreiche Zellen auf exakt demselben PR-Head.
+
+## Stabile Statuskontexte
+
+Nach vollständig grüner Prüfung können in der `main`-Regel zusätzlich als Required Status Checks verwendet werden:
+
+- `Design manifest contract`
+- `Checkpoint 2 read-only preflight`
+- `Checkpoint 2 canonical shell matrix`
+
+Die Repository-Regel selbst ist eine administrative GitHub-Einstellung und wird nicht durch Projektcode vorgetäuscht.
