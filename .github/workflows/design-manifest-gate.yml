@@ -71,8 +71,8 @@ jobs:
           from pathlib import Path
 
           root = Path.cwd()
-          shell = "\n".join(
-              (root / "src/videobatch_fast" / name).read_text(encoding="utf-8")
+          shell_paths = tuple(
+              root / "src/videobatch_fast" / name
               for name in (
                   "canonical_ui.py",
                   "canonical_shell_contract.py",
@@ -80,9 +80,13 @@ jobs:
                   "canonical_shell_workspace.py",
               )
           )
-          app = (root / "src/videobatch_fast/app.py").read_text(encoding="utf-8")
-          ast.parse(shell)
-          ast.parse(app)
+          shell_sources = [path.read_text(encoding="utf-8") for path in shell_paths]
+          for path, source in zip(shell_paths, shell_sources):
+              ast.parse(source, filename=str(path))
+          shell = "\n".join(shell_sources)
+          app_path = root / "src/videobatch_fast/app.py"
+          app = app_path.read_text(encoding="utf-8")
+          ast.parse(app, filename=str(app_path))
           required = (
               "Dashboard", "Medien", "Queue", "Effekte", "Scheduler",
               "Vorschau", "Diagnose", "Einstellungen",
