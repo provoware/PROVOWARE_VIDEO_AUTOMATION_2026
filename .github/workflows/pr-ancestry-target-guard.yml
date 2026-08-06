@@ -1,0 +1,57 @@
+name: Trusted PR ancestry guard
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: trusted-pr-ancestry-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  ancestry:
+    name: Trusted PR ancestry guard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PYTHONDONTWRITEBYTECODE: '1'
+
+    steps:
+      - name: Check out trusted base implementation only
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fetch PR objects without checking out PR code
+        run: |
+          set -Eeuo pipefail
+          git fetch --no-tags origin \
+            "pull/${PR_NUMBER}/head:refs/remotes/origin/pr-ancestry-head"
+          test "$(git rev-parse refs/remotes/origin/pr-ancestry-head)" = "$HEAD_SHA"
+          test "$(git rev-parse HEAD)" = "$BASE_SHA"
+
+      - name: Enforce trusted ancestry contract
+        run: |
+          set -Eeuo pipefail
+          python3 scripts/check_pr_ancestry.py \
+            --base "$BASE_SHA" \
+            --head "$HEAD_SHA" \
+            --report PR_ANCESTRY_REPORT.json
+
+      - name: Upload ancestry evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trusted-pr-ancestry-${{ github.event.pull_request.head.sha }}
+          path: PR_ANCESTRY_REPORT.json
+          if-no-files-found: error
+          retention-days: 30
