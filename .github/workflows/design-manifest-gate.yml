@@ -1,0 +1,110 @@
+name: Design manifest contract
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: design-manifest-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  design-manifest-contract:
+    name: Design manifest contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Compile design and shell contracts
+        run: |
+          set -Eeuo pipefail
+          python3 -m compileall -q -f \
+            scripts/validate_design_manifest.py \
+            src/videobatch_fast/app.py \
+            src/videobatch_fast/canonical_ui.py \
+            src/videobatch_fast/canonical_shell_contract.py \
+            src/videobatch_fast/canonical_shell_chrome.py \
+            src/videobatch_fast/canonical_shell_workspace.py \
+            tests/test_design_manifest_contract.py \
+            tests/test_canonical_application_shell_contract.py
+
+      - name: Validate canonical design manifest fail-closed
+        run: |
+          set -Eeuo pipefail
+          python3 scripts/validate_design_manifest.py --json \
+            | tee "$RUNNER_TEMP/design-manifest-report.json"
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          report = json.loads(
+              (Path(os.environ["RUNNER_TEMP"]) / "design-manifest-report.json").read_text(
+                  encoding="utf-8"
+              )
+          )
+          if report != {"status": "pass", "errors": []}:
+              raise SystemExit(f"Design manifest contract failed: {report!r}")
+          PY
+
+      - name: Validate canonical application shell contract
+        run: |
+          set -Eeuo pipefail
+          python3 - <<'PY'
+          import ast
+          from pathlib import Path
+
+          root = Path.cwd()
+          shell = "\n".join(
+              (root / "src/videobatch_fast" / name).read_text(encoding="utf-8")
+              for name in (
+                  "canonical_ui.py",
+                  "canonical_shell_contract.py",
+                  "canonical_shell_chrome.py",
+                  "canonical_shell_workspace.py",
+              )
+          )
+          app = (root / "src/videobatch_fast/app.py").read_text(encoding="utf-8")
+          ast.parse(shell)
+          ast.parse(app)
+          required = (
+              "Dashboard", "Medien", "Queue", "Effekte", "Scheduler",
+              "Vorschau", "Diagnose", "Einstellungen",
+              "_build_start_page", "_build_media_page", "_build_preview_page",
+              "_build_modes_page", "_build_production_page", "_build_help_page",
+              "Midnight Blue", "Emerald Tech", "Violet Pulse", "Amber Graphite",
+          )
+          missing = [value for value in required if value not in shell]
+          if missing:
+              raise SystemExit(f"Canonical shell contract missing: {missing!r}")
+          if "from .canonical_ui import run_app" not in app:
+              raise SystemExit("Application entry point does not select canonical shell")
+          print("CANONICAL_APPLICATION_SHELL_OK")
+          PY
+
+      - name: Prove gate remained read-only
+        if: always()
+        run: |
+          set -Eeuo pipefail
+          status="$(git status --porcelain --untracked-files=all)"
+          if [[ -n "$status" ]]; then
+            printf '%s\n' "$status"
+            echo "::error title=Design gate wrote repository files::The gate must be read-only."
+            exit 1
+          fi
