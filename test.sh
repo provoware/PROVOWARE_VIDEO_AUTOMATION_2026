@@ -84,10 +84,16 @@ fi
 TMP_ROOT="$(mktemp -d -t videobatch-test-XXXXXX)"
 cleanup() {
   local status=$?
+  trap - EXIT
   rm -rf -- "$TMP_ROOT"
   exit "$status"
 }
-trap cleanup EXIT HUP INT TERM
+interrupt() {
+  trap - HUP INT TERM
+  exit 130
+}
+trap cleanup EXIT
+trap interrupt HUP INT TERM
 
 "$PYTHON_BOOTSTRAP" "$ROOT_DIR/scripts/toolchain.py" prepare \
   --scope quality --auto-repair --quiet
