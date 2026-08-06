@@ -29,6 +29,9 @@ if [[ "$CORE_ONLY" == "1" ]]; then
 else
   printf 'provoware - videoautomation - 2026 · %s – schreibgeschützte Releaseprüfung\n\n' "$VERSION"
 fi
+
+# Schneller lokaler Dokumentationsvertrag: kein eigener GitHub-Workflow nötig.
+"$ENV_PYTHON" "$ROOT_DIR/scripts/validate_documentation.py"
 "$ENV_PYTHON" "$ROOT_DIR/scripts/validate_release_manifest.py"
 "$ENV_PYTHON" "$ROOT_DIR/scripts/validate_version_contract.py"
 "$ENV_PYTHON" "$ROOT_DIR/scripts/render_release_docs.py" --check
