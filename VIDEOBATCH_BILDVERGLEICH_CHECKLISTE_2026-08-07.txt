@@ -1,0 +1,714 @@
+VIDEOBATCH FAST – BILDVERGLEICH / ABHAKBARE SOLL-IST-CHECKLISTE
+Erstellt: 2026-08-07
+Vergleich:
+  IST  = Bild 1 = Bildschirmfoto_2026-08-07_00-44-54.png = 1858 × 1080 px
+  SOLL = Bild 2 = 5211edce-e218-4fea-a20e-6c152c59d48b(1).png = 1448 × 1086 px
+
+WICHTIGE AUSWERTUNGSREGEL
+Die Screenshots haben unterschiedliche Pixelbreiten. Deshalb werden Größen proportional zur jeweiligen
+Viewportgröße beurteilt. Zahlen, Uhrzeiten, Dateinamen, Version, Avatar und Beispielmedien des Musters
+dürfen NICHT hart codiert werden. Gleich werden müssen Struktur, Position, Proportion, Hierarchie,
+Stil und Verhalten; Inhalte müssen aus realen Programmdaten stammen.
+
+LEITBEFUND
+Der aktuelle Stand ist noch keine nahe visuelle Umsetzung des Musters. Die größte Abweichung ist nicht
+ein einzelner Farbwert, sondern die gesamte vertikale Informationsarchitektur:
+- IST: Header ca. 180 px hoch; KPI-Bereich ca. 435 px hoch; eigentlicher Arbeitsbereich beginnt erst
+  ungefähr bei 75 % der Fensterhöhe.
+- SOLL: obere Kopfleiste ca. 70–75 px; KPI-Bereich ca. 175–180 px; Hauptarbeitsbereich beginnt bereits
+  ungefähr bei 30 % der Fensterhöhe.
+Dadurch ist im IST der wichtigste Arbeitsbereich fast vollständig nach unten verdrängt und teilweise
+abgeschnitten.
+
+========================================================================
+P0 – STRUKTUR, GEOMETRIE, ÜBERLAGERUNG UND SICHTBARKEIT
+========================================================================
+
+[ ] UI-001 | Gesamtaufbau / oberste Ebene
+ORT: Gesamtes Fenster
+IST: Native dunkle Titelleiste + helle native Menüleiste + separate große Anwendungskopfbox.
+SOLL: Durchgehend dunkle Anwendung; kompakte eigene Kopfzeile direkt im Content; keine helle Leiste,
+      die das visuelle System unterbricht.
+ERFORDERLICH: Native Menüleiste entweder in das dunkle Design integrieren oder aus der visuellen
+              Hauptansicht entfernen; eine einzige kompakte Header-Ebene definieren.
+PRIORITÄT: P0
+
+[ ] UI-002 | Native Menüleiste
+ORT: Ganz oben, Zeile „Datei Medien Ansicht Produktion Werkzeuge Hilfe“
+IST: Heller grauer Fremdkörper über der gesamten App.
+SOLL: Im Muster nicht vorhanden; alle sichtbaren Oberflächenbereiche sind dunkel.
+ERFORDERLICH: Menü als dunkle Custom-Menü-/Toolbarlösung ausführen oder nur über ein separates
+              Anwendungsmenü erreichbar machen.
+PRIORITÄT: P0
+
+[ ] UI-003 | Vertikale Flächenverteilung
+ORT: Gesamter rechter Content
+IST: Der produktive Arbeitsbereich beginnt erst ungefähr bei y≈805 von 1080 px.
+SOLL: Der produktive Arbeitsbereich beginnt im Muster bereits ungefähr bei y≈330 von 1086 px.
+ERFORDERLICH: Header und KPI-Bereich massiv verdichten; Diagnoseprosa aus KPI-Karten entfernen;
+              keine zusätzliche Start-/Zoom-Zeile vor dem Dashboard.
+PRIORITÄT: P0
+
+[ ] UI-004 | Headerhöhe
+ORT: Rechter Content direkt unter der Menüleiste
+IST: Headerbox ungefähr 180 px hoch.
+SOLL: Kompakte obere Leiste ungefähr 65–75 px hoch.
+ERFORDERLICH: Dashboardtitel, Entwickler-/Manifesttext, Theme-/Font-Controls und zweite Suchzeile aus
+              dem Header entfernen bzw. verlagern.
+PRIORITÄT: P0
+
+[ ] UI-005 | KPI-Höhe
+ORT: Vier Karten „Medien / Queue / Effekte / Startzeituhr“
+IST: KPI-Zone ungefähr 435 px hoch und dominiert den Bildschirm.
+SOLL: KPI-Zone ungefähr 175–180 px hoch.
+ERFORDERLICH: Karteninhalt auf Kennzahlen, Status und eine Aktion reduzieren; Ursache/Timestamp in
+              Diagnose/Tooltip verschieben; feste Maximalhöhe bzw. kompakte Inhaltsverträge.
+PRIORITÄT: P0
+
+[ ] UI-006 | Hauptarbeitsbereich sichtbar
+ORT: Unter der Aktionsleiste
+IST: Nur „Start“, Zoomzeile sowie angeschnittene Bereiche „Projekt“ und „Schnellzugriff“ sichtbar.
+SOLL: Quellen & Projekt, Render Queue und Job Details gleichzeitig vollständig nutzbar.
+ERFORDERLICH: Dashboard direkt unter Aktionsleiste platzieren; Notebook-/Start-Wrapper entfernen;
+              drei Hauptspalten mit eigener sinnvoller Mindesthöhe.
+PRIORITÄT: P0
+
+[ ] UI-007 | Inhalte unter/außerhalb anderer Elemente
+ORT: Unterer rechter Content
+IST: Projekt-/Schnellzugriff-Container sind am unteren Fensterrand sichtbar angeschnitten; innerer
+     Scrollbalken zeigt, dass wesentliche Inhalte aus dem Viewport gedrückt wurden.
+SOLL: Hauptfunktionen vollständig im sichtbaren Arbeitsbereich; Scrollen nur für lange Listen/Details,
+      nicht als Reparatur für eine zu hohe Kopfzone.
+ERFORDERLICH: Höhenbudget pro Zone definieren; Header/KPI/Aktionsleiste begrenzen; Main-Row weight=1;
+              Geometriewächter um Mindest-Sichtflächen ergänzen.
+PRIORITÄT: P0
+
+[ ] UI-008 | Text-/Button-Clipping
+ORT: Aktionsleiste
+IST: Mehrere Beschriftungen wirken abgeschnitten bzw. an der verfügbaren Breite gequetscht,
+     insbesondere Import-/Scheduler-Aktion.
+SOLL: Jede Beschriftung vollständig lesbar; bei Engpass kontrollierter Wechsel in kompakte Darstellung.
+ERFORDERLICH: Mindest-/Sollbreiten anhand reqwidth; responsive Aktionsanzahl; kürzere Zieltexte;
+              niemals Text einfach unter Nachbarelemente schieben.
+PRIORITÄT: P0
+
+[ ] UI-009 | Hauptscrollbar
+ORT: Ganz rechts im unteren aktuellen Arbeitsbereich
+IST: Ein vertikaler Scrollbalken erscheint bereits bei leerem/nahezu leerem Startdashboard.
+SOLL: Im Muster ist der komplette Kernarbeitsbereich ohne globalen Dashboard-Scroll sichtbar.
+ERFORDERLICH: Globales Scrollen vermeiden; nur Quellenliste, Queue und Detailinhalt bei Bedarf separat
+              scrollen.
+PRIORITÄT: P0
+
+[ ] UI-010 | Dashboard statt „Start/2x2-Workflow“
+ORT: Direkt unter Aktionsleiste
+IST: Extra Kopf „Start“ + Text „2x2-Workflow · bei Bedarf nach unten scrollbar“.
+SOLL: Sofort die drei Arbeitsbereiche Quellen, Queue und Details.
+ERFORDERLICH: Historischen Workflow-Wrapper aus der Standard-Dashboardansicht entfernen; Funktionen
+              intern erhalten, aber nicht als zusätzliche Layoutschicht voranstellen.
+PRIORITÄT: P0
+
+[ ] UI-011 | Tab-Zoom-Leiste
+ORT: Neben „Start“ unter der Aktionsleiste
+IST: Große sichtbare Zeile „Tab-Zoom für Text und Bedienelemente – 100 % + 100 %“.
+SOLL: Im Muster keine solche Hauptzeile.
+ERFORDERLICH: Zoomfunktion in Einstellungen bzw. kleine Status-/Accessibility-Steuerung verschieben;
+              nicht den Hauptarbeitsbereich verkleinern.
+PRIORITÄT: P0
+
+[ ] UI-012 | Responsive Höhenregel
+ORT: Gesamtfenster
+IST: Breitenreaktion wurde teilweise umgesetzt, die vertikale Dichte bleibt jedoch ungeeignet.
+SOLL: Das Muster nutzt praktisch die gesamte Höhe für Nutzdaten.
+ERFORDERLICH: Zusätzlich zu Breiten-Breakpoints Höhen-Breakpoints einführen:
+              compact-height / normal-height / tall-height.
+PRIORITÄT: P0
+
+========================================================================
+P1 – HEADER / TOPBAR
+========================================================================
+
+[ ] UI-013 | Dashboard-Entwicklerüberschrift
+ORT: Aktueller Header links
+IST: „Dashboard“ und „Kanonische Oberfläche · VB-GFX-1.0“ stehen prominent.
+SOLL: Muster zeigt dort keine Entwickler-/Vertragsbezeichnung.
+ERFORDERLICH: VB-GFX-Text aus normaler Nutzeroberfläche entfernen; nur Diagnose/Info.
+PRIORITÄT: P1
+
+[ ] UI-014 | Suche – Position
+ORT: Header
+IST: Fast über die komplette Contentbreite, in einer eigenen großen Unterzeile.
+SOLL: Kompaktes Suchfeld oben links im Content, ca. ein Viertel bis Drittel der Contentbreite.
+ERFORDERLICH: Search-Control in einzeilige Topbar integrieren.
+PRIORITÄT: P1
+
+[ ] UI-015 | Suche – Darstellung
+ORT: Header-Suchfeld
+IST: Leeres/umrandetes Feld plus separat darunter stehender Hinweistext.
+SOLL: Lupenicon und Placeholder „Medien, Jobs, Effekte suchen…“ direkt im Feld.
+ERFORDERLICH: Placeholder/Hint im Eingabefeld; Search-Icon; dezenter Border; rundere Ecken.
+PRIORITÄT: P1
+
+[ ] UI-016 | Laufzeitbadges
+ORT: Topbar Mitte
+IST: Nicht vorhanden.
+SOLL: Kompakte Badges wie „FFmpeg“, „GPU Accel“, „Cache“.
+ERFORDERLICH: Echte Diagnosedaten anbinden; keine Musterwerte erfinden; unbekannt explizit anzeigen.
+PRIORITÄT: P1
+
+[ ] UI-017 | Rechte Topbar-Aktionen
+ORT: Oben rechts
+IST: Theme-/Schrift-Comboboxen.
+SOLL: Benachrichtigung, Hilfe, Einstellungen und Benutzer-/Profilbereich.
+ERFORDERLICH: Theme/Font zurück in Einstellungen/Darstellung; Topbar-Utilitybuttons ergänzen.
+PRIORITÄT: P1
+
+[ ] UI-018 | Theme-/Font-Auswahl im Header
+ORT: Oben rechts
+IST: „Midnight Blue“ und „Standard“ ständig sichtbar.
+SOLL: Muster verwendet die Fläche für System-/Nutzeraktionen.
+ERFORDERLICH: Controls aus Header entfernen; in Einstellungen bzw. Darstellungskarte platzieren.
+PRIORITÄT: P1
+
+[ ] UI-019 | Profil/Avatar
+ORT: Topbar ganz rechts
+IST: Nicht vorhanden.
+SOLL: Kompakter Nutzerbereich mit Avatar/Profilindikator.
+ERFORDERLICH: Generischen Profilbutton oder reales Benutzerprofil anbinden; Musteravatar NICHT kopieren.
+PRIORITÄT: P2
+
+========================================================================
+P1 – SIDEBAR
+========================================================================
+
+[ ] UI-020 | Markenlogo
+ORT: Sidebar oben
+IST: Kleines quadratisches Unicode-/Platzhaltersymbol vor „VideoBatch Fast“.
+SOLL: Prägnantes lila VideoBatch-Logo mit klarer Markenwirkung.
+ERFORDERLICH: Lokales Vektor-/PNG-Appicon verwenden, DPI-sicher skalieren.
+PRIORITÄT: P1
+
+[ ] UI-021 | Logo-/Titelblock
+ORT: Sidebar oben
+IST: Titel und Untertitel mit relativ viel Leerraum und einfacher Textdarstellung.
+SOLL: Kompakter Logo+Titel+Untertitel-Block mit stärkerer Hierarchie.
+ERFORDERLICH: Icon 36–44 px, Titel fett, Untertitel kleiner/gedämpft, definierte Baselines.
+PRIORITÄT: P1
+
+[ ] UI-022 | Aktiver Navigationseintrag
+ORT: Sidebar „Dashboard“
+IST: Flächig violetter Block mit scharfkantiger Optik.
+SOLL: Blaues aktives Element, weich gerundet, klarer Icon-/Textabstand.
+ERFORDERLICH: Active-Tokens auf Zielstil umstellen.
+PRIORITÄT: P1
+
+[ ] UI-023 | Navigationsicons
+ORT: Alle Sidebar-Einträge
+IST: Kleine Unicode-/Textsymbole uneinheitlicher optischer Größe.
+SOLL: Einheitliche Line-Icons mit gleicher Strichstärke und 16–20-px-Raster.
+ERFORDERLICH: Offline-Iconset als SVG/PNG oder konsistente Canvas-/Bitmapicons.
+PRIORITÄT: P1
+
+[ ] UI-024 | Scheduler-Navigation
+ORT: Sidebar
+IST: „Scheduler · Checkpoint 5“ als deutlich grauviolett deaktivierter Eintrag.
+SOLL: Im Muster normaler Scheduler-Navigationseintrag.
+ERFORDERLICH: VISUELL normale Navigation herstellen; funktional weiterhin ehrlich sperren, solange
+              Checkpoint 5 nicht umgesetzt ist, z.B. kleines Lock/„noch nicht verfügbar“ statt
+              dominanter Sonderfarbe.
+PRIORITÄT: P1
+
+[ ] UI-025 | Leere Sidebar-Fläche
+ORT: Sidebar zwischen Navigation und Systemstatus
+IST: Großer leerer umrandeter Container.
+SOLL: Kein leerer Platzhaltercontainer.
+ERFORDERLICH: Leeren Frame entfernen; Spacer ohne sichtbaren Border verwenden.
+PRIORITÄT: P0
+
+[ ] UI-026 | Systemstatus – Inhalt
+ORT: Sidebar unten
+IST: Nur „Aktiv · startbereit“ und „Version 2.8.3-rc24“.
+SOLL: CPU, RAM, GPU plus „Alle Systeme bereit“ und kompakter Status.
+ERFORDERLICH: Reale Metriken anbinden; Werte periodisch und ressourcenschonend aktualisieren.
+PRIORITÄT: P1
+
+[ ] UI-027 | Version/Releasebadge
+ORT: Sidebar ganz unten
+IST: Version steht im Systemstatus-Kasten.
+SOLL: Version separat am unteren Rand mit kleinem Release-/Stable-Badge.
+ERFORDERLICH: Version aus VERSION.json, Releasezustand aus realem Releasevertrag; nicht „Stable“ faken.
+PRIORITÄT: P2
+
+========================================================================
+P1 – KPI-KARTEN
+========================================================================
+
+[ ] UI-028 | Kartenstil allgemein
+ORT: Vier KPI-Karten
+IST: Einheitliche dunkle Fläche mit heller violetter 1-px-Kontur; scharfe rechteckige Wirkung.
+SOLL: Dezent unterschiedliche thematische Tönung, subtile Borders, größere Rundung, mehr Tiefe.
+ERFORDERLICH: Kartenstyles pro Domäne; radius/visual rounding über Canvas/Image/CustomTk-Lösung oder
+              ttk-kompatible Assets; Borderkontrast reduzieren.
+PRIORITÄT: P1
+
+[ ] UI-029 | Medien-KPI
+ORT: Erste Karte
+IST: „0“, lange Leermeldung, Zustand, Ursache, Timestamp, Button.
+SOLL: Drei kompakte Unterkacheln Bilder / Videos / Audio mit realen Zahlen; eine Aktion unten.
+ERFORDERLICH: Medienzählung nach Typ; drei Mini-Metrikkarten; Diagnoseprosa entfernen.
+PRIORITÄT: P1
+
+[ ] UI-030 | Queue-KPI
+ORT: Zweite Karte
+IST: „0“, Leermeldung, Ursache, Timestamp.
+SOLL: Zwei große Kennzahlen Wartend / Abgeschlossen plus kompakte Progresslinie.
+ERFORDERLICH: Queuezustände aggregieren; Mini-Progressbar; nur Kurzstatus.
+PRIORITÄT: P1
+
+[ ] UI-031 | Effekte-KPI
+ORT: Dritte Karte
+IST: „Automatik“, „Noch kein fester Look gewählt“, Ursache/Timestamp.
+SOLL: „Aktives Preset“ + realer Presetname + RenderProof-Statuspill.
+ERFORDERLICH: Presetstatus und realen RenderProof anbinden.
+PRIORITÄT: P1
+
+[ ] UI-032 | Startzeituhr-KPI
+ORT: Vierte Karte
+IST: „Nicht geplant“, Checkpoint-Prosa, „Deaktiviert“, Ursache, Timestamp, großer deaktivierter Button.
+SOLL: Geplante Zeit groß; darunter kompakte Bedingungs-/Energieoptionen und eine Aktion.
+ERFORDERLICH: Solange Checkpoint 5 fehlt, gleiche VISUELLE Kartenstruktur verwenden, reale Zeit
+              „Nicht geplant“ zeigen und Optionen mit Lock/disabled kennzeichnen statt viel Prosa.
+PRIORITÄT: P1
+
+[ ] UI-033 | Ursachen-/Diagnosetexte
+ORT: Alle KPI-Karten
+IST: „Ursache: …“ ist dauerhaft sichtbar.
+SOLL: Im Muster nicht Teil der Primärkarte.
+ERFORDERLICH: Ursache in Tooltip, Diagnosepanel oder aufklappbare Details verschieben.
+PRIORITÄT: P0
+
+[ ] UI-034 | Aktualisiert-Timestamp
+ORT: KPI-Karten
+IST: Vollständiges Datum + Uhrzeit nimmt mehrere Zeilen ein.
+SOLL: Im Muster nicht dauerhaft in KPI-Karten sichtbar.
+ERFORDERLICH: Timestamp aus Primäransicht entfernen; Diagnose/Tooltip.
+PRIORITÄT: P0
+
+[ ] UI-035 | KPI-Aktionsbuttons
+ORT: Unterkante jeder KPI-Karte
+IST: Breite massive violette Balken; Scheduler grau.
+SOLL: Dezente dunkle Aktionszeile mit Pfeil und kartenspezifischer Akzentfarbe.
+ERFORDERLICH: Buttonhöhe reduzieren; Outline/hover/arrow; kein dominanter Vollbalken.
+PRIORITÄT: P1
+
+[ ] UI-036 | KPI-Farbkodierung
+ORT: Vier Karten
+IST: Fast alles violett.
+SOLL: Medien blau, Queue violett, Effekte türkis/grün, Startzeituhr amber/orange.
+ERFORDERLICH: Semantische Kartenakzente in Theme-Tokens aufnehmen.
+PRIORITÄT: P1
+
+========================================================================
+P1 – AKTIONSLEISTE
+========================================================================
+
+[ ] UI-037 | Aktionsleisten-Container
+ORT: Direkt unter KPI-Karten
+IST: Violett umrandeter Container, sehr breite Folgebuttons.
+SOLL: Dunkler abgerundeter Container mit kompakten Actions und Luft zwischen Gruppen.
+ERFORDERLICH: Containerstil und Padding ans Muster angleichen.
+PRIORITÄT: P1
+
+[ ] UI-038 | Aktionsreihenfolge
+ORT: Aktionsleiste
+IST: Neuer Auftrag, Audio importieren, Medien importieren, Effekte prüfen, Queue starten,
+     Zielordner, Startzeituhr/Checkpoint.
+SOLL: Neuer Auftrag, Medien importieren, Effekte prüfen, Startzeituhr setzen, Queue starten, Backup.
+ERFORDERLICH: Dashboard-Quickactions auf Musterfluss reduzieren; Audio-Detailimport und Zielordner
+              in Medien-/Ausgabebereich erhalten.
+PRIORITÄT: P1
+
+[ ] UI-039 | Backup-Aktion
+ORT: Aktionsleiste rechts
+IST: Fehlt.
+SOLL: Backup-Dropdown sichtbar.
+ERFORDERLICH: Nur vorhandene echte Backupfunktion anbinden; sonst sichtbar deaktiviert mit Erklärung.
+PRIORITÄT: P1
+
+[ ] UI-040 | Buttonfarben
+ORT: Aktionsleiste
+IST: Sehr kräftiges Gelb, Grün und mehrere violette Vollflächen.
+SOLL: Primäraktion blau; Queue grün umrandet/akzentuiert; übrige Aktionen dunkel.
+ERFORDERLICH: Semantische Buttonhierarchie statt Regenbogen-Vollflächen.
+PRIORITÄT: P1
+
+========================================================================
+P0/P1 – HAUPTARBEITSBEREICH
+========================================================================
+
+[ ] UI-041 | Drei-Spalten-Arbeitsbereich
+ORT: Hauptbereich
+IST: Im sichtbaren Bereich nicht vorhanden.
+SOLL: Links Quellen & Projekt, Mitte Render Queue, rechts Job Details.
+ERFORDERLICH: Drei feste Hauptzonen direkt unter Actionbar; sinnvolle Gewichte ungefähr 16–18 % /
+              50–52 % / 30–32 % der Contentbreite.
+PRIORITÄT: P0
+
+[ ] UI-042 | Quellen & Projekt – Sammlungen
+ORT: Linke Hauptspalte
+IST: Fehlt.
+SOLL: Sammlungen mit Alle Medien, Favoriten, benutzerdefinierten Gruppen und Zählern.
+ERFORDERLICH: Reale Projekt-/Medienmetadaten als Gruppenmodell darstellen.
+PRIORITÄT: P1
+
+[ ] UI-043 | Quellen & Projekt – Filter
+ORT: Linke Hauptspalte
+IST: Fehlt.
+SOLL: Bilder, Videos, Audio, Unbenutzt mit Zählern.
+ERFORDERLICH: Filterzustand und reale Medienkategorien anbinden.
+PRIORITÄT: P1
+
+[ ] UI-044 | Quellen & Projekt – Tags
+ORT: Linke Hauptspalte
+IST: Fehlt.
+SOLL: Tagchips und „Tag hinzufügen“.
+ERFORDERLICH: Wenn Tagfunktion existiert anbinden; sonst Funktionspunkt separat implementieren,
+              nicht als Fake darstellen.
+PRIORITÄT: P2
+
+[ ] UI-045 | Render-Queue-Tabelle
+ORT: Mittlere Hauptspalte
+IST: Im sichtbaren Dashboard fehlt die Tabelle vollständig.
+SOLL: Große Queue-Tabelle mit mehreren Jobs.
+ERFORDERLICH: Bestehende Queue direkt in Dashboard-Tabelle spiegeln.
+PRIORITÄT: P0
+
+[ ] UI-046 | Queue-Spalten
+ORT: Render Queue
+IST: Nicht sichtbar.
+SOLL: Job, Modus, Effekt, Zeitplan, Status, Fortschritt, Ausgabe.
+ERFORDERLICH: Spaltenmodell und responsive Mindestbreiten definieren.
+PRIORITÄT: P1
+
+[ ] UI-047 | Queue-Thumbnails
+ORT: Jobzeilen
+IST: Fehlen.
+SOLL: Kleine Vorschaubilder pro Job.
+ERFORDERLICH: Thumbnailcache wiederverwenden; asynchron laden; kein UI-Block.
+PRIORITÄT: P1
+
+[ ] UI-048 | Queue-Statuschips
+ORT: Jobzeilen
+IST: Fehlen im sichtbaren Dashboard.
+SOLL: Wartet / Verarbeitet / Fertig als kompakte Pills.
+ERFORDERLICH: Reale Jobzustände auf semantische Styles abbilden.
+PRIORITÄT: P1
+
+[ ] UI-049 | Queue-Livefortschritt
+ORT: Jobzeilen
+IST: Nicht im sichtbaren Dashboard.
+SOLL: Inline-Fortschrittsbalken und Prozent.
+ERFORDERLICH: AppEvent/ProgressSnapshot in die jeweilige Jobzeile spiegeln.
+PRIORITÄT: P1
+
+[ ] UI-050 | Queue-Kopf
+ORT: Oben in mittlerer Hauptspalte
+IST: Fehlt.
+SOLL: „Render Queue“, Wartend-/Abgeschlossen-Chips, Suche, Filter- und Listenbutton.
+ERFORDERLICH: Queueheader separat bauen und reale Zähler verwenden.
+PRIORITÄT: P1
+
+[ ] UI-051 | Queue-Pagination/Zeilenstatus
+ORT: Unten in mittlerer Hauptspalte
+IST: Fehlt.
+SOLL: „Zeige 1–8 von 8“ + kompakte Seitennavigation.
+ERFORDERLICH: Für große Queues Pagination oder Virtualisierung; bei kleinen Queues dynamisch ausblenden.
+PRIORITÄT: P2
+
+[ ] UI-052 | Job-Details-Spalte
+ORT: Rechte Hauptspalte
+IST: Im sichtbaren Dashboard fehlt sie.
+SOLL: Eigene Karte „Job Details: <Datei>“.
+ERFORDERLICH: Ausgewählten Queuejob als Detailmodell anbinden.
+PRIORITÄT: P0
+
+[ ] UI-053 | Detailtabs
+ORT: Job-Details-Spalte oben
+IST: Fehlen.
+SOLL: Vorschau / Effekte / Ausgabe / Zeitplan.
+ERFORDERLICH: Tastaturerreichbares internes Notebook/Segment-Control; kein zusätzliches Top-Level-Tab.
+PRIORITÄT: P1
+
+[ ] UI-054 | Videovorschau
+ORT: Job-Details
+IST: Fehlt im sichtbaren Dashboard.
+SOLL: Großes Vorschaubild/-video.
+ERFORDERLICH: Bestehende Preview-Pipeline einbetten; Seitenverhältnis bewahren.
+PRIORITÄT: P0
+
+[ ] UI-055 | Vorschau-Transport
+ORT: Unter dem Vorschaubild
+IST: Fehlt.
+SOLL: Play/Pause, Navigation, Zeit, Seekbar, Lautstärke, Vollbild.
+ERFORDERLICH: Bestehenden Playerzustand anbinden; nur tatsächlich unterstützte Controls aktiv.
+PRIORITÄT: P1
+
+[ ] UI-056 | Übergänge & Effekte
+ORT: Unter Vorschau
+IST: Fehlt.
+SOLL: Preset-Combobox, „Effekte bearbeiten“, kleine aktive Effektchips.
+ERFORDERLICH: Reale Effekt-/Transitionseinstellungen in Detailkarte spiegeln.
+PRIORITÄT: P1
+
+[ ] UI-057 | Ausgabe-Einstellungen
+ORT: Rechte Detailspalte
+IST: Im sichtbaren Dashboard fehlen.
+SOLL: Auflösung, FPS, Codec, Qualität/Profil, Audio, Ausgabeordner.
+ERFORDERLICH: Bestehende Variablen kompakt als Grid einbetten; keine Duplikatlogik.
+PRIORITÄT: P1
+
+[ ] UI-058 | RenderProof-Karte
+ORT: Rechts unten
+IST: Kein vergleichbarer eigener Nachweiskasten sichtbar.
+SOLL: Grüner RenderProof/Effektnachweis mit letztem Nachweis und Aktion.
+ERFORDERLICH: Nur realen Prüfstatus anzeigen; Zeitstempel aus echter Prüfung.
+PRIORITÄT: P1
+
+========================================================================
+P1 – UNTERER SCHEDULERBEREICH
+========================================================================
+
+[ ] UI-059 | Scheduler-Großbereich
+ORT: Unter Quellen/Queue
+IST: Fehlt im sichtbaren Dashboard.
+SOLL: Breite Karte „Startzeituhr (Geplanter Start)“.
+ERFORDERLICH: Visuelle Struktur jetzt vorbereiten; Funktion bis Checkpoint 5 sicher disabled.
+PRIORITÄT: P1
+
+[ ] UI-060 | Uhrgrafik
+ORT: Scheduler-Großbereich links
+IST: Fehlt.
+SOLL: Runde Uhrvisualisierung.
+ERFORDERLICH: Lokale Canvas-/SVG-Uhr; Zustand aus Schedulerdaten.
+PRIORITÄT: P2
+
+[ ] UI-061 | Datum/Uhrzeit-Felder
+ORT: Scheduler-Großbereich
+IST: Fehlen.
+SOLL: Datum und Uhrzeit kompakt.
+ERFORDERLICH: Bis Checkpoint 5 deaktivierte, klar gekennzeichnete Controls; keine falsche Planung.
+PRIORITÄT: P1
+
+[ ] UI-062 | Scheduler-Optionen
+ORT: Scheduler-Großbereich Mitte
+IST: Fehlen.
+SOLL: PC eingeschaltet halten, optional bei Leerlauf, Ruhezustand nach Fertigstellung, Energieprofil.
+ERFORDERLICH: Erst aktivieren, wenn Systemintegration verifiziert; vorher disabled mit Tooltips.
+PRIORITÄT: P2
+
+[ ] UI-063 | Geplante Ausführung
+ORT: Scheduler-Großbereich rechts
+IST: Fehlt.
+SOLL: Startzeit, Dauer, Jobanzahl, Benachrichtigung.
+ERFORDERLICH: Reale Queue-/Planungsdaten; bis Checkpoint 5 nur ehrlicher Sperrstatus.
+PRIORITÄT: P2
+
+========================================================================
+P1/P2 – FOOTER / SYSTEMSTATUS
+========================================================================
+
+[ ] UI-064 | Footer-Inhalt
+ORT: Ganz unten
+IST: Langer Satz links + „Aktiv · startbereit“ rechts.
+SOLL: Kompakte Systemmetriken über die gesamte Breite.
+ERFORDERLICH: Guidance aus Hauptfooter entfernen oder als Tooltip/Statusmeldung; Footer als Metricsbar.
+PRIORITÄT: P1
+
+[ ] UI-065 | CPU im Footer
+ORT: Footer links
+IST: Fehlt.
+SOLL: CPU-Prozent + kleines Aktivitätsdiagramm.
+ERFORDERLICH: Reale CPU-Messung; sparsame Aktualisierungsrate.
+PRIORITÄT: P2
+
+[ ] UI-066 | RAM im Footer
+ORT: Footer
+IST: Fehlt.
+SOLL: Genutzter/Gesamter RAM + Miniindikator.
+ERFORDERLICH: Reale RAM-Daten.
+PRIORITÄT: P2
+
+[ ] UI-067 | FFmpeg/GPU im Footer
+ORT: Footer Mitte
+IST: Fehlt.
+SOLL: FFmpeg-Version + GPU-Acceleration-State.
+ERFORDERLICH: Diagnosecache verwenden; unbekannte Beschleunigung nicht als verfügbar darstellen.
+PRIORITÄT: P1
+
+[ ] UI-068 | Cache im Footer
+ORT: Footer Mitte
+IST: Fehlt.
+SOLL: Belegung / Limit.
+ERFORDERLICH: Reale Cachegröße und konfiguriertes Limit.
+PRIORITÄT: P1
+
+[ ] UI-069 | Projektordner im Footer
+ORT: Footer
+IST: Nicht als kompakter Status sichtbar.
+SOLL: Projektordner mit Pfad.
+ERFORDERLICH: Aktuellen Projektpfad kurz darstellen; langer Pfad mit Ellipsis + Tooltip.
+PRIORITÄT: P1
+
+[ ] UI-070 | Backupstatus im Footer
+ORT: Footer
+IST: Fehlt.
+SOLL: Backup + letzter Zeitpunkt.
+ERFORDERLICH: Nur an echte Backuphistorie koppeln.
+PRIORITÄT: P2
+
+[ ] UI-071 | Gesamtstatus rechts
+ORT: Footer ganz rechts
+IST: „Aktiv · startbereit“ in Cyan.
+SOLL: Grüner Status „Alle Systeme bereit“ bzw. realer Problemstatus.
+ERFORDERLICH: Gesamtzustand aus Diagnosen aggregieren.
+PRIORITÄT: P1
+
+========================================================================
+P1 – TYPOGRAFIE, FARBE, FORM UND DETAILQUALITÄT
+========================================================================
+
+[ ] UI-072 | Grundfarbsystem
+ORT: Gesamte App
+IST: Schwarz-violett mit sehr vielen hellen violetten Rahmen.
+SOLL: Dunkles Navy/Blau-Schwarz mit zurückhaltenden Borders und semantischen Akzenten.
+ERFORDERLICH: Theme-Tokens neu kalibrieren; Borderhelligkeit stark reduzieren.
+PRIORITÄT: P1
+
+[ ] UI-073 | Kartenrundung
+ORT: Alle Karten/Controls
+IST: Überwiegend scharfkantig bzw. nur minimal gerundet.
+SOLL: Deutlich weichere 8–12-px-Anmutung.
+ERFORDERLICH: Ttk-Stile/Assets so umbauen, dass die visuelle Rundung konsistent ist.
+PRIORITÄT: P1
+
+[ ] UI-074 | Hierarchische Akzentfarben
+ORT: Karten, Status, Buttons
+IST: Violett wird für fast jede Grenze und viele Aktionen verwendet.
+SOLL: Blau=Medien/Primär, Violett=Queue, Grün/Türkis=Erfolg/Effekte, Orange=Zeitplan.
+ERFORDERLICH: Semantische Color-Tokens statt einheitlicher Accentfarbe.
+PRIORITÄT: P1
+
+[ ] UI-075 | Schriftgröße
+ORT: Gesamte aktuelle Oberfläche
+IST: Viele Texte deutlich größer und zeilenintensiver als im Muster.
+SOLL: Kompaktere UI-Typografie mit klaren Ebenen.
+ERFORDERLICH: Basefont reduzieren; Title/Section/Body/Meta/Pill getrennt definieren.
+PRIORITÄT: P0
+
+[ ] UI-076 | Schriftgewicht
+ORT: Gesamte App
+IST: Viele Buttons/Texte wirken ähnlich fett; Hierarchie ist schwach.
+SOLL: Titel semibold/bold, normale Werte regular, Pills klein/medium.
+ERFORDERLICH: Fontweights pro Rolle vereinheitlichen.
+PRIORITÄT: P1
+
+[ ] UI-077 | Zeilenumbrüche
+ORT: KPI- und Statuskarten
+IST: Lange Prosa bricht in zahlreiche Zeilen und vergrößert Karten.
+SOLL: Kurze Labels, Kennzahlen und Statuschips.
+ERFORDERLICH: Primärtext kürzen; Erklärungen in Tooltip/Diagnose.
+PRIORITÄT: P0
+
+[ ] UI-078 | Rahmenmenge
+ORT: Fast jede aktuelle Zone
+IST: Nahezu jeder Container besitzt einen sichtbaren violetten Rahmen.
+SOLL: Struktur primär durch Flächen, Abstände und subtile 1-px-Borders.
+ERFORDERLICH: Nur echte Karten begrenzen; Wrapperframes ohne sichtbaren Border.
+PRIORITÄT: P1
+
+[ ] UI-079 | Abstände/Gutters
+ORT: Gesamtes Dashboard
+IST: Teilweise sehr enge 8–10-px-Lücken, gleichzeitig große unproduktive Leerflächen.
+SOLL: Gleichmäßiges 12–16-px-Raster zwischen Karten und 10–14 px innen.
+ERFORDERLICH: Zentrales Spacing-Token-System.
+PRIORITÄT: P1
+
+[ ] UI-080 | Status-Pills
+ORT: Queue, RenderProof, Systemzustand
+IST: Primär als Fließtext bzw. große Buttons.
+SOLL: Kleine farbkodierte Pills.
+ERFORDERLICH: Einheitliche StatusPill-Komponente.
+PRIORITÄT: P1
+
+[ ] UI-081 | Icon-/Textabstand
+ORT: Navigation und Aktionsbuttons
+IST: Unicodeicon und Text stehen optisch inkonsistent.
+SOLL: Gleiches Iconraster und definierter 8–10-px-Abstand.
+ERFORDERLICH: Einheitliche Icon-Komponente.
+PRIORITÄT: P1
+
+========================================================================
+NICHT WÖRTLICH AUS DEM MUSTER ÜBERNEHMEN
+========================================================================
+
+[ ] DATA-001 | Beispielzahlen
+IST/SOLL-REGEL: 1.248 Bilder, 326 Videos, 98 Audio, 8 wartende und 24 abgeschlossene Jobs sind
+                Musterdaten.
+ERFORDERLICH: Struktur übernehmen, ausschließlich reale Zähler anzeigen.
+
+[ ] DATA-002 | Beispielzeit 23:30
+ERFORDERLICH: Nicht hart codieren. Solange Scheduler gesperrt ist, real „Nicht geplant“ zeigen,
+              aber Zielstruktur beibehalten.
+
+[ ] DATA-003 | Beispieldateien / Sonnenuntergang
+ERFORDERLICH: Keine Musterdateien erzeugen. Echte Projektjobs und echte Vorschau verwenden.
+
+[ ] DATA-004 | Musteravatar
+ERFORDERLICH: Nicht kopieren. Generisches oder echtes lokales Profil verwenden.
+
+[ ] DATA-005 | Musterversion v2.4.0 / Stable
+ERFORDERLICH: Aktuelle reale Version 2.8.3-rc24 bzw. tatsächlichen Releasezustand beibehalten.
+
+========================================================================
+ABNAHME – DIE OBERFLÄCHE GILT ERST DANN ALS „MUSTERNAH“, WENN:
+========================================================================
+
+[ ] A-001 Native helle Menüleiste stört die dunkle UI nicht mehr.
+[ ] A-002 Der Hauptarbeitsbereich beginnt spätestens ungefähr im oberen Drittel der Contenthöhe.
+[ ] A-003 Vier KPI-Karten benötigen zusammen nicht mehr als ungefähr 18–20 % der Fensterhöhe.
+[ ] A-004 Quellen, Queue und Jobdetails sind bei 1440×900 und größer gleichzeitig sichtbar.
+[ ] A-005 Keine Primäraktion und kein Text ist abgeschnitten oder unter einem Nachbarelement.
+[ ] A-006 Bei 125-%-Schriftprofil bleibt der Kernarbeitsbereich erreichbar, ohne globale Layoutkollision.
+[ ] A-007 Keine leeren sichtbaren Platzhalterrahmen.
+[ ] A-008 Diagnoseprosa und Zeitstempel dominieren keine KPI-Karte.
+[ ] A-009 Suche, Systembadges und Utilitybuttons bilden eine einzige kompakte Topbar.
+[ ] A-010 Sidebar besitzt Markenlogo, konsistente Icons und realen Systemstatus.
+[ ] A-011 Actionbar entspricht in Hierarchie und Gruppierung dem Muster.
+[ ] A-012 Queue zeigt reale Jobs als Tabelle mit Status, Fortschritt und Ausgabe.
+[ ] A-013 Jobdetail zeigt reale Vorschau, Effekte und Ausgabeinformationen.
+[ ] A-014 Scheduler sieht strukturell wie das Muster aus, bleibt aber funktional ehrlich gesperrt,
+          solange Checkpoint 5 nicht abgeschlossen ist.
+[ ] A-015 Footer zeigt reale System-/Projektzustände statt eines langen Hilfesatzes.
+[ ] A-016 Karten, Controls und Pills verwenden ein konsistentes Navy/Blue/Green/Amber-System.
+[ ] A-017 Rundungen, Abstände und Typografie sind über alle Zonen konsistent.
+[ ] A-018 Musterwerte wurden nirgends als Fake-Daten hart codiert.
+[ ] A-019 Screenshotvergleich bei 1440×900, 1500×920 und 1920×1080 durchgeführt.
+[ ] A-020 Screenshotvergleich zusätzlich bei 90 %, 105 % und 125 % Schriftprofil durchgeführt.
+[ ] A-021 Geometriewächter meldet keine Überlagerung, kein Clipping und keine außerhalb liegende Primäraktion.
+[ ] A-022 Bildervergleich wird nach der Umsetzung erneut erzeugt und alle offenen UI-IDs werden einzeln abgehakt.
+
+========================================================================
+EMPFOHLENE UMSETZUNGSREIHENFOLGE
+========================================================================
+
+1. UI-003 bis UI-012: Höhenbudget, Clipping, Hauptarbeitsbereich.
+2. UI-041, UI-045, UI-052, UI-054: echte Drei-Spalten-Kernoberfläche.
+3. UI-004, UI-013 bis UI-019: kompakte Topbar.
+4. UI-028 bis UI-036: KPI-Karten komplett verdichten.
+5. UI-020 bis UI-027: Sidebar.
+6. UI-037 bis UI-040: Actionbar.
+7. UI-042 bis UI-058: Quellen-, Queue- und Detailfunktionen.
+8. UI-059 bis UI-063: Schedulerstruktur, funktional weiterhin gesperrt.
+9. UI-064 bis UI-071: Footer/Systemmetriken.
+10. UI-072 bis UI-081: Pixel-/Stilfeinschliff.
+11. A-001 bis A-022: reale visuelle Endabnahme.
