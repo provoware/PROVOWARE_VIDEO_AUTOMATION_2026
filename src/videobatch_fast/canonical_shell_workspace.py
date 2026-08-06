@@ -118,14 +118,15 @@ class CanonicalShellWorkspaceMixin:
         self.guidance_text.set("Kein direkter Bereich gefunden. Dashboard wurde geöffnet.")
         self._select_shell_page(0)
 
+    def _bind_header_statistics(self) -> None:
+        super()._bind_header_statistics()
+        for variable in (self.visual_effect, self.transition, self.quick_mode):
+            variable.trace_add("write", lambda *_args: self.root.after_idle(self._refresh_kpi_cards))
+
     def _update_header_statistics(self) -> None:
         super()._update_header_statistics()
         if not hasattr(self, "shell_media_kpi"):
             return
-        self.shell_media_kpi.set(str(len(self.audios) + len(self.media)))
-        self.shell_queue_kpi.set(str(len(self.jobs)))
-        effect = str(self.visual_effect.get() or "none")
-        transition = str(self.transition.get() or "none")
-        self.shell_effect_kpi.set("Automatik" if effect == "none" and transition == "none" else effect)
+        self._refresh_kpi_cards()
         self.shell_theme_combo.set(CANONICAL_THEME_LABELS.get(self.theme_name.get(), "Midnight Blue"))
         self.shell_font_combo.set(self._font_profile_for_scale(self.global_font_scale.get()))
