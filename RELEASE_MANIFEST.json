@@ -1,7 +1,7 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 409,
+  "file_count": 410,
   "files": [
     {
       "mode": "0o644",
@@ -54,14 +54,20 @@
     {
       "mode": "0o644",
       "path": ".github/workflows/kubuntu-main-comment-dispatch.yml",
-      "sha256": "a4e9522b4320415aaf37e23e05e0d62692fe03a51db936bc3a4841e76aaa415d",
-      "size": 4331
+      "sha256": "2f955ee14148b96dc90a85b28d165449354f5c1704a28cbb494f3c85431d42f2",
+      "size": 5311
     },
     {
       "mode": "0o644",
       "path": ".github/workflows/kubuntu-pr-matrix.yml",
       "sha256": "547612a772395d081ad6ca83b60922ce7c40fc60325b0e066ca9ce30a6c34723",
       "size": 19182
+    },
+    {
+      "mode": "0o644",
+      "path": ".github/workflows/kubuntu-pr-validation.yml",
+      "sha256": "f9cde51990db857af4f49f616227de3509e3d60c883531cba60f5af71e1f3171",
+      "size": 13347
     },
     {
       "mode": "0o644",
