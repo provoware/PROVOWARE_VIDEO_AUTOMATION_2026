@@ -83,7 +83,7 @@ toolchain_python() {
 
 start_application() {
   require_system
-  exec "$BOOTSTRAP_PYTHON" "$ROOT_DIR/scripts/bootstrap.py"
+  exec "$BOOTSTRAP_PYTHON" "$ROOT_DIR/scripts/debug_launcher.py"
 }
 
 show_logs() {
