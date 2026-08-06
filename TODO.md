@@ -2,36 +2,45 @@
 
 ## Aktueller Schwerpunkt: Musterabgleich und robuste Desktop-Oberfläche
 
-Die kanonische Referenz ist `docs/design/VIDEOBATCH_CANONICAL_UI_REFERENCE.svg`. Die folgenden Punkte stammen aus dem direkten Vergleich zwischen Referenz, Designmanifest und aktueller Tk-Oberfläche sowie aus der gemeldeten realen KDE-Darstellung.
+Die kanonische Referenz ist `docs/design/VIDEOBATCH_CANONICAL_UI_REFERENCE.svg`. Die folgenden Punkte stammen aus dem direkten Vergleich zwischen Referenz, Designmanifest, aktuellem Tk-Aufbau und der gemeldeten realen KDE-Darstellung.
+
+**Statusregel:** Ein abgehakter Punkt bedeutet, dass die Codeänderung und ein statischer Vertrag vorliegen. Die reale Sichtabnahme unter KDE bleibt gesammelt unter `UI-P2-002` offen.
 
 ### P0 – sichtbare Layoutfehler und Blocker
 
-- [ ] **UI-P0-001 – Kanonisches Dashboard statt alter Einzelseite:** Das Muster zeigt Quellen, Render-Queue und Jobdetails gleichzeitig im Verhältnis ungefähr `22 % / 48 % / 30 %`. Aktuell öffnet das Dashboard nur die alte Startseite in einem versteckten Notebook. Abnahme: Das Dashboard besitzt einen echten, datenangebundenen Drei-Spalten-Arbeitsbereich; die bisherigen Fachseiten bleiben separat erreichbar.
-- [ ] **UI-P0-002 – Kontrolliertes vertikales Scrollen:** Bei geringer Fensterhöhe oder großer Schrift verschwinden untere Bereiche beziehungsweise rutschen unter andere Elemente. Abnahme: Das Dashboard besitzt einen eigenen Scrollbereich; Primäraktionen, Details und Status bleiben ohne Überlagerung erreichbar.
-- [ ] **UI-P0-003 – Responsive Spaltenumschaltung:** Die Referenz verlangt drei Spalten ab großer Breite, zwei Spalten im mittleren Bereich und kontrolliertes Stapeln bei kleiner Breite. Aktuell bleibt die alte Seitenstruktur unverändert. Abnahme: Drei definierte Layoutstufen ohne negative Breiten, abgeschnittene Karten oder überlagerte Widgets.
-- [ ] **UI-P0-004 – Kopfzeile auf Referenzhöhe verdichten:** Das Muster verwendet eine flache Top-Zeile. Aktuell erzeugen Identität, Designhinweis, Theme-/Schriftwahl, Suche und Suchhinweis mehrere Höhenebenen. Abnahme: kompakte Kopfzeile; Zusatzbedienung bricht kontrolliert um und überdeckt keine Suche oder Titel.
-- [ ] **UI-P0-005 – KPI-Karten gegen Schriftüberlauf härten:** Feste `wraplength`-Werte und zusätzliche Aktionsschalter erzeugen bei 125 % oder hoher KDE-Skalierung zu kleine Karten. Abnahme: dynamische Textbreite, definierte Mindesthöhe, gleiche Kartenhöhe und keine abgeschnittenen Statuszeilen.
-- [ ] **UI-P0-006 – Aktionsleiste nach realer Wunschbreite umbrechen:** Der bisherige feste Grenzwert berücksichtigt weder DPI noch Schriftprofil. Abnahme: Spaltenzahl wird aus verfügbarer Breite und angeforderter Schalterbreite berechnet; kein Schalter liegt unter einem anderen.
-- [ ] **UI-P0-007 – Hilfeeinstiege responsiv anordnen:** Fünf feste Spalten führen auf kleineren Fenstern zu gequetschten oder abgeschnittenen Beschriftungen. Abnahme: automatische Anordnung mit ein, zwei oder drei Spalten und vollständiger Tastaturerreichbarkeit.
-- [ ] **UI-P0-008 – Mindestgrößen und gespeicherte Geometrie begrenzen:** Eine alte oder zu kleine gespeicherte Fenstergeometrie kann das Layout außerhalb des nutzbaren Bildschirms öffnen. Abnahme: Geometrie wird auf Bildschirmgrenzen und sinnvolle Mindestmaße normalisiert.
-- [ ] **TC-P0-001 – Lokale Prüfung nicht durch fehlendes Wheelhouse blockieren:** `verify_release.sh` scheitert trotz vorhandener Qualitätsumgebung an einem nicht mitgelieferten `TOOLCHAIN_WHEELHOUSE_MANIFEST.json`. Abnahme: lokale Qualitätsprüfung kann eine bereits bestätigte Umgebung verwenden; nur eine ausdrücklich strenge reproduzierbare Releaseprüfung verlangt das komplette Wheelhouse.
-- [ ] **TC-P0-002 – Verständliche Wheelhouse-Diagnose:** Ein Quellarchiv enthält bewusst keine Wheels, die Fehlermeldung wirkt jedoch wie eine beschädigte Installation. Abnahme: Ausgabe erklärt den Unterschied zwischen lokaler Prüfung, optionalem Online-Aufbau und reproduzierbarer Stable-Freigabe.
+- [x] **UI-P0-001 – Kanonisches Dashboard statt alter Einzelseite:** Quellen, Render-Queue und Jobdetails liegen gleichzeitig in einem echten, datenangebundenen Arbeitsbereich; der bisherige geführte Startassistent bleibt separat erreichbar.
+- [x] **UI-P0-002 – Kontrolliertes vertikales Scrollen:** Das Dashboard besitzt einen eigenen Canvas-Scrollbereich; der Footer und die Navigation bleiben fest.
+- [x] **UI-P0-003 – Responsive Spaltenumschaltung:** Reine, getestete Breakpoints steuern drei Spalten, zwei Spalten und kontrolliertes Stapeln.
+- [x] **UI-P0-004 – Kopfzeile verdichten:** Theme- und Schriftwahl wurden aus dem Header entfernt; Suche und Bedienung brechen nur bei tatsächlich fehlender Breite kontrolliert um.
+- [x] **UI-P0-005 – KPI-Karten gegen Schriftüberlauf härten:** Detailtexte verwenden reale Kartenbreiten, KPI-Karten wechseln zwischen vier, zwei und einer Spalte, Wiederherstellungsaktionen bleiben kompakt.
+- [x] **UI-P0-006 – Aktionsleiste nach Wunschbreite umbrechen:** Die Spaltenzahl wird aus verfügbarer Breite und `winfo_reqwidth()` berechnet.
+- [x] **UI-P0-007 – Hilfeeinstiege responsiv anordnen:** Die fünf „Ich möchte …“-Aktionen verwenden einen zentral getesteten Spaltenrechner.
+- [x] **UI-P0-008 – Mindestgrößen und gespeicherte Geometrie begrenzen:** Gespeicherte Größe und Position werden auf sichtbare Bildschirmgrenzen normalisiert.
+- [x] **TC-P0-001 – Lokale Prüfung nicht durch fehlendes Wheelhouse blockieren:** `verify_release.sh` verwendet standardmäßig die vorhandene bestätigte Qualitätsumgebung; `--strict` bleibt der reproduzierbare Stable-Pfad.
+- [x] **TC-P0-002 – Verständliche Wheelhouse-Diagnose:** Lokale Qualitätsprüfung, Kernprüfung und strenge Wheelhouse-/Signaturprüfung sind in Hilfe und Ausgabe eindeutig getrennt.
 
-### P1 – erkennbare Unterschiede zum Muster
+### P1 – funktionale Unterschiede zum Muster
 
-- [ ] **UI-P1-001 – Quellenkarte an reale Medien- und Projektdaten binden:** Anzahl Audios, Bilder/Videos, fehlende Dateien, Projektname und Ausgabeziel sichtbar machen.
-- [ ] **UI-P1-002 – Queue-Tabelle im Dashboard:** Reale Jobs mit Name, Effekt/Modus, Status und Fortschritt anzeigen; keine statischen Musterwerte.
-- [ ] **UI-P1-003 – Jobdetail- und Vorschaukarte:** Reale Vorschau-/Metadatenvariablen, Effekt, Auflösung, Codec und Ziel verwenden.
-- [ ] **UI-P1-004 – Scheduler sichtbar, aber ehrlich deaktiviert:** Das Muster zeigt die Startzeituhr. Bis Checkpoint 5 bleibt sie sichtbar als deaktiviertes Modul mit verständlicher Begründung; kein Attrappenstart.
-- [ ] **UI-P1-005 – Darstellungskarte aus dem Header in den Arbeitsbereich verschieben:** Theme und Schriftprofil sollen wie im Muster in einem eigenen kompakten Bereich verfügbar sein; der Header bleibt dadurch ruhiger.
-- [ ] **UI-P1-006 – Footer auf eine kompakte Statuszeile begrenzen:** Führungstext und Systemzustand dürfen nicht mehrzeilig übereinander wachsen. Lange Hinweise werden gekürzt und vollständig per Tooltip beziehungsweise Hilfebereich zugänglich.
-- [ ] **UI-P1-007 – Sidebarstatus und Navigation angleichen:** Abstände, aktive Fläche, Textkontrast und Statuskarte an das Muster annähern; Navigation bleibt fest, nur Inhalt scrollt.
-- [ ] **UI-P1-008 – Typografie konsistent skalieren:** Titel, Kartenwerte, Hilfetext und Labels erhalten zentrale Größenprofile statt gemischter impliziter ttk-Standardwerte.
-- [ ] **UI-P1-009 – Referenz-Hashangaben synchronisieren:** Textmanifest und Designtokens enthalten derzeit unterschiedliche SHA-256-Angaben für dieselben SVG-Referenzen. Abnahme: eine kanonische, reproduzierbar erzeugte Quelle.
+- [x] **UI-P1-001 – Quellenkarte an reale Medien- und Projektdaten binden:** Anzahl, fehlende Pfade, Projektname, Ausgabeziel und bis zu einhundert reale Quelldateien werden angezeigt.
+- [x] **UI-P1-002 – Queue-Tabelle im Dashboard:** Reale Jobs mit Name, Effekt, Status und Fortschritt sowie eine lokale Suche werden angezeigt.
+- [x] **UI-P1-003 – Jobdetail- und Vorschaukarte:** Reale Vorschauvariablen, ausgewählter Auftrag, Effekt, Modus, Auflösung, Codec und Ziel werden verwendet.
+- [x] **UI-P1-004 – Scheduler sichtbar, aber ehrlich deaktiviert:** Die Startzeituhr bleibt bis Checkpoint 5 sichtbar deaktiviert; kein Attrappenstart wurde ergänzt.
+- [x] **UI-P1-005 – Darstellungskarte aus dem Header verschieben:** Theme und Schriftprofil befinden sich in einem eigenen Dashboardbereich.
+- [x] **UI-P1-006 – Footer auf eine kompakte Statuszeile begrenzen:** Führungstext wird einzeilig begrenzt; der Systemzustand bleibt separat sichtbar.
+- [ ] **UI-P1-007 – Sidebar-Systemwerte vervollständigen:** Das Muster zeigt CPU, RAM, GPU und Cache. Nur tatsächlich messbare Werte dürfen ergänzt werden; unbekannte GPU-Beschleunigung darf nicht erfunden werden.
+- [x] **UI-P1-008 – Typografie konsistent skalieren:** Shelltitel, KPI-Werte, Hinweise, Navigation und kompakte Aktionen verwenden zentrale Profile für 90 %, 105 % und 125 %.
+- [ ] **UI-P1-009 – Referenz-Hashangaben synchronisieren:** Textmanifest und Designtokens enthalten unterschiedliche SHA-256-Angaben für dieselben SVG-Referenzen. Die tatsächlichen Dateihashes müssen lokal ermittelt und genau einmal übernommen werden.
+- [ ] **UI-P1-010 – Reale Laufzeitbadges im Header:** FFmpeg-Version, Cachezustand und verfügbare Beschleunigung wie im Muster anzeigen; nur aus echten Diagnosedaten.
+- [ ] **UI-P1-011 – Livefortschritt in der Dashboard-Queue:** Laufender Einzel- und Gesamtfortschritt soll aus den bestehenden Progressvariablen in die passende Tabellenzeile gespiegelt werden.
+- [ ] **UI-P1-012 – Jobdetailregister:** Vorschau, Effekte und Ausgabe als klar getrennte, tastaturerreichbare Detailbereiche abbilden, ohne die bestehende Vorschauseite zu duplizieren.
+- [ ] **UI-P1-013 – Backupstatus und sichere Aktion:** Das Muster besitzt Backupstatus und Schalter. Nur vorhandene, bestätigte Backupfunktionen dürfen angebunden werden.
+- [ ] **UI-P1-014 – Reichere Footerkennzahlen:** CPU, RAM, FFmpeg, Cache, Projektordner und Backup wie im Muster nur dann anzeigen, wenn die Werte ohne Pollinglast und ohne Attrappen verfügbar sind.
+- [ ] **UI-P1-015 – Icon- und Akzentkonsistenz:** Kartenicons, farbige Akzentlinien und Zustands-Pills an die Referenz annähern; keine externen Bildabhängigkeiten.
+- [ ] **UI-P1-016 – Pixelabstände nach realen Screenshots feinjustieren:** Karteninnenabstände, Tabellenzeilen, Sidebarhöhe und Vorschauanteil erst nach der KDE-Matrix endgültig festlegen.
 
 ### P2 – nachhaltige Absicherung
 
-- [ ] **UI-P2-001 – Layoutvertragstests:** Statische und GUI-nahe Tests für Breakpoints, Scrollbarkeit, Mindestbreiten und vorhandene Pflichtzonen ergänzen.
+- [x] **UI-P2-001 – Layoutvertragstests:** Breakpoints, Spaltenrechner, Bildschirmgeometrie, Pflichtzonen, Scrollbereich, MRO und lokale Prüfmodi besitzen statische Tests.
 - [ ] **UI-P2-002 – Reale KDE-Sichtprüfung:** Screenshots bei 1024×768, 1366×768, 1500×920 und 1920×1080 sowie bei 90 %, 105 % und 125 % Schriftprofil dokumentieren.
 - [ ] **UI-P2-003 – Überlagerungswächter:** Nach `update_idletasks()` Widget-Rechtecke auf negative Größe, Überschneidung von Geschwistern und außerhalb des sichtbaren Containers liegende Primäraktionen prüfen.
 - [ ] **UI-P2-004 – Mustervergleich ohne Merge-Gate:** Lokales Prüfwerkzeug erzeugt einen Bericht über Zonen, Maße und Abweichungen; es blockiert keinen Merge automatisch.
