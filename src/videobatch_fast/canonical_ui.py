@@ -2,9 +2,13 @@ from __future__ import annotations
 
 from tkinter import Tk
 
+from .canonical_dashboard_mixin import CanonicalDashboardMixin
+from .canonical_help_status_mixin import CanonicalHelpStatusMixin
+from .canonical_kpi_compact_mixin import CanonicalKpiCompactMixin
 from .canonical_kpi_detail_mixin import CanonicalKpiDetailMixin
-from .canonical_shell_chrome import CanonicalShellChromeMixin
+from .canonical_window_mixin import CanonicalWindowMixin
 from .canonical_shell_workspace import CanonicalShellWorkspaceMixin
+from .canonical_shell_chrome import CanonicalShellChromeMixin
 from .error_handling import error_definition
 from .startup_handshake import signal_ui_ready
 from .ui import VideoBatchFastUI
@@ -12,8 +16,12 @@ from .ui_components import SolutionDialog
 
 
 class CanonicalVideoBatchFastUI(
+    CanonicalKpiCompactMixin,
     CanonicalKpiDetailMixin,
+    CanonicalWindowMixin,
     CanonicalShellWorkspaceMixin,
+    CanonicalDashboardMixin,
+    CanonicalHelpStatusMixin,
     CanonicalShellChromeMixin,
     VideoBatchFastUI,
 ):

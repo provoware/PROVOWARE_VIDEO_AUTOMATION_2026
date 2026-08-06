@@ -12,13 +12,18 @@ usage() {
 VideoBatch Fast – automatischer zentraler Einstieg
 
   ./videobatch.sh                 automatisch prüfen, reparieren und starten
-  ./videobatch.sh setup           vollständige Umgebung automatisch vorbereiten
-  ./videobatch.sh repair          Paketbasis und Umgebung vollständig erneuern
+  ./videobatch.sh setup           Laufzeitumgebung automatisch vorbereiten
+  ./videobatch.sh repair          Paketbasis und Laufzeitumgebung vollständig erneuern
   ./videobatch.sh doctor          verständliche Systemdiagnose
   ./videobatch.sh check           kompakter System- und Toolchainstatus
-  ./videobatch.sh test [--core]   Release- oder Kernprüfung
+  ./videobatch.sh test --docs     schnelle Dokumentationsprüfung
+  ./videobatch.sh test --core     Kernprüfung ohne externe Qualitätswerkzeuge
+  ./videobatch.sh test --local    lokale Qualitätsprüfung ohne Stable-Freigabe
+  ./videobatch.sh test            strenge reproduzierbare Releaseprüfung
   ./videobatch.sh quality         Ruff, MyPy, Bandit, pip-audit und Tests
-  ./videobatch.sh verify          vollständige Releaseprüfung
+  ./videobatch.sh verify          praktische lokale Qualitätsprüfung
+  ./videobatch.sh verify --strict strenge Prüfung mit Wheelhouse und Signaturen
+  ./videobatch.sh verify --core   Kernprüfung ohne externe Qualitätswerkzeuge
   ./videobatch.sh finalize        autonom prüfen und Stable-ZIP erzeugen
   ./videobatch.sh fault-lab       isoliertes Stabilitäts- und Recoverylabor
   ./videobatch.sh retry-status    Wiederanlaufliste vollständig lesend anzeigen
@@ -76,12 +81,10 @@ toolchain_python() {
   "$BOOTSTRAP_PYTHON" "$ROOT_DIR/scripts/toolchain.py" path --scope "$scope" --quiet
 }
 
-
 start_application() {
   require_system
   exec "$BOOTSTRAP_PYTHON" "$ROOT_DIR/scripts/bootstrap.py"
 }
-
 
 show_logs() {
   local start_log tool_log
@@ -124,8 +127,7 @@ case "$ACTION" in
     exec "$ROOT_DIR/quality.sh"
     ;;
   verify)
-    [[ $# -eq 0 ]] || fatal "verify akzeptiert keine Zusatzoptionen." 2
-    exec "$ROOT_DIR/verify_release.sh"
+    exec "$ROOT_DIR/verify_release.sh" "$@"
     ;;
   finalize|finalisieren)
     require_system

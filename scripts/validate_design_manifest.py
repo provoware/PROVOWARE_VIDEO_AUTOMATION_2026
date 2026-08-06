@@ -16,9 +16,15 @@ POSTER_PATH = DESIGN_DIR / "VIDEOBATCH_GRAPHICS_MANIFEST_POSTER.svg"
 SHELL_PATHS = (
     ROOT / "src" / "videobatch_fast" / "canonical_ui.py",
     ROOT / "src" / "videobatch_fast" / "canonical_kpi.py",
+    ROOT / "src" / "videobatch_fast" / "canonical_kpi_detail_mixin.py",
+    ROOT / "src" / "videobatch_fast" / "canonical_kpi_compact_mixin.py",
     ROOT / "src" / "videobatch_fast" / "canonical_shell_contract.py",
     ROOT / "src" / "videobatch_fast" / "canonical_shell_chrome.py",
     ROOT / "src" / "videobatch_fast" / "canonical_shell_workspace.py",
+    ROOT / "src" / "videobatch_fast" / "canonical_dashboard_mixin.py",
+    ROOT / "src" / "videobatch_fast" / "canonical_help_status_mixin.py",
+    ROOT / "src" / "videobatch_fast" / "canonical_window_mixin.py",
+    ROOT / "src" / "videobatch_fast" / "window_geometry.py",
 )
 APP_PATH = ROOT / "src" / "videobatch_fast" / "app.py"
 
@@ -31,8 +37,31 @@ EXPECTED_THEMES = {
 EXPECTED_FONT_PROFILES = {"compact": 90, "standard": 105, "large": 125}
 REQUIRED_CHECKPOINTS = tuple(range(0, 11))
 REQUIRED_SHELL_LABELS = (
-    "Dashboard", "Medien", "Queue", "Effekte", "Scheduler",
-    "Vorschau", "Diagnose", "Einstellungen",
+    "Dashboard",
+    "Medien",
+    "Queue",
+    "Effekte",
+    "Scheduler",
+    "Vorschau",
+    "Diagnose",
+    "Einstellungen",
+)
+REQUIRED_DASHBOARD_ZONES = (
+    "Quellen & Projekt",
+    "Render Queue",
+    "Jobdetails & Vorschau",
+    "Startzeituhr",
+    "Darstellung",
+)
+REQUIRED_RESPONSIVE_TOKENS = (
+    "dashboard_layout_mode",
+    "responsive_column_count",
+    "normalize_window_geometry",
+    "yscrollcommand",
+    "scrollregion",
+    "three_columns",
+    "two_columns",
+    "stacked",
 )
 REQUIRED_HELP_INTENTS = (
     "Ich möchte …",
@@ -50,8 +79,21 @@ REQUIRED_PAGE_BUILDERS = (
     "_build_production_page",
     "_build_help_page",
 )
-REQUIRED_KPI_STATES = ("empty", "ready", "loading", "success", "warning", "error", "disabled")
-REQUIRED_KPI_ACTIONS = ("Medien öffnen", "Queue öffnen", "Effekte öffnen", "Checkpoint 5")
+REQUIRED_KPI_STATES = (
+    "empty",
+    "ready",
+    "loading",
+    "success",
+    "warning",
+    "error",
+    "disabled",
+)
+REQUIRED_KPI_ACTIONS = (
+    "Medien öffnen",
+    "Queue öffnen",
+    "Effekte öffnen",
+    "Checkpoint 5",
+)
 
 
 def _file_sha256(path: Path) -> str:
@@ -73,6 +115,12 @@ def _validate_shell(root: Path, errors: list[str]) -> None:
     for label in REQUIRED_SHELL_LABELS:
         if label not in shell:
             errors.append(f"Shell-Navigation fehlt: {label}")
+    for zone in REQUIRED_DASHBOARD_ZONES:
+        if zone not in shell:
+            errors.append(f"Dashboard-Zone fehlt: {zone}")
+    for token in REQUIRED_RESPONSIVE_TOKENS:
+        if token not in shell:
+            errors.append(f"Responsive Shell-Kopplung fehlt: {token}")
     for label in REQUIRED_HELP_INTENTS:
         if label not in shell:
             errors.append(f"Hilfeabsicht fehlt: {label}")
@@ -80,8 +128,12 @@ def _validate_shell(root: Path, errors: list[str]) -> None:
         if f"self.{builder}(" not in shell:
             errors.append(f"Bestehende Funktionsseite nicht eingebunden: {builder}")
     for callback in (
-        "self._new_project", "self._add_audio", "self._add_media",
-        "self._open_settings", "self._start", "self._choose_directory",
+        "self._new_project",
+        "self._add_audio",
+        "self._add_media",
+        "self._open_settings",
+        "self._start",
+        "self._choose_directory",
     ):
         if callback not in shell:
             errors.append(f"Primäraktion fehlt: {callback}")
@@ -99,6 +151,10 @@ def _validate_shell(root: Path, errors: list[str]) -> None:
             errors.append(f"KPI-Aktion fehlt: {action}")
     if "build_kpi_snapshots(" not in shell or "self._refresh_kpi_cards()" not in shell:
         errors.append("KPI-Karten sind nicht an den realen Zustandsvertrag gebunden")
+    if "CanonicalKpiCompactMixin" not in shell or "ShellKpiLink.TButton" not in shell:
+        errors.append("KPI-Detaildarstellung besitzt keine kompakte responsive Grenze")
+    if "kein automatischer Start" not in shell:
+        errors.append("Startzeituhr ist nicht eindeutig als deaktiviert gekennzeichnet")
     if "from .canonical_ui import run_app" not in app:
         errors.append("App-Einstieg verwendet nicht die kanonische Shell")
     if "from .ui import run_app" in app:
@@ -152,8 +208,15 @@ def validate(root: Path = ROOT) -> list[str]:
 
     manifest = (design_dir / MANIFEST_PATH.name).read_text(encoding="utf-8")
     for phrase in (
-        "Startzeituhr", "RenderProof", "Midnight Blue", "Emerald Tech",
-        "Violet Pulse", "Amber Graphite", "Kompakt", "Standard", "Groß",
+        "Startzeituhr",
+        "RenderProof",
+        "Midnight Blue",
+        "Emerald Tech",
+        "Violet Pulse",
+        "Amber Graphite",
+        "Kompakt",
+        "Standard",
+        "Groß",
     ):
         if phrase not in manifest:
             errors.append(f"Manifestbegriff fehlt: {phrase}")
