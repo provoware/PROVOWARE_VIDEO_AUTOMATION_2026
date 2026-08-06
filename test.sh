@@ -6,12 +6,14 @@ MODE="full"
 
 usage() {
   cat <<'EOF'
-Verwendung: ./test.sh [--core | --docs | --help]
+Verwendung: ./test.sh [--docs | --core | --local | --help]
 
   --docs  Schnelle Dokumentationsprüfung ohne Toolchain, Coverage, GUI oder Releasefreigabe.
   --core  Kernprüfung ohne externe Qualitätswerkzeuge; nicht releasefreigebend.
+  --local Vollständige lokale Code-, Test-, Coverage- und GUI-Prüfung ohne Wheelhouse-,
+          Signatur- und Release-Manifestfreigabe.
   --help  Diese Hilfe anzeigen.
-  ohne Option  Vollständige schreibgeschützte Releaseprüfung.
+  ohne Option  Strenge, reproduzierbare und schreibgeschützte Releaseprüfung.
 
 Es darf höchstens ein Modus angegeben werden.
 EOF
@@ -32,6 +34,10 @@ while [[ $# -gt 0 ]]; do
     --core)
       [[ "$MODE" == "full" ]] || fail_usage "Mehrere Prüfmodi wurden kombiniert."
       MODE="core"
+      ;;
+    --local)
+      [[ "$MODE" == "full" ]] || fail_usage "Mehrere Prüfmodi wurden kombiniert."
+      MODE="local"
       ;;
     --help|-h)
       usage
@@ -121,20 +127,36 @@ VERSION="$(
 if [[ "$MODE" == "full" && "${VIDEOBATCH_QUALITY_ALREADY_VERIFIED:-0}" != "1" ]]; then
   "$PYTHON_BOOTSTRAP" "$ROOT_DIR/scripts/toolchain.py" gate \
     --scope quality --run-external --quiet
+elif [[ "$MODE" == "local" && "${VIDEOBATCH_QUALITY_ALREADY_VERIFIED:-0}" != "1" ]]; then
+  printf 'LOKALE QUALITÄTSPRÜFUNG · bestätigte Umgebung wird direkt verwendet\n'
+  printf 'Hinweis: Wheelhouse-Reproduzierbarkeit und Stable-Freigabe werden nicht behauptet.\n\n'
+  "$ENV_PYTHON" "$ROOT_DIR/scripts/run_external_quality.py" --mode required
 fi
 
-if [[ "$MODE" == "core" ]]; then
-  printf 'provoware - videoautomation - 2026 · %s – KERNPRÜFUNG, NICHT RELEASEFREIGEBEND\n\n' \
-    "$VERSION"
-else
-  printf 'provoware - videoautomation - 2026 · %s – schreibgeschützte Releaseprüfung\n\n' \
-    "$VERSION"
-fi
+case "$MODE" in
+  core)
+    printf 'provoware - videoautomation - 2026 · %s – KERNPRÜFUNG, NICHT RELEASEFREIGEBEND\n\n' \
+      "$VERSION"
+    ;;
+  local)
+    printf 'provoware - videoautomation - 2026 · %s – LOKALE QUALITÄTSPRÜFUNG\n\n' \
+      "$VERSION"
+    ;;
+  *)
+    printf 'provoware - videoautomation - 2026 · %s – strenge schreibgeschützte Releaseprüfung\n\n' \
+      "$VERSION"
+    ;;
+esac
 
-# Der schnelle Dokumentationsvertrag läuft früh, bevor teure Prüfungen beginnen.
+# Der Dokumentationsvertrag läuft früh, bevor teure Prüfungen beginnen.
 "$ENV_PYTHON" "$ROOT_DIR/tests/test_documentation_contract.py"
 "$ENV_PYTHON" "$ROOT_DIR/scripts/validate_documentation.py"
-"$ENV_PYTHON" "$ROOT_DIR/scripts/validate_release_manifest.py"
+
+# Release-Manifest und signierte Freigaben gehören nur zur strengen Releaseprüfung.
+if [[ "$MODE" != "local" ]]; then
+  "$ENV_PYTHON" "$ROOT_DIR/scripts/validate_release_manifest.py"
+fi
+
 "$ENV_PYTHON" "$ROOT_DIR/scripts/validate_version_contract.py"
 "$ENV_PYTHON" "$ROOT_DIR/scripts/render_release_docs.py" --check
 "$ENV_PYTHON" "$ROOT_DIR/scripts/verify_compile_isolated.py"
@@ -168,11 +190,20 @@ else
 fi
 
 "$ENV_PYTHON" "$ROOT_DIR/scripts/verify_visual_isolated.py"
-"$ENV_PYTHON" "$ROOT_DIR/scripts/check_visual_approval.py"
-"$ENV_PYTHON" "$ROOT_DIR/scripts/validate_release_manifest.py"
-
-if [[ "$MODE" == "core" ]]; then
-  printf '\nKERNPRÜFUNG BESTANDEN · keine Releasefreigabe ohne externe Qualitätsgates\n'
-else
-  printf '\nALLE RELEASEPRÜFUNGEN BESTANDEN · Paketdateien blieben unverändert\n'
+if [[ "$MODE" != "local" ]]; then
+  "$ENV_PYTHON" "$ROOT_DIR/scripts/check_visual_approval.py"
+  "$ENV_PYTHON" "$ROOT_DIR/scripts/validate_release_manifest.py"
 fi
+
+case "$MODE" in
+  core)
+    printf '\nKERNPRÜFUNG BESTANDEN · keine Releasefreigabe ohne externe Qualitätsgates\n'
+    ;;
+  local)
+    printf '\nLOKALE QUALITÄTSPRÜFUNG BESTANDEN · Code, Tests, Coverage und GUI geprüft\n'
+    printf 'KEINE STABLE-FREIGABE · Wheelhouse-, Signatur- und Release-Manifestnachweis wurden ausgelassen\n'
+    ;;
+  *)
+    printf '\nALLE RELEASEPRÜFUNGEN BESTANDEN · Paketdateien blieben unverändert\n'
+    ;;
+esac
