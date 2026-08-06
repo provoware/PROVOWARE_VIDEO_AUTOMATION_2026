@@ -32,19 +32,18 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -Eeuo pipefail
+          requested_sha=''
           case "$COMMAND" in
             /run-kubuntu-main)
               workflow=kubuntu-build-matrix.yml
               label='Produktive Kubuntu-Matrix'
               ref=main
-              expected_sha=''
               arguments='-f report_issue=12'
               ;;
             /run-kubuntu-cache-warmup)
               workflow=kubuntu-cache-warmup.yml
               label='Kubuntu-Cache-Warmup'
               ref=main
-              expected_sha=''
               arguments=''
               ;;
             /run-kubuntu-pr\ *)
@@ -57,11 +56,13 @@ jobs:
               test "$(jq -r '.state' <<< "$pr_json")" = open
               test "$(jq -r '.base.ref' <<< "$pr_json")" = main
               test "$(jq -r '.head.repo.full_name' <<< "$pr_json")" = "$GITHUB_REPOSITORY"
-              workflow=kubuntu-build-matrix.yml
-              label="Kubuntu-PR-Matrix #$pr_number"
-              ref="$(jq -r '.head.ref' <<< "$pr_json")"
-              expected_sha="$(jq -r '.head.sha' <<< "$pr_json")"
-              arguments='-f report_issue=12'
+              base_sha="$(jq -r '.base.sha' <<< "$pr_json")"
+              requested_sha="$(jq -r '.head.sha' <<< "$pr_json")"
+              head_ref="$(jq -r '.head.ref' <<< "$pr_json")"
+              workflow=kubuntu-pr-validation.yml
+              label="Vertrauenswürdige PR-Abnahme #$pr_number"
+              ref=main
+              arguments="-f pr_number=$pr_number -f base_sha=$base_sha -f head_sha=$requested_sha -f head_ref=$head_ref -f report_issue=12"
               ;;
             *)
               echo "::error title=Unbekannter Owner-Befehl::$COMMAND"
@@ -72,7 +73,7 @@ jobs:
             echo "workflow=$workflow"
             echo "label=$label"
             echo "ref=$ref"
-            echo "expected_sha=$expected_sha"
+            echo "requested_sha=$requested_sha"
             echo "arguments=$arguments"
           } >> "$GITHUB_OUTPUT"
 
@@ -87,24 +88,31 @@ jobs:
           set -Eeuo pipefail
           started_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           read -r -a extra_args <<< "$ARGUMENTS"
-          gh workflow run "$WORKFLOW" --repo "$GITHUB_REPOSITORY" --ref "$REF" "${extra_args[@]}"
+          gh workflow run "$WORKFLOW" \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref "$REF" \
+            "${extra_args[@]}"
           echo "started_at=$started_at" >> "$GITHUB_OUTPUT"
 
-      - name: Resolve and attest dispatched run
+      - name: Resolve and publish dispatched run
         env:
           GH_TOKEN: ${{ github.token }}
           WORKFLOW: ${{ steps.select.outputs.workflow }}
           LABEL: ${{ steps.select.outputs.label }}
           REF: ${{ steps.select.outputs.ref }}
-          EXPECTED_SHA: ${{ steps.select.outputs.expected_sha }}
+          REQUESTED_SHA: ${{ steps.select.outputs.requested_sha }}
           STARTED_AT: ${{ steps.dispatch.outputs.started_at }}
         run: |
           set -Eeuo pipefail
           run_json=''
           for attempt in $(seq 1 18); do
             run_json="$(
-              gh run list --repo "$GITHUB_REPOSITORY" --workflow "$WORKFLOW" \
-                --branch "$REF" --event workflow_dispatch --limit 30 \
+              gh run list \
+                --repo "$GITHUB_REPOSITORY" \
+                --workflow "$WORKFLOW" \
+                --branch "$REF" \
+                --event workflow_dispatch \
+                --limit 30 \
                 --json databaseId,createdAt,status,url,headSha \
               | jq -c --arg started "$STARTED_AT" \
                   '[.[] | select(.createdAt >= $started)] | sort_by(.createdAt) | reverse | .[0] // empty'
@@ -119,19 +127,15 @@ jobs:
           run_id="$(jq -r '.databaseId' <<< "$run_json")"
           run_url="$(jq -r '.url' <<< "$run_json")"
           run_status="$(jq -r '.status' <<< "$run_json")"
-          head_sha="$(jq -r '.headSha' <<< "$run_json")"
-          if [[ -n "$EXPECTED_SHA" && "$head_sha" != "$EXPECTED_SHA" ]]; then
-            echo "::error title=Falscher PR-Head::Erwartet $EXPECTED_SHA, gestartet wurde $head_sha."
-            exit 1
-          fi
+          workflow_sha="$(jq -r '.headSha' <<< "$run_json")"
           cat > run-comment.md <<EOF
           🚦 **${LABEL} gestartet**
 
           - Run: [${run_id}](${run_url})
           - Status: \`${run_status}\`
-          - Ref: \`${REF}\`
-          - Commit: \`${head_sha}\`
+          - Vertrauenswürdiger Workflow-Commit: \`${workflow_sha}\`
+          - Geprüfter PR-Commit: \`${REQUESTED_SHA:-nicht zutreffend}\`
 
-          Der gestartete Commit wurde gegen das geschützte Ziel geprüft.
+          Der Abnahmeworkflow validiert Base- und PR-Head-SHA vor jeder weiteren Prüfung.
           EOF
           gh issue comment 12 --repo "$GITHUB_REPOSITORY" --body-file run-comment.md
