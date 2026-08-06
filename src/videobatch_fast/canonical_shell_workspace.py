@@ -70,22 +70,36 @@ class CanonicalShellWorkspaceMixin:
             self.main_notebook.focus_set()
 
     def _on_shell_tab_changed(self, _event=None) -> None:
+        if not self._shell_navigation_ready():
+            return
         try:
-            self._sync_shell_navigation(int(self.main_notebook.index(self.main_notebook.select())))
+            selected = int(self.main_notebook.index(self.main_notebook.select()))
         except Exception:
             return
+        self._sync_shell_navigation(selected)
+
+    def _shell_navigation_ready(self) -> bool:
+        return (
+            hasattr(self, "main_notebook")
+            and hasattr(self, "shell_section_title")
+            and hasattr(self, "_shell_nav_buttons")
+            and len(self._shell_nav_buttons) == len(SHELL_NAVIGATION)
+        )
 
     def _sync_shell_navigation(self, selected_index: int) -> None:
+        if not self._shell_navigation_ready():
+            return
         titles = {
             0: "Dashboard", 1: "Medien", 2: "Vorschau", 3: "Effekte & Einstellungen",
             4: "Queue & Produktion", 5: "Diagnose & Hilfe",
         }
         self.shell_section_title.set(titles.get(selected_index, "VideoBatch Fast"))
         for item in SHELL_NAVIGATION:
+            button = self._shell_nav_buttons.get(item.key)
+            if button is None:
+                continue
             active = item.page_index == selected_index and item.action != "disabled"
-            self._shell_nav_buttons[item.key].configure(
-                style="ShellNavActive.TButton" if active else "ShellNav.TButton"
-            )
+            button.configure(style="ShellNavActive.TButton" if active else "ShellNav.TButton")
 
     def _run_shell_search(self, _event=None) -> None:
         query = self.shell_search.get().strip().casefold()
