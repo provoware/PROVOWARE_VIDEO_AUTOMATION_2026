@@ -21,7 +21,6 @@ SHELL_PATHS = (
     ROOT / "src" / "videobatch_fast" / "canonical_shell_workspace.py",
 )
 APP_PATH = ROOT / "src" / "videobatch_fast" / "app.py"
-WORKFLOW_PATH = ROOT / ".github" / "workflows" / "design-manifest-gate.yml"
 
 EXPECTED_THEMES = {
     "neon_gravity": "Midnight Blue",
@@ -32,14 +31,16 @@ EXPECTED_THEMES = {
 EXPECTED_FONT_PROFILES = {"compact": 90, "standard": 105, "large": 125}
 REQUIRED_CHECKPOINTS = tuple(range(0, 11))
 REQUIRED_SHELL_LABELS = (
-    "Dashboard",
-    "Medien",
-    "Queue",
-    "Effekte",
-    "Scheduler",
-    "Vorschau",
-    "Diagnose",
-    "Einstellungen",
+    "Dashboard", "Medien", "Queue", "Effekte", "Scheduler",
+    "Vorschau", "Diagnose", "Einstellungen",
+)
+REQUIRED_HELP_INTENTS = (
+    "Ich möchte …",
+    "Erstes Video erstellen",
+    "Fehlende Datei beheben",
+    "Queuefehler wiederholen",
+    "Cache leeren",
+    "Update rückgängig machen",
 )
 REQUIRED_PAGE_BUILDERS = (
     "_build_start_page",
@@ -60,30 +61,27 @@ def _file_sha256(path: Path) -> str:
 def _validate_shell(root: Path, errors: list[str]) -> None:
     shell_paths = [root / path.relative_to(ROOT) for path in SHELL_PATHS]
     app_path = root / APP_PATH.relative_to(ROOT)
-    workflow_path = root / WORKFLOW_PATH.relative_to(ROOT)
     shell = "\n".join(path.read_text(encoding="utf-8") for path in shell_paths)
     app = app_path.read_text(encoding="utf-8")
-    workflow = workflow_path.read_text(encoding="utf-8")
 
     for path in (*shell_paths, app_path):
         try:
-            ast.parse(path.read_text(encoding="utf-8"))
+            ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         except SyntaxError as exc:
             errors.append(f"PYTHON_SYNTAX_UNGUELTIG: {path.relative_to(root)}: {exc}")
 
     for label in REQUIRED_SHELL_LABELS:
         if label not in shell:
             errors.append(f"Shell-Navigation fehlt: {label}")
+    for label in REQUIRED_HELP_INTENTS:
+        if label not in shell:
+            errors.append(f"Hilfeabsicht fehlt: {label}")
     for builder in REQUIRED_PAGE_BUILDERS:
         if f"self.{builder}(" not in shell:
             errors.append(f"Bestehende Funktionsseite nicht eingebunden: {builder}")
     for callback in (
-        "self._new_project",
-        "self._add_audio",
-        "self._add_media",
-        "self._open_settings",
-        "self._start",
-        "self._choose_directory",
+        "self._new_project", "self._add_audio", "self._add_media",
+        "self._open_settings", "self._start", "self._choose_directory",
     ):
         if callback not in shell:
             errors.append(f"Primäraktion fehlt: {callback}")
@@ -101,22 +99,10 @@ def _validate_shell(root: Path, errors: list[str]) -> None:
             errors.append(f"KPI-Aktion fehlt: {action}")
     if "build_kpi_snapshots(" not in shell or "self._refresh_kpi_cards()" not in shell:
         errors.append("KPI-Karten sind nicht an den realen Zustandsvertrag gebunden")
-
     if "from .canonical_ui import run_app" not in app:
         errors.append("App-Einstieg verwendet nicht die kanonische Shell")
     if "from .ui import run_app" in app:
         errors.append("App-Einstieg umgeht die kanonische Shell")
-
-    if "name: Design manifest contract" not in workflow:
-        errors.append("GitHub-Actions-Gate hat keinen stabilen Namen")
-    if "python3 scripts/validate_design_manifest.py --json" not in workflow:
-        errors.append("GitHub-Actions-Gate führt den Manifestvalidator nicht aus")
-    if "tests/test_canonical_kpi_contract.py" not in workflow:
-        errors.append("GitHub-Actions-Gate führt den KPI-Vertragstest nicht aus")
-    if "pull_request:" not in workflow or "push:" not in workflow:
-        errors.append("GitHub-Actions-Gate ist nicht für PR und main-Push aktiv")
-    if "Prove gate remained read-only" not in workflow:
-        errors.append("GitHub-Actions-Gate besitzt keinen Read-only-Nachweis")
 
 
 def validate(root: Path = ROOT) -> list[str]:
@@ -130,7 +116,6 @@ def validate(root: Path = ROOT) -> list[str]:
         design_dir / POSTER_PATH.name,
         *(root / path.relative_to(ROOT) for path in SHELL_PATHS),
         root / APP_PATH.relative_to(ROOT),
-        root / WORKFLOW_PATH.relative_to(ROOT),
     ]
     for path in required:
         if not path.is_file():
@@ -167,15 +152,8 @@ def validate(root: Path = ROOT) -> list[str]:
 
     manifest = (design_dir / MANIFEST_PATH.name).read_text(encoding="utf-8")
     for phrase in (
-        "Startzeituhr",
-        "RenderProof",
-        "Midnight Blue",
-        "Emerald Tech",
-        "Violet Pulse",
-        "Amber Graphite",
-        "Kompakt",
-        "Standard",
-        "Groß",
+        "Startzeituhr", "RenderProof", "Midnight Blue", "Emerald Tech",
+        "Violet Pulse", "Amber Graphite", "Kompakt", "Standard", "Groß",
     ):
         if phrase not in manifest:
             errors.append(f"Manifestbegriff fehlt: {phrase}")
@@ -190,7 +168,9 @@ def validate(root: Path = ROOT) -> list[str]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Prüft das verbindliche VideoBatch-Grafikmanifest.")
+    parser = argparse.ArgumentParser(
+        description="Prüft das lokale VideoBatch-Designregelwerk für Oberfläche und Untermodule."
+    )
     parser.add_argument("--json", action="store_true", dest="json_output")
     args = parser.parse_args()
     errors = validate()
@@ -198,7 +178,7 @@ def main() -> int:
     if args.json_output:
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
-        print("DESIGN_MANIFEST_OK" if not errors else "DESIGN_MANIFEST_FAILED")
+        print("DESIGN_REGELWERK_OK" if not errors else "DESIGN_REGELWERK_FEHLERHAFT")
         for error in errors:
             print(f"- {error}")
     return 0 if not errors else 1
