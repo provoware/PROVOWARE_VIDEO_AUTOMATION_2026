@@ -1,0 +1,390 @@
+name: Trusted Kubuntu PR validation
+
+run-name: >-
+  PR #${{ inputs.pr_number }} validation · ${{ inputs.head_sha }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number
+        required: true
+        type: string
+      base_sha:
+        description: Exact current main commit
+        required: true
+        type: string
+      head_sha:
+        description: Exact pull request head commit
+        required: true
+        type: string
+      head_ref:
+        description: Pull request branch name
+        required: true
+        type: string
+      report_issue:
+        description: Issue number for run links and reports
+        required: false
+        default: '12'
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: trusted-kubuntu-pr-${{ inputs.pr_number }}-${{ inputs.head_sha }}
+  cancel-in-progress: false
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: '1'
+  PIP_NO_INPUT: '1'
+  PYTHONHASHSEED: '0'
+  PYTHONUTF8: '1'
+  PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/scripts:${{ github.workspace }}/diagnostics/release_readiness
+  EXPECTED_BASE_SHA: ${{ inputs.base_sha }}
+  EXPECTED_HEAD_SHA: ${{ inputs.head_sha }}
+
+jobs:
+  ancestry:
+    name: Trusted PR ancestry guard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.head_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify immutable inputs and ancestry
+        run: |
+          set -Eeuo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD_SHA"
+          git fetch --no-tags origin "$EXPECTED_BASE_SHA"
+          test "$(git rev-parse FETCH_HEAD)" = "$EXPECTED_BASE_SHA"
+          python3 scripts/check_pr_ancestry.py \
+            --base "$EXPECTED_BASE_SHA" \
+            --head "$EXPECTED_HEAD_SHA" \
+            --report PR_ANCESTRY_REPORT.json
+
+      - name: Upload ancestry evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trusted-pr-ancestry-${{ inputs.head_sha }}
+          path: PR_ANCESTRY_REPORT.json
+          if-no-files-found: error
+          retention-days: 30
+
+  preflight:
+    name: Read-only manifest and evidence preflight
+    needs: ancestry
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONPYCACHEPREFIX: ${{ runner.temp }}/preflight-pycache
+      RUFF_CACHE_DIR: ${{ runner.temp }}/preflight-ruff-cache
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.head_sha }}
+          persist-credentials: false
+
+      - name: Install exact syntax checker
+        run: |
+          set -Eeuo pipefail
+          python3 -m pip install ruff==0.16.1
+          test "$(python3 -m ruff --version)" = "ruff 0.16.1"
+
+      - name: Compile and lint Python
+        run: |
+          set -Eeuo pipefail
+          python3 -m compileall -q -f src scripts diagnostics tests
+          python3 -m ruff check src scripts diagnostics tests \
+            --select E9,F63,F7,F82 --no-cache
+
+      - name: Check release manifest
+        run: |
+          set -Eeuo pipefail
+          python3 scripts/build_release_manifest.py --check --json \
+            | tee "$RUNNER_TEMP/release-manifest-check.json"
+
+      - name: Check canonical evidence and generated outputs
+        run: |
+          set -Eeuo pipefail
+          python3 diagnostics/release_readiness/generate_from_evidence.py --check
+          python3 - <<'PY'
+          from diagnostics.release_readiness.generate_from_evidence import evidence
+          value = evidence()
+          print(
+              "RELEASE-EVIDENCE BESTANDEN · "
+              f"Version {value['product']['version']} · "
+              f"{len(value['stable_gates'])} Stable-Gates"
+          )
+          PY
+
+      - name: Prove preflight remained read-only
+        if: always()
+        run: |
+          set -Eeuo pipefail
+          status="$(git status --porcelain --untracked-files=all)"
+          if [[ -n "$status" ]]; then
+            printf '%s\n' "$status"
+            echo "::error title=Preflight wrote repository files::The exact PR checkout must remain unchanged."
+            exit 1
+          fi
+
+  matrix:
+    name: ${{ matrix.os }} / ${{ matrix.session }}
+    needs: preflight
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-22.04
+          - ubuntu-24.04
+        session:
+          - x11
+          - wayland
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    env:
+      XDG_SESSION_TYPE: ${{ matrix.session }}
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.head_sha }}
+          persist-credentials: false
+
+      - name: Prepare cached Kubuntu dependencies
+        uses: ./.github/actions/kubuntu-package-cache
+        with:
+          os: ${{ matrix.os }}
+          session: ${{ matrix.session }}
+          mode: matrix
+
+      - name: Start deterministic display
+        run: |
+          set -Eeuo pipefail
+          if [[ "${{ matrix.session }}" == "x11" ]]; then
+            Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp \
+              >/tmp/xvfb.log 2>&1 &
+            echo "DISPLAY=:99" >> "$GITHUB_ENV"
+          else
+            mkdir -p "$RUNNER_TEMP/xdg"
+            chmod 700 "$RUNNER_TEMP/xdg"
+            XDG_RUNTIME_DIR="$RUNNER_TEMP/xdg" weston \
+              --backend=headless-backend.so \
+              --socket=wayland-vb \
+              --idle-time=0 >/tmp/weston.log 2>&1 &
+            Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp \
+              >/tmp/xvfb.log 2>&1 &
+            echo "XDG_RUNTIME_DIR=$RUNNER_TEMP/xdg" >> "$GITHUB_ENV"
+            echo "WAYLAND_DISPLAY=wayland-vb" >> "$GITHUB_ENV"
+            echo "DISPLAY=:99" >> "$GITHUB_ENV"
+          fi
+          sleep 2
+
+      - name: Provision and attest system FFmpeg
+        run: |
+          set -Eeuo pipefail
+          ffmpeg_path="$(readlink -f "$(command -v ffmpeg)")"
+          ffprobe_path="$(readlink -f "$(command -v ffprobe)")"
+          test -x "$ffmpeg_path"
+          test -x "$ffprobe_path"
+          media_dir="$RUNNER_TEMP/ffmpeg-system/bin"
+          mkdir -p "$media_dir"
+          ln -sfn "$ffmpeg_path" "$media_dir/ffmpeg"
+          ln -sfn "$ffprobe_path" "$media_dir/ffprobe"
+          echo "VIDEOBATCH_STATIC_MEDIA_DIR=$media_dir" >> "$GITHUB_ENV"
+          "$ffmpeg_path" -version | sed -n '1p'
+          "$ffprobe_path" -version | sed -n '1p'
+
+      - name: Run complete compatibility contract
+        run: |
+          set -Eeuo pipefail
+          mkdir -p matrix-logs
+          python3 scripts/check_release_literal_hygiene.py \
+            --report RELEASE_LITERAL_HYGIENE.json \
+            2>&1 | tee matrix-logs/release-literal-hygiene.log
+          bash scripts/kubuntu_matrix_smoke.sh \
+            2>&1 | tee matrix-logs/compatibility-contract.log
+
+      - name: Write matrix status
+        if: always()
+        env:
+          CELL_OS: ${{ matrix.os }}
+          CELL_SESSION: ${{ matrix.session }}
+          CELL_STATUS: ${{ job.status }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          value = {
+              "schema_version": 1,
+              "os": os.environ["CELL_OS"],
+              "session": os.environ["CELL_SESSION"],
+              "status": os.environ["CELL_STATUS"],
+              "commit": os.environ["EXPECTED_HEAD_SHA"],
+              "run_id": os.environ["GITHUB_RUN_ID"],
+          }
+          Path(
+              f"matrix-status-{value['os']}-{value['session']}.json"
+          ).write_text(
+              json.dumps(value, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Upload matrix evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: matrix-status-${{ matrix.os }}-${{ matrix.session }}
+          path: |
+            matrix-status-${{ matrix.os }}-${{ matrix.session }}.json
+            RELEASE_LITERAL_HYGIENE.json
+            CI_PACKAGE_METRICS.json
+            matrix-logs/*
+          if-no-files-found: warn
+          retention-days: 30
+
+  report:
+    name: Consolidate four-cell matrix
+    if: always() && needs.matrix.result != 'skipped'
+    needs: matrix
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Download matrix status records
+        uses: actions/download-artifact@v4
+        with:
+          pattern: matrix-status-*
+          path: matrix-status
+          merge-multiple: true
+
+      - name: Enforce exact four-cell success
+        run: |
+          set -Eeuo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          expected = {
+              ("ubuntu-22.04", "x11"),
+              ("ubuntu-22.04", "wayland"),
+              ("ubuntu-24.04", "x11"),
+              ("ubuntu-24.04", "wayland"),
+          }
+          records = {}
+          for path in Path("matrix-status").glob("matrix-status-*.json"):
+              value = json.loads(path.read_text(encoding="utf-8"))
+              records[(value["os"], value["session"])] = value
+          missing = sorted(expected - set(records))
+          failed = sorted(
+              key for key, value in records.items()
+              if value.get("status") != "success"
+          )
+          wrong_commit = sorted(
+              key for key, value in records.items()
+              if value.get("commit") != os.environ["EXPECTED_HEAD_SHA"]
+          )
+          passed = not missing and not failed and not wrong_commit
+          summary = {
+              "schema_version": 1,
+              "status": "passed" if passed else "failed",
+              "commit": os.environ["EXPECTED_HEAD_SHA"],
+              "missing": missing,
+              "failed": failed,
+              "wrong_commit": wrong_commit,
+              "results": [records[key] for key in sorted(records)],
+          }
+          Path("KUBUNTU_PR_MATRIX_SUMMARY.json").write_text(
+              json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          lines = ["# Kubuntu PR matrix", "", f"**Status:** {summary['status']}", ""]
+          for key in sorted(expected):
+              value = records.get(key, {"status": "missing"})
+              lines.append(f"- {key[0]} / {key[1]}: {value['status']}")
+          report = "\n".join(lines) + "\n"
+          Path("KUBUNTU_PR_MATRIX_SUMMARY.md").write_text(report, encoding="utf-8")
+          Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(report, encoding="utf-8")
+          raise SystemExit(0 if passed else 1)
+          PY
+
+      - name: Upload consolidated report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kubuntu-pr-matrix-summary-${{ inputs.head_sha }}
+          path: KUBUNTU_PR_MATRIX_SUMMARY.*
+          if-no-files-found: error
+          retention-days: 30
+
+  verified-source-archive:
+    name: Build verified full source archive
+    needs:
+      - ancestry
+      - preflight
+      - matrix
+      - report
+    if: >-
+      needs.ancestry.result == 'success' &&
+      needs.preflight.result == 'success' &&
+      needs.matrix.result == 'success' &&
+      needs.report.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONPYCACHEPREFIX: ${{ runner.temp }}/archive-pycache
+    steps:
+      - name: Check out exact verified PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.head_sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Revalidate source contracts
+        run: |
+          set -Eeuo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD_SHA"
+          python3 scripts/build_release_manifest.py --check --json \
+            | tee "$RUNNER_TEMP/release-manifest-check.json"
+          python3 diagnostics/release_readiness/generate_from_evidence.py --check
+          python3 -m compileall -q -f src scripts diagnostics tests
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Build reproducible full project ZIP
+        run: |
+          set -Eeuo pipefail
+          short_sha="${EXPECTED_HEAD_SHA:0:12}"
+          archive="PROVOWARE_VIDEO_AUTOMATION_2026_2.8.3-rc24_${short_sha}_verified.zip"
+          git archive \
+            --format=zip \
+            --prefix=PROVOWARE_VIDEO_AUTOMATION_2026/ \
+            --output="$RUNNER_TEMP/$archive" \
+            "$EXPECTED_HEAD_SHA"
+          unzip -t "$RUNNER_TEMP/$archive"
+          sha256sum "$RUNNER_TEMP/$archive" > "$RUNNER_TEMP/$archive.sha256"
+          echo "ARCHIVE=$archive" >> "$GITHUB_ENV"
+
+      - name: Upload verified full source
+        uses: actions/upload-artifact@v4
+        with:
+          name: verified-full-source-${{ inputs.head_sha }}
+          path: |
+            ${{ runner.temp }}/${{ env.ARCHIVE }}
+            ${{ runner.temp }}/${{ env.ARCHIVE }}.sha256
+            ${{ runner.temp }}/release-manifest-check.json
+          if-no-files-found: error
+          retention-days: 30
