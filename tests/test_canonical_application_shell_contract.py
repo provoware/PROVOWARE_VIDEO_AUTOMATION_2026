@@ -6,6 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SHELLS = tuple((ROOT / "src/videobatch_fast" / name) for name in (
     "canonical_ui.py",
+    "canonical_kpi.py",
     "canonical_shell_contract.py",
     "canonical_shell_chrome.py",
     "canonical_shell_workspace.py",
@@ -70,3 +71,14 @@ def test_shell_uses_canonical_theme_and_font_profiles() -> None:
         assert label in source
     for label, scale in (("Kompakt", 90), ("Standard", 105), ("Groß", 125)):
         assert f'"{label}": {scale}' in source
+
+
+def test_checkpoint3_kpi_cards_have_real_states_and_navigation_actions() -> None:
+    source = "\n".join(_source(path) for path in SHELLS)
+    for state in ("empty", "ready", "loading", "success", "warning", "error", "disabled"):
+        assert f'"{state}"' in source
+    for label in ("Medien öffnen", "Queue öffnen", "Effekte öffnen", "Checkpoint 5"):
+        assert label in source
+    assert "build_kpi_snapshots(" in source
+    assert "self._select_shell_page(index)" in source
+    assert "self._refresh_kpi_cards()" in source
