@@ -1,0 +1,90 @@
+name: Apply Checkpoint 3.2 release manifest once
+
+on:
+  pull_request:
+    branches: [main]
+    types: [synchronize]
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: checkpoint3-2-manifest-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    name: Apply exact release manifest and self-remove
+    if: >-
+      github.event.pull_request.number == 67 &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/checkpoint3-kpi-detail-recovery-20260806'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      EXPECTED_MAIN_SHA: b9a3663a7b229ace00b43f01415ecc4d39adbe14
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      PYTHONPATH: src
+
+    steps:
+      - name: Check out exact writable PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Verify immutable event and main ancestry
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -Eeuo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD_SHA"
+          git fetch --no-tags origin main
+          test "$(git rev-parse origin/main)" = "$EXPECTED_MAIN_SHA"
+          git merge-base --is-ancestor "$EXPECTED_MAIN_SHA" HEAD
+
+      - name: Generate final release manifest without this workflow
+        run: |
+          set -Eeuo pipefail
+          rm -- .github/workflows/apply-checkpoint3-2-manifest-once.yml
+          python3 scripts/build_release_manifest.py
+          python3 scripts/build_release_manifest.py --check --json \
+            | tee "$RUNNER_TEMP/release-manifest-check.json"
+          python3 scripts/validate_design_manifest.py --json \
+            | tee "$RUNNER_TEMP/design-manifest-check.json"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          value = json.loads(Path('RELEASE_MANIFEST.json').read_text(encoding='utf-8'))
+          if value.get('schema_version') != 2:
+              raise SystemExit('Release manifest schema must remain 2')
+          if int(value.get('file_count', 0)) < 400:
+              raise SystemExit('Release manifest unexpectedly incomplete')
+          records = value.get('files')
+          if not isinstance(records, list) or len(records) != value['file_count']:
+              raise SystemExit('Release manifest file count mismatch')
+          PY
+
+      - name: Enforce bounded two-file commit
+        run: |
+          set -Eeuo pipefail
+          git add -A
+          mapfile -t changed < <(git diff --cached --name-only)
+          printf '%s\n' "${changed[@]}"
+          test "${#changed[@]}" -eq 2
+          test "${changed[0]}" = ".github/workflows/apply-checkpoint3-2-manifest-once.yml"
+          test "${changed[1]}" = "RELEASE_MANIFEST.json"
+          git diff --cached --check
+
+      - name: Commit and push exact final manifest
+        run: |
+          set -Eeuo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: synchronize Checkpoint 3.2 release manifest"
+          python3 scripts/build_release_manifest.py --check --json
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
