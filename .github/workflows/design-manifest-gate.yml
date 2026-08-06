@@ -44,6 +44,14 @@ jobs:
             tests/test_design_manifest_contract.py \
             tests/test_canonical_application_shell_contract.py
 
+      - name: Attest canonical reference hashes
+        run: |
+          set -Eeuo pipefail
+          sha256sum \
+            docs/design/VIDEOBATCH_CANONICAL_UI_REFERENCE.svg \
+            docs/design/VIDEOBATCH_GRAPHICS_MANIFEST_POSTER.svg \
+            | tee "$RUNNER_TEMP/design-reference-sha256.txt"
+
       - name: Validate canonical design manifest fail-closed
         run: |
           set -Eeuo pipefail
