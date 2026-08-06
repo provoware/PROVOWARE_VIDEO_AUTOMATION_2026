@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from tkinter import Tk
 
+from .canonical_dashboard_mixin import CanonicalDashboardMixin
+from .canonical_help_status_mixin import CanonicalHelpStatusMixin
 from .canonical_kpi_compact_mixin import CanonicalKpiCompactMixin
 from .canonical_kpi_detail_mixin import CanonicalKpiDetailMixin
 from .canonical_window_mixin import CanonicalWindowMixin
@@ -18,6 +20,8 @@ class CanonicalVideoBatchFastUI(
     CanonicalKpiDetailMixin,
     CanonicalWindowMixin,
     CanonicalShellWorkspaceMixin,
+    CanonicalDashboardMixin,
+    CanonicalHelpStatusMixin,
     CanonicalShellChromeMixin,
     VideoBatchFastUI,
 ):
