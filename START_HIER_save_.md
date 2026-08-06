@@ -1,51 +1,154 @@
-# VideoBatch Fast 2.8.3-rc24 starten
+# VideoBatch Fast 2.8.3-rc24 – hier beginnen
 
-Dieses Paket enthält das vollständige Projekt. Teil- und Onlineupdates bleiben bis zur Stable-Freigabe deaktiviert.
+## Ziel
 
-## Sicherer Standardstart
+Diese Anleitung führt ohne Vorwissen vom entpackten Projektpaket bis zum ersten geprüften Testvideo.
+
+## Pflichtgrad
+
+- **Pflicht:** Projekt entpacken, Starter ausführen, Quellen und Ausgabeordner prüfen.
+- **Empfohlen:** Erstes Video mit Kopien der Medien erstellen.
+- **Optional:** Vorschau-Cache und erweiterte Einstellungen verwenden.
+
+## Voraussetzungen
+
+- Kubuntu oder Ubuntu 22.04 beziehungsweise 24.04
+- ein normaler Benutzerzugang ohne Rootbetrieb
+- ein vollständig entpacktes VideoBatch-Projektpaket
+- mindestens eine Audio- und eine Bild- oder Videodatei
+- ein beschreibbarer Ausgabeordner
+
+## Sicherung und Rückweg
+
+Für den ersten Test Kopien der Medien verwenden. VideoBatch verändert Originalquellen nicht, aber eine zusätzliche Kopie schützt vor Bedienfehlern außerhalb der Anwendung.
+
+## Schritt-für-Schritt-Anleitung
+
+### Schritt 1: Projektpaket entpacken
+
+**Aktion:** Das ZIP in einen neuen Ordner entpacken. Nicht direkt aus dem ZIP starten.
+
+**Warum notwendig?** VideoBatch muss Einstellungen, Protokolle und temporäre Zustände schreiben können.
+
+**Kann entfallen?** Nein. Ein Start direkt aus dem Archiv ist nicht zuverlässig.
+
+**Erwartetes Ergebnis:** Im Ordner sind `videobatch.sh`, `README.md`, `src`, `scripts` und diese Anleitung sichtbar.
+
+### Schritt 2: Terminal im Projektordner öffnen
+
+**Aktion:** Den entpackten Ordner im Dateimanager öffnen und dort ein Terminal starten.
+
+**Erwartetes Ergebnis:** Das Terminal befindet sich im VideoBatch-Projektordner.
+
+### Schritt 3: Starter ausführbar machen
 
 ```bash
 chmod +x videobatch.sh
+```
+
+**Warum notwendig?** Linux benötigt die Ausführungsberechtigung für einen direkten Skriptstart.
+
+**Kann entfallen?** Ja, wenn die Datei bereits ausführbar ist. Ein erneuter Aufruf ist unschädlich.
+
+### Schritt 4: VideoBatch starten
+
+```bash
 ./videobatch.sh
 ```
 
-Der Starter prüft Laufzeit, FFmpeg, Projektzustand und benötigte Benutzerverzeichnisse. Qualitätswerkzeuge gehören zur Releaseprüfung und blockieren den normalen Programmstart nicht.
+**Warum notwendig?** Der Starter prüft Laufzeit, FFmpeg, Projektzustand und benötigte Benutzerordner, bevor die Oberfläche geöffnet wird.
 
-## Erster Ablauf
+**Kann entfallen?** Nein. Den Starter nicht durch einen direkten Modulaufruf umgehen.
 
-1. **Audiodateien hinzufügen** wählen.
-2. **Bilder oder Videos hinzufügen** wählen.
-3. Die zuletzt angeklickte Vorschau kontrollieren.
-4. Einen Schnellmodus auswählen.
-5. Einen beschreibbaren Ausgabeordner bestätigen.
-6. **Automatisch prüfen und Videos erstellen** starten.
-7. Die Abschlussmeldung abwarten und das Ergebnis kurz abspielen.
+**Erwartetes Ergebnis:** Die VideoBatch-Oberfläche öffnet sich ohne rote Startmeldung.
 
-## Bei gelber oder roter Meldung
+**Bei einem Fehler:** Nicht mit `sudo`, `chmod -R 777` oder rekursiven Besitzänderungen reagieren. Die vollständige Meldung lesen und `ERROR_HANDLING.md` verwenden.
 
-- Gelb: Hinweis lesen und den genannten Punkt kurz prüfen.
-- Rot: Nur der betroffene Schritt ist blockiert. Nutze die angebotene sichere Lösung.
-- Originalmedien und gespeicherte Projekte bleiben unverändert.
-- Unter **Hilfe** können Systemstatus, Protokolle, Handbuch und Fehlerlabor geöffnet werden.
+### Schritt 5: Audiodatei hinzufügen
+
+1. `Audiodateien hinzufügen` wählen.
+2. Eine Datei markieren.
+3. Auswahl bestätigen.
+
+**Erwartetes Ergebnis:** Die Audioanzahl im Header oder in der Medien-KPI steigt.
+
+### Schritt 6: Bild oder Video hinzufügen
+
+1. `Bilder hinzufügen` oder `Videos hinzufügen` wählen.
+2. Eine Datei markieren.
+3. Auswahl bestätigen.
+
+**Erwartetes Ergebnis:** Die Medienanzahl steigt und die Vorschau zeigt die zuletzt aktiv gewählte Quelle.
+
+### Schritt 7: Automatik und Ausgabeordner prüfen
+
+1. Beim ersten Test den automatischen Modus verwenden.
+2. Einen eigenen beschreibbaren Ausgabeordner auswählen.
+3. Die angezeigten Quellenzahlen kontrollieren.
+
+**Warum notwendig?** Ein falscher oder nicht beschreibbarer Zielordner verhindert eine sichere Ausgabe.
+
+**Kann entfallen?** Der manuelle Modus kann entfallen; die Zielordnerprüfung nicht.
+
+### Schritt 8: Testproduktion starten
+
+1. `Automatisch prüfen und Videos erstellen` wählen.
+2. Vorprüfung abwarten.
+3. Queue-Status beobachten.
+4. Abschlussmeldung abwarten.
+
+**Erwartetes Ergebnis:** Der Auftrag endet ohne roten Fehler und die Ausgabedatei ist im gewählten Zielordner vorhanden.
+
+### Schritt 9: Ergebnis prüfen
+
+1. Video öffnen.
+2. Anfang, Mitte und Ende abspielen.
+3. Bild, Ton und Dateiname kontrollieren.
+
+**Warum notwendig?** Ein technisch abgeschlossener Render garantiert noch nicht die gewünschte inhaltliche Wirkung.
+
+**Kann entfallen?** Vor Veröffentlichung oder Archivierung: nein.
+
+## Gelbe oder rote Meldungen
+
+### Gelb
+
+- Hinweis vollständig lesen.
+- Genannten Wert prüfen.
+- Empfohlene Aktion ausführen.
+- Vorprüfung erneut starten.
+
+Gelb bedeutet: Der Vorgang benötigt Aufmerksamkeit, ist aber nicht zwingend endgültig blockiert.
+
+### Rot
+
+- Nicht wiederholt blind auf Start klicken.
+- Ursache und betroffenen Schritt lesen.
+- Nur die angebotene sichere Lösung verwenden.
+- Quellen, Ziel und Queue danach erneut prüfen.
+
+Rot bedeutet: Der betroffene Vorgang wurde zum Schutz gestoppt. Originalmedien und gespeicherte Projekte bleiben unverändert.
 
 ## Mehrere Auswahlrunden
 
-Im großen Medienbrowser Dateien markieren und **Auswahl übernehmen + im Ordner bleiben** wählen. Weitere Ordner oder Dateien können danach ergänzt werden. Erst **Fertig** übernimmt die Sammlung in das Projekt.
+1. Im Medienbrowser Dateien markieren.
+2. `Auswahl übernehmen + im Ordner bleiben` wählen.
+3. Weitere Dateien oder Ordner ergänzen.
+4. Erst mit `Fertig` die Sammlung in das Projekt übernehmen.
+
+**Kann entfallen?** Ja. Bei Quellen aus einem einzigen Ordner genügt eine Auswahlrunde.
 
 ## Vorschau-Cache
 
-Der Dialog **Vorschau-Cache** zeigt Größe, Dateizahl, Auslastung und Pfad. Das sichere Leeren entfernt nur eindeutig erkannte VideoBatch-Vorschaubilder; Originalmedien und fremde Dateien bleiben unberührt.
+Der Dialog `Vorschau-Cache` zeigt Anzahl, Größe, Auslastung, Pfad und letzte Bereinigung.
+
+`Vorschau-Cache leeren` entfernt ausschließlich eindeutig erkannte VideoBatch-Vorschaudateien und veraltete eigene Teildateien. Originalmedien, Projekte und fremde Dateien bleiben unberührt.
+
+**Kann die Leerung entfallen?** Ja. Sie ist nur bei Platzmangel, Diagnose oder beschädigten Vorschauen nötig.
 
 ## Heruntergeladenes Projekt-ZIP prüfen
 
-Ein vollständig verifiziertes GitHub-Actions-Artefakt enthält neben dem Projekt-ZIP:
-
-- eine `.sha256`-Datei für das gesamte ZIP
-- `ARTIFACT_CONTENTS.json` mit Pfad, Größe und SHA-256 jeder enthaltenen Datei
-- `VERIFIED_SOURCE_ARTIFACT.json` mit Commit und erfüllten Prüfverträgen
-- `release-manifest-check.json` mit dem Manifestprüfergebnis
-
-### 1. Gesamtes ZIP prüfen
+### Schritt 1: Gesamtes ZIP prüfen
 
 Im Ordner mit ZIP und `.sha256`-Datei:
 
@@ -53,9 +156,11 @@ Im Ordner mit ZIP und `.sha256`-Datei:
 sha256sum --check *.zip.sha256
 ```
 
-Erwartetes Ergebnis: `OK`.
+**Erwartetes Ergebnis:** `OK`.
 
-### 2. Jede enthaltene Datei prüfen
+**Bei einem Fehler:** Archiv nicht starten. Erneut aus dem zugehörigen grünen GitHub-Actions-Lauf herunterladen.
+
+### Schritt 2: Jeden ZIP-Eintrag prüfen
 
 ```bash
 python3 scripts/build_artifact_contents.py \
@@ -63,7 +168,7 @@ python3 scripts/build_artifact_contents.py \
   --check ARTIFACT_CONTENTS.json
 ```
 
-Erwartetes Ergebnis:
+**Erwartetes Ergebnis:**
 
 ```text
 ARTIFACT-CONTENTS BESTANDEN · <Dateizahl> Dateien · <Bytes> Bytes
@@ -71,8 +176,22 @@ ARTIFACT-CONTENTS BESTANDEN · <Dateizahl> Dateien · <Bytes> Bytes
 
 Exitcodes:
 
-- `0`: ZIP und Inhaltsliste stimmen vollständig überein
-- `1`: Dateien fehlen, sind zusätzlich vorhanden oder unterscheiden sich bei Größe, SHA-256 oder Metadaten
-- `2`: ZIP oder Inhaltsliste ist beschädigt beziehungsweise strukturell ungültig
+- `0`: ZIP und Inhaltsliste stimmen überein.
+- `1`: Datei fehlt, ist zusätzlich vorhanden oder weicht bei Größe, SHA-256 oder Metadaten ab.
+- `2`: ZIP oder Inhaltsliste ist beschädigt beziehungsweise strukturell ungültig.
 
-Die Prüfung extrahiert und startet keine Datei. Bei Exitcode 1 oder 2 das Archiv nicht ausführen und erneut aus dem zugehörigen grünen GitHub-Actions-Lauf herunterladen.
+Die Prüfung extrahiert und startet keine Datei.
+
+## Abschlussprüfung
+
+- Oberfläche startet
+- Audio und Medien werden gezählt
+- Ausgabeordner ist beschreibbar
+- Queue endet erfolgreich
+- Ausgabedatei ist vorhanden
+- Anfang, Mitte und Ende wurden geprüft
+- Originalquellen sind unverändert
+
+## Nächster Schritt
+
+Für die vollständige Bedienung `docs/BENUTZERHANDBUCH.md` öffnen. Für Installation `AUTOINSTALLATION_save_.md`, für Fehler `ERROR_HANDLING.md` und für die Dokumentationsübersicht `docs/DOKUMENTATIONSINDEX.md` verwenden.
