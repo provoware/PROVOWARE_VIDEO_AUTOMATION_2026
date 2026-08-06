@@ -21,6 +21,8 @@ SHELL_PATHS = (
     ROOT / "src" / "videobatch_fast" / "canonical_shell_contract.py",
     ROOT / "src" / "videobatch_fast" / "canonical_shell_chrome.py",
     ROOT / "src" / "videobatch_fast" / "canonical_shell_workspace.py",
+    ROOT / "src" / "videobatch_fast" / "canonical_dashboard_mixin.py",
+    ROOT / "src" / "videobatch_fast" / "canonical_help_status_mixin.py",
     ROOT / "src" / "videobatch_fast" / "canonical_window_mixin.py",
     ROOT / "src" / "videobatch_fast" / "window_geometry.py",
 )
