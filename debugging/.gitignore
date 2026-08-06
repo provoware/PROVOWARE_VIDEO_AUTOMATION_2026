@@ -1,0 +1,5 @@
+*.txt
+*.log
+*.json
+!.gitignore
+!README.md
