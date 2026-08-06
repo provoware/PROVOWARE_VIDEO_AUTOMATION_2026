@@ -3,7 +3,7 @@ name: Finalize PR ancestry guard
 on:
   pull_request:
     branches: [main]
-    types: [synchronize, reopened]
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
