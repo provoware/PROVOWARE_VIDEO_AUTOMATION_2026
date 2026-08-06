@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import json
 from pathlib import Path
@@ -12,6 +13,14 @@ MANIFEST_PATH = DESIGN_DIR / "VIDEOBATCH_GRAPHICS_MANIFEST.md"
 PLAN_PATH = DESIGN_DIR / "VIDEOBATCH_DESIGN_IMPLEMENTATION_PLAN.md"
 REFERENCE_PATH = DESIGN_DIR / "VIDEOBATCH_CANONICAL_UI_REFERENCE.svg"
 POSTER_PATH = DESIGN_DIR / "VIDEOBATCH_GRAPHICS_MANIFEST_POSTER.svg"
+SHELL_PATHS = (
+    ROOT / "src" / "videobatch_fast" / "canonical_ui.py",
+    ROOT / "src" / "videobatch_fast" / "canonical_shell_contract.py",
+    ROOT / "src" / "videobatch_fast" / "canonical_shell_chrome.py",
+    ROOT / "src" / "videobatch_fast" / "canonical_shell_workspace.py",
+)
+APP_PATH = ROOT / "src" / "videobatch_fast" / "app.py"
+WORKFLOW_PATH = ROOT / ".github" / "workflows" / "design-manifest-gate.yml"
 
 EXPECTED_THEMES = {
     "neon_gravity": "Midnight Blue",
@@ -21,10 +30,80 @@ EXPECTED_THEMES = {
 }
 EXPECTED_FONT_PROFILES = {"compact": 90, "standard": 105, "large": 125}
 REQUIRED_CHECKPOINTS = tuple(range(0, 11))
+REQUIRED_SHELL_LABELS = (
+    "Dashboard",
+    "Medien",
+    "Queue",
+    "Effekte",
+    "Scheduler",
+    "Vorschau",
+    "Diagnose",
+    "Einstellungen",
+)
+REQUIRED_PAGE_BUILDERS = (
+    "_build_start_page",
+    "_build_media_page",
+    "_build_preview_page",
+    "_build_modes_page",
+    "_build_production_page",
+    "_build_help_page",
+)
 
 
 def _file_sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _validate_shell(root: Path, errors: list[str]) -> None:
+    shell_paths = [root / path.relative_to(ROOT) for path in SHELL_PATHS]
+    app_path = root / APP_PATH.relative_to(ROOT)
+    workflow_path = root / WORKFLOW_PATH.relative_to(ROOT)
+    shell = "\n".join(path.read_text(encoding="utf-8") for path in shell_paths)
+    app = app_path.read_text(encoding="utf-8")
+    workflow = workflow_path.read_text(encoding="utf-8")
+
+    for path in (*shell_paths, app_path):
+        try:
+            ast.parse(path.read_text(encoding="utf-8"))
+        except SyntaxError as exc:
+            errors.append(f"PYTHON_SYNTAX_UNGUELTIG: {path.relative_to(root)}: {exc}")
+
+    for label in REQUIRED_SHELL_LABELS:
+        if label not in shell:
+            errors.append(f"Shell-Navigation fehlt: {label}")
+    for builder in REQUIRED_PAGE_BUILDERS:
+        if f"self.{builder}(" not in shell:
+            errors.append(f"Bestehende Funktionsseite nicht eingebunden: {builder}")
+    for callback in (
+        "self._new_project",
+        "self._add_audio",
+        "self._add_media",
+        "self._open_settings",
+        "self._start",
+        "self._choose_directory",
+    ):
+        if callback not in shell:
+            errors.append(f"Primäraktion fehlt: {callback}")
+    for label in EXPECTED_THEMES.values():
+        if label not in shell:
+            errors.append(f"Shell-Theme fehlt: {label}")
+    for label, value in (("Kompakt", 90), ("Standard", 105), ("Groß", 125)):
+        if f'"{label}": {value}' not in shell:
+            errors.append(f"Shell-Schriftprofil fehlt: {label}={value}")
+
+    if "from .canonical_ui import run_app" not in app:
+        errors.append("App-Einstieg verwendet nicht die kanonische Shell")
+    if "from .ui import run_app" in app:
+        errors.append("App-Einstieg umgeht die kanonische Shell")
+
+    if "name: Design manifest contract" not in workflow:
+        errors.append("GitHub-Actions-Gate hat keinen stabilen Namen")
+    if "python3 scripts/validate_design_manifest.py --json" not in workflow:
+        errors.append("GitHub-Actions-Gate führt den Manifestvalidator nicht aus")
+    if "pull_request:" not in workflow or "push:" not in workflow:
+        errors.append("GitHub-Actions-Gate ist nicht für PR und main-Push aktiv")
+    if "Prove gate remained read-only" not in workflow:
+        errors.append("GitHub-Actions-Gate besitzt keinen Read-only-Nachweis")
 
 
 def validate(root: Path = ROOT) -> list[str]:
@@ -36,6 +115,9 @@ def validate(root: Path = ROOT) -> list[str]:
         design_dir / TOKENS_PATH.name,
         design_dir / REFERENCE_PATH.name,
         design_dir / POSTER_PATH.name,
+        *(root / path.relative_to(ROOT) for path in SHELL_PATHS),
+        root / APP_PATH.relative_to(ROOT),
+        root / WORKFLOW_PATH.relative_to(ROOT),
     ]
     for path in required:
         if not path.is_file():
@@ -56,7 +138,10 @@ def validate(root: Path = ROOT) -> list[str]:
     if tokens.get("font_profiles") != EXPECTED_FONT_PROFILES:
         errors.append("Schriftprofile müssen exakt 90/105/125 sein")
 
-    for key, file_name in (("canonical_reference", REFERENCE_PATH.name), ("manifest_poster", POSTER_PATH.name)):
+    for key, file_name in (
+        ("canonical_reference", REFERENCE_PATH.name),
+        ("manifest_poster", POSTER_PATH.name),
+    ):
         expected = str(tokens.get(key, {}).get("sha256", ""))
         path = design_dir / file_name
         if _file_sha256(path) != expected:
@@ -69,8 +154,15 @@ def validate(root: Path = ROOT) -> list[str]:
 
     manifest = (design_dir / MANIFEST_PATH.name).read_text(encoding="utf-8")
     for phrase in (
-        "Startzeituhr", "RenderProof", "Midnight Blue", "Emerald Tech",
-        "Violet Pulse", "Amber Graphite", "Kompakt", "Standard", "Groß",
+        "Startzeituhr",
+        "RenderProof",
+        "Midnight Blue",
+        "Emerald Tech",
+        "Violet Pulse",
+        "Amber Graphite",
+        "Kompakt",
+        "Standard",
+        "Groß",
     ):
         if phrase not in manifest:
             errors.append(f"Manifestbegriff fehlt: {phrase}")
@@ -79,6 +171,8 @@ def validate(root: Path = ROOT) -> list[str]:
     for number in REQUIRED_CHECKPOINTS:
         if f"Checkpoint {number}" not in plan:
             errors.append(f"Checkpoint fehlt: {number}")
+
+    _validate_shell(root, errors)
     return errors
 
 
