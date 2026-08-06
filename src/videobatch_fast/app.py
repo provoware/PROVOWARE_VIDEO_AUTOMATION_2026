@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import argparse
 
+from .canonical_ui import run_app
 from .instance_lock import ApplicationLock, InstanceAlreadyRunning, request_existing_instance_focus
 from .startup_handshake import signal_ui_ready
-from .ui import run_app
 from .versioning import build_label
 
 
