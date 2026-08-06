@@ -1,0 +1,14 @@
+{
+  "checkpoint": 2,
+  "purpose": "Trigger final read-only verification after the passed status was recorded in the design plan and the release manifest was synchronized.",
+  "release_manifest_synchronized": true,
+  "release_set_excluded": true,
+  "required_design_run": "pass",
+  "required_runtime_cells": [
+    "ubuntu-22.04/x11",
+    "ubuntu-22.04/wayland",
+    "ubuntu-24.04/x11",
+    "ubuntu-24.04/wayland"
+  ],
+  "schema_version": 1
+}
