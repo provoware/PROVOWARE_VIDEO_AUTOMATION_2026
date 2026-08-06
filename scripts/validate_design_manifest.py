@@ -6,6 +6,8 @@ import hashlib
 import json
 from pathlib import Path
 
+from validate_documentation import validate as validate_documentation_contract
+
 ROOT = Path(__file__).resolve().parents[1]
 DESIGN_DIR = ROOT / "docs" / "design"
 TOKENS_PATH = DESIGN_DIR / "VIDEOBATCH_DESIGN_TOKENS.json"
@@ -13,6 +15,8 @@ MANIFEST_PATH = DESIGN_DIR / "VIDEOBATCH_GRAPHICS_MANIFEST.md"
 PLAN_PATH = DESIGN_DIR / "VIDEOBATCH_DESIGN_IMPLEMENTATION_PLAN.md"
 REFERENCE_PATH = DESIGN_DIR / "VIDEOBATCH_CANONICAL_UI_REFERENCE.svg"
 POSTER_PATH = DESIGN_DIR / "VIDEOBATCH_GRAPHICS_MANIFEST_POSTER.svg"
+DOCUMENTATION_CLASSIFICATION_PATH = ROOT / "docs" / "DOCUMENTATION_CLASSIFICATION.json"
+DOCUMENTATION_VALIDATOR_PATH = ROOT / "scripts" / "validate_documentation.py"
 SHELL_PATHS = (
     ROOT / "src" / "videobatch_fast" / "canonical_ui.py",
     ROOT / "src" / "videobatch_fast" / "canonical_kpi.py",
@@ -40,6 +44,14 @@ REQUIRED_SHELL_LABELS = (
     "Vorschau",
     "Diagnose",
     "Einstellungen",
+)
+REQUIRED_HELP_INTENTS = (
+    "Ich möchte …",
+    "Erstes Video erstellen",
+    "Fehlende Datei beheben",
+    "Queuefehler wiederholen",
+    "Cache leeren",
+    "Update rückgängig machen",
 )
 REQUIRED_PAGE_BUILDERS = (
     "_build_start_page",
@@ -74,6 +86,9 @@ def _validate_shell(root: Path, errors: list[str]) -> None:
     for label in REQUIRED_SHELL_LABELS:
         if label not in shell:
             errors.append(f"Shell-Navigation fehlt: {label}")
+    for label in REQUIRED_HELP_INTENTS:
+        if label not in shell:
+            errors.append(f"Hilfeabsicht fehlt: {label}")
     for builder in REQUIRED_PAGE_BUILDERS:
         if f"self.{builder}(" not in shell:
             errors.append(f"Bestehende Funktionsseite nicht eingebunden: {builder}")
@@ -128,6 +143,8 @@ def validate(root: Path = ROOT) -> list[str]:
         design_dir / TOKENS_PATH.name,
         design_dir / REFERENCE_PATH.name,
         design_dir / POSTER_PATH.name,
+        root / DOCUMENTATION_CLASSIFICATION_PATH.relative_to(ROOT),
+        root / DOCUMENTATION_VALIDATOR_PATH.relative_to(ROOT),
         *(root / path.relative_to(ROOT) for path in SHELL_PATHS),
         root / APP_PATH.relative_to(ROOT),
         root / WORKFLOW_PATH.relative_to(ROOT),
@@ -151,10 +168,7 @@ def validate(root: Path = ROOT) -> list[str]:
     if tokens.get("font_profiles") != EXPECTED_FONT_PROFILES:
         errors.append("Schriftprofile müssen exakt 90/105/125 sein")
 
-    for key, file_name in (
-        ("canonical_reference", REFERENCE_PATH.name),
-        ("manifest_poster", POSTER_PATH.name),
-    ):
+    for key, file_name in (("canonical_reference", REFERENCE_PATH.name), ("manifest_poster", POSTER_PATH.name)):
         expected = str(tokens.get(key, {}).get("sha256", ""))
         path = design_dir / file_name
         if _file_sha256(path) != expected:
@@ -166,17 +180,7 @@ def validate(root: Path = ROOT) -> list[str]:
             errors.append(f"Externe Referenz unzulässig: {file_name}")
 
     manifest = (design_dir / MANIFEST_PATH.name).read_text(encoding="utf-8")
-    for phrase in (
-        "Startzeituhr",
-        "RenderProof",
-        "Midnight Blue",
-        "Emerald Tech",
-        "Violet Pulse",
-        "Amber Graphite",
-        "Kompakt",
-        "Standard",
-        "Groß",
-    ):
+    for phrase in ("Startzeituhr", "RenderProof", "Midnight Blue", "Emerald Tech", "Violet Pulse", "Amber Graphite", "Kompakt", "Standard", "Groß"):
         if phrase not in manifest:
             errors.append(f"Manifestbegriff fehlt: {phrase}")
 
@@ -186,6 +190,12 @@ def validate(root: Path = ROOT) -> list[str]:
             errors.append(f"Checkpoint fehlt: {number}")
 
     _validate_shell(root, errors)
+    documentation_report = validate_documentation_contract()
+    for finding in documentation_report.get("findings", []):
+        location = str(finding.get("path") or "")
+        if finding.get("line"):
+            location += f":{finding['line']}"
+        errors.append(f"{finding.get('code', 'DOC_ERROR')}: {location}: {finding.get('message', '')}")
     return errors
 
 
