@@ -1,116 +1,171 @@
 <!-- release-status:start -->
-# provoware - videoautomation - 2026 · 2.8.3-rc24
+# provoware – videoautomation – 2026 · 2.8.3-rc24
 
-**Kanal:** rc
-**Kanonische Quelle:** `diagnostics/release_readiness/RELEASE_EVIDENCE.json`
+**Kanal:** RC – noch keine Stable-Freigabe  
+**Kanonische Quelle:** `diagnostics/release_readiness/RELEASE_EVIDENCE.json`  
 **Freigegebener Qualitätsbericht:** `VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json`
 
 - 325/325 automatisierte Tests bestanden
-- 82.43 % Zeilenabdeckung
-- 67.21 % Zweigabdeckung
+- 82,43 % Zeilenabdeckung
+- 67,21 % Zweigabdeckung
 - 18/18 visuelle Szenarien bestanden
-- Release-Manifest: 398 Dateien
 - Kubuntu-CI-Matrix: 4/4 Kombinationen bestanden
 
-### Offene Stable-Gates
+## Noch offene Stable-Gates
 
-- Ruff 0.16.1: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen
-- MyPy 2.3.0: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen
-- Bandit 1.9.4: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen
-- pip-audit 2.10.1: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen
-- Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless
-- Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt
+- Ruff 0.16.1: exakt gepinnter Offline-Lauf noch nicht abgeschlossen
+- MyPy 2.3.0: exakt gepinnter Offline-Lauf noch nicht abgeschlossen
+- Bandit 1.9.4: exakt gepinnter Offline-Lauf noch nicht abgeschlossen
+- pip-audit 2.10.1: exakt gepinnter Offline-Lauf noch nicht abgeschlossen
+- reale KDE-X11-/Wayland-Abnahme fehlt; die CI-Matrix ist headless
+- realer Langzeitrender mit großer Medienauswahl und langsamem externem Ziel fehlt
 <!-- release-status:end -->
 
-<!-- release-files:start -->
-## Release-Dateistatus
+## Welche Anleitung brauche ich?
 
+| Aufgabe | Datei | Pflichtgrad |
+|---|---|---|
+| erster Start und erstes Testvideo | `START_HIER_save_.md` | Pflicht |
+| vollständige Bedienung | `docs/BENUTZERHANDBUCH.md` | Empfohlen |
+| automatische Installation | `AUTOINSTALLATION_save_.md` | Pflicht bei Installation |
+| Fehler beheben | `ERROR_HANDLING.md` | Pflicht bei Fehlern |
+| Update und Rückfall | `UPDATE_SYSTEM.md` | Pflicht bei Updates |
+| Projektordner verstehen | `PROJEKTORDNERSTRUKTUR_save_.md` | Empfohlen |
+| alle Dokumente einordnen | `docs/DOKUMENTATIONSINDEX.md` | Empfohlen |
+| Dokumentationen schreiben | `docs/DOKUMENTATIONSSTANDARD.md` | Pflicht für Beiträge |
+
+## Sicherer Schnellstart
+
+### Schritt 1: ZIP vollständig entpacken
+
+VideoBatch nicht direkt aus dem ZIP starten.
+
+**Warum notwendig?** Einstellungen, Protokolle und Projektzustände müssen geschrieben werden können.
+
+**Kann entfallen?** Nein.
+
+### Schritt 2: Terminal im Projektordner öffnen
+
+### Schritt 3: Starter ausführbar machen
+
+```bash
+chmod +x videobatch.sh
+```
+
+**Kann entfallen?** Ja, wenn die Datei bereits ausführbar ist.
+
+### Schritt 4: VideoBatch starten
+
+```bash
+./videobatch.sh
+```
+
+**Erwartetes Ergebnis:** Die Oberfläche öffnet sich nach der Laufzeit-, FFmpeg-, Ordner- und Projektprüfung.
+
+**Bei einem Fehler:** Nicht mit `sudo`, `chmod -R 777` oder rekursiven Besitzänderungen reagieren. `ERROR_HANDLING.md` verwenden.
+
+## Erster Bedienablauf
+
+1. Audiodateien hinzufügen.
+2. Bilder oder Videos hinzufügen.
+3. Quellenzahlen und Vorschau kontrollieren.
+4. Beim ersten Test die Automatik verwenden.
+5. Beschreibbaren Ausgabeordner bestätigen.
+6. Produktion starten.
+7. Queue und Abschlussmeldung abwarten.
+8. Anfang, Mitte und Ende des Ergebnisses abspielen.
+
+**Warum ist die Ergebnisprüfung notwendig?** Ein technisch abgeschlossener Render beweist noch nicht, dass Inhalt, Ton und Wirkung korrekt sind.
+
+**Kann sie entfallen?** Vor Veröffentlichung oder Archivierung: nein.
+
+## Was VideoBatch schützt
+
+- Originalmedien werden nicht überschrieben.
+- Projektzustände werden bei Fehlern nicht stillschweigend verworfen.
+- Schreibziele werden mit einer echten Schreibprobe geprüft.
+- pauschale Rootrechte und `chmod 777` sind nicht vorgesehen.
+- Wiederanlaufquellen werden geladen, aber nicht automatisch gestartet.
+- ungültige Effekte können auf eine sichere Automatik zurückgesetzt werden.
+- der Vorschau-Cache entfernt nur eigene, eindeutig erkannte Vorschaudateien.
+
+## Kernfunktionen
+
+- Audio-, Bild- und Videoimport
+- automatische Moduswahl und Schnellmodi
+- Render-Queue mit Fehler- und Wiederanlaufzuständen
+- Vorschau und Thumbnail-Datenträgercache
+- direkte sichere Fehlerlösungen
+- persistente Projekteinstellungen
+- A/B-Update- und Rückfallkonzept
+- kanonische Themes, Schriftprofile und KPI-Dashboard
+- Design-, Manifest- und Linux-Matrix-Gates
+
+## Vorschau-Cache
+
+Vorschaubilder werden im XDG-Benutzercache gespeichert. Standardgrenzen:
+
+- maximal 1 GiB
+- maximal 2.000 VideoBatch-PNG-Dateien
+
+Bei Überschreitung werden zuerst lange nicht verwendete eigene Cacheeinträge entfernt. Originalmedien, Projektdateien und fremde Dateien bleiben unberührt.
+
+### Cache prüfen
+
+1. Bilder- oder Videoauswahl öffnen.
+2. `Vorschau-Cache` wählen.
+3. Anzahl, Größe, Auslastung, Pfad und letzte Bereinigung kontrollieren.
+
+### Cache leeren
+
+1. `Vorschau-Cache leeren` wählen.
+2. Sicherheitsabfrage lesen.
+3. Nur bei Platzmangel, Diagnose oder beschädigten Vorschauen bestätigen.
+
+**Kann entfallen?** Ja. Die normale Nutzung erfordert keine regelmäßige manuelle Leerung.
+
+## Mehrere Auswahlrunden
+
+1. Dateien markieren.
+2. `Auswahl übernehmen + im Ordner bleiben` wählen.
+3. Weitere Quellen ergänzen.
+4. Erst mit `Fertig` die Gesamtauswahl in das Projekt übernehmen.
+
+**Kann entfallen?** Ja. Bei einem einzelnen Ordner genügt eine Auswahlrunde.
+
+## Fehlerampel
+
+- **Hinweis:** lesen und Zustand kontrollieren.
+- **Warnung:** Ursache prüfen; nur ausdrücklich angebotene sichere Fortsetzung verwenden.
+- **Vorgang gestoppt:** Ursache beheben und Vorprüfung erneut ausführen.
+
+Originalmedien und gespeicherte Projekte bleiben bei blockierenden Fehlern unverändert.
+
+## Release- und Dateistatus
+
+<!-- release-files:start -->
 Only standalone user and release deliverables receive _save_. Source modules, CI workflows, canonical manifests, entrypoints and README retain stable technical names.
 
 | Releasefertig (`_save_`) | Noch nicht releasefertig |
 |---|---|
-| `START_HIER_save_.md`<br>Schnellstart: Geprüfter Nutzerstart und sichere erste Schritte | `TODO.md`<br>Offene Arbeitsliste: Enthält bewusst die verbleibenden Stable-Gates |
-| `AUTOINSTALLATION_save_.md`<br>Installationsanleitung: Benutzerpfade, A/B-Slots und Berechtigungsschutz dokumentiert | `QUALITY_GATE_ATTEMPT_2.8.3-rc24.md`<br>Externe Qualitätswerkzeuge: Ruff, MyPy, Bandit und pip-audit sind noch nicht abschließend ausgeführt |
-| `PROJEKTORDNERSTRUKTUR_save_.md`<br>Projektübersicht: Ordner, Start, Sicherheit und Funktionen beschrieben | `STABLE_GATE_ITERATION_2.8.3-rc24_2026-08-04.md`<br>Stable-Freigabeiteration: Stable-Freigabe ist ausdrücklich noch blockiert |
-| `RELEASE_NOTES_save_.md`<br>Releasehinweise: Aktueller RC24-Funktionsstand dokumentiert | `docs/LONG_RENDER_2.8.3-rc24.md`<br>Langzeitrender: Realer Langzeitrender mit großer Auswahl und langsamem Ziel fehlt |
-| `TEST_REPORT_save_.md`<br>Testbericht: Automatisierte und offene Prüfungen getrennt ausgewiesen | `docs/STABLE_ACCEPTANCE_EVIDENCE.md`<br>Stable-Abnahmenachweis: Physische Desktop- und Langzeitnachweise fehlen |
-| `FRESH_PACKAGE_REPORT_save_.md`<br>Paketbericht: Saubere Paketprüfung für RC24 dokumentiert | `VISUAL_DESKTOP_APPROVAL.md`<br>Desktop-Sichtprüfung: Physische KDE-X11-/Wayland-Abnahme bleibt offen |
-| `CODE_QUALITY_REPORT_2.8.3-rc24_save_.md`<br>Codequalitätsbericht: Interne Qualitätsprüfung ohne Befund | `QUALITY_ENVIRONMENT_STATUS.json`<br>Qualitätsumgebung: Exakte Offline-Werkzeugumgebung ist nicht vollständig freigegeben |
-| `IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md`<br>Implementierungsbericht: Umgesetzte Funktions- und Sicherheitsverträge dokumentiert | `VISUAL_INSPECTION_MANIFEST.json`<br>Visuelles Prüfmanifest: Aktueller physischer Lauf ist nicht vollständig bestätigt |
-| `FINAL_AUDIT_2.8.3-rc24_save_.md`<br>RC-Abschlussaudit: RC-Gates und offene Stable-Gates ehrlich getrennt | — |
-| `VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json`<br>Maschinenlesbarer Buildbericht: Aus der kanonischen RELEASE_EVIDENCE.json erzeugt | — |
+| `START_HIER_save_.md` – sicherer erster Start | `TODO.md` – verbleibende Stable-Arbeiten |
+| `AUTOINSTALLATION_save_.md` – Installation und Rückfall | `QUALITY_GATE_ATTEMPT_2.8.3-rc24.md` – externe Qualitätswerkzeuge offen |
+| `PROJEKTORDNERSTRUKTUR_save_.md` – Ordner und Funktionen | `STABLE_GATE_ITERATION_2.8.3-rc24_2026-08-04.md` – Stable blockiert |
+| `RELEASE_NOTES_save_.md` – RC24-Funktionsstand | `docs/LONG_RENDER_2.8.3-rc24.md` – realer Langzeitrender offen |
+| `TEST_REPORT_save_.md` – Teststand | `docs/STABLE_ACCEPTANCE_EVIDENCE.md` – physische Nachweise offen |
+| `FRESH_PACKAGE_REPORT_save_.md` – Paketprüfung | `VISUAL_DESKTOP_APPROVAL.md` – reale Desktopprüfung offen |
+| `CODE_QUALITY_REPORT_2.8.3-rc24_save_.md` – interne Qualität | `QUALITY_ENVIRONMENT_STATUS.json` – Offline-Werkzeuge nicht vollständig freigegeben |
+| `IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md` – Implementierungsstand | `VISUAL_INSPECTION_MANIFEST.json` – physischer Lauf nicht vollständig bestätigt |
+| `FINAL_AUDIT_2.8.3-rc24_save_.md` – RC-Audit | — |
+| `VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json` – Buildbericht | — |
 <!-- release-files:end -->
 
-**Ausgabe vor Stable:** immer als vollständiges Projekt-ZIP. Teil- und Onlineupdates bleiben bis nach der Stable-Freigabe ein deaktivierter Nachrelease-Mechanismus.
+**Vor Stable gilt:** Auslieferung als vollständiges Projekt-ZIP. Teil- und Onlineupdates bleiben bis nach der Stable-Freigabe deaktiviert.
 
-## Zentrale Verbesserungen
+## Dokumentationsregel
 
-- interaktive Fehlerlösung mit konkreten Aktionsschaltern
-- sicherer Ausgabe- und Projektordner kann direkt aus dem Lösungsfenster erstellt werden
-- automatische Reparatur vergessener oder ungültiger Schnellmodus- und Pfadeinstellungen
-- intelligenter Wechsel zum Diashowmodus bei ungleichen Audio-/Bildmengen
-- korrigierte Vorschau bei Mehrfachauswahl: maßgeblich ist der zuletzt aktiv angeklickte Eintrag
-- mehrere Auswahlrunden im selben Ordner über „Auswahl übernehmen + im Ordner bleiben“
-- bereits übernommene Dateien werden in der Liste sichtbar markiert
-- globale Headerstatistik mit Audio-, Bild-, Video- und Auftragszahl sowie Modus, Übergang, Szenenkopplung und Schnellprofil
-- Lösungsdialoge mit dauerhaft erreichbaren Aktionen; lange Erklärungen und technische Details sind scrollbar
-- dauerhafter Thumbnail-Datenträgercache mit 1-GiB-/2.000-Dateien-Grenze, LRU-Bereinigung und atomarer Speicherung
-- Cache-Diagnose direkt in der Medienauswahl mit Größe, Anzahl, Auslastung, Pfad und letzter Bereinigung
-- sichere manuelle Leerung ausschließlich eigener VideoBatch-Vorschaudateien
-- pro Cache-Schlüssel arbeitende Erzeugungssperre gegen doppelte parallele FFmpeg-Berechnungen
+Aktive Anleitungen müssen Ziel, Pflichtgrad, Voraussetzungen, Sicherung, nummerierte Schritte, Begründung, Weglassbarkeit, erwartetes Ergebnis, Fehlerfall, Abschlussprüfung und nächsten Schritt enthalten. Historische Berichte bleiben unverändert und werden im `docs/DOKUMENTATIONSINDEX.md` als Archiv beziehungsweise Nachweis eingeordnet.
 
-## Dauerhafter Thumbnail-Datenträgercache
+## Nächster Schritt
 
-Vorschaubilder werden unter dem XDG-Benutzercache gespeichert und bei erneutem Öffnen wiederverwendet. Der Cache wächst nicht unbegrenzt: Standardmäßig gelten maximal 1 GiB und 2.000 VideoBatch-PNG-Dateien. Bei Überschreitung werden zuerst die am längsten nicht verwendeten Einträge entfernt. Originalmedien, Projektdateien, fremde PNGs und andere Dateitypen werden niemals gelöscht.
-
-Der Cache-Schlüssel berücksichtigt Quellpfad, Änderungszeit, Dateigröße und gewünschte Breite. Eine geänderte Quelldatei erhält deshalb automatisch eine neue Vorschau. Neue Vorschaubilder werden zunächst als Teil-Datei erzeugt und erst nach erfolgreicher Prüfung atomar unter dem endgültigen Namen veröffentlicht.
-
-### Cache-Diagnose und Bedienung
-
-In der Bilder- und Videoauswahl steht der Schalter **„Vorschau-Cache“** bereit. Der Dialog zeigt:
-
-- aktuelle Anzahl der Vorschaubilder
-- belegten Speicher und 1-GiB-Grenze
-- maximale Dateianzahl
-- prozentuale Auslastung
-- letzten Bereinigungslauf
-- vollständigen Cachepfad
-
-Der Schalter **„Vorschau-Cache leeren“** fordert zuerst eine Bestätigung an. Entfernt werden ausschließlich eindeutig benannte VideoBatch-Vorschaubilder und veraltete eigene Teildateien. Aktuell erzeugte oder verwendete Schlüssel werden über eine kurze Sperrprüfung geschützt. Originalmedien, Projekte und fremde Dateien bleiben unangetastet.
-
-### Parallele Vorschauanfragen
-
-Für jeden Cache-Schlüssel existiert eine eigene Erzeugungssperre. Fordern zwei Threads oder Kubuntu-Prozesse gleichzeitig dieselbe Vorschau an, startet FFmpeg nur einmal. Der wartende Aufruf verwendet anschließend das vollständig erzeugte Cachebild. Unterschiedliche Cache-Schlüssel können weiterhin parallel verarbeitet werden. Das vorhandene atomare Speicherprinzip bleibt unverändert bestehen.
-
-## Fortschritt der aktuellen Folge-Iteration
-
-**Fortschritt:** 100 % für den abgegrenzten Funktionspatch „Cache-Diagnose, 1 GiB und Schlüssel-Sperre“.
-
-**Erledigt:** Cachegrenze auf 1 GiB erhöht, Statusfunktion ergänzt, Bedienoberfläche in die Medienauswahl integriert, sichere Leerung ergänzt, fremde PNGs zusätzlich geschützt, letzter Bereinigungslauf protokolliert, parallele identische FFmpeg-Erzeugung serialisiert und fokussierte Regressionstests erweitert.
-
-**Offen:** Stable-Gates bleiben unverändert offen; keine physische KDE-Abnahme und kein Langzeitrender wurden in dieser Iteration durchgeführt.
-
-## Sicheres Berechtigungskonzept
-
-VideoBatch arbeitet ohne pauschale Rootrechte, `chmod 777` oder rekursive Besitzänderungen. Schreibziele werden durch reale Schreibproben geprüft. Bei Problemen kann der Nutzer:
-
-1. einen neuen Benutzerordner anlegen,
-2. einen anderen Ordner auswählen,
-3. einen geprüften Standardordner verwenden,
-4. den betroffenen optionalen Schritt für diesen Lauf deaktivieren.
-
-Originaldateien und bestätigte Projektzustände bleiben bei Fehlern unverändert.
-
-## Bedienablauf
-
-1. Audios und Medien auswählen.
-2. Auswahlstatistik im Header kontrollieren.
-3. Bei Bildern und Videos optional **„Vorschau-Cache“** öffnen und Status prüfen.
-4. Modus und Einstellungen wählen oder die Automatik verwenden.
-5. Produktion starten.
-6. Fehlende Angaben werden automatisch ergänzt oder mit direkten Lösungsaktionen abgefragt.
-7. Bei Unsicherheit zuerst `PROJEKTORDNERSTRUKTUR_save_.md` öffnen und die Schritt-für-Schritt-Anleitung nutzen.
-
-## Laienfreundliche Projektübersicht
-
-Die Datei `PROJEKTORDNERSTRUKTUR_save_.md` erklärt Ordner, wichtige Dateien, sichere Startbefehle, Funktionsbereiche, Barrierefreiheitsprinzipien und sinnvoll mitlieferbare Basisabhängigkeiten in einfacher Sprache.
+Einsteiger öffnen `START_HIER_save_.md`. Fortgeschrittene Nutzer verwenden `docs/BENUTZERHANDBUCH.md`. Entwickler beginnen mit `DEVELOPER_GUIDE.md` und `docs/DOKUMENTATIONSSTANDARD.md`.
