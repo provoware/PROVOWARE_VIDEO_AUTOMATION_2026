@@ -9,7 +9,7 @@ class CanonicalKpiCompactMixin:
     def _build_shell_kpis(self, parent) -> None:
         super()._build_shell_kpis(parent)
         tracked = list(getattr(self, "_shell_kpi_detail_labels", ()))
-        for card in getattr(self, "_shell_kpi_cards", ()): 
+        for card in getattr(self, "_shell_kpi_cards", ()):
             for child in card.winfo_children():
                 if isinstance(child, ttk.Label) and child not in tracked:
                     tracked.append(child)
@@ -22,7 +22,7 @@ class CanonicalKpiCompactMixin:
         self._compact_kpi_labels()
 
     def _compact_kpi_labels(self, _event=None) -> None:
-        for card in getattr(self, "_shell_kpi_cards", ()): 
+        for card in getattr(self, "_shell_kpi_cards", ()):
             width = max(130, card.winfo_width() - 26)
             for child in card.winfo_children():
                 if isinstance(child, ttk.Label):
