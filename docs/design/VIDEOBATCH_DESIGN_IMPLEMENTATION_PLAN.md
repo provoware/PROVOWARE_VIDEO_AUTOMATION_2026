@@ -49,7 +49,18 @@
 
 **Erfolgsprüfung:** Maus- und Tastaturnavigation vollständig; kein bestehender Befehl verloren; Mindestfenster 1024×680 bleibt bedienbar; alle Shell-Module syntaktisch gültig; Manifestvalidator und Shellvertrag grün; CI-Gate bleibt read-only.
 
-**Exit-Kriterium:** neue Shell vollständig nutzbar und rückwärtskompatibel; Repository-Prüfungen sind grün.
+**Ergebnis vom 6. August 2026:**  
+- read-only Preflight bestanden; Designvertrag und Release-Manifest ohne Abweichung  
+- Ubuntu 22.04 X11 bestanden  
+- Ubuntu 22.04 Wayland bestanden  
+- Ubuntu 24.04 X11 bestanden  
+- Ubuntu 24.04 Wayland bestanden  
+- realer Tk-Start bei 1024×680 bestanden  
+- alle sechs vorhandenen Funktionsseiten durchgeschaltet  
+- vier Themes und drei Schriftprofile im laufenden Programm durchgeschaltet  
+- gefundener Startfehler durch vorzeitiges Notebook-Ereignis reproduziert, korrigiert und in allen vier Zellen erneut geprüft
+
+**Exit-Kriterium:** erfüllt. Die neue Shell ist vollständig nutzbar und rückwärtskompatibel; die fokussierten Repository-Prüfungen sind grün.
 
 ### Checkpoint 3 – Dashboard und KPI-Karten
 
@@ -121,7 +132,7 @@
 |---:|---|---|---|
 | 0 | abgeschlossen | Main-Basis `0e021440…` und isolierter Arbeitsbranch dokumentiert | Branch-Basis und Vergleich |
 | 1 | abgeschlossen | Manifest, Referenzen, Tokens und fail-closed Validator integriert | Designvertragsprüfung |
-| 2 | Prüfung läuft | Modulare Shell, vollständiger Seitenzugang, reale Primäraktionen, responsive Aktionsleiste und permanentes CI-Gate implementiert | Shellvertrag, Compileall, GitHub Actions |
+| 2 | **PASSED** | Modulare Shell, vollständiger Seitenzugang, reale Primäraktionen, responsive Aktionsleiste und permanentes CI-Gate; Startfehler korrigiert | Run `31111557026`: Preflight + Ubuntu 22.04/24.04 × X11/Wayland grün; Design-Run `31111557085` grün |
 | 3–10 | offen | Umsetzung erst nach grünem Vorgänger | jeweiliger Prüfbericht |
 
 ## 4. Checkpoint-2-Dateivertrag
@@ -135,4 +146,6 @@
 | `src/videobatch_fast/app.py` | Auswahl der kanonischen Shell beim normalen Programmstart |
 | `tests/test_canonical_application_shell_contract.py` | Funktionserhalt, Navigation, Primäraktionen, Themes und Schriftprofile |
 | `.github/workflows/design-manifest-gate.yml` | verpflichtender read-only Vertragslauf für PR und `main` |
+| `.github/workflows/checkpoint2-shell-matrix.yml` | realer Tk-Start unter Ubuntu 22.04/24.04 × X11/Wayland |
 | `scripts/validate_design_manifest.py` | fail-closed Prüfung von Manifest, Shell und CI-Gate |
+| `diagnostics/checkpoint2/CHECKPOINT2_RESULT.json` | maschinenlesbarer Abschlussnachweis |
