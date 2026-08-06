@@ -1308,8 +1308,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/canonical_shell_chrome.py",
-      "sha256": "f43ad72fda0292704276be467d3135cb9bb5a7095b85476fa5829912f0fb9a15",
-      "size": 10412
+      "sha256": "fb987803215b4071c2e78689e9d2f1ab5bcca7db4d17cdf52d6ee15f0bef381d",
+      "size": 10528
     },
     {
       "mode": "0o644",
@@ -1320,8 +1320,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/canonical_shell_workspace.py",
-      "sha256": "35edc89a3d30f169370d77570e077d778abd33f2a10b26f69c83f185c1d85362",
-      "size": 5535
+      "sha256": "fd1572929314ac2ec2120ac2ff130479983a016e9d3c7b72f6381c07b17be276",
+      "size": 6046
     },
     {
       "mode": "0o644",
