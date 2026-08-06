@@ -1,0 +1,41 @@
+{
+  "canonical_reference": {
+    "path": "docs/design/VIDEOBATCH_CANONICAL_UI_REFERENCE.svg",
+    "sha256": "7e610f9c0e97205dbddd5eea0e8f87ba6547adbc8dae126a1095779ea13500d2"
+  },
+  "effective_date": "2026-08-06",
+  "font_profiles": {
+    "compact": 90,
+    "large": 125,
+    "standard": 105
+  },
+  "iteration_contract": {
+    "correction_before_completion": true,
+    "minimum_complete_implementations": 1,
+    "validation_required": true
+  },
+  "layout": {
+    "action_row_px": {"max": 56, "min": 48, "preferred": 52},
+    "breakpoints_px": {"collapsible_sources": 1180, "full_three_column": 1440, "minimum_supported": 1024},
+    "desktop_columns_percent": [22, 48, 30],
+    "footer_px": {"max": 44, "min": 36, "preferred": 40},
+    "header_px": {"max": 68, "min": 56, "preferred": 64},
+    "sidebar_px": {"max": 248, "min": 220, "preferred": 240}
+  },
+  "manifest_id": "VB-GFX-1.0",
+  "manifest_poster": {
+    "path": "docs/design/VIDEOBATCH_GRAPHICS_MANIFEST_POSTER.svg",
+    "sha256": "f4a4b10eb8df9eca7bbfa1ea7500f5ee494a5b408fb50810ba087e06a0cf0684"
+  },
+  "radius_px": {"card": 16, "drawer": 24, "input": 10, "pill": 999},
+  "required_modules": ["media", "queue", "effects", "scheduler", "render_proof", "diagnostics", "backup", "project_folder", "settings"],
+  "required_zones": ["sidebar", "top_header", "kpi_row", "action_row", "sources", "render_queue", "details_preview", "scheduler", "footer_status"],
+  "schema_version": 1,
+  "spacing_px": [4, 8, 12, 16, 20, 24, 32, 48, 64, 96],
+  "themes": {
+    "acid_paper": {"label": "Emerald Tech", "role": "technical"},
+    "neon_gravity": {"label": "Midnight Blue", "role": "standard"},
+    "toxic_candy": {"label": "Violet Pulse", "role": "creative"},
+    "ultraviolet": {"label": "Amber Graphite", "role": "warm"}
+  }
+}
