@@ -1,7 +1,7 @@
 # VideoBatch Fast – Umsetzungs- und Erfolgsprüfplan
 
 **Plan-ID:** `VB-DESIGN-2026-01`  
-**Ausgangsbasis:** geprüfter `main`-Stand `0e0214404886457d3b073565c3157e5458c6b8bb`  
+**Ausgangsbasis:** synchronisierter `main`-Stand `049376fc8273a17f97d8b211d550ec8e9b6be4ca`  
 **Arbeitsbranch:** `agent/canonical-design-manifest-20260806`  
 **Ziel:** Die kanonische Dashboard-Referenz wird schrittweise, testbar und ohne Funktionsverlust in VideoBatch Fast übernommen.
 
@@ -50,25 +50,38 @@
 **Erfolgsprüfung:** Maus- und Tastaturnavigation vollständig; kein bestehender Befehl verloren; Mindestfenster 1024×680 bleibt bedienbar; alle Shell-Module syntaktisch gültig; Manifestvalidator und Shellvertrag grün; CI-Gate bleibt read-only.
 
 **Ergebnis vom 6. August 2026:**  
-- read-only Preflight bestanden; Designvertrag und Release-Manifest ohne Abweichung  
+- Branch kontrolliert durch echten Zwei-Eltern-Merge auf `main`-SHA `049376fc…` synchronisiert  
+- Abstammung danach `ahead`, `behind_by = 0`, Merge-Base entspricht exakt `main`  
+- Release-Manifest nach dem Merge deterministisch regeneriert und geprüft  
+- Designvertrag und Release-Manifest auf Prüf-Head `33c07d0d…` bestanden  
 - Ubuntu 22.04 X11 bestanden  
 - Ubuntu 22.04 Wayland bestanden  
 - Ubuntu 24.04 X11 bestanden  
 - Ubuntu 24.04 Wayland bestanden  
 - realer Tk-Start bei 1024×680 bestanden  
-- alle sechs vorhandenen Funktionsseiten durchgeschaltet  
-- vier Themes und drei Schriftprofile im laufenden Programm durchgeschaltet  
-- gefundener Startfehler durch vorzeitiges Notebook-Ereignis reproduziert, korrigiert und in allen vier Zellen erneut geprüft
+- alle sechs vorhandenen Funktionsseiten, vier Themes und drei Schriftprofile durchgeschaltet
 
-**Exit-Kriterium:** erfüllt. Die neue Shell ist vollständig nutzbar und rückwärtskompatibel; die fokussierten Repository-Prüfungen sind grün.
+**Exit-Kriterium:** erfüllt. Die neue Shell ist vollständig nutzbar, rückwärtskompatibel und gegen den aktuellen `main`-Stand geprüft.
 
 ### Checkpoint 3 – Dashboard und KPI-Karten
 
 **Umsetzung:** Karten `Medien`, `Queue`, `Effekte` und `Startzeituhr` produktiv an reale Zustände anbinden.
 
-**Erfolgsprüfung:** Zahlen aktualisieren sich nach Import, Queue-Änderung und Effektwahl; Kartenaktionen öffnen den korrekten Bereich; Leer-, Lade-, Fehler- und Erfolgslagen sind getrennt.
+**Iteration 3.1 – reale Zustände und Bereichsaktionen:**  
+- eigenständiger, rein testbarer KPI-Zustandsvertrag  
+- getrennte Zustände `empty`, `ready`, `loading`, `success`, `warning`, `error` und `disabled`  
+- Medienkarte berücksichtigt Audio-/Medienzahl, fehlende Gegenstücke, nicht erreichbare Quellen und laufende Medienaufgaben  
+- Queuekarte berücksichtigt vorbereitete Jobs, laufende Produktion, abgeschlossene und fehlgeschlagene Ergebnisse  
+- Effektkarte reagiert auf Effekt, Übergang und Schnellmodus  
+- Medien-, Queue- und Effektkarte öffnen den jeweils korrekten vorhandenen Arbeitsbereich  
+- Startzeituhr bleibt bis Checkpoint 5 sichtbar und technisch deaktiviert  
+- KPI-Werte werden ereignisgesteuert und zusätzlich in einem begrenzten Ein-Sekunden-Takt aktualisiert
 
-**Exit-Kriterium:** vier Karten liefern reale Daten und vollständige Aktionen.
+**Erfolgsprüfung:** Zahlen aktualisieren sich nach Import, Queue-Änderung und Effektwahl; Kartenaktionen öffnen den korrekten Bereich; Leer-, Lade-, Warn-, Fehler- und Erfolgslagen sind getrennt; Schedulerstatus täuscht keine noch nicht vorhandene Funktion vor.
+
+**Status:** Iteration 3.1 implementiert; Release-Manifest-Synchronisierung und Vierfachmatrix laufen noch.
+
+**Exit-Kriterium:** vier Karten liefern reale Daten und vollständige, dem jeweiligen Implementierungsstand entsprechende Aktionen.
 
 ### Checkpoint 4 – Dreispaltiger Hauptarbeitsbereich
 
@@ -130,22 +143,25 @@
 
 | Checkpoint | Status | Ergebnis | Nachweis |
 |---:|---|---|---|
-| 0 | abgeschlossen | Main-Basis `0e021440…` und isolierter Arbeitsbranch dokumentiert | Branch-Basis und Vergleich |
+| 0 | abgeschlossen | Main-Basis dokumentiert und Branch isoliert | Branch-Basis und Vergleich |
 | 1 | abgeschlossen | Manifest, Referenzen, Tokens und fail-closed Validator integriert | Designvertragsprüfung |
-| 2 | **PASSED** | Modulare Shell, vollständiger Seitenzugang, reale Primäraktionen, responsive Aktionsleiste und permanentes CI-Gate; Startfehler korrigiert | Run `31111557026`: Preflight + Ubuntu 22.04/24.04 × X11/Wayland grün; Design-Run `31111557085` grün |
-| 3–10 | offen | Umsetzung erst nach grünem Vorgänger | jeweiliger Prüfbericht |
+| 2 | **PASSED** | Shell auf aktuellen `main` synchronisiert und vollständig erneut geprüft | Design-Run `31112872982`; Matrix-Run `31112872882`; `behind_by = 0` |
+| 3 | **IN PROGRESS** | Iteration 3.1: reale KPI-Zustände und Bereichsaktionen implementiert | KPI-Vertrag, Design-Gate und Vierfachmatrix |
+| 4–10 | offen | Umsetzung erst nach grünem Vorgänger | jeweiliger Prüfbericht |
 
-## 4. Checkpoint-2-Dateivertrag
+## 4. Kanonischer Dateivertrag
 
 | Datei | Aufgabe |
 |---|---|
+| `src/videobatch_fast/canonical_kpi.py` | reiner Zustandsvertrag für Medien, Queue, Effekte und Scheduler |
 | `src/videobatch_fast/canonical_shell_contract.py` | verbindliche Navigation, Theme-Namen und Schriftprofile |
-| `src/videobatch_fast/canonical_shell_chrome.py` | Sidebar, Top-Header, KPI-Zeile und responsive Aktionsleiste |
-| `src/videobatch_fast/canonical_shell_workspace.py` | Einbettung sämtlicher bestehender Funktionsseiten und Seitenrouting |
+| `src/videobatch_fast/canonical_shell_chrome.py` | Sidebar, Top-Header, KPI-Karten und responsive Aktionsleiste |
+| `src/videobatch_fast/canonical_shell_workspace.py` | Einbettung sämtlicher Funktionsseiten, Routing und Livebindung |
 | `src/videobatch_fast/canonical_ui.py` | kanonische UI-Klasse und Anwendungseinstieg |
 | `src/videobatch_fast/app.py` | Auswahl der kanonischen Shell beim normalen Programmstart |
-| `tests/test_canonical_application_shell_contract.py` | Funktionserhalt, Navigation, Primäraktionen, Themes und Schriftprofile |
+| `tests/test_canonical_application_shell_contract.py` | Funktionserhalt, Navigation, Aktionen, Themes und Schriftprofile |
+| `tests/test_canonical_kpi_contract.py` | getrennte KPI-Zustände und ehrlicher Schedulervertrag |
 | `.github/workflows/design-manifest-gate.yml` | verpflichtender read-only Vertragslauf für PR und `main` |
-| `.github/workflows/checkpoint2-shell-matrix.yml` | realer Tk-Start unter Ubuntu 22.04/24.04 × X11/Wayland |
-| `scripts/validate_design_manifest.py` | fail-closed Prüfung von Manifest, Shell und CI-Gate |
-| `diagnostics/checkpoint2/CHECKPOINT2_RESULT.json` | maschinenlesbarer Abschlussnachweis |
+| `.github/workflows/checkpoint2-shell-matrix.yml` | realer Tk-Start und KPI-Bedienung unter Ubuntu 22.04/24.04 × X11/Wayland |
+| `scripts/validate_design_manifest.py` | fail-closed Prüfung von Manifest, Shell, KPI-Vertrag und CI-Gate |
+| `diagnostics/checkpoint2/CHECKPOINT2_RESULT.json` | maschinenlesbarer Abschlussnachweis für Checkpoint 2 |
