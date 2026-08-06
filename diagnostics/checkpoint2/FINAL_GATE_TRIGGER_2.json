@@ -1,0 +1,13 @@
+{
+  "checkpoint": 2,
+  "purpose": "Trigger the final canonical shell runtime matrix after the release manifest includes the focused matrix workflow.",
+  "release_manifest_synchronized": true,
+  "release_set_excluded": true,
+  "required_runtime_cells": [
+    "ubuntu-22.04/x11",
+    "ubuntu-22.04/wayland",
+    "ubuntu-24.04/x11",
+    "ubuntu-24.04/wayland"
+  ],
+  "schema_version": 1
+}

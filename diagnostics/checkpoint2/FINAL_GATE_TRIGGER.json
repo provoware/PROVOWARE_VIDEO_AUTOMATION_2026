@@ -1,0 +1,15 @@
+{
+  "checkpoint": 2,
+  "purpose": "Trigger final read-only design, release and Kubuntu gates after the bounded bot manifest synchronization.",
+  "release_manifest_source_count": 407,
+  "release_set_excluded": true,
+  "required_checks": [
+    "Design manifest contract",
+    "Fast read-only release preflight",
+    "Ubuntu 22.04 X11",
+    "Ubuntu 22.04 Wayland",
+    "Ubuntu 24.04 X11",
+    "Ubuntu 24.04 Wayland"
+  ],
+  "schema_version": 1
+}
