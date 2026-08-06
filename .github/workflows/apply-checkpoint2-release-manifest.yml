@@ -1,0 +1,81 @@
+name: Apply Checkpoint 2 release manifest once
+
+on:
+  pull_request:
+    branches: [main]
+    types: [synchronize]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-checkpoint2-release-manifest-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  apply-once:
+    name: Apply verified manifest and remove one-shot workflow
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/canonical-design-manifest-20260806'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      PYTHONPATH: src
+
+    steps:
+      - name: Check out exact writable PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Verify exact event head
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -Eeuo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+
+      - name: Remove this one-shot workflow before generation
+        run: |
+          set -Eeuo pipefail
+          rm -- .github/workflows/apply-checkpoint2-release-manifest.yml
+
+      - name: Generate and recheck final release manifest
+        run: |
+          set -Eeuo pipefail
+          python3 scripts/build_release_manifest.py
+          python3 scripts/build_release_manifest.py --check --json \
+            | tee "$RUNNER_TEMP/final-release-manifest-check.json"
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          report = json.loads(
+              (Path(os.environ["RUNNER_TEMP"]) / "final-release-manifest-check.json").read_text(
+                  encoding="utf-8"
+              )
+          )
+          if report.get("status") != "passed":
+              raise SystemExit(f"Generated manifest did not revalidate: {report!r}")
+          PY
+
+      - name: Commit only the bounded final changes
+        run: |
+          set -Eeuo pipefail
+          git diff --check
+          git add -- RELEASE_MANIFEST.json .github/workflows/apply-checkpoint2-release-manifest.yml
+          mapfile -t changed < <(git diff --cached --name-only)
+          printf '%s\n' "${changed[@]}"
+          test "${#changed[@]}" -eq 2
+          test "${changed[0]}" = ".github/workflows/apply-checkpoint2-release-manifest.yml"
+          test "${changed[1]}" = "RELEASE_MANIFEST.json"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: synchronize Checkpoint 2 shell matrix manifest"
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
