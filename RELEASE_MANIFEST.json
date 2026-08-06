@@ -1,7 +1,7 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 407,
+  "file_count": 408,
   "files": [
     {
       "mode": "0o644",
@@ -26,6 +26,12 @@
       "path": ".github/workflows/bounded-long-render-rehearsal.yml",
       "sha256": "fb9d24a6fcb539a75a88c1cfbd6158064584196be000a921e34da771bd79e6c9",
       "size": 6690
+    },
+    {
+      "mode": "0o644",
+      "path": ".github/workflows/checkpoint2-shell-matrix.yml",
+      "sha256": "e63e7690e3fa0d2e0c9f0a5575a7d22456281ab5aced755f9e1a671bee824717",
+      "size": 6587
     },
     {
       "mode": "0o644",
