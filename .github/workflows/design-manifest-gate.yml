@@ -1,0 +1,64 @@
+name: Repository merge preflight
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: repository-preflight-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compatibility-preflight:
+    # Legacy context name retained temporarily because the current main rule expects it.
+    name: Design manifest contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      PYTHONPATH: src
+
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Compile changed contracts
+        run: |
+          set -Eeuo pipefail
+          python3 -m py_compile \
+            scripts/validate_documentation.py \
+            src/videobatch_fast/canonical_shell_workspace.py \
+            tests/test_documentation_contract.py
+
+      - name: Run documentation contract
+        run: |
+          set -Eeuo pipefail
+          python3 -m pytest -q tests/test_documentation_contract.py
+          python3 scripts/validate_documentation.py --json
+
+      - name: Verify release manifest
+        run: |
+          set -Eeuo pipefail
+          python3 scripts/build_release_manifest.py --check --json
+
+      - name: Prove preflight remained read-only
+        if: always()
+        run: |
+          set -Eeuo pipefail
+          status="$(git status --porcelain --untracked-files=all)"
+          if [[ -n "$status" ]]; then
+            printf '%s\n' "$status"
+            echo "::error title=Preflight wrote repository files::The compatibility preflight must remain read-only."
+            exit 1
+          fi
