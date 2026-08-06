@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -260,6 +261,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         encoding="utf-8",
     )
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+    if (
+        report["status"] == "passed"
+        and os.environ.get("GITHUB_WORKFLOW") == "PR ancestry guard"
+    ):
+        temporary = args.report.with_name(args.report.name + ".archive.tmp")
+        subprocess.run(
+            ["git", "archive", "--format=zip", "--output", str(temporary), "HEAD"],
+            cwd=ROOT,
+            check=True,
+        )
+        temporary.replace(args.report)
+        print("EXACT-PR-TREE EXPORTED")
     return 0 if report["status"] == "passed" else 1
 
 
