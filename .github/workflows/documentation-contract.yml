@@ -1,0 +1,90 @@
+name: Documentation contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '**.md'
+      - 'docs/DOCUMENTATION_CLASSIFICATION.json'
+      - 'scripts/validate_documentation.py'
+      - 'tests/test_documentation_contract.py'
+      - 'src/videobatch_fast/canonical_shell_workspace.py'
+      - '.github/workflows/documentation-contract.yml'
+      - 'RELEASE_MANIFEST.json'
+  push:
+    branches: [main]
+    paths:
+      - '**.md'
+      - 'docs/DOCUMENTATION_CLASSIFICATION.json'
+      - 'scripts/validate_documentation.py'
+      - 'tests/test_documentation_contract.py'
+      - 'src/videobatch_fast/canonical_shell_workspace.py'
+      - '.github/workflows/documentation-contract.yml'
+      - 'RELEASE_MANIFEST.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: documentation-contract-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  documentation-contract:
+    name: Documentation contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      PYTHONPATH: src
+
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Record read-only baseline
+        run: |
+          set -Eeuo pipefail
+          git status --porcelain=v1 > "$RUNNER_TEMP/status.before"
+          git rev-parse HEAD > "$RUNNER_TEMP/head.before"
+
+      - name: Compile validator and help shell
+        run: |
+          set -Eeuo pipefail
+          python3 -m py_compile \
+            scripts/validate_documentation.py \
+            src/videobatch_fast/canonical_shell_workspace.py \
+            tests/test_documentation_contract.py
+
+      - name: Run documentation unit contract
+        run: python3 -m pytest -q tests/test_documentation_contract.py
+
+      - name: Validate all release documentation
+        run: python3 scripts/validate_documentation.py --json | tee "$RUNNER_TEMP/documentation-report.json"
+
+      - name: Verify release manifest read-only
+        run: python3 scripts/build_release_manifest.py --check --json | tee "$RUNNER_TEMP/release-manifest-report.json"
+
+      - name: Prove checkout remained read-only
+        run: |
+          set -Eeuo pipefail
+          test "$(git rev-parse HEAD)" = "$(cat "$RUNNER_TEMP/head.before")"
+          git status --porcelain=v1 > "$RUNNER_TEMP/status.after"
+          diff -u "$RUNNER_TEMP/status.before" "$RUNNER_TEMP/status.after"
+          git diff --exit-code
+          git diff --cached --exit-code
+
+      - name: Upload documentation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-contract-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/documentation-report.json
+            ${{ runner.temp }}/release-manifest-report.json
+          if-no-files-found: warn
+          retention-days: 14
