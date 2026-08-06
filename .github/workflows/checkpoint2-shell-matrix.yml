@@ -1,0 +1,193 @@
+name: Checkpoint 2 canonical shell matrix
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/actions/kubuntu-package-cache/**
+      - .github/ci/kubuntu-packages.txt
+      - .github/workflows/checkpoint2-shell-matrix.yml
+      - .github/workflows/design-manifest-gate.yml
+      - docs/design/**
+      - diagnostics/checkpoint2/**
+      - scripts/validate_design_manifest.py
+      - src/videobatch_fast/app.py
+      - src/videobatch_fast/canonical_*.py
+      - src/videobatch_fast/theme.py
+      - src/videobatch_fast/ui*.py
+      - tests/test_design_manifest_contract.py
+      - tests/test_canonical_application_shell_contract.py
+      - RELEASE_MANIFEST.json
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: checkpoint2-shell-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preflight:
+    name: Checkpoint 2 read-only preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      PYTHONPATH: src
+
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Compile and validate contracts
+        run: |
+          set -Eeuo pipefail
+          python3 -m compileall -q -f \
+            src/videobatch_fast/app.py \
+            src/videobatch_fast/canonical_ui.py \
+            src/videobatch_fast/canonical_shell_contract.py \
+            src/videobatch_fast/canonical_shell_chrome.py \
+            src/videobatch_fast/canonical_shell_workspace.py \
+            scripts/validate_design_manifest.py \
+            tests/test_design_manifest_contract.py \
+            tests/test_canonical_application_shell_contract.py
+          python3 scripts/validate_design_manifest.py --json \
+            | tee "$RUNNER_TEMP/design-manifest.json"
+          python3 scripts/build_release_manifest.py --check --json \
+            | tee "$RUNNER_TEMP/release-manifest.json"
+
+      - name: Prove preflight remained read-only
+        if: always()
+        run: |
+          set -Eeuo pipefail
+          status="$(git status --porcelain --untracked-files=all)"
+          if [[ -n "$status" ]]; then
+            printf '%s\n' "$status"
+            echo "::error title=Checkpoint 2 preflight wrote repository files::The checkout must remain unchanged."
+            exit 1
+          fi
+
+  shell-matrix:
+    name: ${{ matrix.os }} / ${{ matrix.session }} / canonical shell
+    needs: preflight
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+        session: [x11, wayland]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    env:
+      XDG_SESSION_TYPE: ${{ matrix.session }}
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      PYTHONPATH: src
+
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Prepare cached Kubuntu dependencies
+        uses: ./.github/actions/kubuntu-package-cache
+        with:
+          os: ${{ matrix.os }}
+          session: ${{ matrix.session }}
+          mode: matrix
+
+      - name: Start deterministic display
+        run: |
+          set -Eeuo pipefail
+          if [[ "${{ matrix.session }}" == "wayland" ]]; then
+            mkdir -p "$RUNNER_TEMP/xdg"
+            chmod 700 "$RUNNER_TEMP/xdg"
+            XDG_RUNTIME_DIR="$RUNNER_TEMP/xdg" weston \
+              --backend=headless-backend.so \
+              --socket=wayland-vb \
+              --idle-time=0 >/tmp/weston.log 2>&1 &
+            echo "XDG_RUNTIME_DIR=$RUNNER_TEMP/xdg" >> "$GITHUB_ENV"
+            echo "WAYLAND_DISPLAY=wayland-vb" >> "$GITHUB_ENV"
+          fi
+          Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp \
+            >/tmp/xvfb.log 2>&1 &
+          echo "DISPLAY=:99" >> "$GITHUB_ENV"
+          sleep 2
+
+      - name: Run focused contract tests
+        run: |
+          set -Eeuo pipefail
+          python3 -m pytest -q \
+            tests/test_design_manifest_contract.py \
+            tests/test_canonical_application_shell_contract.py
+
+      - name: Launch and exercise canonical shell at minimum size
+        run: |
+          set -Eeuo pipefail
+          python3 - <<'PY'
+          from tkinter import Tk
+
+          from videobatch_fast.canonical_shell_contract import (
+              CANONICAL_THEME_LABELS,
+              FONT_PROFILES,
+              SHELL_NAVIGATION,
+          )
+          from videobatch_fast.canonical_ui import CanonicalVideoBatchFastUI
+
+          root = Tk()
+          root.geometry("1024x680")
+          app = CanonicalVideoBatchFastUI(root)
+          root.update_idletasks()
+
+          assert root.minsize() == (1024, 680)
+          assert len(app._shell_nav_buttons) == len(SHELL_NAVIGATION)
+          assert len(app._shell_action_buttons) == 7
+          assert app.main_notebook.index("end") == 6
+
+          for page_index in range(6):
+              app._select_shell_page(page_index)
+              root.update_idletasks()
+              assert app.main_notebook.index(app.main_notebook.select()) == page_index
+
+          for theme_id, label in CANONICAL_THEME_LABELS.items():
+              app._set_canonical_theme(theme_id)
+              root.update_idletasks()
+              assert app.theme_name.get() == theme_id
+              assert app.shell_theme_combo.get() == label
+
+          for label, scale in FONT_PROFILES.items():
+              app._set_global_zoom(scale)
+              root.update_idletasks()
+              assert app.global_font_scale.get() == scale
+              assert app._font_profile_for_scale(scale) == label
+
+          root.update_idletasks()
+          assert root.winfo_width() >= 1024
+          assert root.winfo_height() >= 680
+          root.destroy()
+          print("CHECKPOINT2_CANONICAL_SHELL_OK")
+          PY
+
+      - name: Collect display logs
+        if: always()
+        run: |
+          set -Eeuo pipefail
+          mkdir -p checkpoint2-logs
+          test ! -f /tmp/xvfb.log || cp /tmp/xvfb.log checkpoint2-logs/xvfb.log
+          test ! -f /tmp/weston.log || cp /tmp/weston.log checkpoint2-logs/weston.log
+
+      - name: Upload focused evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkpoint2-${{ matrix.os }}-${{ matrix.session }}
+          if-no-files-found: warn
+          retention-days: 14
+          path: checkpoint2-logs/*
