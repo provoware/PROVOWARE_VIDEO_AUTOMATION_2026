@@ -50,7 +50,58 @@ class CanonicalShellWorkspaceMixin:
         self._build_preview_page(pages[2])
         self._build_modes_page(pages[3])
         self._build_production_page(pages[4])
-        self._build_help_page(pages[5])
+        self._build_canonical_help_page(pages[5])
+
+    def _build_canonical_help_page(self, parent) -> None:
+        parent.columnconfigure(0, weight=1)
+        parent.rowconfigure(1, weight=1)
+
+        intent = ttk.LabelFrame(
+            parent,
+            text="Ich möchte …",
+            style="Card.TLabelframe",
+            padding=(12, 10),
+        )
+        intent.grid(row=0, column=0, sticky="ew", padx=2, pady=(2, 10))
+        for column in range(5):
+            intent.columnconfigure(column, weight=1)
+
+        entries = (
+            ("Erstes Video erstellen", 1, "Zuerst Audio und Medien hinzufügen. Danach Queue prüfen und Produktion starten."),
+            ("Fehlende Datei beheben", 1, "Im Medienbereich nicht erreichbare Verweise prüfen und kontrolliert entfernen oder neu zuordnen."),
+            ("Queuefehler wiederholen", 4, "Im Queuebereich den ursprünglichen Fehler lesen und nur wiederanlaufbare Quellen erneut laden."),
+            ("Cache leeren", 5, "Unter Hilfe die Vorschau-Cache-Diagnose öffnen. Es werden ausschließlich VideoBatch-Vorschaudateien entfernt."),
+            ("Update rückgängig machen", 5, "Den bestätigten A/B-Slot beibehalten oder auf ihn zurückfallen. Projekt- und Originaldateien bleiben unverändert."),
+        )
+        self.help_intent_buttons = {}
+        for column, (label, page_index, guidance) in enumerate(entries):
+            button = ttk.Button(
+                intent,
+                text=label,
+                command=lambda target=page_index, note=guidance: self._open_help_intent(target, note),
+            )
+            button.grid(row=0, column=column, sticky="ew", padx=4, pady=4)
+            self.help_intent_buttons[label] = button
+
+        ttk.Label(
+            intent,
+            text=(
+                "Jede Auswahl öffnet den passenden Arbeitsbereich und nennt den unmittelbar nächsten sicheren Schritt. "
+                "Es wird keine Produktion, Löschung oder Aktualisierung automatisch gestartet."
+            ),
+            style="Muted.TLabel",
+            wraplength=980,
+            justify="left",
+        ).grid(row=1, column=0, columnspan=5, sticky="ew", padx=4, pady=(6, 0))
+
+        legacy_help = ttk.Frame(parent, style="Card.TFrame")
+        legacy_help.grid(row=1, column=0, sticky="nsew")
+        self._build_help_page(legacy_help)
+
+    def _open_help_intent(self, page_index: int, guidance: str) -> None:
+        self._select_shell_page(page_index)
+        self.guidance_text.set(guidance)
+        self.root.after_idle(self.main_notebook.focus_set)
 
     def _restore_shell_selection(self) -> None:
         self._main_tab_restore_in_progress = True
