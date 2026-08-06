@@ -120,3 +120,37 @@ jobs:
             echo "::error title=Design gate wrote repository files::The gate must be read-only."
             exit 1
           fi
+
+  release-manifest-candidate:
+    name: Generate release manifest candidate
+    needs: design-manifest-contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      PYTHONPATH: src
+
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Generate candidate from complete checked-out tree
+        run: |
+          set -Eeuo pipefail
+          python3 scripts/build_release_manifest.py
+          python3 scripts/build_release_manifest.py --check --json \
+            | tee "$RUNNER_TEMP/release-manifest-candidate-check.json"
+
+      - name: Upload deterministic candidate and check report
+        uses: actions/upload-artifact@v4
+        with:
+          name: design-release-manifest-candidate
+          if-no-files-found: error
+          retention-days: 7
+          path: |
+            RELEASE_MANIFEST.json
+            ${{ runner.temp }}/release-manifest-candidate-check.json
