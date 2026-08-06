@@ -176,6 +176,8 @@ class CanonicalShellChromeMixin:
         self.config["theme"] = name
         apply_theme(self.root, self.global_font_scale.get(), name)
         self._refresh_theme_widgets()
+        if hasattr(self, "shell_theme_combo"):
+            self.shell_theme_combo.set(CANONICAL_THEME_LABELS[name])
         self._save_settings()
         self.guidance_text.set(f"Farbtheme aktiviert: {CANONICAL_THEME_LABELS[name]}.")
 
