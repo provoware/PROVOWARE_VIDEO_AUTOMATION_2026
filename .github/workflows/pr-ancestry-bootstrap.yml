@@ -3,10 +3,7 @@ name: Finalize PR ancestry guard
 on:
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened]
-
-permissions:
-  contents: write
+    types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
   group: pr-ancestry-finalize-${{ github.event.pull_request.number }}
