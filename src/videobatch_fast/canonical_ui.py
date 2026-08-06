@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import os
 import threading
+from pathlib import Path
 from tkinter import Tk
 
 from .canonical_dashboard_mixin import CanonicalDashboardMixin
@@ -87,6 +89,9 @@ def _install_thread_debug_hook() -> None:
 
 
 def run_app() -> None:
+    clean_marker = os.environ.get("VIDEOBATCH_DEBUG_CLEAN_MARKER", "").strip()
+    if clean_marker:
+        RUNTIME.set_clean_shutdown_marker(Path(clean_marker).expanduser())
     RUNTIME.verbose(
         "Die grafische Anwendung wird aufgebaut.",
         "VideoBatch erstellt zuerst das Tk-Fenster und anschließend die kanonische Oberfläche.",
