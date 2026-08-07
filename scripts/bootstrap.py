@@ -15,6 +15,12 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+from videobatch_fast.startup_handshake import read_ready_marker  # noqa: E402
+
 CHECK_ONLY = "--check-only" in sys.argv
 if CHECK_ONLY:
     sys.argv.remove("--check-only")
@@ -104,7 +110,6 @@ def verify_project() -> None:
         raise BootstrapFailure("Das Programmpaket ist unvollständig: " + ", ".join(missing))
 
 
-
 def load_startup_contract() -> dict[str, Any]:
     try:
         contract = json.loads(STARTUP_CONTRACT.read_text(encoding="utf-8"))
@@ -131,6 +136,7 @@ def load_startup_contract() -> dict[str, Any]:
     if missing:
         raise BootstrapFailure("Der Startvertrag verletzt Pflichtregeln: " + ", ".join(missing))
     return contract
+
 
 def install_user_launchers(sink: EventSink) -> None:
     """Maintain menu and command launchers without requiring root privileges."""
@@ -194,7 +200,6 @@ def system_runtime_fallback(sink: EventSink) -> Path | None:
     return None
 
 
-
 def _portable_runtime(sink: EventSink) -> Path | None:
     if os.environ.get("VIDEOBATCH_PORTABLE") != "1":
         return None
@@ -208,6 +213,7 @@ def _portable_runtime(sink: EventSink) -> Path | None:
         raise BootstrapFailure("Die eingebettete portable Laufzeit ist beschädigt.")
     sink.log("PORTABLE RUNTIME VERIFIED")
     return Path(sys.executable).resolve()
+
 
 def ensure_runtime(sink: EventSink, *, maximum_attempts: int = 2) -> tuple[Path, bool]:
     portable = _portable_runtime(sink)
@@ -235,13 +241,13 @@ def ensure_runtime(sink: EventSink, *, maximum_attempts: int = 2) -> tuple[Path,
     return python, False
 
 
-
 def _project_pythonpath() -> str:
     existing = os.environ.get("PYTHONPATH", "").strip()
     parts = [str(ROOT / "src")]
     if existing:
         parts.append(existing)
     return os.pathsep.join(parts)
+
 
 def run_startup_probe(python: Path, sink: EventSink) -> dict[str, Any]:
     env = {**os.environ, "PYTHONPATH": _project_pythonpath()}
@@ -269,18 +275,6 @@ def run_startup_probe(python: Path, sink: EventSink) -> dict[str, Any]:
         except (OSError, UnicodeError, json.JSONDecodeError):
             pass
     return {"status": "ready" if completed.returncode == 0 else "warning"}
-
-
-def _read_ready_marker(path: Path) -> dict[str, Any] | None:
-    if not path.is_file() or path.is_symlink():
-        return None
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError):
-        return None
-    if not isinstance(payload, dict) or payload.get("schema_version") != 1:
-        return None
-    return payload
 
 
 def _tail(path: Path, limit: int = 5000) -> str:
@@ -328,7 +322,7 @@ def launch_application(
 
     deadline = time.monotonic() + max(5.0, timeout)
     while time.monotonic() < deadline:
-        payload = _read_ready_marker(marker)
+        payload = read_ready_marker(marker)
         if payload is not None:
             sink.log(f"UI_READY pid={process.pid} safe_mode={safe_mode} payload={payload}")
             try:
