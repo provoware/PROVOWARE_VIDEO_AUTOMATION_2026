@@ -1,7 +1,7 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 633,
+  "file_count": 651,
   "files": [
     {
       "mode": "0o644",
@@ -30,14 +30,14 @@
     {
       "mode": "0o644",
       "path": ".github/workflows/checkpoint2-shell-matrix.yml",
-      "sha256": "35c31f14a37116c80e5b9b9d1bc65858ac7d5ddc6939b80db1185021dca4305c",
-      "size": 16816
+      "sha256": "d1e68741c3a93c57ea8abb3bf887819d82665a9f0eb96cb60a11cee8c6c42c3e",
+      "size": 17259
     },
     {
       "mode": "0o644",
       "path": ".github/workflows/design-manifest-gate.yml",
-      "sha256": "e9bebfcd16669c470954555258d890be1de9072662ce1b1616911cd06b84a88a",
-      "size": 1892
+      "sha256": "3197e9172fee0d922498d483d15ab13210560754dd1b66b8e98cd59401ff3a88",
+      "size": 2828
     },
     {
       "mode": "0o644",
@@ -102,8 +102,26 @@
     {
       "mode": "0o644",
       "path": "ANALYSE_BILDVERGLEICH_2026-08-07.md",
-      "sha256": "470de016b890320a07dff9cfbb38d2b1f69141892f185c40e74d1d539c6321ac",
-      "size": 17563
+      "sha256": "209e2c4766a906998ace4146c9a33279de4914d5de75345245b71aadb81634b5",
+      "size": 17535
+    },
+    {
+      "mode": "0o644",
+      "path": "ARTIFACT_BASELINE_PHASE4.json",
+      "sha256": "146a11bf07f9658d612cc7474c48c080d4a090e77744d16b9bfe181479803982",
+      "size": 1436
+    },
+    {
+      "mode": "0o644",
+      "path": "ARTIFACT_GITHUB_BASELINE_CONTRACT_WELLE25_UI_PHASE1_2026-08-08.json",
+      "sha256": "c595ead55f264506f13776a99bdd632e73e682cd9f5d1eb29e45cdc27eb3e200",
+      "size": 625
+    },
+    {
+      "mode": "0o644",
+      "path": "ARTIFACT_GITHUB_BASELINE_INVENTORY_WELLE25_UI_PHASE1_2026-08-08.json",
+      "sha256": "cd074f59d3ab55beadd322db7e9c47bd5859c79207ce9486381e07953b38afce",
+      "size": 151224
     },
     {
       "mode": "0o644",
@@ -134,6 +152,24 @@
       "path": "CHANGELOG.md",
       "sha256": "dd9dd17ac584cc620d2215d156a29ac7df0e5a5367bf55571a84ce30a303fec0",
       "size": 3106
+    },
+    {
+      "mode": "0o644",
+      "path": "CHANGE_METRIC_WELLE25_UI_PHASE2_2026-08-08.json",
+      "sha256": "a6f1cb464954a19a71e5a9b0e8ae2b9490a761bb20e0f207e6efec581e7ef855",
+      "size": 2424
+    },
+    {
+      "mode": "0o644",
+      "path": "CHANGE_METRIC_WELLE25_UI_PHASE3_2026-08-08.json",
+      "sha256": "3e602ce0e34b264adaa718e2f0b3af557214dbb9988d59ee7259b580ed4e0226",
+      "size": 2502
+    },
+    {
+      "mode": "0o644",
+      "path": "CHANGE_METRIC_WELLE25_UI_PHASE4_2026-08-08.json",
+      "sha256": "1712237818ce9e06631d6e87a496f9fbd6334766b5919660df47a9b8aec8a3bf",
+      "size": 2231
     },
     {
       "mode": "0o644",
@@ -202,7 +238,7 @@
       "size": 4967
     },
     {
-      "mode": "0o600",
+      "mode": "0o644",
       "path": "DEVELOPMENT_STATUS.json",
       "sha256": "876c9ccc69bccc504192dc15bd86d2c15bbb8741a0afb98fefa7b55603ab8101",
       "size": 1273
@@ -347,6 +383,24 @@
     },
     {
       "mode": "0o644",
+      "path": "FINAL_VALIDIERUNG_WELLE25_UI_PHASE2_2026-08-08.txt",
+      "sha256": "77e1bab8ab9f7403f48082ba553232537eb0cdf1d207ae1effc53d16d05bd849",
+      "size": 1018
+    },
+    {
+      "mode": "0o644",
+      "path": "FINAL_VALIDIERUNG_WELLE25_UI_PHASE3_2026-08-08.txt",
+      "sha256": "6de76f50debb4f1164542460cbfe6793167ea2ada767db69c487050b6481632c",
+      "size": 996
+    },
+    {
+      "mode": "0o644",
+      "path": "FINAL_VALIDIERUNG_WELLE25_UI_PHASE4_2026-08-08.txt",
+      "sha256": "466d8e3b13274ee5e5639fb8b30f68f7b4ddce6ffffe0275f5253e56ae95acbb",
+      "size": 1001
+    },
+    {
+      "mode": "0o644",
       "path": "FINAL_VALIDIERUNG_WELLE3_2026-08-07.txt",
       "sha256": "71c089f394d7164202a2323a1eee4741623463ee65a03c44def498d0a37e5d85",
       "size": 1438
@@ -443,6 +497,18 @@
     },
     {
       "mode": "0o644",
+      "path": "ITERATION_BASELINE_WELLE25_UI_PHASE3_2026-08-08.json",
+      "sha256": "c1c56c40496cecf4a62a902fb2b530bbe78594ca623a19d4db344b0e71afdb7e",
+      "size": 483
+    },
+    {
+      "mode": "0o644",
+      "path": "ITERATION_BASELINE_WELLE25_UI_PHASE4_2026-08-08.json",
+      "sha256": "94439e113db7cb672f5ba911a0dfb9bc32cee427d746f25f36c2d5dd60e09424",
+      "size": 402
+    },
+    {
+      "mode": "0o644",
       "path": "KEY_ARCHIVE.md",
       "sha256": "84c2cb7e8df6ed6f92d822d97e6c9cecbbf3e28d5f5938b5f9b785e672bf5de8",
       "size": 572
@@ -490,7 +556,7 @@
       "size": 10608
     },
     {
-      "mode": "0o600",
+      "mode": "0o644",
       "path": "QUALITY_ENVIRONMENT_STATUS.json",
       "sha256": "9ff6f9163ff5350a35fda8445a1c47768ee3fc6933149dcd18ef22a1b9422e5d",
       "size": 2240
@@ -514,7 +580,7 @@
       "size": 8005
     },
     {
-      "mode": "0o600",
+      "mode": "0o644",
       "path": "README.md",
       "sha256": "191038408eaccc2e103bd06aa15ad7e708291dfc3ae4c816a905ffcf9951d828",
       "size": 8298
@@ -556,7 +622,7 @@
       "size": 1419
     },
     {
-      "mode": "0o600",
+      "mode": "0o644",
       "path": "RELEASE_FILE_STATUS.json",
       "sha256": "a7c0dc57696bbb28ad944cbd86cd5c36b1cf42d9c2bff5b50ccac423714544e6",
       "size": 3715
@@ -784,7 +850,7 @@
       "size": 254
     },
     {
-      "mode": "0o600",
+      "mode": "0o644",
       "path": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
       "sha256": "205519ee8f233f8f2f595f66cb3550892d71d7967060b2cf580a21d39850d138",
       "size": 3733
@@ -794,6 +860,24 @@
       "path": "WELLE25_UI_PHASE1_AUDIT_2026-08-08.md",
       "sha256": "5c86e97613fab913ce66887f1cebbe65e5fead7434f29ded60c0438cb6ea8b7c",
       "size": 2712
+    },
+    {
+      "mode": "0o644",
+      "path": "WELLE25_UI_PHASE2_QUELLENUEBERSICHT_AUDIT_2026-08-08.md",
+      "sha256": "db1774d6d8161fcf48321a5be53608164229e6b86fa92d7bc2c088b50ce39768",
+      "size": 1363
+    },
+    {
+      "mode": "0o644",
+      "path": "WELLE25_UI_PHASE3_WORKFLOW_MODULE_AUDIT_2026-08-08.md",
+      "sha256": "71d33301a18d7649cc4a52da136fe0ed37dba85f0136d56da8d992279b468ae4",
+      "size": 1847
+    },
+    {
+      "mode": "0o644",
+      "path": "WELLE25_UI_PHASE4_RENDER_PROFILE_AUDIT_2026-08-08.md",
+      "sha256": "57da1feb4dc59b2333e3de5b9204b359ab6b8dfb13b44cfb8de584820dd5a6ac",
+      "size": 1971
     },
     {
       "mode": "0o644",
@@ -1104,8 +1188,8 @@
     {
       "mode": "0o644",
       "path": "docs/DOCUMENTATION_CLASSIFICATION.json",
-      "sha256": "fb512aeb20175d98d8e47ebd26290b5277e1decc3363a3b6d62f9f8b6b47b1de",
-      "size": 9970
+      "sha256": "59306321fa4a6e08d5593019eeb7e27bf5b7c0b451ed9cb0f6a5e28b3a721061",
+      "size": 10740
     },
     {
       "mode": "0o644",
@@ -1272,8 +1356,8 @@
     {
       "mode": "0o644",
       "path": "docs/design/VIDEOBATCH_DESIGN_IMPLEMENTATION_PLAN.md",
-      "sha256": "bf99b4d591a5b4ac81a75c15814df37ef7feda3ff0f378130e3db66a1c631dfe",
-      "size": 11595
+      "sha256": "8292063ce19e7e798ae132cd9e3f62a1dfa6defdd11c959df67715e3f1428a4d",
+      "size": 11539
     },
     {
       "mode": "0o644",
@@ -1739,6 +1823,12 @@
     },
     {
       "mode": "0o644",
+      "path": "scripts/import_phase4_artifact.sh",
+      "sha256": "31ebb28e097a8b9c905bdf71e3033ad7bb5e062c26d0de65bc00de7b3cc0df3d",
+      "size": 3518
+    },
+    {
+      "mode": "0o644",
       "path": "scripts/internal_quality_gate.py",
       "sha256": "2b24b150815c21fbf4cba814f7ad0325ed524726a4e0d4c552ce7041b4537445",
       "size": 6054
@@ -2094,8 +2184,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/canonical_dashboard_detail_mixin.py",
-      "sha256": "e679e18a93318a560c936a6cf001ce0767aa14f9d4161c5b85d6b1f83b6cae44",
-      "size": 16022
+      "sha256": "d65bd95f07cfa194d08dded7d0d97e6414f7ac64d4b29dd2eabd69b4208ff93a",
+      "size": 16021
     },
     {
       "mode": "0o644",
@@ -2502,8 +2592,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/project_home_dashboard.py",
-      "sha256": "752c28652d4e6e5d3479cacfa26bd125ce239f78139d5631099ccba1aa4bc0bf",
-      "size": 19271
+      "sha256": "a747a40cc0e0033142198bcc164a2abd8f0362ed2fe106b70bb2ff14543054fc",
+      "size": 27473
     },
     {
       "mode": "0o644",
@@ -3377,6 +3467,24 @@
     },
     {
       "mode": "0o644",
+      "path": "tests/test_project_home_render_wave25_phase4.py",
+      "sha256": "c76752f6c90695b20746eb968012e1c976e29917899c04284e4e642108a13d38",
+      "size": 2668
+    },
+    {
+      "mode": "0o644",
+      "path": "tests/test_project_home_sources_wave25_phase2.py",
+      "sha256": "194f320db64a2df3d03ed083b81b08bdcfc436c047e7379b69a9b6c52f27eaf0",
+      "size": 2121
+    },
+    {
+      "mode": "0o644",
+      "path": "tests/test_project_home_workflow_wave25_phase3.py",
+      "sha256": "b946e7a777ea4eb65cc23c365f20684c494e671302b491b2e0f7eff9df7dbacc",
+      "size": 2842
+    },
+    {
+      "mode": "0o644",
       "path": "tests/test_project_integrity_wave7.py",
       "sha256": "b340970f7f007fd62cd941ac62a664846600fc7c27680f4cd01f3f8955f52efb",
       "size": 4484
@@ -3534,8 +3642,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_release_docs.py",
-      "sha256": "b9a3f332bc99c1ca644e4a3e9d8d42188bd5fdb670bea43af5069e36e19b1c61",
-      "size": 1995
+      "sha256": "07c46f7d6913b1ae3811c7711d0fecafdea5ce790cae2c4e988f6edbbcc78ce3",
+      "size": 1994
     },
     {
       "mode": "0o644",
