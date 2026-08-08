@@ -44,6 +44,9 @@ def test_media_kpi_distinguishes_empty_warning_error_loading_and_success() -> No
 
 
 def test_queue_kpi_distinguishes_ready_running_failure_and_completion() -> None:
+    empty = _snapshots()["queue"]
+    assert empty.action_label == "Zuordnung öffnen"
+    assert empty.recovery_action == "open_queue"
     assert _snapshots(job_count=2)["queue"].state == "ready"
     assert _snapshots(job_count=2, active_tasks=("batch-render",))["queue"].state == "loading"
     failed = _snapshots(
