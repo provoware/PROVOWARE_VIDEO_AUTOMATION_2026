@@ -47,9 +47,15 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
 
-      - name: Install exact test runner
+      - name: Install exact test runner and Tk runtime
         run: |
           set -Eeuo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends python3-tk
+          python3 - <<'PY'
+          import tkinter
+          print(f"tkinter {tkinter.TkVersion} available")
+          PY
           python3 -m pip install pytest==9.0.2
           test "$(python3 -m pytest --version)" = "pytest 9.0.2"
 
