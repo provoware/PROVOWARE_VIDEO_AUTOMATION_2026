@@ -91,6 +91,8 @@ def test_canonical_shell_owns_start_check_without_new_mro_layer() -> None:
     assert "workspace.grid(row=4" in workspace
     assert "build_startup_readiness" in workspace
     assert "build_startup_readiness" not in dashboard
+    assert "_start_action_callbacks" not in workspace
+    assert "self._focus_preparation_assistant()" in workspace
 
 
 def test_runtime_residue_is_ignored_without_overblocking_debugging() -> None:
