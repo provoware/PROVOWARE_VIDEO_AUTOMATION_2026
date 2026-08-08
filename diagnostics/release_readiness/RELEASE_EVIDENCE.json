@@ -1,254 +1,8 @@
 {
-  "schema_version": 1,
-  "product": {
-    "name": "VideoBatch Fast",
-    "version": "2.8.3-rc24",
-    "channel": "rc",
-    "iteration": 24,
-    "build_date": "2026-08-05"
-  },
-  "provenance": {
-    "canonical_source": "diagnostics/release_readiness/RELEASE_EVIDENCE.json",
-    "verified_source_commit": "ef003d2c01fa94b899d0ebac9947f1795dd23e8f",
-    "repository_finalization_commit": "76689511d2c35bb2ef626e96cb513c3d3672b20c",
-    "manifest_regeneration_run_id": 30965984513,
-    "matrix_workflow_run_id": 30966067548,
-    "evidence_regression_base_head": "f05bafb53938b7a2e99095d525830c737c0f89de",
-    "evidence_regression_method": "four deterministic pytest partitions; 325/325 passed"
-  },
-  "manifest": {
-    "path": "RELEASE_MANIFEST.json",
-    "file_count": 398,
-    "status": "passed"
-  },
-  "tests": {
-    "passed": 325,
-    "failed": 0,
-    "skipped": 0,
-    "line_coverage_percent": 82.43,
-    "branch_coverage_percent": 67.21,
-    "combined_coverage_percent": 79.46,
-    "assurance_scenarios": "12/12",
-    "fault_lab": "12/12",
-    "visual_scenarios": "18/18",
-    "targeted_rc24": "27/27 finalization and preview regressions",
-    "selected_media_click_stress": "120 rapid selection changes, passed",
-    "full_regression": "325/325",
-    "full_regression_groups": [
-      98,
-      89,
-      83,
-      55
-    ],
-    "test_environment": "Xvfb X11 on exact exported PR tree"
-  },
-  "matrix": {
-    "status": "passed",
-    "passed_targets": 4,
-    "total_targets": 4,
-    "workflow_run_id": 30966067548,
-    "verified_commit": "ef003d2c01fa94b899d0ebac9947f1795dd23e8f",
-    "targets": [
-      {
-        "os": "ubuntu-22.04",
-        "session": "x11",
-        "status": "passed"
-      },
-      {
-        "os": "ubuntu-22.04",
-        "session": "wayland",
-        "status": "passed"
-      },
-      {
-        "os": "ubuntu-24.04",
-        "session": "x11",
-        "status": "passed"
-      },
-      {
-        "os": "ubuntu-24.04",
-        "session": "wayland",
-        "status": "passed"
-      }
-    ],
-    "scope_note": "Headless deterministic CI matrix; not a substitute for physical KDE acceptance."
-  },
-  "runtime_start": {
-    "status": "passed",
-    "architecture": "content-addressed user environment",
-    "quality_tools_block_start": false,
-    "interactive_questions": false,
-    "ffmpeg_aac_detection": "real smoke test",
-    "ui_ready_handshake": true,
-    "safe_mode_retry": true,
-    "system_python_fallback": "verified imports only",
-    "existing_instance_focus": true
-  },
-  "internal_quality": {
-    "architecture_findings": 0,
-    "internal_files_checked": 203,
-    "internal_findings": 0,
-    "internal_function_count": 1602,
-    "largest_python_file_lines": 683,
-    "maximum_complexity": 29
-  },
-  "release_cleanup": {
-    "historical_reports_archived": 56,
-    "obsolete_visual_baselines_removed": 16,
-    "ready_deliverables": 10,
-    "unfinished_gate_files": 8,
-    "release_archive_excluded": true,
-    "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe"
-  },
-  "release_files": {
-    "ready_suffix": "_save_",
-    "policy": "Only standalone user and release deliverables receive _save_. Source modules, CI workflows, canonical manifests, entrypoints and README retain stable technical names.",
-    "ready": [
-      {
-        "path": "START_HIER_save_.md",
-        "label": "Schnellstart",
-        "evidence": "Geprüfter Nutzerstart und sichere erste Schritte"
-      },
-      {
-        "path": "AUTOINSTALLATION_save_.md",
-        "label": "Installationsanleitung",
-        "evidence": "Benutzerpfade, A/B-Slots und Berechtigungsschutz dokumentiert"
-      },
-      {
-        "path": "PROJEKTORDNERSTRUKTUR_save_.md",
-        "label": "Projektübersicht",
-        "evidence": "Ordner, Start, Sicherheit und Funktionen beschrieben"
-      },
-      {
-        "path": "RELEASE_NOTES_save_.md",
-        "label": "Releasehinweise",
-        "evidence": "Aktueller RC24-Funktionsstand dokumentiert"
-      },
-      {
-        "path": "TEST_REPORT_save_.md",
-        "label": "Testbericht",
-        "evidence": "Automatisierte und offene Prüfungen getrennt ausgewiesen"
-      },
-      {
-        "path": "FRESH_PACKAGE_REPORT_save_.md",
-        "label": "Paketbericht",
-        "evidence": "Saubere Paketprüfung für RC24 dokumentiert"
-      },
-      {
-        "path": "CODE_QUALITY_REPORT_2.8.3-rc24_save_.md",
-        "label": "Codequalitätsbericht",
-        "evidence": "Interne Qualitätsprüfung ohne Befund"
-      },
-      {
-        "path": "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md",
-        "label": "Implementierungsbericht",
-        "evidence": "Umgesetzte Funktions- und Sicherheitsverträge dokumentiert"
-      },
-      {
-        "path": "FINAL_AUDIT_2.8.3-rc24_save_.md",
-        "label": "RC-Abschlussaudit",
-        "evidence": "RC-Gates und offene Stable-Gates ehrlich getrennt"
-      },
-      {
-        "path": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
-        "label": "Maschinenlesbarer Buildbericht",
-        "evidence": "Aus der kanonischen RELEASE_EVIDENCE.json erzeugt"
-      }
-    ],
-    "unfinished": [
-      {
-        "path": "TODO.md",
-        "label": "Offene Arbeitsliste",
-        "reason": "Enthält bewusst die verbleibenden Stable-Gates"
-      },
-      {
-        "path": "QUALITY_GATE_ATTEMPT_2.8.3-rc24.md",
-        "label": "Externe Qualitätswerkzeuge",
-        "reason": "Ruff, MyPy, Bandit und pip-audit sind noch nicht abschließend ausgeführt"
-      },
-      {
-        "path": "STABLE_GATE_ITERATION_2.8.3-rc24_2026-08-04.md",
-        "label": "Stable-Freigabeiteration",
-        "reason": "Stable-Freigabe ist ausdrücklich noch blockiert"
-      },
-      {
-        "path": "docs/LONG_RENDER_2.8.3-rc24.md",
-        "label": "Langzeitrender",
-        "reason": "Realer Langzeitrender mit großer Auswahl und langsamem Ziel fehlt"
-      },
-      {
-        "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
-        "label": "Stable-Abnahmenachweis",
-        "reason": "Physische Desktop- und Langzeitnachweise fehlen"
-      },
-      {
-        "path": "VISUAL_DESKTOP_APPROVAL.md",
-        "label": "Desktop-Sichtprüfung",
-        "reason": "Physische KDE-X11-/Wayland-Abnahme bleibt offen"
-      },
-      {
-        "path": "QUALITY_ENVIRONMENT_STATUS.json",
-        "label": "Qualitätsumgebung",
-        "reason": "Exakte Offline-Werkzeugumgebung ist nicht vollständig freigegeben"
-      },
-      {
-        "path": "VISUAL_INSPECTION_MANIFEST.json",
-        "label": "Visuelles Prüfmanifest",
-        "reason": "Aktueller physischer Lauf ist nicht vollständig bestätigt"
-      }
-    ]
-  },
-  "stable_gates": [
-    {
-      "id": "ruff_0_16_1",
-      "label": "Ruff 0.16.1",
-      "status": "open",
-      "reason": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen"
-    },
-    {
-      "id": "mypy_2_3_0",
-      "label": "MyPy 2.3.0",
-      "status": "open",
-      "reason": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen"
-    },
-    {
-      "id": "bandit_1_9_4",
-      "label": "Bandit 1.9.4",
-      "status": "open",
-      "reason": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen"
-    },
-    {
-      "id": "pip_audit_2_10_1",
-      "label": "pip-audit 2.10.1",
-      "status": "open",
-      "reason": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen"
-    },
-    {
-      "id": "physical_kde_x11_wayland",
-      "label": "Physische KDE-X11-/Wayland-Abnahme",
-      "status": "open",
-      "reason": "Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless"
-    },
-    {
-      "id": "large_media_soak",
-      "label": "Langzeitrender mit großer Medienauswahl",
-      "status": "open",
-      "reason": "Realer Lauf auf langsamem externem Ziel fehlt"
-    }
-  ],
-  "stable_ready": false,
-  "progress": {
-    "percent": 80,
-    "completed": 24,
-    "open": 6,
-    "total": 30,
-    "current_todo": "Kanonische Release-Nachweise synchronisiert; externe Stable-Gates bleiben offen"
-  },
   "approved_quality_report": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
   "artifact_policy": "full-project-zip-before-stable",
-  "deterministic_build": "passed; two independent builds byte-identical",
   "critical_fix": {
     "area": "already-selected project media list",
-    "root_cause": "unbounded per-click preview threads and FFmpeg processes plus unvalidated direct Tk image decoding",
     "resolution": [
       "single serial preview controller",
       "180 ms debounce",
@@ -257,6 +11,275 @@
       "main-thread-only Tk updates",
       "explicit PNG output for FFmpeg 7+ atomic partial files",
       "invalid cache targets removed before regeneration"
+    ],
+    "root_cause": "unbounded per-click preview threads and FFmpeg processes plus unvalidated direct Tk image decoding"
+  },
+  "deterministic_build": "passed; two independent builds byte-identical",
+  "internal_quality": {
+    "architecture_findings": 0,
+    "internal_files_checked": 338,
+    "internal_findings": 0,
+    "internal_function_count": 2987,
+    "largest_python_file_lines": 700,
+    "maximum_complexity": 30
+  },
+  "manifest": {
+    "file_count": 633,
+    "path": "RELEASE_MANIFEST.json",
+    "status": "passed"
+  },
+  "matrix": {
+    "passed_targets": 2,
+    "scope_note": "Headless deterministic X11 CI matrix for the supported target; not a substitute for physical KDE-X11 acceptance.",
+    "status": "passed",
+    "targets": [
+      {
+        "os": "ubuntu-22.04",
+        "session": "x11",
+        "status": "passed"
+      },
+      {
+        "os": "ubuntu-24.04",
+        "session": "x11",
+        "status": "passed"
+      }
+    ],
+    "total_targets": 2,
+    "verified_commit": "ef003d2c01fa94b899d0ebac9947f1795dd23e8f",
+    "workflow_run_id": 30966067548
+  },
+  "product": {
+    "build_date": "2026-08-05",
+    "channel": "rc",
+    "iteration": 25,
+    "name": "VideoBatch Fast",
+    "version": "2.8.3-rc24"
+  },
+  "progress": {
+    "completed": 28,
+    "current_todo": "Welle 25 UI Phase 1 intern geschlossen; Quellenübersicht ist der nächste iterative UI-Ausbau; sechs externe Stable-Gates bleiben bewusst offen",
+    "open": 6,
+    "percent": 82,
+    "total": 34
+  },
+  "provenance": {
+    "canonical_source": "diagnostics/release_readiness/RELEASE_EVIDENCE.json",
+    "evidence_regression_base_head": "f05bafb53938b7a2e99095d525830c737c0f89de",
+    "evidence_regression_method": "eight deterministic pytest/coverage partitions on Welle-25 UI Phase-1 source; 693/693 passed; fresh application coverage 81.35/65.33",
+    "manifest_regeneration_run_id": 30965984513,
+    "matrix_workflow_run_id": 30966067548,
+    "repository_finalization_commit": "76689511d2c35bb2ef626e96cb513c3d3672b20c",
+    "verified_source_commit": "ef003d2c01fa94b899d0ebac9947f1795dd23e8f",
+    "wave18_operator_contract": "STABLE_OPERATOR_CONTRACT.json schema 1; external stable execution remains open",
+    "wave18_source_file_count": 400,
+    "wave18_source_sha256": "3637995edafc20fc5e08f1cbc7957d830ef0e94f597038bb3c053a270e8d8572",
+    "wave19_scheduler_contract": "SCHEDULER_MATRIX_WELLE19_2026-08-08.json schema 1",
+    "wave19_source_file_count": 404,
+    "wave19_source_sha256": "136f1e76cb6bb2c6ef373d649438fb329b3eeac90a9c48f2ad5e92779120cd46",
+    "wave20_scheduler_contract": "SCHEDULER_MATRIX_WELLE20_2026-08-08.json schema 1",
+    "wave20_source_file_count": 409,
+    "wave20_source_sha256": "35fc34ace1e3648a19a7dd8df1d6d2f145907f0ded36f1d11f37d7040214fd2e",
+    "wave21_scheduler_contract": "SCHEDULER_GOVERNANCE_MATRIX_WELLE21_2026-08-08.json schema 1",
+    "wave21_source_file_count": 418,
+    "wave21_source_sha256": "6b7b3bd5077d7937101df9445c3eaaf421cee160cabaf7f1947aaf98628b2f58",
+    "wave22_scheduler_contract": "SCHEDULER_FORECAST_MATRIX_WELLE22_2026-08-08.json schema 1",
+    "wave22_source_file_count": 423,
+    "wave22_source_sha256": "c227ccfbcd27d51ce82f02e8f905c9fe4ce08e739ea50a232e50353613822d29",
+    "wave23_scheduler_contract": "SCHEDULER_FORECAST_CALIBRATION_MATRIX_WELLE23_2026-08-08.json schema 1",
+    "wave23_source_file_count": 425,
+    "wave23_source_sha256": "85a34afa030236908f086ca92f71fbaf08d803b652a23be46ac637a011354e0d",
+    "wave24_scheduler_contract": "SCHEDULER_ENVIRONMENT_BASELINE_MATRIX_WELLE24_2026-08-08.json schema 1",
+    "wave24_source_file_count": 427,
+    "wave24_source_sha256": "db5e49eb45b1861597912e1f0e45d0bc2230705cf6718257ba7155fdd8e25843",
+    "wave25_source_file_count": 429,
+    "wave25_source_sha256": "8d6db61a1dcd75e133db4628cc69e99c59f3e2ebad0202d77aa964f8c32a4b1e",
+    "wave25_ui_contract": "WELLE25_UI_PHASE1_AUDIT_2026-08-08.md; exact first-step project-home layout with intentionally empty expansion cards"
+  },
+  "release_cleanup": {
+    "historical_reports_archived": 56,
+    "obsolete_visual_baselines_removed": 16,
+    "ready_deliverables": 11,
+    "release_archive_excluded": true,
+    "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe",
+    "unfinished_gate_files": 8
+  },
+  "release_files": {
+    "policy": "Only standalone user and release deliverables receive _save_. Source modules, CI workflows, canonical manifests, entrypoints and README retain stable technical names.",
+    "ready": [
+      {
+        "evidence": "Geprüfter Nutzerstart und sichere erste Schritte",
+        "label": "Schnellstart",
+        "path": "START_HIER_save_.md"
+      },
+      {
+        "evidence": "Benutzerpfade, A/B-Slots und Berechtigungsschutz dokumentiert",
+        "label": "Installationsanleitung",
+        "path": "AUTOINSTALLATION_save_.md"
+      },
+      {
+        "evidence": "Ordner, Start, Sicherheit und Funktionen beschrieben",
+        "label": "Projektübersicht",
+        "path": "PROJEKTORDNERSTRUKTUR_save_.md"
+      },
+      {
+        "evidence": "Aktueller RC24-Funktionsstand dokumentiert",
+        "label": "Releasehinweise",
+        "path": "RELEASE_NOTES_save_.md"
+      },
+      {
+        "evidence": "Automatisierte und offene Prüfungen getrennt ausgewiesen",
+        "label": "Testbericht",
+        "path": "TEST_REPORT_save_.md"
+      },
+      {
+        "evidence": "Saubere Paketprüfung für RC24 dokumentiert",
+        "label": "Paketbericht",
+        "path": "FRESH_PACKAGE_REPORT_save_.md"
+      },
+      {
+        "evidence": "Interne Qualitätsprüfung ohne Befund",
+        "label": "Codequalitätsbericht",
+        "path": "CODE_QUALITY_REPORT_2.8.3-rc24_save_.md"
+      },
+      {
+        "evidence": "Offline-Qualitätsstatus und Grenzen dokumentiert",
+        "label": "Exakter Offline-Qualitätsbericht",
+        "path": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md"
+      },
+      {
+        "evidence": "Umgesetzte Funktions- und Sicherheitsverträge dokumentiert",
+        "label": "Implementierungsbericht",
+        "path": "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md"
+      },
+      {
+        "evidence": "RC-Gates und offene Stable-Gates ehrlich getrennt",
+        "label": "RC-Abschlussaudit",
+        "path": "FINAL_AUDIT_2.8.3-rc24_save_.md"
+      },
+      {
+        "evidence": "Aus der kanonischen RELEASE_EVIDENCE.json erzeugt",
+        "label": "Maschinenlesbarer Buildbericht",
+        "path": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json"
+      }
+    ],
+    "ready_suffix": "_save_",
+    "unfinished": [
+      {
+        "label": "Offene Arbeitsliste",
+        "path": "TODO.md",
+        "reason": "Enthält bewusst die verbleibenden Stable-Gates"
+      },
+      {
+        "label": "Externe Qualitätswerkzeuge",
+        "path": "QUALITY_GATE_ATTEMPT_2.8.3-rc24.md",
+        "reason": "Ruff, MyPy, Bandit und pip-audit sind noch nicht abschließend ausgeführt"
+      },
+      {
+        "label": "Stable-Freigabeiteration",
+        "path": "STABLE_GATE_ITERATION_2.8.3-rc24_2026-08-04.md",
+        "reason": "Stable-Freigabe ist ausdrücklich noch blockiert"
+      },
+      {
+        "label": "Langzeitrender",
+        "path": "docs/LONG_RENDER_2.8.3-rc24.md",
+        "reason": "Realer Langzeitrender mit großer Auswahl und langsamem Ziel fehlt"
+      },
+      {
+        "label": "Stable-Abnahmenachweis",
+        "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
+        "reason": "Physische KDE-X11- und Langzeitnachweise fehlen"
+      },
+      {
+        "label": "Desktop-Sichtprüfung",
+        "path": "VISUAL_DESKTOP_APPROVAL.md",
+        "reason": "Physische KDE-X11-Abnahme bleibt offen"
+      },
+      {
+        "label": "Qualitätsumgebung",
+        "path": "QUALITY_ENVIRONMENT_STATUS.json",
+        "reason": "Exakte Offline-Werkzeugumgebung ist nicht vollständig freigegeben"
+      },
+      {
+        "label": "Visuelles Prüfmanifest",
+        "path": "VISUAL_INSPECTION_MANIFEST.json",
+        "reason": "Aktueller physischer Lauf ist nicht vollständig bestätigt"
+      }
     ]
+  },
+  "runtime_start": {
+    "architecture": "content-addressed user environment",
+    "existing_instance_focus": true,
+    "ffmpeg_aac_detection": "real smoke test",
+    "interactive_questions": false,
+    "quality_tools_block_start": false,
+    "safe_mode_retry": true,
+    "status": "passed",
+    "system_python_fallback": "verified imports only",
+    "ui_ready_handshake": true
+  },
+  "schema_version": 1,
+  "stable_gates": [
+    {
+      "id": "ruff_0_16_1",
+      "label": "Ruff 0.16.1",
+      "reason": "Operator-Kit bereit; realer exakt gepinnter Lauf aus eingefrorenem Wheelhouse noch auszuführen",
+      "status": "open"
+    },
+    {
+      "id": "mypy_2_3_0",
+      "label": "MyPy 2.3.0",
+      "reason": "Operator-Kit bereit; realer exakt gepinnter Lauf aus eingefrorenem Wheelhouse noch auszuführen",
+      "status": "open"
+    },
+    {
+      "id": "bandit_1_9_4",
+      "label": "Bandit 1.9.4",
+      "reason": "Operator-Kit bereit; realer exakt gepinnter Lauf aus eingefrorenem Wheelhouse noch auszuführen",
+      "status": "open"
+    },
+    {
+      "id": "pip_audit_2_10_1",
+      "label": "pip-audit 2.10.1",
+      "reason": "Operator-Kit mit gehashtem Advisory-Cache vorbereitet; realer finaler Offline-Gate-Lauf noch auszuführen",
+      "status": "open"
+    },
+    {
+      "id": "physical_kde_x11",
+      "label": "Physische KDE-X11-Abnahme",
+      "reason": "Operator-Harness bereit; reale KDE-X11-Sitzungsabnahme fehlt weiterhin",
+      "status": "open"
+    },
+    {
+      "id": "large_media_soak",
+      "label": "Langzeitrender mit großer Medienauswahl",
+      "reason": "Operator-Harness bereit; realer 96-Job-Lauf auf langsamem externem USB-ext4-Ziel fehlt weiterhin",
+      "status": "open"
+    }
+  ],
+  "stable_ready": false,
+  "tests": {
+    "assurance_scenarios": "12/12",
+    "branch_coverage_percent": 65.33,
+    "combined_coverage_percent": 77.98,
+    "failed": 0,
+    "fault_lab": "12/12",
+    "full_regression": "693/693",
+    "full_regression_groups": [
+      102,
+      101,
+      90,
+      83,
+      78,
+      83,
+      82,
+      74
+    ],
+    "line_coverage_percent": 81.35,
+    "passed": 693,
+    "selected_media_click_stress": "120 rapid selection changes, passed",
+    "skipped": 0,
+    "targeted_rc24": "Welle-25 UI Phase 1 Project Home Dashboard contract passed",
+    "test_environment": "Xvfb X11; eight deterministic pytest + coverage batches on final Welle-25 UI Phase-1 source",
+    "visual_scenarios": "22/22"
   }
 }

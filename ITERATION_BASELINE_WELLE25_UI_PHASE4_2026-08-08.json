@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "iteration": "Welle 25 UI Phase 4",
+  "baseline_artifact": "PROVOWARE_VIDEO_AUTOMATION_2026_WELLE25_UI_PHASE3_FINAL_GEFIXT(1).zip",
+  "baseline_sha256": "64b60025cac0941585bb1a251bf8fd33096f6a9868caa5c00abf4d51cd7455c8",
+  "scope": "Render-Profile dashboard card only",
+  "stable_ready": false,
+  "note": "External and physical Stable evidence remains unchanged and open."
+}

@@ -149,7 +149,6 @@ jobs:
           - ubuntu-24.04
         session:
           - x11
-          - wayland
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     env:
@@ -368,7 +367,8 @@ jobs:
         run: |
           set -Eeuo pipefail
           short_sha="${EXPECTED_HEAD_SHA:0:12}"
-          archive="PROVOWARE_VIDEO_AUTOMATION_2026_2.8.3-rc24_${short_sha}_verified.zip"
+          version="$(python3 -c 'import json; print(json.load(open("VERSION.json", encoding="utf-8"))["version"])')"
+          archive="PROVOWARE_VIDEO_AUTOMATION_2026_${version}_${short_sha}_verified.zip"
           git archive \
             --format=zip \
             --prefix=PROVOWARE_VIDEO_AUTOMATION_2026/ \

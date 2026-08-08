@@ -1,0 +1,85 @@
+{
+  "wave": 16,
+  "date": "2026-08-07",
+  "theme": "Trust Enforcement & Release Contract Repair",
+  "scenarios": [
+    {
+      "id": "TENF-001",
+      "scenario": "newer unsigned generation inserted",
+      "expected": "automatic selector ignores untrusted generation",
+      "result": "pass"
+    },
+    {
+      "id": "TENF-002",
+      "scenario": "direct safe restore of unsigned generation",
+      "expected": "fail closed before user-data write",
+      "result": "pass"
+    },
+    {
+      "id": "TENF-003",
+      "scenario": "signed child after untrusted parent",
+      "expected": "trust does not resume; authenticated-unlinked",
+      "result": "pass"
+    },
+    {
+      "id": "TENF-004",
+      "scenario": "legacy checkpoint restore",
+      "expected": "blocked until explicit verified migration",
+      "result": "pass"
+    },
+    {
+      "id": "TENF-005",
+      "scenario": "pending restore journal tampering",
+      "expected": "HMAC reject before roll-forward",
+      "result": "pass"
+    },
+    {
+      "id": "TENF-006",
+      "scenario": "restore journal generation fingerprint replacement",
+      "expected": "authorization binding reject",
+      "result": "pass"
+    },
+    {
+      "id": "TENF-007",
+      "scenario": "migration over invalid authenticated manifest",
+      "expected": "preflight rejects; no re-signing",
+      "result": "pass"
+    },
+    {
+      "id": "TENF-008",
+      "scenario": "forensic audit chain tampering",
+      "expected": "safe restore blocked",
+      "result": "pass"
+    },
+    {
+      "id": "TOOL-001",
+      "scenario": "Ruff active pin publication/reproducibility verification",
+      "expected": "direct PyPI/upstream verification confirms 0.16.1 is published; no downgrade; same-day 0.16.2 not adopted without validation",
+      "result": "pass"
+    },
+    {
+      "id": "TOOL-002",
+      "scenario": "cryptography active pin publication/reproducibility verification",
+      "expected": "direct PyPI verification confirms 50.0.0 is published; no downgrade",
+      "result": "pass"
+    },
+    {
+      "id": "OPS-001",
+      "scenario": "documented shell/desktop entrypoint lacks execute permission",
+      "expected": "all shell entrypoints executable and desktop target directly launchable",
+      "result": "pass"
+    },
+    {
+      "id": "COV-001",
+      "scenario": "canonical UI refactor leaks presentation files into core coverage scope",
+      "expected": "explicit presentation-only exclusions restore original policy semantics",
+      "result": "pass"
+    },
+    {
+      "id": "COV-002",
+      "scenario": "coverage exclusion accidentally hides canonical business logic",
+      "expected": "canonical KPI/state/contract modules remain measured",
+      "result": "pass"
+    }
+  ]
+}

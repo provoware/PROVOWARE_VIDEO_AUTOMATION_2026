@@ -8,8 +8,13 @@ import time
 from pathlib import Path
 from tkinter import END, BooleanVar, DoubleVar, IntVar, StringVar, Tk, Toplevel, filedialog, messagebox, ttk
 
-from .config import DEFAULT_CONFIG, load_config
+from .config import DEFAULT_CONFIG, config_file, load_config
+from .checkpoint_store import (
+    collect_recovery_sources, create_system_checkpoint, default_checkpoint_root,
+    garbage_collect_checkpoints, recover_pending_checkpoint_restore,
+)
 from .effects import speed_summary
+from .checkpoint_forensics import isolate_corrupt_generations
 from .error_handling import error_definition
 from .event_buffer import EventBuffer
 from .event_logging import EventLogger
@@ -19,6 +24,9 @@ from .models import BatchOptions, PairJob, ProgressSnapshot
 from .paths import default_output_dir, ensure_app_dirs
 from .playlist import AudioPlayer, Playlist
 from .project_state import default_project_file, load_project_state, normalize_project_state, projects_dir
+from .project_backup import project_backup_directory
+from .recovery_policy import run_autonomous_recovery
+from .recovery_consistency import default_jobs_root
 from .probe import AUDIO_EXTENSIONS, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, probe_media
 from .quick_modes import mode_spec, quick_mode_summary
 from .slideshow import (
@@ -58,6 +66,12 @@ class VideoBatchFastUI(UiResolutionMixin, UiAccessMediaMixin, UiSelectionPreview
     def __init__(self, root: Tk) -> None:
         ensure_app_dirs()
         self.root = root
+        # Finish a previously interrupted point-in-time restore before any state is loaded.
+        try:
+            recover_pending_checkpoint_restore(default_checkpoint_root())
+        except Exception:
+            # Startup recovery remains conservative; W12 diagnostics will surface state issues.
+            pass
         self.safe_mode = os.environ.get("VIDEOBATCH_SAFE_MODE", "0") == "1"
         if self.safe_mode:
             self.config = dict(DEFAULT_CONFIG)
@@ -72,6 +86,7 @@ class VideoBatchFastUI(UiResolutionMixin, UiAccessMediaMixin, UiSelectionPreview
         self.project_name_value = str(self.project_state.get("project_name", "Neues Projekt") or "Neues Projekt")
         self.calendar_marks = dict(self.project_state.get("calendar_marks", {}))
         self.calendar_notes = dict(self.project_state.get("calendar_notes", {}))
+        self.media_tags = {key: list(value) for key, value in self.project_state.get("media_tags", {}).items()}
         self.calendar_year = int(self.project_state.get("calendar_year", datetime.now().year))
         self.calendar_month = int(self.project_state.get("calendar_month", datetime.now().month))
         self.project_dirty = False
@@ -87,6 +102,31 @@ class VideoBatchFastUI(UiResolutionMixin, UiAccessMediaMixin, UiSelectionPreview
         self.tree_path_map: dict[str, Path] = {}
         self.runner = BatchRunner(self.events.put)
         self.logger = EventLogger()
+        try:
+            self.recovery_report = run_autonomous_recovery(
+                project_backup_directory(), jobs_root=default_jobs_root(), config_path=config_file(),
+                project_path=self.project_file, backup_dir=project_backup_directory(), execute=True
+            )
+            self.transaction_health = self.recovery_report.transaction_health
+            if not self.safe_mode:
+                sources = collect_recovery_sources(
+                    project_path=self.project_file, config_path=config_file(), jobs_root=default_jobs_root(),
+                    backup_dir=project_backup_directory(),
+                )
+                if sources:
+                    isolate_corrupt_generations(default_checkpoint_root())
+                    create_system_checkpoint(default_checkpoint_root(), sources)
+                    garbage_collect_checkpoints(default_checkpoint_root())
+        except Exception as exc:
+            self.recovery_report = None
+            self.transaction_health = None
+            self.logger.write(
+                "TRANSACTION_STARTUP_CHECK_FAILED",
+                "Transaktionsprüfung fehlgeschlagen",
+                str(exc),
+                level="warning",
+                solution="Backup-/Recovery-Status im Diagnosebereich prüfen.",
+            )
         self.playlist = Playlist(repeat=str(self.config.get("playlist_repeat", "off")), shuffle=bool(self.config.get("playlist_shuffle", False)))
         self.audio_player = AudioPlayer()
         self.started_at = 0.0
@@ -124,6 +164,14 @@ class VideoBatchFastUI(UiResolutionMixin, UiAccessMediaMixin, UiSelectionPreview
         self._focus_request_token = focus_request_token()
         self.root.after(500, self._poll_focus_requests)
         self.logger.write("APP_READY", "Oberfläche aufgebaut", "provoware - videoautomation - 2026 ist bereit.", level="success", solution="Dateien hinzufügen oder ein bestehendes Projekt fortsetzen.")
+        if self.transaction_health is not None and not self.transaction_health.healthy:
+            self._event(
+                "TRANSACTION_RECOVERY_DEGRADED",
+                "Recovery-Status eingeschränkt",
+                "; ".join(self.transaction_health.issues) or "Transaktionsmetadaten benötigen Prüfung.",
+                level="warning",
+                solution="Diagnosebereich und Transaktions-Audit prüfen; quarantänisierte Daten nicht manuell zurückkopieren.",
+            )
         if project_healed:
             self._event("PROJECT_HEALED", "Projektdatei repariert", "Die letzte Projektdatei war beschädigt und wurde sicher durch eine Standarddatei ersetzt.", level="warning", solution="Projektinhalte kurz prüfen und weiterarbeiten.")
         self._initialize_recovery()
@@ -601,13 +649,13 @@ class VideoBatchFastUI(UiResolutionMixin, UiAccessMediaMixin, UiSelectionPreview
         except RuntimeError as exc:
             self.start_button.configure(state="normal")
             self.cancel_button.configure(state="disabled")
-            self.status_text.set("Start blockiert · Ausgabeziel nicht reservierbar")
+            busy = "anderer VideoBatch-Renderlauf" in str(exc)
+            self.status_text.set("Start blockiert · anderer Renderlauf aktiv" if busy else "Start blockiert · Ausgabeziel nicht reservierbar")
             self._event(
-                "OUTPUT_RESERVATION_FAILED",
-                "Ausgabeziel konnte nicht reserviert werden",
-                str(exc),
-                level="error",
-                solution="Ausgabeordner prüfen oder den Auftrag erneut starten.",
+                "RENDER_BUSY" if busy else "OUTPUT_RESERVATION_FAILED",
+                "Anderer Renderlauf aktiv" if busy else "Ausgabeziel konnte nicht reserviert werden",
+                str(exc), level="warning" if busy else "error",
+                solution="Laufenden Renderlauf beenden oder dessen Abschluss abwarten." if busy else "Ausgabeordner prüfen oder den Auftrag erneut starten.",
             )
             return
         self._event("BATCH_STARTED", "Videoerstellung gestartet", f"{len(self.jobs)} Auftrag/Aufträge werden verarbeitet.", solution="Fortschritt beobachten; nur bei Bedarf sicher abbrechen.")

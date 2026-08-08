@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from videobatch_fast.probe import AUDIO_EXTENSIONS, IMAGE_EXTENSIONS
+from videobatch_fast.versioning import build_label
 
 
 def _files(directory: Path, extensions: set[str]) -> list[Path]:
@@ -16,7 +17,7 @@ def _files(directory: Path, extensions: set[str]) -> list[Path]:
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Fest gebundenen RC24-Langzeitrender-Vertrag erzeugen.")
+    parser = argparse.ArgumentParser(description="Fest gebundenen Langzeitrender-Vertrag für den aktuellen Releasekandidaten erzeugen.")
     parser.add_argument("--audio-dir", required=True, type=Path)
     parser.add_argument("--image-dir", required=True, type=Path)
     parser.add_argument("--target-dir", required=True, type=Path)
@@ -58,7 +59,7 @@ def main() -> int:
     ]
     payload = {
         "schema_version": 1,
-        "candidate": "2.8.3-rc24",
+        "candidate": build_label(),
         "package": str(args.package.expanduser().resolve()) if args.package else "",
         "target_dir": str(args.target_dir.expanduser().resolve()),
         "limits": {

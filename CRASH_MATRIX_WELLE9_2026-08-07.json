@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "wave": 9,
+  "date": "2026-08-07",
+  "purpose": "Reproduzierbare Fault-Injection- und Self-Recovery-Matrix ohne destruktive Host-Operationen.",
+  "result": {"passed": 21, "failed": 0, "total": 21},
+  "invariants": [
+    "Ein fehlgeschlagener atomarer Schreibvorgang darf den letzten gueltigen Zielzustand nicht zerstoeren.",
+    "Temp-Artefakte eines nachweislich toten Schreibprozesses duerfen beim Wiederanlauf bereinigt werden; Artefakte lebender Prozesse bleiben unangetastet.",
+    "Prozessuebergreifende Backup-Mutationen werden mit begrenzter Wartezeit serialisiert.",
+    "Kernel-Sperren duerfen nach Prozess-Tod keinen dauerhaften Deadlock verursachen.",
+    "Backuphistorie ist aus verifizierten Archiven rekonstruierbar.",
+    "Unbekannte oder ungueltige Backup-Dateien werden weder wiederhergestellt noch automatisch rotiert.",
+    "Fault Injection bleibt auf temporaere Test-Workspaces beschraenkt."
+  ],
+  "scenarios": [
+    {"id":"atomic_write_disk_full","class":"ENOSPC/replace","expected":"old_target_preserved","status":"pass"},
+    {"id":"atomic_write_interrupted","class":"stale_temp","expected":"target_not_corrupted","status":"pass"},
+    {"id":"atomic_fsync_disk_full","class":"ENOSPC/fsync","expected":"old_target_preserved_and_temp_removed","status":"pass"},
+    {"id":"atomic_permission_denied","class":"EACCES/create","expected":"old_target_preserved","status":"pass"},
+    {"id":"crashed_temp_recovery","class":"SIGKILL/temp","expected":"dead_pid_temp_removed_on_restart","status":"pass"},
+    {"id":"lock_released_after_process_kill","class":"SIGKILL/flock","expected":"bounded_block_then_reacquire","status":"pass"},
+    {"id":"concurrent_project_backups_serialized","class":"parallel_writers","expected":"two_valid_archives_two_history_entries","status":"pass"},
+    {"id":"corrupt_backup_history_restart_recovery","class":"restart/corrupt_history","expected":"history_reconstructed_from_verified_archives","status":"pass"},
+    {"id":"read_only_output","class":"read_only_preflight","expected":"render_blocked_before_start","status":"pass"},
+    {"id":"removed_external_target","class":"missing_target","expected":"empty_target_recreated","status":"pass"},
+    {"id":"ffmpeg_crash","class":"child_crash","expected":"controlled_job_failure","status":"pass"},
+    {"id":"ffmpeg_stall_watchdog","class":"child_stall","expected":"bounded_termination","status":"pass"},
+    {"id":"suspend_resume_process","class":"SIGSTOP_SIGCONT","expected":"process_state_retained","status":"pass"},
+    {"id":"hundred_job_journal","class":"journal_scale","expected":"100_jobs_persisted_compactly","status":"pass"},
+    {"id":"long_duration_progress","class":"long_duration","expected":"no_time_overflow","status":"pass"},
+    {"id":"corrupt_configuration_recovery","class":"corrupt_config","expected":"safe_defaults","status":"pass"},
+    {"id":"corrupt_project_quarantine","class":"corrupt_project","expected":"source_preserved_in_quarantine","status":"pass"},
+    {"id":"recovery_without_duplicate_completed_jobs","class":"restart/job_recovery","expected":"completed_jobs_not_duplicated","status":"pass"},
+    {"id":"retry_queue_attempt_limit","class":"retry_loop","expected":"hard_attempt_limit","status":"pass"},
+    {"id":"retry_queue_preserves_unstarted","class":"retry_pending","expected":"unstarted_job_preserved_without_attempt","status":"pass"},
+    {"id":"ui_event_handler_isolation","class":"ui_fault","expected":"later_events_continue","status":"pass"}
+  ]
+}

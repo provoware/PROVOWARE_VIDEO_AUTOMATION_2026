@@ -60,16 +60,14 @@ def test_shell_exposes_complete_primary_action_contract() -> None:
     source = "\n".join(_source(path) for path in SHELLS)
     for callback in (
         "self._new_project",
-        "self._add_audio",
         "self._add_media",
         "self._open_settings",
         "self._start",
-        "self._choose_directory",
     ):
         assert callback in source
-    assert "Startzeituhr · Checkpoint 5" in source
-    assert '"disabled"' in source
-    assert "kein automatischer Start" in source
+    assert "Startzeit" in source
+    assert "self._open_scheduler_dialog" in source
+    assert "systemd" in source
 
 
 def test_shell_uses_canonical_theme_and_font_profiles() -> None:
@@ -84,7 +82,7 @@ def test_checkpoint3_kpi_cards_have_real_states_and_navigation_actions() -> None
     source = "\n".join(_source(path) for path in SHELLS)
     for state in ("empty", "ready", "loading", "success", "warning", "error", "disabled"):
         assert f'"{state}"' in source
-    for label in ("Medien öffnen", "Queue öffnen", "Effekte öffnen", "Checkpoint 5"):
+    for label in ("Medien öffnen", "Queue öffnen", "Effekte öffnen", "Startzeit planen"):
         assert label in source
     assert "build_kpi_snapshots(" in source
     assert "self._select_shell_page(index)" in source
@@ -98,7 +96,7 @@ def test_canonical_dashboard_has_all_required_visual_zones() -> None:
     for zone in (
         "Quellen & Projekt",
         "Render Queue",
-        "Jobdetails & Vorschau",
+        "Job Details",
         "Startzeituhr",
         "Darstellung",
         "_build_canonical_status_bar",

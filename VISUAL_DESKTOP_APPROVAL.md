@@ -1,7 +1,12 @@
-# Visuelle Desktop-Abnahme 2.8.1-rc1
+# Visuelle Desktop-Abnahme 2.8.3-rc24
 
-Status: **offen**
+Status: **physische Stable-Abnahme offen**
 
-Die 16 automatisierten visuellen Referenzszenarien sind bestanden. Durch die neue Versionsanzeige und die layoutprofilgebundene Rasterlogik wurde eine neue Referenzbasis erzeugt.
+Die automatisierte visuelle Regression umfasst **22/22 bestandene Szenarien**. Zusätzlich steht ein expliziter physischer Desktop-Harness für KDE Plasma bereit. Er prüft pro Sitzung neun Größen-/Skalierungsprofile und exportiert Evidence nur bei gesetztem `VIDEOBATCH_PHYSICAL_ACCEPTANCE=1`, aktivem nativen Display und vollständig bestandenem Lauf.
 
-Eine reale KDE-/XFCE-Sichtprüfung ist für diesen Releasekandidaten noch nicht signiert. Die signierte Abnahme des Stable-Stands 2.8.0 wird nicht auf den veränderten Build übertragen.
+Für Stable fehlen weiterhin zwei reale, getrennte Zielsystemnachweise:
+
+- KDE Plasma unter X11
+- KDE Plasma unter Wayland
+
+CI, Xvfb oder ein historisch signierter älterer Stable-Stand ersetzen diese beiden physischen Abnahmen nicht. Jeder neue Nachweis ist an Kandidat, `RELEASE_MANIFEST.json` und den jeweils aktuellen Source-Fingerprint gebunden; spätere relevante Quelländerungen machen ihn automatisch ungültig.

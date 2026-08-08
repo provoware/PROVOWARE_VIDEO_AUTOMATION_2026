@@ -13,7 +13,7 @@ def ready_marker_from_environment() -> Path | None:
     return Path(value).expanduser() if value else None
 
 
-def signal_ui_ready(*, existing_instance: bool = False) -> Path | None:
+def signal_ui_ready(*, existing_instance: bool = False, timing_ms: dict[str, float] | None = None) -> Path | None:
     """Signal the bootstrap only after the UI is usable or an existing instance was focused."""
     path = ready_marker_from_environment()
     if path is None:
@@ -27,6 +27,7 @@ def signal_ui_ready(*, existing_instance: bool = False) -> Path | None:
         "existing_instance": bool(existing_instance),
         "startup_status": startup_status,
         "report_path": os.environ.get("VIDEOBATCH_STARTUP_REPORT", ""),
+        "timing_ms": {str(key): round(float(value), 3) for key, value in (timing_ms or {}).items()},
     }
     atomic_write_json(path, payload)
     return path

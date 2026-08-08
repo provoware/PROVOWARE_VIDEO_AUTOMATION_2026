@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "wave": 17,
+  "date": "2026-08-07",
+  "scenarios": [
+    {"id":"EVD-001","scenario":"Source change after evidence","expected":"stale evidence blocked","result":"passed"},
+    {"id":"EVD-002","scenario":"Evidence member tampered or added","expected":"index verification fails closed","result":"passed"},
+    {"id":"EVD-003","scenario":"Same quality evidence set bundled twice","expected":"byte-reproducible ZIP","result":"passed"},
+    {"id":"EVD-004","scenario":"Wheelhouse lock/contract/wheel list changed","expected":"manifest verification blocks","result":"passed"},
+    {"id":"EVD-005","scenario":"Source distribution fallback attempted","expected":"only-binary contract blocks","result":"passed"},
+    {"id":"EVD-006","scenario":"Stable evidence has wrong source digest","expected":"acceptance blocked","result":"passed"},
+    {"id":"EVD-007","scenario":"Desktop harness runs without explicit physical mode","expected":"no Stable evidence export","result":"passed"},
+    {"id":"EVD-008","scenario":"Long render uses rehearsal/nonphysical target","expected":"no Stable evidence export","result":"passed"},
+    {"id":"EVD-009","scenario":"Validator imported in isolation","expected":"no test-order dependency","result":"passed"},
+    {"id":"EVD-010","scenario":"Exact external toolchain cannot be resolved due DNS","expected":"gate remains TOOLCHAIN_BLOCKED/open","result":"passed"}
+  ]
+}

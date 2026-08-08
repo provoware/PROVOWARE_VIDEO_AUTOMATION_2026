@@ -67,7 +67,13 @@ def test_effect_and_scheduler_contract_remains_honest() -> None:
     scheduler = neutral["scheduler"]
     assert scheduler.state == "disabled"
     assert scheduler.action_enabled is False
-    assert "Checkpoint 5" in scheduler.detail
+    ready_scheduler = _snapshots(scheduler_ready=True)["scheduler"]
+    assert ready_scheduler.state == "ready"
+    assert ready_scheduler.action_enabled is True
+    assert ready_scheduler.recovery_action == "open_scheduler"
+    planned = _snapshots(scheduler_ready=True, scheduler_status="pending", scheduler_when="2026-08-08T03:00:00+02:00")["scheduler"]
+    assert planned.value == "Geplant"
+    assert "2026-08-08 03:00" in planned.detail
 
 
 def test_persistent_history_keeps_timestamp_until_a_detail_really_changes() -> None:

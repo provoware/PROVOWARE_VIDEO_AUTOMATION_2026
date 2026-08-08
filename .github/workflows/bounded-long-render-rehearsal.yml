@@ -10,7 +10,7 @@ on:
       - 'scripts/build_long_render_contract.py'
       - 'tests/test_long_render_contract.py'
       - '.github/workflows/bounded-long-render-rehearsal.yml'
-      - 'docs/LONG_RENDER_2.8.3-rc24.md'
+      - 'docs/LONG_RENDER_*.md'
   workflow_dispatch:
 
 permissions:
@@ -72,7 +72,7 @@ jobs:
               })
           contract = {
               'schema_version': 1,
-              'candidate': '2.8.3-rc24',
+              'candidate': json.loads(Path('VERSION.json').read_text(encoding='utf-8'))['version'],
               'target_dir': str(root / 'target'),
               'limits': {
                   'cpu_percent': 50,

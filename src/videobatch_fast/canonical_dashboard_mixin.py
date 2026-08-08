@@ -10,7 +10,6 @@ from .canonical_shell_contract import (
 )
 from .theme import COLORS
 
-
 class CanonicalDashboardMixin:
     """Responsive, scrollable dashboard backed only by real application state."""
 
@@ -71,6 +70,7 @@ class CanonicalDashboardMixin:
         canvas.configure(yscrollcommand=scrollbar.set)
         canvas.grid(row=0, column=0, sticky="nsew")
         scrollbar.grid(row=0, column=1, sticky="ns")
+        self._dashboard_scrollbar = scrollbar
 
         surface = ttk.Frame(canvas, style="Shell.TFrame", padding=(2, 2, 5, 12))
         window_id = canvas.create_window((0, 0), window=surface, anchor="nw")
@@ -79,11 +79,9 @@ class CanonicalDashboardMixin:
         self._dashboard_window_id = window_id
         self._dashboard_layout_mode = ""
 
-        surface.bind(
-            "<Configure>",
-            lambda _event: canvas.configure(scrollregion=canvas.bbox("all")),
-            add="+",
-        )
+        self._dashboard_scrollregion = None
+        self._dashboard_canvas_width = None
+        surface.bind("<Configure>", self._sync_dashboard_scrollregion, add="+")
         canvas.bind("<Configure>", self._on_dashboard_canvas_configure, add="+")
         canvas.bind("<MouseWheel>", self._scroll_dashboard, add="+")
         canvas.bind("<Button-4>", lambda _event: canvas.yview_scroll(-3, "units"), add="+")
@@ -103,7 +101,7 @@ class CanonicalDashboardMixin:
     def _build_dashboard_sources_card(self, parent):
         card = ttk.Frame(parent, style="ShellCard.TFrame", padding=(14, 12))
         card.columnconfigure(0, weight=1)
-        card.rowconfigure(4, weight=1)
+        card.rowconfigure(6, weight=1)
         ttk.Label(
             card,
             text="Quellen & Projekt",
@@ -136,23 +134,56 @@ class CanonicalDashboardMixin:
         output_label.grid(row=3, column=0, sticky="ew", pady=3)
         self._dashboard_wrapped_labels = [source_label, project_label, output_label]
 
+        self._dashboard_source_filter = StringVar(value="Alle")
+        filters = ttk.Frame(card, style="ShellCard.TFrame")
+        filters.grid(row=4, column=0, sticky="ew", pady=(5, 2))
+        for index, label in enumerate(("Alle", "Bilder", "Videos", "Audio", "Unbenutzt")):
+            filters.columnconfigure(index, weight=1)
+            ttk.Radiobutton(
+                filters,
+                text=label,
+                value=label,
+                variable=self._dashboard_source_filter,
+                command=self._refresh_canonical_dashboard,
+            ).grid(row=0, column=index, sticky="ew", padx=1)
+
+        tag_row = ttk.Frame(card, style="ShellCard.TFrame")
+        tag_row.grid(row=5, column=0, sticky="ew", pady=(3, 2))
+        tag_row.columnconfigure(0, weight=1)
+        self._dashboard_tag_filter = StringVar(value="Alle Tags")
+        self._dashboard_tag_filter_combo = ttk.Combobox(
+            tag_row,
+            textvariable=self._dashboard_tag_filter,
+            state="readonly",
+            values=("Alle Tags",),
+            width=16,
+        )
+        self._dashboard_tag_filter_combo.grid(row=0, column=0, sticky="ew", padx=(0, 4))
+        self._dashboard_tag_filter_combo.bind("<<ComboboxSelected>>", lambda _event: self._refresh_canonical_dashboard())
+        ttk.Button(tag_row, text="Tag +", command=self._add_dashboard_tag).grid(row=0, column=1, padx=2)
+        ttk.Button(tag_row, text="Tag −", command=self._remove_dashboard_tag).grid(row=0, column=2, padx=(2, 0))
+
         sources = ttk.Treeview(
             card,
-            columns=("type", "name", "state"),
+            columns=("type", "name", "tags", "state"),
             show="headings",
-            height=7,
+            height=10,
+            selectmode="extended",
         )
         sources.heading("type", text="Typ")
         sources.heading("name", text="Datei")
+        sources.heading("tags", text="Tags")
         sources.heading("state", text="Status")
-        sources.column("type", width=62, minwidth=52, stretch=False)
-        sources.column("name", width=210, minwidth=120, stretch=True)
-        sources.column("state", width=80, minwidth=70, stretch=False)
-        sources.grid(row=4, column=0, sticky="nsew", pady=(8, 8))
+        sources.column("type", width=58, minwidth=50, stretch=False)
+        sources.column("name", width=180, minwidth=110, stretch=True)
+        sources.column("tags", width=120, minwidth=80, stretch=True)
+        sources.column("state", width=72, minwidth=64, stretch=False)
+        sources.grid(row=6, column=0, sticky="nsew", pady=(5, 7))
         self._dashboard_source_tree = sources
+        self._dashboard_source_path_map = {}
 
         actions = ttk.Frame(card, style="ShellCard.TFrame")
-        actions.grid(row=5, column=0, sticky="ew")
+        actions.grid(row=7, column=0, sticky="ew")
         actions.columnconfigure(0, weight=1)
         actions.columnconfigure(1, weight=1)
         ttk.Button(actions, text="♫ Audio", command=self._add_audio).grid(
@@ -194,29 +225,46 @@ class CanonicalDashboardMixin:
         ).pack(side="right")
 
         self._dashboard_queue_filter = StringVar(value="")
-        search = ttk.Entry(card, textvariable=self._dashboard_queue_filter)
-        search.grid(row=1, column=0, sticky="ew", pady=(7, 4))
+        self._dashboard_queue_status_filter = StringVar(value="Alle")
+        queue_filters = ttk.Frame(card, style="ShellCard.TFrame")
+        queue_filters.grid(row=1, column=0, sticky="ew", pady=(7, 4))
+        queue_filters.columnconfigure(0, weight=1)
+        search = ttk.Entry(queue_filters, textvariable=self._dashboard_queue_filter)
+        search.grid(row=0, column=0, sticky="ew", padx=(0, 5))
         search.bind("<KeyRelease>", lambda _event: self._refresh_canonical_dashboard())
-        ttk.Label(
-            card,
-            text="Reale Aufträge aus dem aktuellen Projekt; keine Musterwerte.",
-            style="Hint.TLabel",
-        ).grid(row=2, column=0, sticky="w", pady=(0, 7))
+        status_filter = ttk.Combobox(
+            queue_filters,
+            textvariable=self._dashboard_queue_status_filter,
+            values=("Alle", "Wartend", "Fertig", "Fehler"),
+            state="readonly",
+            width=10,
+        )
+        status_filter.grid(row=0, column=1, sticky="e")
+        status_filter.bind("<<ComboboxSelected>>", lambda _event: self._refresh_canonical_dashboard())
+        ttk.Separator(card).grid(row=2, column=0, sticky="ew", pady=(0, 5))
 
         tree = ttk.Treeview(
             card,
-            columns=("job", "effect", "status", "progress"),
-            show="headings",
-            height=8,
+            columns=("job", "mode", "effect", "schedule", "status", "progress", "output"),
+            show=("tree", "headings"),
+            height=10,
         )
+        tree.heading("#0", text="")
+        tree.column("#0", width=62, minwidth=62, stretch=False, anchor="center")
         tree.heading("job", text="Job")
-        tree.heading("effect", text="Effekt / Modus")
+        tree.heading("mode", text="Modus")
+        tree.heading("effect", text="Effekt")
+        tree.heading("schedule", text="Zeitplan")
         tree.heading("status", text="Status")
         tree.heading("progress", text="Fortschritt")
-        tree.column("job", width=220, minwidth=130, stretch=True)
-        tree.column("effect", width=150, minwidth=100, stretch=True)
-        tree.column("status", width=105, minwidth=85, stretch=False)
-        tree.column("progress", width=85, minwidth=70, stretch=False, anchor="e")
+        tree.heading("output", text="Ausgabe")
+        tree.column("job", width=190, minwidth=120, stretch=True)
+        tree.column("mode", width=90, minwidth=70, stretch=False)
+        tree.column("effect", width=110, minwidth=80, stretch=True)
+        tree.column("schedule", width=90, minwidth=76, stretch=False)
+        tree.column("status", width=90, minwidth=78, stretch=False)
+        tree.column("progress", width=88, minwidth=72, stretch=False, anchor="e")
+        tree.column("output", width=135, minwidth=90, stretch=True)
         tree.grid(row=3, column=0, sticky="nsew")
         tree.bind("<<TreeviewSelect>>", self._select_dashboard_job, add="+")
         self._dashboard_queue_tree = tree
@@ -244,79 +292,6 @@ class CanonicalDashboardMixin:
             sticky="ew",
             padx=(3, 0),
         )
-        return card
-
-    def _build_dashboard_details_card(self, parent):
-        card = ttk.Frame(parent, style="ShellCard.TFrame", padding=(14, 12))
-        card.columnconfigure(0, weight=1)
-        ttk.Label(
-            card,
-            text="Jobdetails & Vorschau",
-            style="SectionHeader.TLabel",
-        ).grid(row=0, column=0, sticky="w")
-
-        preview = Canvas(
-            card,
-            height=164,
-            background=COLORS["preview"],
-            highlightbackground=COLORS["border"],
-            highlightthickness=1,
-            borderwidth=0,
-        )
-        preview.grid(row=1, column=0, sticky="ew", pady=(8, 9))
-        preview.bind("<Configure>", lambda _event: self._refresh_dashboard_preview(), add="+")
-        self._dashboard_preview_canvas = preview
-
-        self._dashboard_detail_summary = StringVar(value="Noch kein Auftrag ausgewählt")
-        detail_label = ttk.Label(
-            card,
-            textvariable=self._dashboard_detail_summary,
-            style="Hint.TLabel",
-            justify="left",
-        )
-        detail_label.grid(row=2, column=0, sticky="ew")
-        self._dashboard_wrapped_labels.append(detail_label)
-
-        proof = ttk.Frame(card, style="ShellCard.TFrame", padding=(0, 9, 0, 0))
-        proof.grid(row=3, column=0, sticky="ew")
-        self._dashboard_renderproof = StringVar(value="RenderProof – nicht bestätigt")
-        self._dashboard_renderproof_label = ttk.Label(
-            proof,
-            textvariable=self._dashboard_renderproof,
-            style="Warning.TLabel",
-        )
-        self._dashboard_renderproof_label.pack(anchor="w")
-        ttk.Button(
-            card,
-            text="Vorschau öffnen",
-            command=lambda: self._select_shell_page(2),
-        ).grid(row=4, column=0, sticky="ew", pady=(10, 0))
-        card.bind("<Configure>", self._update_dashboard_wraplengths, add="+")
-        return card
-
-    def _build_dashboard_scheduler_card(self, parent):
-        card = ttk.Frame(parent, style="ShellCard.TFrame", padding=(14, 12))
-        ttk.Label(card, text="Startzeituhr", style="SectionHeader.TLabel").pack(anchor="w")
-        self._dashboard_scheduler_summary = StringVar(
-            value="Deaktiviert bis Checkpoint 5 · kein automatischer Start"
-        )
-        scheduler = ttk.Label(
-            card,
-            textvariable=self._dashboard_scheduler_summary,
-            style="Hint.TLabel",
-            justify="left",
-        )
-        scheduler.pack(anchor="w", fill="x", pady=(7, 8))
-        scheduler.bind(
-            "<Configure>",
-            lambda event: scheduler.configure(wraplength=max(180, event.width - 4)),
-            add="+",
-        )
-        ttk.Button(
-            card,
-            text="◷ Startzeituhr · Checkpoint 5",
-            state="disabled",
-        ).pack(fill="x")
         return card
 
     def _build_dashboard_appearance_card(self, parent):
@@ -367,9 +342,21 @@ class CanonicalDashboardMixin:
         )
         return card
 
+    def _sync_dashboard_scrollregion(self, _event=None) -> None:
+        try:
+            region = self._dashboard_canvas.bbox("all")
+            if region == self._dashboard_scrollregion:
+                return
+            self._dashboard_scrollregion = region
+            self._dashboard_canvas.configure(scrollregion=region)
+        except TclError:
+            return
+
     def _on_dashboard_canvas_configure(self, event) -> None:
         width = max(1, int(event.width))
-        self._dashboard_canvas.itemconfigure(self._dashboard_window_id, width=width)
+        if self._dashboard_canvas_width != width:
+            self._dashboard_canvas_width = width
+            self._dashboard_canvas.itemconfigure(self._dashboard_window_id, width=width)
         self._layout_canonical_dashboard(width)
 
     def _scroll_dashboard(self, event) -> None:
@@ -381,6 +368,9 @@ class CanonicalDashboardMixin:
         if not hasattr(self, "_dashboard_surface"):
             return
         mode = dashboard_layout_mode(width)
+        if self._dashboard_layout_mode == mode:
+            self._update_dashboard_wraplengths()
+            return
         cards = (
             self._dashboard_sources_card,
             self._dashboard_queue_card,
@@ -417,19 +407,17 @@ class CanonicalDashboardMixin:
                 padx=(6, 0),
                 pady=(0, 7),
             )
+            self._dashboard_surface.rowconfigure(0, weight=1)
+            self._dashboard_surface.rowconfigure(1, weight=0)
             self._dashboard_scheduler_card.grid(
                 row=1,
                 column=0,
-                columnspan=2,
-                sticky="nsew",
-                padx=(0, 6),
+                columnspan=3,
+                sticky="ew",
+                pady=(5, 0),
             )
-            self._dashboard_appearance_card.grid(
-                row=1,
-                column=2,
-                sticky="nsew",
-                padx=(6, 0),
-            )
+            if hasattr(self, "_dashboard_scrollbar"):
+                self._dashboard_scrollbar.grid_remove()
         elif mode == "two_columns":
             self._dashboard_surface.columnconfigure(0, weight=35)
             self._dashboard_surface.columnconfigure(1, weight=65)
@@ -461,16 +449,13 @@ class CanonicalDashboardMixin:
                 padx=(0, 6),
                 pady=(7, 0),
             )
-            self._dashboard_appearance_card.grid(
-                row=2,
-                column=1,
-                sticky="nsew",
-                padx=(6, 0),
-                pady=(7, 0),
-            )
+            if hasattr(self, "_dashboard_scrollbar"):
+                self._dashboard_scrollbar.grid()
         else:
             self._dashboard_surface.columnconfigure(0, weight=1)
-            for row, card in enumerate(cards):
+            if hasattr(self, "_dashboard_scrollbar"):
+                self._dashboard_scrollbar.grid()
+            for row, card in enumerate(cards[:-1]):
                 card.grid(
                     row=row,
                     column=0,
@@ -480,18 +465,16 @@ class CanonicalDashboardMixin:
 
         self._dashboard_layout_mode = mode
         self._update_dashboard_wraplengths()
-        self.root.after_idle(
-            lambda: self._dashboard_canvas.configure(
-                scrollregion=self._dashboard_canvas.bbox("all")
-            )
-        )
+        self.root.after_idle(self._sync_dashboard_scrollregion)
 
     def _update_dashboard_wraplengths(self, _event=None) -> None:
         for label in getattr(self, "_dashboard_wrapped_labels", ()):
             try:
                 width = max(160, label.master.winfo_width() - 30)
-                label.configure(wraplength=width)
-            except TclError:
+                current = int(float(label.cget("wraplength") or 0))
+                if current != width:
+                    label.configure(wraplength=width)
+            except (TclError, ValueError):
                 return
 
     def _refresh_canonical_dashboard(self) -> None:
@@ -533,9 +516,12 @@ class CanonicalDashboardMixin:
             else "Noch keine Vorschau"
         )
         self._dashboard_detail_summary.set(
-            f"Vorschau: {preview_meta}\nEffekt: {effect} · Modus: {quick_mode}\n"
-            f"Ausgabe: {resolution} · {codec}"
+            f"Effekt: {effect} · Modus: {quick_mode}\nVorschau: {preview_meta}"
         )
+        if hasattr(self, "_dashboard_output_detail"):
+            self._dashboard_output_detail.set(
+                f"Auflösung: {resolution}\nCodec: {codec}\nOrdner: {output_value or 'Noch nicht gewählt'}"
+            )
 
         if results and failed == 0:
             self._dashboard_renderproof.set("RenderProof – Bestanden")
@@ -549,22 +535,13 @@ class CanonicalDashboardMixin:
             self._dashboard_renderproof.set("RenderProof – nicht bestätigt")
             self._dashboard_renderproof_label.configure(style="Warning.TLabel")
 
-        self._dashboard_scheduler_summary.set(
-            f"Deaktiviert bis Checkpoint 5 · {len(jobs)} Aufträge vorbereitet · "
-            "kein automatischer Start"
-        )
+        active_schedule = self._active_scheduler_record() if hasattr(self, "_active_scheduler_record") else None
+        if active_schedule is not None:
+            when = str(active_schedule.get("scheduled_at", "–")).replace("T", " ")[:16]
+            self._dashboard_scheduler_summary.set(f"Geplant: {when} · {active_schedule.get('status', 'pending')}")
+        else:
+            self._dashboard_scheduler_summary.set(f"Nicht geplant · {len(jobs)} Auftrag/Aufträge bereit")
         self._refresh_dashboard_preview()
-
-    def _refresh_dashboard_sources(self, audios, media) -> None:
-        tree = self._dashboard_source_tree
-        for item in tree.get_children():
-            tree.delete(item)
-        rows = [("Audio", path) for path in audios] + [("Medium", path) for path in media]
-        for kind, path in rows[:100]:
-            state = "Bereit" if path.is_file() else "Fehlt"
-            tree.insert("", "end", values=(kind, path.name, state))
-        if len(rows) > 100:
-            tree.insert("", "end", values=("…", f"{len(rows) - 100} weitere", ""))
 
     def _refresh_dashboard_queue(self, jobs, results) -> None:
         tree = self._dashboard_queue_tree
@@ -572,25 +549,20 @@ class CanonicalDashboardMixin:
         for item in tree.get_children():
             tree.delete(item)
         self._dashboard_tree_job_map = {}
+        self._dashboard_queue_thumbnail_items = {}
         results_by_index = {
             int(getattr(result.job, "index", -1)): result
             for result in results
             if getattr(result, "job", None) is not None
         }
         query = self._dashboard_queue_filter.get().strip().casefold()
+        status_filter = (
+            self._dashboard_queue_status_filter.get()
+            if hasattr(self, "_dashboard_queue_status_filter")
+            else "Alle"
+        )
         visible = []
         for job in jobs:
-            name = getattr(getattr(job, "output", None), "name", "") or getattr(
-                getattr(job, "audio", None),
-                "name",
-                "Auftrag",
-            )
-            effect = self.visual_effect.get() if hasattr(self, "visual_effect") else "none"
-            if query and query not in f"{name} {effect}".casefold():
-                continue
-            visible.append((job, name, effect))
-
-        for job, name, effect in visible[:100]:
             index = int(getattr(job, "index", -1))
             result = results_by_index.get(index)
             if result is None:
@@ -602,20 +574,54 @@ class CanonicalDashboardMixin:
             else:
                 status = "Fehler"
                 progress = "–"
-            item_id = tree.insert(
-                "",
-                "end",
-                values=(name, effect, status, progress),
+            name = getattr(getattr(job, "output", None), "name", "") or getattr(
+                getattr(job, "audio", None),
+                "name",
+                "Auftrag",
             )
+            effect = self.visual_effect.get() if hasattr(self, "visual_effect") else "none"
+            if query and query not in f"{name} {effect} {status}".casefold():
+                continue
+            if status_filter != "Alle" and status != status_filter:
+                continue
+            visible.append((job, name, effect, status, progress))
+
+        for job, name, effect, status, progress in visible[:100]:
+            index = int(getattr(job, "index", -1))
+            source = self._queue_thumbnail_source(job) if hasattr(self, "_queue_thumbnail_source") else None
+            photo = self._queue_thumbnail_photo(source) if hasattr(self, "_queue_thumbnail_photo") else None
+            insert_options = {
+                "values": (
+                    name,
+                    self.quick_mode.get() if hasattr(self, "quick_mode") else "Auto",
+                    effect,
+                    "Nicht geplant",
+                    status,
+                    progress,
+                    getattr(getattr(job, "output", None), "name", ""),
+                )
+            }
+            if photo is not None:
+                insert_options["image"] = photo
+            item_id = tree.insert("", "end", **insert_options)
             self._dashboard_tree_job_map[item_id] = job
+            if hasattr(self, "_request_queue_thumbnail"):
+                self._request_queue_thumbnail(item_id, job)
             if selected_index == index:
                 tree.selection_set(item_id)
                 tree.focus(item_id)
+        if hasattr(self, "_prune_queue_thumbnail_refs"):
+            active_sources = {
+                source
+                for job, _name, _effect, _status, _progress in visible[:100]
+                if (source := self._queue_thumbnail_source(job)) is not None
+            }
+            self._prune_queue_thumbnail_refs(active_sources)
         if len(visible) > 100:
             tree.insert(
                 "",
                 "end",
-                values=(f"… {len(visible) - 100} weitere", "", "", ""),
+                values=(f"… {len(visible) - 100} weitere", "", "", "", "", "", ""),
             )
 
     def _select_dashboard_job(self, _event=None) -> None:
@@ -631,9 +637,20 @@ class CanonicalDashboardMixin:
             path.name for path in tuple(getattr(job, "source_media", ()))[:3]
         ) or "–"
         output_name = getattr(getattr(job, "output", None), "name", "–")
+        if hasattr(self, "_dashboard_detail_title"):
+            self._dashboard_detail_title.set(f"Job Details: {output_name}")
         self._dashboard_detail_summary.set(
             f"Audio: {audio_name}\nMedien: {media_names}\nAusgabe: {output_name}"
         )
+        preview_source = (
+            self._queue_thumbnail_source(job)
+            if hasattr(self, "_queue_thumbnail_source")
+            else None
+        )
+        if preview_source is not None and hasattr(self, "_request_preview"):
+            self._request_preview(preview_source)
+        if hasattr(self, "_set_dashboard_transport_source"):
+            self._set_dashboard_transport_source(preview_source)
 
     def _refresh_dashboard_preview(self) -> None:
         if not hasattr(self, "_dashboard_preview_canvas"):

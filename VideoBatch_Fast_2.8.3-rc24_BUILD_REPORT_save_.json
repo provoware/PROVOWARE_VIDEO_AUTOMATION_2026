@@ -9,7 +9,6 @@
   "deterministic_build": "passed; two independent builds byte-identical",
   "critical_fix": {
     "area": "already-selected project media list",
-    "root_cause": "unbounded per-click preview threads and FFmpeg processes plus unvalidated direct Tk image decoding",
     "resolution": [
       "single serial preview controller",
       "180 ms debounce",
@@ -18,74 +17,79 @@
       "main-thread-only Tk updates",
       "explicit PNG output for FFmpeg 7+ atomic partial files",
       "invalid cache targets removed before regeneration"
-    ]
+    ],
+    "root_cause": "unbounded per-click preview threads and FFmpeg processes plus unvalidated direct Tk image decoding"
   },
   "runtime_start": {
-    "status": "passed",
     "architecture": "content-addressed user environment",
-    "quality_tools_block_start": false,
-    "interactive_questions": false,
+    "existing_instance_focus": true,
     "ffmpeg_aac_detection": "real smoke test",
-    "ui_ready_handshake": true,
+    "interactive_questions": false,
+    "quality_tools_block_start": false,
     "safe_mode_retry": true,
+    "status": "passed",
     "system_python_fallback": "verified imports only",
-    "existing_instance_focus": true
+    "ui_ready_handshake": true
   },
-  "fresh_package_verification": "passed from complete tracked source audit; 325 tests passed under Xvfb",
+  "fresh_package_verification": "passed from complete tracked source audit; 693 tests passed under Xvfb",
   "quality": {
     "architecture_findings": 0,
-    "internal_files_checked": 203,
+    "internal_files_checked": 338,
     "internal_findings": 0,
-    "internal_function_count": 1602,
-    "largest_python_file_lines": 683,
-    "max_complexity": 29
+    "internal_function_count": 2987,
+    "largest_python_file_lines": 700,
+    "max_complexity": 30
   },
   "release_cleanup": {
     "historical_reports_archived": 56,
     "obsolete_visual_baselines_removed": 16,
-    "ready_deliverables": 10,
-    "unfinished_gate_files": 8,
+    "ready_deliverables": 11,
     "release_archive_excluded": true,
-    "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe"
+    "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe",
+    "unfinished_gate_files": 8
   },
-  "release_manifest_files": 398,
+  "release_manifest_files": 633,
   "matrix": {
     "status": "passed",
-    "passed_targets": 4,
-    "total_targets": 4,
+    "passed_targets": 2,
+    "total_targets": 2,
     "workflow_run_id": 30966067548,
     "verified_commit": "ef003d2c01fa94b899d0ebac9947f1795dd23e8f",
-    "scope_note": "Headless deterministic CI matrix; not a substitute for physical KDE acceptance."
+    "scope_note": "Headless deterministic X11 CI matrix for the supported target; not a substitute for physical KDE-X11 acceptance."
   },
   "stable_blockers": [
-    "Ruff 0.16.1: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
-    "MyPy 2.3.0: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
-    "Bandit 1.9.4: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
-    "pip-audit 2.10.1: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
-    "Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless",
-    "Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt"
+    "Ruff 0.16.1: Operator-Kit bereit; realer exakt gepinnter Lauf aus eingefrorenem Wheelhouse noch auszuführen",
+    "MyPy 2.3.0: Operator-Kit bereit; realer exakt gepinnter Lauf aus eingefrorenem Wheelhouse noch auszuführen",
+    "Bandit 1.9.4: Operator-Kit bereit; realer exakt gepinnter Lauf aus eingefrorenem Wheelhouse noch auszuführen",
+    "pip-audit 2.10.1: Operator-Kit mit gehashtem Advisory-Cache vorbereitet; realer finaler Offline-Gate-Lauf noch auszuführen",
+    "Physische KDE-X11-Abnahme: Operator-Harness bereit; reale KDE-X11-Sitzungsabnahme fehlt weiterhin",
+    "Langzeitrender mit großer Medienauswahl: Operator-Harness bereit; realer 96-Job-Lauf auf langsamem externem USB-ext4-Ziel fehlt weiterhin"
   ],
   "stable_ready": false,
   "status": "passed",
   "tests": {
-    "passed": 325,
-    "failed": 0,
-    "skipped": 0,
-    "line_coverage_percent": 82.43,
-    "branch_coverage_percent": 67.21,
-    "combined_coverage_percent": 79.46,
     "assurance_scenarios": "12/12",
+    "branch_coverage_percent": 65.33,
+    "combined_coverage_percent": 77.98,
+    "failed": 0,
     "fault_lab": "12/12",
-    "visual_scenarios": "18/18",
-    "targeted_rc24": "27/27 finalization and preview regressions",
-    "selected_media_click_stress": "120 rapid selection changes, passed",
-    "full_regression": "325/325",
+    "full_regression": "693/693",
     "full_regression_groups": [
-      98,
-      89,
+      102,
+      101,
+      90,
       83,
-      55
+      78,
+      83,
+      82,
+      74
     ],
-    "test_environment": "Xvfb X11 on exact exported PR tree"
+    "line_coverage_percent": 81.35,
+    "passed": 693,
+    "selected_media_click_stress": "120 rapid selection changes, passed",
+    "skipped": 0,
+    "targeted_rc24": "Welle-25 UI Phase 1 Project Home Dashboard contract passed",
+    "test_environment": "Xvfb X11; eight deterministic pytest + coverage batches on final Welle-25 UI Phase-1 source",
+    "visual_scenarios": "22/22"
   }
 }

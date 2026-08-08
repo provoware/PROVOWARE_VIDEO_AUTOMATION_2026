@@ -1,0 +1,36 @@
+VIDEOBATCH FAST · FINALVALIDIERUNG FORTSETZUNGSWELLE 3
+Datum: 2026-08-07
+
+ERGEBNIS
+- 470 automatisierte Tests bestanden.
+- Registry-Prüfung bestanden.
+- Designregelwerk bestanden.
+- Versionskonsistenz bestanden.
+- Textressourcenvertrag bestanden.
+- Dokumentationsvertrag bestanden.
+- Release-Dateistatus technisch bestanden; Stable bleibt wegen P0-Abnahmen gesperrt.
+- 61 JSON-Dateien validiert.
+- Python compileall bestanden.
+- Shell-Syntax bestanden.
+- Startup-Check: ready.
+- Echter separater Xvfb-UI-Prozess schrieb einen gültigen Schema-2-Ready-Marker.
+- Gemessener Xvfb-Handshake: launch_to_ready ca. 751,7 ms; ui_construct ca. 721,0 ms.
+
+UMGESETZT
+- Lokales PNG-Iconset statt fontabhängiger Navigationssymbole.
+- Asynchrone Queue-Thumbnails über vorhandenen persistenten Preview-Cache.
+- Jobauswahl bindet reale Quelle an vorhandene Vorschau.
+- FFplay-Transport: Abspielen, Pause/Weiter, Stopp, Seek.
+- Verifizierte Projektzustands-Sicherung mit Manifest, SHA-256 und atomarer Historie.
+- Echter Backupstatus im Footer.
+- Queue-Virtualisierung nach Messung bewusst nicht eingeführt.
+- WorkflowGrid-Reflow entkoppelt und Startup-Ready von synchronem Tk-Idle-Drain befreit.
+
+OFFEN VOR STABLE
+- VIS-001 Original-SOLL/IST-PNGs numerisch abnehmen.
+- VIS-002 physische KDE-X11-/Wayland-Sichtabnahme.
+- REL-001 realer Langzeitrender.
+
+OPTIONAL / NUR BEI BEDARF
+- DATA-001 persistentes Tagmodell.
+- SCHED-001 erst nach Checkpoint 5.

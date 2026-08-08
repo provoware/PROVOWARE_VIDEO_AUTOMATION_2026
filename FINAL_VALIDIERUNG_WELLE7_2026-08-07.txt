@@ -1,0 +1,35 @@
+VIDEOBATCH FAST · FINALE VALIDIERUNG WELLE 7
+
+SCHWERPUNKT
+Datenintegrität und Projekt-/Backup-Härtung ohne Aufweichung der bestehenden Stable-Gates.
+
+UMSETZUNG
+- Aktive Projektzustände vor Parsing auf 16 MiB begrenzt.
+- Nicht-Objekt-JSON wird quarantänisiert statt still normalisiert.
+- Unbekannte zukünftige Projektschemata werden quarantänisiert statt implizit auf das aktuelle Schema heruntergestuft.
+- Backup-ZIPs weisen doppelte Member und unerwartete Zusatzdateien ab.
+- Backup-Manifestschema wird strikt auf Version 1 geprüft.
+- Backuphistorie und Restore verwenden die zentrale atomare Safe-I/O-Schicht inklusive Verzeichnis-Fsync.
+
+AUTOMATISCHE REGRESSION
+496 Tests bestanden, 0 fehlgeschlagen.
+
+VISUELLE REGRESSION
+22 von 22 Szenarien bestanden.
+Prüfdisplay: Xvfb 2560×1440×24.
+
+STATISCHE GATES
+- Interne Codequalität: 0 Befunde, maximale Komplexität 29
+- Architektur: 0 Befunde
+- Ereignisarchitektur: 0 Befunde
+- Designregelwerk: bestanden
+- Textvertrag: bestanden
+- Versionskonsistenz: bestanden
+- Registry-Vertrag: bestanden
+- Release-Literal-Hygiene: bestanden
+- Python compileall: bestanden
+- JSON-Validierung relevanter Projektdateien: bestanden
+- Shell-Syntax: bestanden
+
+RELEASESTATUS
+Stable bleibt bewusst gesperrt. VIS-001, VIS-002 und REL-001 benötigen reale/externe Nachweise auf genau diesem unveränderten Kandidaten. SCHED-001 bleibt bis zum vorgesehenen Checkpoint-5-Systemvertrag gesperrt.

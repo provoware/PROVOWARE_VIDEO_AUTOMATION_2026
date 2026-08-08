@@ -15,6 +15,7 @@ if str(SCRIPTS) not in sys.path:
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
+import bootstrap  # noqa: E402
 import toolchain  # noqa: E402
 from toolchain_common import load_contract  # noqa: E402
 from videobatch_fast.instance_lock import focus_request_token, request_existing_instance_focus  # noqa: E402
@@ -32,6 +33,51 @@ def test_ui_ready_handshake_is_atomic_and_machine_readable(tmp_path: Path, monke
     assert payload["safe_mode"] is True
     assert payload["existing_instance"] is False
 
+
+def test_bootstrap_accepts_current_ui_ready_schema_v2(tmp_path: Path) -> None:
+    marker = tmp_path / "ready-v2.json"
+    marker.write_text(json.dumps({"schema_version": 2, "pid": 1234}), encoding="utf-8")
+    payload = bootstrap._read_ready_marker(marker)
+    assert payload is not None
+    assert payload["schema_version"] == 2
+
+
+def test_bootstrap_keeps_legacy_ui_ready_schema_v1_compatible(tmp_path: Path) -> None:
+    marker = tmp_path / "ready-v1.json"
+    marker.write_text(json.dumps({"schema_version": 1, "pid": 1234}), encoding="utf-8")
+    assert bootstrap._read_ready_marker(marker) is not None
+
+
+
+def test_launch_application_accepts_schema_v2_ready_marker_without_timeout(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(bootstrap, "STATE", tmp_path / "state")
+    monkeypatch.setattr(bootstrap, "LOG_DIR", tmp_path / "logs")
+
+    class FakeProcess:
+        pid = 4321
+
+        def __init__(self, *_args, **kwargs) -> None:
+            marker = Path(kwargs["env"]["VIDEOBATCH_UI_READY_FILE"])
+            marker.parent.mkdir(parents=True, exist_ok=True)
+            marker.write_text(
+                json.dumps({"schema_version": 2, "pid": self.pid, "safe_mode": False}),
+                encoding="utf-8",
+            )
+
+        def poll(self):
+            return None
+
+    monkeypatch.setattr(bootstrap.subprocess, "Popen", FakeProcess)
+    sink = bootstrap.EventSink(__import__("queue").Queue(), tmp_path / "bootstrap.log")
+    pid, safe_mode = bootstrap.launch_application(
+        Path(sys.executable), dict(os.environ), sink, safe_mode=False, timeout=5
+    )
+    assert pid == 4321
+    assert safe_mode is False
+    assert "UI_READY pid=4321" in (tmp_path / "bootstrap.log").read_text(encoding="utf-8")
+    assert "UI_READY TIMEOUT" not in (tmp_path / "bootstrap.log").read_text(encoding="utf-8")
 
 def test_existing_instance_focus_request_roundtrip(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
@@ -100,3 +146,10 @@ def test_graphical_bootstrap_returns_success_after_confirmed_ui_ready() -> None:
     assert 'result = {"code": 1}' in source
     assert 'result["code"] = 0' in source
     assert 'return int(result["code"])' in source
+
+
+def test_debug_launcher_does_not_treat_ui_ready_timeout_as_success() -> None:
+    source = (SCRIPTS / "debug_launcher.py").read_text(encoding="utf-8")
+    assert 'elif _UI_READY_RE.match(text):' in source
+    assert '"UI_READY TIMEOUT" in text' in source
+    assert 'elif text.startswith("UI_READY"):' not in source

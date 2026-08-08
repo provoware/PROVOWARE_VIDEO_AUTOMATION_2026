@@ -1,0 +1,80 @@
+VIDEOBATCH FAST · OFFENE PUNKTE UND VERBESSERUNGEN
+Stand: 2026-08-07 nach Fortsetzungswelle 6
+
+[P0][M] VIS-001 – Original-SOLL/IST-PNGs numerisch vergleichen
+Grund: Die konkrete Musterabnahme braucht die beiden Originalbilder als Binärdateien; die Checkliste allein ersetzt keinen echten Pixel-/Strukturvergleich.
+Aufwand: M
+Aktion: compare_screenshots.py mit beiden Original-PNGs ausführen; TXT/JSON/Diff-PNG archivieren und UI-IDs einzeln abhaken.
+
+[P0][M] VIS-002 – Physische KDE-X11-Sichtabnahme
+Grund: Xvfb prüft Tk-Geometrie zuverlässig, bildet reale DPI-, Font- und Compositorabweichungen aber nicht vollständig ab.
+Aufwand: M
+Aktion: unveränderten Kandidaten bei 1440×900, 1500×920, 1920×1080 sowie 90/105/125 % auf realem KDE-X11 und, falls eingesetzt, Wayland prüfen.
+
+[P0][L] REL-001 – Realer Langzeitrender
+Grund: Dauerbetrieb, FFmpeg-I/O, Speicherentwicklung und thermische/Datenträger-Effekte benötigen reale Hardware.
+Aufwand: L
+Aktion: unveränderten Releasekandidaten über den Langzeitvertrag ausführen; Logs, Hashes, Resume-/Abbruchverhalten und Ausgabedateien sichern.
+
+[P2][XL] SCHED-001 – Scheduler nach Checkpoint 5 fertigstellen
+Grund: Zeit-/Energieintegration darf erst freigegeben werden, wenn Systemvertrag, Ruhezustand, Wiederaufnahme und Fehlerfälle vollständig verifiziert sind.
+Aufwand: XL
+Aktion: Erst nach abgeschlossenem Checkpoint-5-Systemvertrag; bis dahin weiterhin sichtbar, aber ehrlich gesperrt. Eine reine Host-Voraussetzungsdiagnose (FFmpeg/FFprobe/systemd-inhibit/systemctl) ist bereits umgesetzt und kann die Sperre nicht aufheben.
+
+ERLEDIGT IN FORTSETZUNGSWELLE 4
+- DATA-001: persistentes Tagmodell inklusive normalisierter Pfad→Tag-Speicherung, Tagfilter, Hinzufügen/Entfernen und echter „Unbenutzt“-Auswertung.
+- TOPBAR-001: dynamischer Relayout-Trigger für Status, Runtime-Badges und Schriftprofil; Utilitybuttons bleiben bei 140 % sichtbar.
+- VIS-MATRIX-001: 22/22 visuelle Szenarien bestanden; zusätzliche 90/105/125-%-Abnahmeszenarien und 1440×900/1500×920-Abmessungen aufgenommen.
+- VIS-RUNNER-001: zu kleine Testanzeige wird explizit erkannt; Xvfb-Hinweis auf 2560×1440 verhindert verfälschte Offscreen-Aufnahmen.
+- RELEASE-HYGIENE-001: operative RC-Literale aus Langzeitrendervertrag und GitHub-Workflow-Artefaktnamen entfernt; VERSION.json ist Quelle.
+- Regression: 480 Tests bestanden.
+- Interne Codequalität: 0 Befunde, maximale Komplexität 29.
+- Architekturprüfung: 0 Befunde.
+- Ereignisarchitektur: 0 Befunde.
+
+Hinweis: Stable bleibt bewusst gesperrt, bis VIS-001, VIS-002 und REL-001 auf exakt demselben unveränderten Kandidaten abgeschlossen sind.
+
+ERLEDIGT IN FORTSETZUNGSWELLE 5
+- BACKUP-MGR-001: Sicherungsmanager mit verifizierter Historie, Prüfung und Wiederherstellung als Kopie.
+- BACKUP-SAFE-001: Aktive Projektdatei kann aus dem Sicherungsmanager nicht versehentlich überschrieben werden.
+- BACKUP-LIST-001: Historie zeigt ausschließlich vorhandene, SHA-256-/Manifest-/ZIP-verifizierte Sicherungen.
+- SCHED-PREP-001: Host-Voraussetzungen werden transparent geprüft, ohne Checkpoint 5 zu umgehen.
+- Regression: 485 Tests bestanden.
+- Visuelle Regression: 22/22 Szenarien bestanden.
+- Codequalität/Architektur/Ereignisarchitektur: 0 Befunde.
+
+ERLEDIGT IN FORTSETZUNGSWELLE 6
+- SHUTDOWN-001: reentranzsicherer Shutdown; wiederholte Schließanforderungen starten keine zweite Beendigungssequenz.
+- SHUTDOWN-002: Autosave-/Settings-/Dienstfehler blockieren root.destroy() nicht; Teilfehler werden zusammengefasst protokolliert.
+- PREVIEW-STOP-001: FFplay wird nach SIGKILL mit begrenztem wait reap-ed; Transport-Poll wird beim Schließen abgebrochen.
+- BACKUP-HARDEN-001: Backups akzeptieren nur echte JSON-Projektobjekte.
+- BACKUP-HARDEN-002: 16-MiB-Projekt- und 64-KiB-Manifestlimit schützen die Verifikation vor ungewöhnlich großen komprimierten Nutzlasten.
+- BACKUP-HARDEN-003: Projekt-Schemaversion wird im Backupmanifest gespeichert und gegen den Payload geprüft; ältere Sicherungen bleiben kompatibel.
+- Regression: 490 Tests bestanden.
+- Visuelle Regression: 22/22 Szenarien bestanden.
+- Codequalität/Architektur/Ereignisarchitektur: 0 Befunde.
+ERLEDIGT IN FORTSETZUNGSWELLE 7
+- PROJECT-HARDEN-001: Aktive Projektdateien vor Parsing auf 16 MiB begrenzt.
+- PROJECT-HARDEN-002: Nicht-Objekt-JSON wird nicht mehr still als leeres Projekt akzeptiert, sondern quarantänisiert.
+- PROJECT-HARDEN-003: Unbekannte zukünftige Projektschemata werden sicher abgewiesen statt implizit heruntergestuft.
+- BACKUP-HARDEN-004: Doppelte ZIP-Einträge werden abgewiesen.
+- BACKUP-HARDEN-005: Unerwartete Zusatzdateien im Projektbackup werden abgewiesen.
+- BACKUP-HARDEN-006: Backup-Manifestschema wird strikt validiert.
+- BACKUP-DURABLE-001: Historie und Restore nutzen die gemeinsame atomare Safe-I/O-Schicht mit Verzeichnis-Fsync.
+- Regression: 496 Tests bestanden.
+- Visuelle Regression: 22/22 Szenarien bestanden.
+- Codequalität/Architektur/Ereignisarchitektur sowie Design-/Text-/Versions-/Registry-/Release-Literal-Verträge: bestanden.
+
+
+ERLEDIGT IN FORTSETZUNGSWELLE 8
+- BACKUP-DURABLE-002: Backup-ZIP wird vor dem atomaren Commit per Datei-fsync synchronisiert und danach das Zielverzeichnis fsync-synchronisiert.
+- RECOVERY-001: Verifizierte Backups bleiben auffindbar, wenn history.json fehlt, beschädigt oder nach einem Crash veraltet ist.
+- RECOVERY-002: Verwaiste neue Backups werden beim Reconcile korrekt nach Manifest-Zeit/Mikrosekunden-Dateiname einsortiert.
+- ROTATION-001: Standardrotation behält 30 verifizierte Projektbackups; unbekannte/defekte Dateien werden niemals blind gelöscht.
+- ROTATION-002: Löschungen werden mit Verzeichnis-fsync abgeschlossen.
+- FS-FAULT-001: Simulierter os.replace-Fehler lässt das alte Ziel unverändert und räumt Tempdateien auf.
+- FS-FAULT-002: Commit-/fsync-Fehler bei Backup-Erstellung werden als ProjectBackupError gemeldet; kein falsches fertiges Archiv bleibt liegen.
+- IO-EFF-001: Unveränderte Backuphistorie wird bei reinen Statusabfragen nicht erneut geschrieben.
+- Regression: 504 Tests unter Xvfb bestanden.
+- Codequalität/Architektur/Ereignisarchitektur: 0 Befunde; Design-/Text-/Versions-/Registry-/Release-Literal-Verträge bestanden.
+- Visueller Hinweis: Der isolierte Screenshot-Runner erreichte in der aktuellen Ausführungsumgebung das Kommando-Zeitlimit. Kein neuer Welle-8-Visuellnachweis wird behauptet; der Welle-7-Nachweis bleibt historisch bestehen.

@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "wave": 13,
+  "generated_at": "2026-08-07",
+  "focus": "Recovery Checkpoints & Generational State Engine",
+  "scenarios": [
+    {
+      "id": "CP-001",
+      "fault": "Multi-domain checkpoint normal path",
+      "expected": "Project, config, queue and backup metadata form one verified generation and restore together",
+      "result": "passed"
+    },
+    {
+      "id": "CP-002",
+      "fault": "Crash after durable checkpoint manifest but before publish",
+      "expected": "No visible generation; hidden creation residue is safely removable",
+      "result": "passed"
+    },
+    {
+      "id": "CP-003",
+      "fault": "Crash after generation publish but before graph update",
+      "expected": "Verified generation is rediscovered and graph is rebuilt",
+      "result": "passed"
+    },
+    {
+      "id": "CP-004",
+      "fault": "Snapshot corruption",
+      "expected": "Integrity verification fails closed and restore is blocked",
+      "result": "passed"
+    },
+    {
+      "id": "CP-005",
+      "fault": "Crash after first target of multi-file restore",
+      "expected": "Durable restore journal completes remaining targets by roll-forward after restart",
+      "result": "passed"
+    },
+    {
+      "id": "CP-006",
+      "fault": "Restore target was absent at checkpoint time",
+      "expected": "Point-in-time restore reproduces absence rather than leaving a later-created file",
+      "result": "passed"
+    },
+    {
+      "id": "CP-007",
+      "fault": "Point-in-time target between generations",
+      "expected": "Newest verified generation not later than target timestamp is selected",
+      "result": "passed"
+    },
+    {
+      "id": "CP-008",
+      "fault": "Retention over five generations",
+      "expected": "Old verified generations are deleted and parent graph is repaired over retained generations",
+      "result": "passed"
+    },
+    {
+      "id": "CP-009",
+      "fault": "Garbage collection while restore journal is pending",
+      "expected": "GC is blocked until restore recovery is complete",
+      "result": "passed"
+    },
+    {
+      "id": "CP-010",
+      "fault": "Corrupt checkpoint before real restore",
+      "expected": "Restore probe fails and current user state remains untouched",
+      "result": "passed"
+    },
+    {
+      "id": "CP-011",
+      "fault": "Generation graph rebuild after retained-history compaction",
+      "expected": "Remaining generations form a valid deterministic parent chain",
+      "result": "passed"
+    }
+  ],
+  "passed": true,
+  "scenario_count": 11
+}

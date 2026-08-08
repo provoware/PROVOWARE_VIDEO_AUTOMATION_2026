@@ -1,0 +1,14 @@
+PROVOWARE VIDEO AUTOMATION – FORTSETZUNGSWELLE 23
+Datum: 2026-08-08
+
+Forecast Calibration & Decision Quality implementiert.
+672/672 automatisierte Tests bestanden.
+Coverage: 81,40 % Lines / 65,30 % Branches / 78,03 % kombiniert.
+Coverage-Mindestvertrag 80/65 bestanden.
+Interne Codequalität: 334 Dateien / 2.913 Funktionen / max. Komplexität 30 / 0 Befunde.
+Architektur: 0 Befunde.
+Ereignisarchitektur und Ereignisregister: 0 Befunde.
+Rolling-Origin-Backtests 30/90/180 verwenden keine zukünftigen Samples.
+Actual-vs-Predicted-Historie, Segmentfehler, Drift, Altersgewichtung und Confidence-Kalibrierung sind aktiv.
+Externe Stable-Gates bleiben offen und wurden nicht simuliert.
+Finaler Source-Fingerprint: 85a34afa030236908f086ca92f71fbaf08d803b652a23be46ac637a011354e0d über 425 ausführungsrelevante Dateien.

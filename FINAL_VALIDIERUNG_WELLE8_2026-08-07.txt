@@ -1,0 +1,58 @@
+VIDEOBATCH FAST · FINALE VALIDIERUNG WELLE 8
+
+SCHWERPUNKT
+Recovery, Crash-Konsistenz, Dateisystemfehler, Backup-Rotation und Datenverlust-Prävention.
+
+EXTERNE REFERENZBASIS
+- Python-Dokumentation: flush + os.fsync für persistente Schreibvorgänge.
+- Linux/POSIX fsync/rename: atomarer Replace-Punkt und Verzeichnis-Fsync für persistente Directory-Metadaten.
+- NIST SP 1339 (2026): Backups regelmäßig erstellen, testen und in Recovery-Übungen prüfen.
+- CISA: mehrere getrennte Kopien/3-2-1 als organisatorische Schutzebene.
+- OWASP: Archive vor Verarbeitung auf Struktur und entpackte Größen validieren.
+
+UMSETZUNG
+- Neue Safe-I/O-Funktion atomic_commit_file(): bereits erzeugte Dateien werden vor os.replace per fsync synchronisiert; danach wird das Zielverzeichnis fsync-synchronisiert.
+- Projektbackup-ZIP wird damit nicht mehr nur atomar umbenannt, sondern vor dem Commit dauerhaft synchronisiert.
+- Backup-Erstellung kapselt Safe-I/O-Commitfehler konsistent als ProjectBackupError und entfernt temporäre Reste.
+- Backupliste kann verifizierte Archive direkt aus dem Backupordner wiederfinden, selbst wenn history.json fehlt, beschädigt oder nach einem Crash veraltet ist.
+- Verlorene/veraltete Backuphistorie wird aus verifizierten Archiven selbstgeheilt.
+- Zusammengeführte Historie wird nach Manifest-Zeit und Mikrosekunden-Dateiname sortiert, damit ein nach Crash verwaistes neues Backup niemals hinter älteren Historieneinträgen verschwindet.
+- Automatische konservative Backup-Rotation eingeführt: Standard 30 verifizierte Projektbackups.
+- Rotation löscht ausschließlich vollständig verifizierte VideoBatch-Projektbackups; fremde, beschädigte oder nicht verifizierbare Dateien werden nie automatisch entfernt.
+- Nach Löschrotation wird das Backupverzeichnis fsync-synchronisiert.
+- Backupstatus-Lesezugriffe schreiben history.json nur noch bei tatsächlicher Abweichung; unnötige periodische fsync-Schreiblast wurde vermieden.
+
+FEHLER-/CRASHTESTS WELLE 8
+- Historie fehlt nach erfolgreichem Backupcommit -> Backup wird wiedergefunden und Historie rekonstruiert.
+- Historie ist syntaktisch beschädigt -> verifizierte Archive bleiben auffindbar und Historie wird rekonstruiert.
+- Neues Backup ist nach Crash nicht in alter Historie enthalten -> neues Archiv wird korrekt als neuestes einsortiert.
+- Rotation mit Fremd-/Defektdatei -> Fremddatei bleibt unangetastet.
+- os.replace scheitert beim atomaren Schreiben -> bestehende Zieldatei bleibt unverändert, temporäre Datei wird entfernt.
+- Atomarer Commit über verschiedene Verzeichnisse -> wird explizit abgewiesen.
+- Backup-Commit/fsync scheitert -> konsistenter Domänenfehler; kein falsches fertiges Backup und keine Temp-Reste.
+- Unveränderte Historie -> reine List-/Footerabfrage erzeugt keinen unnötigen Rewrite.
+
+AUTOMATISCHE REGRESSION
+504 Tests bestanden, 0 fehlgeschlagen, unter Xvfb 1920×1080×24.
+
+STATISCHE GATES
+- Interne Codequalität: 0 Befunde, maximale Komplexität 29
+- Architektur: 0 Befunde
+- Ereignisarchitektur: 0 Befunde
+- Ereignisregister: bestanden
+- Designregelwerk: bestanden
+- Textvertrag: bestanden
+- Versionskonsistenz: bestanden
+- Registry-Vertrag: bestanden
+- Release-Literal-Hygiene: bestanden
+- Release-Dateistatus: bestanden (11 fertig / 8 offen)
+- Isolierte Python-Kompilierung: bestanden
+
+VISUELLE REGRESSION
+Der dedizierte isolierte Screenshot-Runner wurde in dieser Ausführungsumgebung mehrfach gestartet, erreichte jedoch jeweils das externe Kommando-Zeitlimit. Daher wird für Welle 8 ausdrücklich KEIN neuer 22/22-Visuellnachweis behauptet. Die Welle-8-Codeänderungen betreffen Safe-I/O, Backup/Recovery, Tests und Dokumentation; die vollständigen Tk-GUI-Tests der Gesamtsuite sind unter Xvfb bestanden. Der historische 22/22-Nachweis aus Welle 7 bleibt als vorheriger Nachweis erhalten, ist aber keine neue Welle-8-Rezertifizierung.
+
+RELEASESTATUS
+Stable bleibt bewusst gesperrt. VIS-001, VIS-002 und REL-001 benötigen weiterhin reale/externe Nachweise auf genau demselben unveränderten Kandidaten. SCHED-001 bleibt bis zum vorgesehenen Checkpoint-5-Systemvertrag gesperrt.
+
+DATENVERLUST-PRÄVENTION – GRENZE
+Die lokale Rotation erhöht Crash- und Bedienrobustheit, ersetzt aber keine physisch getrennte/offline Kopie. Für echte 3-2-1-Abdeckung bleibt eine zweite Medien-/Offsite-Ebene außerhalb dieses lokalen Projektbackupmoduls erforderlich.

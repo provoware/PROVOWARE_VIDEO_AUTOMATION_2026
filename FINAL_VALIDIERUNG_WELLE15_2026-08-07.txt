@@ -1,0 +1,26 @@
+PROVOWARE VIDEO AUTOMATION – FORTSETZUNGSWELLE 15
+Datum: 2026-08-07
+
+Authenticated Checkpoints & Recovery Trust Chain abgeschlossen.
+
+VALIDIERUNG
+- 566/566 automatisierte Tests bestanden.
+- Welle-15 Trust-/Chaos-Tests: 10/10 bestanden.
+- Interne Codequalitaet: 0 Befunde; maximale Komplexitaet 29.
+- Architektur: 0 Befunde.
+- Ereignisarchitektur: 0 Befunde.
+- Ereignisregister: 0 Befunde.
+- Registry, Design, Text, Version, Release-Literal und Release-Dateistatus bestanden.
+- Isolierte Python-Kompilierung bestanden.
+
+SICHERHEIT
+- HMAC-SHA-256-authentifizierte Checkpoint-Manifeste mit Key-ID.
+- Parent-Fingerprint-Kette erkennt Loeschen/Einschieben/Reordering.
+- Audit-Hash-/HMAC-Kette erkennt Manipulation innerhalb der Timeline.
+- Key-Rotation behaelt historische Verifizierbarkeit.
+- Explizite Legacy-Migration; kein stilles Trust-Upgrade.
+- Signierter Prune-Anchor unterscheidet geplante Retention von unautorisiertem Loeschen.
+- Trust-Level ist in der Restore-Vorschau sichtbar.
+
+STABLE
+Bestehende physische Stable-Gates bleiben unveraendert offen und werden durch Welle 15 nicht simuliert.

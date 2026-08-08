@@ -279,6 +279,7 @@ class UiDashboardProjectMixin:
             "quick_note": self.quick_note.get(),
             "audio_paths": [str(path) for path in self.audios],
             "media_paths": [str(path) for path in self.media],
+            "media_tags": dict(getattr(self, "media_tags", {})),
             "playlist_paths": [str(path) for path in self.playlist.items],
             "output_dir": self.output_dir.get(),
             "quick_mode": self.quick_mode.get(),
@@ -325,6 +326,7 @@ class UiDashboardProjectMixin:
         self.calendar_month = int(state.get("calendar_month", self.calendar_month))
         self.calendar_marks = dict(state.get("calendar_marks", self.calendar_marks))
         self.calendar_notes = dict(state.get("calendar_notes", self.calendar_notes))
+        self.media_tags = {key: list(value) for key, value in state.get("media_tags", {}).items()}
         self._initialize_workspace_layout_store(state.get("workspace_layout_profiles", {}))
         self.audios = [Path(item) for item in state.get("audio_paths", [])]
         self.media = [Path(item) for item in state.get("media_paths", [])]
@@ -377,6 +379,7 @@ class UiDashboardProjectMixin:
         self.project_state = {"project_name": "Neues Projekt"}
         self.calendar_marks = {}
         self.calendar_notes = {}
+        self.media_tags = {}
         self._clear_workspace_layout_profiles()
         self.calendar_year = datetime.now().year
         self.calendar_month = datetime.now().month

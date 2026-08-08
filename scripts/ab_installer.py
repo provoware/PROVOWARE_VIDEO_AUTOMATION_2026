@@ -942,6 +942,9 @@ def handle_verify_or_current(
     changed: list[str],
 ) -> int | None:
     if options.verify_only:
+        local_contract = Path(__file__).resolve().with_name("ab_contract.py")
+        if not local_contract.is_file() or local_contract.is_symlink():
+            _bootstrap_contract_module()
         if active not in SLOTS:
             raise InstallError("Keine aktive A/B-Installation vorhanden.", 62)
         installed_manifest = load_json(root / "slot_manifests" / f"{active}.json") or manifest
@@ -1069,6 +1072,9 @@ def prune_slot_backups(root: Path) -> None:
 
 
 def verify_installed_without_source(root: Path, state: dict[str, Any]) -> int:
+    local_contract = Path(__file__).resolve().with_name("ab_contract.py")
+    if not local_contract.is_file() or local_contract.is_symlink():
+        _bootstrap_contract_module()
     active = active_slot_from_state(root, state)
     if active not in SLOTS:
         raise InstallError("Keine aktive A/B-Installation vorhanden.", 62)

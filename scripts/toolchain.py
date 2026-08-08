@@ -387,7 +387,8 @@ def install(contract: dict[str, Any], *, replace: bool, scope: str = "all") -> P
         command = [
             str(python), "-m", "pip", "install",
             "--disable-pip-version-check", "--no-index", "--find-links", str(wheelhouse),
-            "--require-hashes", "--requirement", str(wheelhouse / lock_name),
+            "--only-binary=:all:", "--require-hashes",
+            "--requirement", str(wheelhouse / lock_name),
         ]
         completed = run(command)
         if completed.returncode:
@@ -454,7 +455,7 @@ def gate(contract: dict[str, Any], scope: str, *, run_external: bool) -> None:
     if effective_scope(scope) == "quality" and run_external:
         runner = required_file(str(contract["paths"]["external_runner"]))
         env = {**os.environ, "PATH": f"{python.parent}:{os.environ.get('PATH', '')}", "PYTHONPATH": str(ROOT / "src")}
-        completed = run([str(python), str(runner), "--mode", "required"], env=env)
+        completed = run([str(python), str(runner), "--mode", "required", "--offline"], env=env)
         print(completed.stdout, end="")
         if completed.returncode:
             raise RuntimeError("Mindestens eines der externen Qualitätsgates ist rot.")

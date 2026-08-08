@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "wave": 18,
+  "status": "prepared-not-physically-executed",
+  "scenarios": [
+    {
+      "id": "OP-001",
+      "scenario": "Operator session candidate binding",
+      "expected": "source/manifest change blocks session",
+      "result": "passed"
+    },
+    {
+      "id": "OP-002",
+      "scenario": "Out-of-order phase attempt",
+      "expected": "blocked until all previous phases passed",
+      "result": "passed"
+    },
+    {
+      "id": "OP-003",
+      "scenario": "Recorded evidence tampering",
+      "expected": "session load fails closed",
+      "result": "passed"
+    },
+    {
+      "id": "OP-004",
+      "scenario": "External quality runner invocation",
+      "expected": "required tools execute with offline guard",
+      "result": "passed"
+    },
+    {
+      "id": "OP-005",
+      "scenario": "pip-audit advisory preparation",
+      "expected": "dedicated cache is prepared and hashed before offline final audit",
+      "result": "passed-by-contract"
+    },
+    {
+      "id": "OP-006",
+      "scenario": "KDE X11 acceptance",
+      "expected": "only physical KDE X11 can export kde_x11.json",
+      "result": "operator-ready-physical-run-open"
+    },
+    {
+      "id": "OP-008",
+      "scenario": "Desktop raw evidence preservation",
+      "expected": "summary, raw report and screenshot retained per session",
+      "result": "passed"
+    },
+    {
+      "id": "OP-009",
+      "scenario": "96-job slow-target soak",
+      "expected": "real USB/ext4 target plus contract/final report hashes required",
+      "result": "operator-ready-physical-run-open"
+    },
+    {
+      "id": "OP-010",
+      "scenario": "Promotion rehearsal",
+      "expected": "quality + X11 + soak evidence required; two stable packages byte-identical",
+      "result": "operator-ready-after-physical-gates"
+    }
+  ]
+}

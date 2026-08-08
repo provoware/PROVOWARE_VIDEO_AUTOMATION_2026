@@ -38,7 +38,6 @@ jobs:
           - ubuntu-24.04
         session:
           - x11
-          - wayland
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     env:

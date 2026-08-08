@@ -1,0 +1,34 @@
+VIDEOBATCH FAST · ABSTURZANALYSE UI-READY-HANDSHAKE
+Datum: 2026-08-07
+Status: KRITISCHER STARTBLOCKER BEHOBEN
+
+1. BEOBACHTUNG
+Die Anwendung meldete im Application-Log erfolgreich UI-Bereitschaft, der Bootstrap meldete trotzdem nach 35 Sekunden UI_READY TIMEOUT und beendete den Prozess.
+
+2. HAUPTURSACHE
+src/videobatch_fast/startup_handshake.py schreibt Ready-Marker mit schema_version=2.
+scripts/bootstrap.py akzeptierte in _read_ready_marker() ausschließlich schema_version==1.
+Damit wurde jeder aktuelle Ready-Marker verworfen. Die Oberfläche war funktionsfähig, wurde aber vom Starter nach Ablauf des Timeouts beendet.
+
+3. SEKUNDÄRFEHLER IM DEBUGBERICHT
+scripts/debug_launcher.py klassifizierte jede Zeile mit Präfix UI_READY als Erfolg. Dadurch wurde auch UI_READY TIMEOUT als OK protokolliert und der Bericht widersprüchlich.
+
+4. FIX
+- Bootstrap akzeptiert Ready-Schemata 1 und 2.
+- Kompatibilität zu älteren Schema-1-Markern bleibt erhalten.
+- Debug-Starter erkennt Erfolg nur noch über das konkrete Muster UI_READY pid=<PID>.
+- UI_READY TIMEOUT wird explizit als Fehler klassifiziert.
+- launch_application() legt seinen Logordner nun selbst an.
+- Regressionstest simuliert einen Schema-2-Marker durch den vollständigen launch_application-Pfad.
+
+5. WEITERER BEFUND
+Ein unabhängiger A/B-Release-Test war rot: verify-only reparierte nach einem Application-Rollback eine fehlende Controller-ab_contract.py nicht, wenn ab_contract über einen geerbten PYTHONPATH importiert werden konnte. Auch dieser Vertrag wurde korrigiert.
+
+6. VALIDIERUNG
+- 450 Tests unter Xvfb: bestanden.
+- Startup-Supervision-Tests: bestanden.
+- RC15→RC16 Controller-Bridge-Test: bestanden.
+- Python-Syntax/Importe: bestanden.
+
+7. AUSWIRKUNG FÜR DEN NUTZER
+Der Starter beendet eine bereits korrekt aufgebaute Oberfläche nicht mehr fälschlich nach dem Ready-Timeout. Normal- und Safe-Mode verwenden denselben korrigierten Handshakevertrag.

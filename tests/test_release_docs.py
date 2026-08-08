@@ -20,3 +20,12 @@ def test_release_docs_use_version_report_status_and_file_contract(tmp_path: Path
     assert "Guide_save_.md" in status
     assert "TODO.md" in status
     assert documents[tmp_path / "README.md"].endswith("\n\nNutzung\n")
+
+def test_project_release_renderers_agree_on_canonical_readme() -> None:
+    from diagnostics.release_readiness import generate_from_evidence as canonical
+
+    root = Path(__file__).resolve().parents[1]
+    evidence = canonical.evidence()
+    canonical_readme = canonical.expected_outputs(evidence)[root / "README.md"]
+    release_readme = render(root)[root / "README.md"]
+    assert canonical_readme == release_readme

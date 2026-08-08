@@ -32,7 +32,7 @@ Vor einer Aktualisierung bleibt der bestätigte aktive A/B-Slot unverändert. De
 
 **Rückweg:** Scheitert der erste Start oder die abschließende Prüfung, wird automatisch auf den zuletzt bestätigten Slot zurückgeschaltet.
 
-## Schritt-für-Schritt-Ablauf
+## Schritt-für-Schritt-Anleitung
 
 ### Schritt 1: Betriebssystem und Architektur prüfen
 

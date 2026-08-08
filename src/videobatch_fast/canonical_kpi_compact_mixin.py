@@ -27,8 +27,10 @@ class CanonicalKpiCompactMixin:
             for child in card.winfo_children():
                 if isinstance(child, ttk.Label):
                     try:
-                        child.configure(wraplength=width)
-                    except TclError:
+                        current = int(float(child.cget("wraplength") or 0))
+                        if current != width:
+                            child.configure(wraplength=width)
+                    except (TclError, ValueError):
                         return
 
     @staticmethod

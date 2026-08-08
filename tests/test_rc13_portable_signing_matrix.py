@@ -35,16 +35,16 @@ class Rc13PortableSigningMatrixTests(unittest.TestCase):
         private_candidates = list(ROOT.rglob("*Private*Key*.pem")) + list(ROOT.rglob("private-key.pem"))
         self.assertEqual(private_candidates, [])
 
-    def test_kubuntu_matrix_covers_four_required_targets(self) -> None:
+    def test_kubuntu_matrix_covers_two_required_x11_targets(self) -> None:
         contract = json.loads((ROOT / "KUBUNTU_BUILD_MATRIX.json").read_text(encoding="utf-8"))
         targets = {(item["os"], item["session"]) for item in contract["targets"]}
         self.assertEqual(targets, {
-            ("ubuntu-22.04", "x11"), ("ubuntu-22.04", "wayland"),
-            ("ubuntu-24.04", "x11"), ("ubuntu-24.04", "wayland"),
+            ("ubuntu-22.04", "x11"),
+            ("ubuntu-24.04", "x11"),
         })
         workflow = (ROOT / ".github/workflows/kubuntu-build-matrix.yml").read_text(encoding="utf-8")
         self.assertIn("ubuntu-22.04", workflow); self.assertIn("ubuntu-24.04", workflow)
-        self.assertIn("x11", workflow); self.assertIn("wayland", workflow)
+        self.assertIn("x11", workflow); self.assertNotIn("- wayland", workflow)
 
 
 if __name__ == "__main__":

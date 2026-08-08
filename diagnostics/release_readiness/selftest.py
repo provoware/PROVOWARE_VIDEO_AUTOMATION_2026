@@ -86,7 +86,7 @@ def fixture(root: Path, *, contradictory: bool, all_pass: bool = False) -> list[
         "mypy_2_3_0": "passed" if all_pass else "not executed",
         "bandit_1_9_4": "passed" if all_pass else "not executed",
         "pip_audit_2_10_1": "passed" if all_pass else "not executed",
-        "physical_kde_x11_wayland": "passed" if all_pass else "required",
+        "physical_kde_x11": "passed" if all_pass else "required",
         "large_media_soak": "passed" if all_pass else "required",
     }
     write_json(

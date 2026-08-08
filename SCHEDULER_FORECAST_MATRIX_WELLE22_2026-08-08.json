@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "wave": 22,
+  "date": "2026-08-08",
+  "contract": "Scheduler Decision Intelligence & Queue Forecasting",
+  "scenarios": [
+    {"id": "SDF-001", "scenario": "Robuste Median-ETA trotz Ausreißer", "result": "passed"},
+    {"id": "SDF-002", "scenario": "Keine Scheinpräzision ohne Renderhistorie", "result": "passed"},
+    {"id": "SDF-003", "scenario": "P75-Speicherprognose pro Lauf und Restserie", "result": "passed"},
+    {"id": "SDF-004", "scenario": "Prioritätsreihenfolge bei gleichem Termin", "result": "passed"},
+    {"id": "SDF-005", "scenario": "Blackout verschiebt Prognosestart", "result": "passed"},
+    {"id": "SDF-006", "scenario": "Queuekonflikt kann Catch-up-Deadline prognostiziert überschreiten", "result": "passed"},
+    {"id": "SDF-007", "scenario": "Dry-Run verändert keine Scheduler-/State-Dateien", "result": "passed"},
+    {"id": "SDF-008", "scenario": "Dead-Letter persistent und historisiert", "result": "passed"},
+    {"id": "SDF-009", "scenario": "Dead-Letter-Diagnose liefert konkrete Reparaturaktion", "result": "passed"},
+    {"id": "SDF-010", "scenario": "Ungültiges Projekt wird vor Renderstart Dead-Letter", "result": "passed"},
+    {"id": "SDF-011", "scenario": "Operationssnapshot enthält ETA, Diagnose und Simulation", "result": "passed"},
+    {"id": "SDF-012", "scenario": "Dry-Run-Horizont 24 Stunden", "result": "passed"},
+    {"id": "SDF-013", "scenario": "Dry-Run-Horizont 48 Stunden", "result": "passed"},
+    {"id": "SDF-014", "scenario": "Dry-Run-Horizont 168 Stunden", "result": "passed"}
+  ],
+  "summary": {"passed": 14, "failed": 0}
+}

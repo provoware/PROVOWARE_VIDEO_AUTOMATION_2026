@@ -1,0 +1,57 @@
+VIDEOBATCH FAST · FORTSETZUNGSBERICHT OFFENE PUNKTE · WELLE 6
+Stand: 2026-08-07
+
+ZIEL
+Release-sichere Härtung ohne Umgehung der noch offenen physischen P0-Nachweise. Fokus dieser Welle: Shutdown-/Prozesslebenszyklus und Backup-Datenintegrität.
+
+ERLEDIGT
+
+1. SHUTDOWN-001 [P1/S] – Schließen ist reentranzsicher
+   Grund: Doppelklick/mehrfache WM_DELETE-Aufrufe durften den Shutdownpfad nicht doppelt starten.
+   Umsetzung: _shutdown_in_progress schützt den Ablauf; eine zweite Schließanforderung wird ignoriert.
+   Nachweis: Regressionstest test_shutdown_resilience_wave6.py.
+
+2. SHUTDOWN-002 [P1/M] – Beenden bleibt bei Persistenzfehlern garantiert
+   Grund: Ein Fehler beim Autosave oder Settings-Speichern durfte die Oberfläche nicht halb geschlossen und unbedienbar stehen lassen.
+   Umsetzung: Render-, Preview-, Task-, Audio-, Autosave- und Settings-Schritte werden getrennt abgefangen; Teilfehler werden als SHUTDOWN_PARTIAL_FAILURE protokolliert; root.destroy() liegt im finally-Pfad.
+   Nachweis: gezielter Fehlerpfadtest mit absichtlich fehlerhaftem Autosave/Settings.
+
+3. PREVIEW-STOP-001 [P1/S] – FFplay nach Zwangsbeendigung reap-en
+   Grund: Nach SIGKILL konnte ein Kindprozess kurzzeitig als Zombie zurückbleiben.
+   Umsetzung: Nach SIGKILL erfolgt ein zusätzlicher begrenzter process.wait(timeout=0.5).
+   Nachweis: test_preview_shutdown_wave6.py.
+
+4. PREVIEW-STOP-002 [P1/S] – Transport-Poll beim Schließen abbrechen
+   Grund: Ein geplanter 300-ms-Tk-Callback sollte nicht mehr während des restlichen Shutdownpfads feuern.
+   Umsetzung: _dashboard_transport_poll_id wird vor Player-Stopp per after_cancel entfernt.
+
+5. BACKUP-HARDEN-001 [P1/M] – Nur echte Projektobjekte sichern
+   Grund: Syntaktisch gültiges JSON wie [] ist kein VideoBatch-Projektzustand.
+   Umsetzung: Sicherung und Verifikation verlangen ein JSON-Objekt/dict.
+
+6. BACKUP-HARDEN-002 [P1/M] – Größenlimits gegen manipulierte Archive
+   Grund: Ein komprimiertes Backup kann eine ungewöhnlich große entpackte Projektdatei deklarieren.
+   Umsetzung: Projektzustand maximal 16 MiB, Manifest maximal 64 KiB; Prüfung erfolgt über ZipInfo vor dem vollständigen Lesen.
+
+7. BACKUP-HARDEN-003 [P1/S] – Projekt-Schemaversion im Manifest
+   Grund: Sicherung und enthaltenes Projekt müssen denselben Datenvertrag deklarieren.
+   Umsetzung: project_schema_version wird beim Erstellen gespeichert; vorhandene ältere Backups ohne das Feld bleiben abwärtskompatibel, bei neuen/erkannten Werten wird Manifest↔Payload-Konsistenz geprüft.
+
+VALIDIERUNG
+- 490/490 Pytest-Tests bestanden unter Xvfb.
+- 22/22 visuelle Szenarien bestanden auf 2560x1440x24-Xvfb.
+- Interne Codequalität: 0 Befunde, max. Komplexität 29.
+- Architekturprüfung: 0 Befunde.
+- Ereignisarchitektur: 0 Befunde.
+- Designregelwerk: bestanden.
+- Release-Literal-Hygiene: bestanden.
+- Textressourcenvertrag: bestanden.
+- Versionskonsistenz: bestanden.
+- Dokumentation: bestanden.
+- Release-Dateistatus technisch bestanden (11 fertig / 8 offen; Stable bleibt bewusst gesperrt).
+- Python compileall: bestanden.
+- 65 JSON-Dateien gelesen.
+- Shell-Syntax: bestanden.
+
+NICHT ALS ERLEDIGT DEKLARIERT
+VIS-001, VIS-002 und REL-001 benötigen weiterhin reale Originalbilder bzw. reale Hardware. SCHED-001 bleibt bis Checkpoint 5 gesperrt.

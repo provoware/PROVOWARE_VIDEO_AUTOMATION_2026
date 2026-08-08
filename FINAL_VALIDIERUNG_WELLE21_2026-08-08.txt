@@ -1,0 +1,11 @@
+PROVOWARE VIDEO AUTOMATION – FORTSETZUNGSWELLE 21
+Datum: 2026-08-08
+
+Scheduler Queue Governance & Operational Recovery implementiert.
+644/644 automatisierte Tests bestanden.
+Coverage: 81,22 % Lines / 65,07 % Branches / 77,88 % kombiniert.
+Coverage-Mindestvertrag 80/65 bestanden.
+Interne Codequalität: 327 Dateien / 2.831 Funktionen / max. Komplexität 30 / 0 Befunde.
+Architektur: 0 Befunde.
+Ereignisarchitektur und Ereignisregister: 0 Befunde.
+Externe Stable-Gates bleiben offen und wurden nicht simuliert.

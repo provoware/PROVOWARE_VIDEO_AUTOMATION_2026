@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "modules": 153,
+  "functions": 1604,
+  "classes": 173,
+  "max_file": {
+    "name": "ui.py",
+    "lines": 700
+  },
+  "line_limit": 700,
+  "findings": []
+}

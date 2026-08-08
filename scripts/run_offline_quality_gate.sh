@@ -52,12 +52,25 @@ gate_exit=${PIPESTATUS[0]}
 set -e
 printf '%s\n' "$gate_exit" > "$EVIDENCE_DIR/offline-quality-gate.exit"
 
+if [[ "$gate_exit" -eq 0 ]]; then
+  python3 scripts/quality_evidence.py build --evidence-dir "$EVIDENCE_DIR"
+  python3 scripts/quality_evidence.py verify --evidence-dir "$EVIDENCE_DIR"
+  python3 scripts/quality_evidence.py bundle --evidence-dir "$EVIDENCE_DIR" --output "$EVIDENCE_DIR/quality-evidence-bundle.zip"
+fi
+
 "$QUALITY_PYTHON" - <<'PY'
 import json
 import os
 from pathlib import Path
 report_path = Path(os.environ["VIDEOBATCH_DIAGNOSTICS_DIR"]) / "external_quality_latest.json"
 report = json.loads(report_path.read_text(encoding="utf-8"))
+if report.get("schema_version") != 4:
+    raise SystemExit(f"External quality report schema mismatch: {report.get('schema_version')!r}")
+import sys
+sys.path.insert(0, str(Path.cwd() / "scripts"))
+from release_identity import release_identity
+if report.get("candidate_identity") != release_identity():
+    raise SystemExit("External quality report is stale for current Source/Manifest identity")
 expected = ["ruff", "mypy", "bandit", "pip-audit"]
 names = [item.get("tool") for item in report.get("results", [])]
 if names != expected:

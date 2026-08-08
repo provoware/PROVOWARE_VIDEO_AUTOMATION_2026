@@ -1,0 +1,29 @@
+PROVOWARE VIDEO AUTOMATION – FINALVALIDIERUNG FORTSETZUNGSWELLE 14
+Stand: 2026-08-07
+
+SCHWERPUNKT
+Checkpoint Verification, Forensics & Safe Restore UX: kryptografische Generationsfingerprints, Restore-Dry-Run, qualitätsbasierte Recovery-Punktwahl, Quarantäne beschädigter Generationen, Forensik-Timeline, sichere UI-Vorschau und Schutz gegen unbeabsichtigte schlechtere Restores.
+
+IMPLEMENTIERT
+1. SHA-256-Fingerprint über kanonische semantische Manifestdaten neuer Generationen.
+2. Restore-Dry-Run mit Dateiaktionen unchanged/replace/create/delete sowie Hash-/Größenvergleich.
+3. Auswahl des besten Recovery-Punkts nach Domänenvollständigkeit vor Aktualität.
+4. Atomare Quarantäne beschädigter Generationen statt Löschen.
+5. Robuste Recovery-Forensik-Timeline aus durablem Audit-JSONL.
+6. Safe-Restore-Schranke gegen geringere Domänenabdeckung und ältere gleichwertige Generationen.
+7. Read-only Restore-Vorschau im Diagnose-UI.
+8. Startup-Isolation beschädigter Checkpoints.
+9. End-to-End-Test Checkpoint → Korruption → Diagnose → Auswahl → Probe → Restore → Re-Checkpoint.
+
+NACHWEISE
+- Neue Welle-14-Tests: 8/8 bestanden.
+- Kombinierte Welle-13/14-Tests nach Architekturrefactor: 19/19 bestanden.
+- Vollsuite in vollständigen Testdatei-Batches: 556/556 bestanden (149 + 124 + 132 + 151).
+- Interne Codequalität: 295 Dateien, 2484 Funktionen, max. Komplexität 29, Befunde 0.
+- Architektur: 129 Module, 1329 Funktionen, 164 Klassen, größte Datei 700 Zeilen, Befunde 0.
+- Ereignisarchitektur: 0 Befunde.
+- Ereignisregister: 0 Befunde.
+- Registry, Design, Text, Release-Literal, Release-Dateistatus, Dokumentation und Compile: bestanden.
+
+STABLE
+VIS-001, VIS-002, REL-001 und SCHED-001 bleiben unverändert offen. Welle 14 behauptet keine physische Stromausfall-/Controller-/Kernel-/Dateisystem-Fault-Abnahme.

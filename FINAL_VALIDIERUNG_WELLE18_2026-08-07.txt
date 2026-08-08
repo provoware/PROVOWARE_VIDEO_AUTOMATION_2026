@@ -1,0 +1,35 @@
+PROVOWARE VIDEO AUTOMATION 2026 – FINALVALIDIERUNG WELLE 18
+Datum: 2026-08-07
+
+Schwerpunkt:
+Real Stable-Gate Execution & Promotion Rehearsal.
+
+Finaler interner Nachweis:
+- 600/600 automatisierte Tests bestanden.
+- Finale Testgruppen: 80 + 79 + 95 + 54 + 74 + 70 + 90 + 58.
+- Coverage: 81,93 % Lines / 66,43 % Branches / 78,78 % kombiniert.
+- Coverage-Vertrag 80/65: bestanden.
+- Interne Codequalität: 0 Befunde, max. Komplexität 29.
+- Architektur: 0 Befunde.
+- Ereignisarchitektur/-register: 0 Befunde.
+
+Welle-18-Härtung:
+- Freigaberelevanter externer Quality-Runner läuft jetzt mit Offline-Guard.
+- pip-audit Advisory-Cache wird getrennt vorbereitet, gehasht und im finalen Gate offline benutzt.
+- Source-/Manifest-gebundene persistente Operator-Sitzung.
+- Reihenfolgesperre für Toolchain -> Quality -> X11 -> Soak -> Promotion-Rehearsal.
+- Bereits aufgezeichnete Evidence wird bei jedem Session-Load erneut hashverifiziert.
+- X11-Raw-Report und Screenshot werden getrennt konserviert.
+- Langzeitrender bindet Vertrag + final-report.json + Stable-Summary-Evidence.
+- Promotion-Rehearsal prüft ausschließlich gebundene Evidence und verlangt byteidentische Doppelpaketierung.
+- Portables deterministisches Operator-Kit implementiert.
+
+Nicht als bestanden behauptet:
+- Ruff 0.16.1 real auf geeignetem Operator-Host.
+- MyPy 2.3.0 real auf geeignetem Operator-Host.
+- Bandit 1.9.4 real auf geeignetem Operator-Host.
+- pip-audit 2.10.1 real mit frisch vorbereitetem Advisory-Cache.
+- physische KDE-X11-Abnahme.
+- realer 96-Job-Large-Media-/Slow-Target-Soak.
+
+Stable bleibt bis zu diesen realen Nachweisen gesperrt.

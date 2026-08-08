@@ -1,0 +1,40 @@
+PROVOWARE VIDEO AUTOMATION 2026 – FINALVALIDIERUNG WELLE 20
+Datum: 2026-08-08
+
+SCHWERPUNKT
+Scheduler Operations & Recurrence: begrenzte Einmal-/Tages-/Wochenserien, DST-/Zeitzonen-Härtung, Catch-up-Policy, globaler Renderkonfliktschutz, Scheduler-Historie und Verwaltungsansicht.
+
+VALIDIERTER ENDSTAND
+- Gesamtregression: 625/625 Tests bestanden.
+- Testpartitionen: 90 + 62 + 94 + 70 + 80 + 79 + 85 + 65 = 625.
+- Coverage: 81,42 % Lines / 65,76 % Branches / 78,21 % kombiniert.
+- Coverage-Mindestvertrag 80/65: bestanden.
+- Interne Codequalität: 318 Python-Dateien / 2.747 Funktionen / maximale Komplexität 29 / 0 Befunde.
+- Architekturprüfung: 0 Befunde; größte Python-Datei ui.py mit 700 Zeilen.
+- Ereignisarchitektur: 0 Befunde.
+- Ereignisregister: 0 Befunde / 18 Kennungen.
+- Designregelwerk: bestanden.
+- Dokumentationsvertrag: bestanden.
+- Release-Literal-Hygiene: bestanden.
+- Release-Dateistatus: bestanden.
+- Isolierte Python-Kompilierung: bestanden.
+- Release-Manifest: 598 Dateien.
+- Ausführungsrelevanter Source-Satz: 409 Dateien.
+- Source-SHA-256: 35fc34ace1e3648a19a7dd8df1d6d2f145907f0ded36f1d11f37d7040214fd2e.
+
+WELLE-20-SCHUTZVERTRÄGE
+- Wiederholungen sind begrenzt und werden als konkrete Einzelvorkommen fortgeschrieben.
+- Zeitpläne speichern eine IANA-Zeitzone; konkrete systemd-Termine werden als eindeutige UTC-Zeitpunkte ausgegeben.
+- Nicht existierende lokale DST-Zeiten werden deterministisch übersprungen; mehrdeutige Herbstzeiten werden deterministisch auf die spätere Instanz aufgelöst.
+- Catch-up unterstützt explizit skip oder run_once innerhalb eines begrenzten Verspätungsfensters.
+- Eine globale POSIX-Render-Lease verhindert parallele GUI-/Scheduler-Batches.
+- Konflikte werden nur begrenzt verschoben und danach nachvollziehbar historisiert.
+- Scheduler-Historie ist begrenzt und atomar persistiert.
+- Mehrere Zeitpläne pro Projekt sowie Bearbeiten, Duplizieren und Löschen sind unterstützt.
+- Legacy-Schema-1-Pläne werden explizit und sicher zu Schema 2 migriert.
+
+NICHT ALS BESTANDEN SIMULIERT
+Die sechs externen Stable-Gates bleiben offen: Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4, pip-audit 2.10.1, physische KDE-X11-Abnahme sowie realer 96-Job-Large-Media-/Slow-Target-Soak.
+
+FREIGABEAUSSAGE
+Welle 20 ist intern regressions-, coverage-, architektur- und dokumentationsseitig validiert. Eine Stable-Promotion wird durch die weiterhin offenen externen Nachweise nicht behauptet.

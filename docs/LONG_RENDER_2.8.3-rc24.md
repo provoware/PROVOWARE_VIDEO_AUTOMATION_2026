@@ -106,17 +106,19 @@ Die Vertragsdatei wird exklusiv neu angelegt. Eine vorhandene Datei wird nicht
 ## Erstlauf und Wiederaufnahme
 
 ```bash
-PYTHONPATH=src python3 scripts/run_long_render_acceptance.py \
-  --contract /pfad/rc24-long-render-contract.json
+PYTHONPATH=src:. python3 scripts/run_long_render_acceptance.py \
+  --contract /pfad/rc24-long-render-contract.json \
+  --evidence-dir /pfad/stable-evidence
 ```
 
 Ein kontrollierter Abbruch oder Aufruf-Timeout endet mit Statuscode `75`. Danach wird
 nur derselbe Vertrag fortgesetzt:
 
 ```bash
-PYTHONPATH=src python3 scripts/run_long_render_acceptance.py \
+PYTHONPATH=src:. python3 scripts/run_long_render_acceptance.py \
   --contract /pfad/rc24-long-render-contract.json \
-  --resume
+  --resume \
+  --evidence-dir /pfad/stable-evidence
 ```
 
 ## Evidenz
@@ -128,6 +130,8 @@ Im Zielordner entsteht `.provoware-long-render/` mit:
 - `heartbeats/heartbeat-*.json` – periodische Zustandsnachweise
 - `partials/` – sicher archivierte unfertige Ausgaben vor Wiederaufnahme
 - `final-report.json` – gebundener Abschlussbericht
+
+Nach einem vollständig bestandenen **physischen** Lauf erzeugt `--evidence-dir` zusätzlich `long_render.json` im Stable-Evidence-Schema 2. Dieser Export bindet den Nachweis an Kandidat, Release-Manifest und den ausführungsrelevanten Source-Fingerprint. Rehearsals, interne Ziele oder unzureichend langsame/nicht externe Ziele können diese Stable-Evidence nicht erzeugen.
 
 ## Automatisierter Probelauf
 

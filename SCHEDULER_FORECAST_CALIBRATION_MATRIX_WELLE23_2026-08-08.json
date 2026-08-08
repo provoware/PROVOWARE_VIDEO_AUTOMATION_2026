@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "wave": 23,
+  "title": "Forecast Calibration & Decision Quality",
+  "scenarios": [
+    {"id": "FCAL-001", "scenario": "Rolling-Origin ohne Future-Leakage", "expected": "Ziel-Lauf wird nur aus älteren Samples prognostiziert", "status": "passed"},
+    {"id": "FCAL-002", "scenario": "Backtest 30/90/180", "expected": "Drei begrenzte reale Lauf-Fenster werden ausgewiesen", "status": "passed"},
+    {"id": "FCAL-003", "scenario": "Robuste Fehlermaße", "expected": "MAE/RMSE/Median/P90/Bias werden deterministisch berechnet", "status": "passed"},
+    {"id": "FCAL-004", "scenario": "Codec-Profil-Auflösungssegmentierung", "expected": "Fehler werden getrennt je Segment ausgewiesen", "status": "passed"},
+    {"id": "FCAL-005", "scenario": "Alte Samples", "expected": "Historische Samples werden kontrolliert geringer gewichtet", "status": "passed"},
+    {"id": "FCAL-006", "scenario": "Schlechte Backtest-Güte", "expected": "Nominale Confidence wird automatisch begrenzt", "status": "passed"},
+    {"id": "FCAL-007", "scenario": "Laufzeit-Level-Drift", "expected": "Jüngste Leistungsverschiebung wird als watch/drift erkannt", "status": "passed"},
+    {"id": "FCAL-008", "scenario": "Actual-vs-Predicted-Persistenz", "expected": "Prognose und spätere Ist-Werte werden gemeinsam historisiert", "status": "passed"},
+    {"id": "FCAL-009", "scenario": "Worker-Integration", "expected": "Echter Batch-Finish speichert Laufzeit, Outputgröße und Operation-ID", "status": "passed"},
+    {"id": "FCAL-010", "scenario": "Scheduler-Export", "expected": "Forecast-Qualität und Vergleichshistorie liegen im Export vor", "status": "passed"},
+    {"id": "FCAL-011", "scenario": "Operations-UI", "expected": "Backtests, Segmente und Actual-vs-Predicted werden sichtbar", "status": "passed"},
+    {"id": "FCAL-012", "scenario": "Evidence-Fehler", "expected": "Kalibrierung kann Rendererfolg nicht nachträglich in Fehler umklassifizieren", "status": "passed"}
+  ]
+}

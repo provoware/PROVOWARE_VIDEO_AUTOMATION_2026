@@ -1,14 +1,6 @@
 {
-  "schema_version": 1,
-  "contract_id": "videobatch-fast.predictive-bootstrap/2.8.3-rc24-v1",
-  "release_target": "2.8.3-rc24",
+  "contract_id": "videobatch-fast.predictive-bootstrap/2.8.3-rc24-v2",
   "packages": {
-    "runtime": {
-      "cffi": "2.0.0",
-      "cryptography": "50.0.0",
-      "Pillow": "12.3.0",
-      "pycparser": "3.0"
-    },
     "quality": {
       "bandit": "1.9.4",
       "coverage": "7.13.3",
@@ -17,39 +9,51 @@
       "pytest": "9.0.2",
       "pytest-cov": "7.0.0",
       "ruff": "0.16.1"
+    },
+    "runtime": {
+      "Pillow": "12.3.0",
+      "cffi": "2.0.0",
+      "cryptography": "50.0.0",
+      "pycparser": "3.0"
     }
   },
-  "policy": {
-    "fail_closed": true,
-    "stable_requires_all_tools": true,
-    "exact_versions_required": true,
-    "offline_installation_required": true,
-    "wheel_hash_manifest_required": true,
-    "sdists_forbidden": true,
-    "online_download_requires_explicit_consent": true,
-    "atomic_replacement_required": true,
-    "public_index": "https://pypi.org/simple",
-    "automatic_repair_on_launcher_start": true,
-    "automatic_local_wheelhouse_reuse": true,
-    "offline_opt_out_supported": true,
-    "automatic_stable_finalization": true,
-    "stable_requires_live_desktop_gate": true,
-    "explicit_consent_is_central_launcher_invocation": true,
-    "startup_requires_quality_tools": false,
-    "runtime_and_quality_environments_separated": true,
-    "content_addressed_user_environments": true,
-    "real_ffmpeg_smoke_tests_required": true
-  },
   "paths": {
-    "runtime_lock": "requirements.lock",
-    "quality_lock": "requirements-quality.lock",
-    "unified_lock": "requirements-toolchain.lock",
-    "wheelhouse": "toolchain_wheelhouse",
-    "wheelhouse_manifest": "toolchain_wheelhouse/TOOLCHAIN_WHEELHOUSE_MANIFEST.json",
-    "resolved_lock": "toolchain_wheelhouse/requirements-toolchain-resolved.lock",
-    "venv": ".videobatch-venv",
+    "environment_location": "XDG_DATA_HOME/VideoBatchFast/environments",
     "external_runner": "scripts/run_external_quality.py",
+    "quality_evidence_index": "QUALITY_EVIDENCE_INDEX.json",
+    "quality_lock": "requirements-quality.lock",
+    "resolved_lock": "toolchain_wheelhouse/requirements-toolchain-resolved.lock",
+    "runtime_lock": "requirements.lock",
     "runtime_resolved_lock": "toolchain_wheelhouse/requirements-runtime-resolved.lock",
-    "environment_location": "XDG_DATA_HOME/VideoBatchFast/environments"
-  }
+    "unified_lock": "requirements-toolchain.lock",
+    "venv": ".videobatch-venv",
+    "wheelhouse": "toolchain_wheelhouse",
+    "wheelhouse_manifest": "toolchain_wheelhouse/TOOLCHAIN_WHEELHOUSE_MANIFEST.json"
+  },
+  "policy": {
+    "atomic_replacement_required": true,
+    "automatic_local_wheelhouse_reuse": true,
+    "automatic_repair_on_launcher_start": true,
+    "automatic_stable_finalization": true,
+    "content_addressed_user_environments": true,
+    "deterministic_evidence_bundle_required": true,
+    "exact_versions_required": true,
+    "explicit_consent_is_central_launcher_invocation": true,
+    "fail_closed": true,
+    "offline_installation_required": true,
+    "offline_opt_out_supported": true,
+    "online_download_requires_explicit_consent": true,
+    "public_index": "https://pypi.org/simple",
+    "quality_evidence_source_bound": true,
+    "real_ffmpeg_smoke_tests_required": true,
+    "runtime_and_quality_environments_separated": true,
+    "sdists_forbidden": true,
+    "stable_requires_all_tools": true,
+    "stable_requires_live_desktop_gate": true,
+    "stale_evidence_fail_closed": true,
+    "startup_requires_quality_tools": false,
+    "wheel_hash_manifest_required": true
+  },
+  "release_target": "2.8.3-rc24",
+  "schema_version": 2
 }

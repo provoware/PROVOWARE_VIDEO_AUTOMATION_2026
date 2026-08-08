@@ -1,0 +1,26 @@
+VIDEOBATCH FAST · FORTSETZUNGSBERICHT WELLE 8
+
+1. ABGESCHLOSSEN
+- Recovery bei verlorener/veralteter Backuphistorie.
+- Dauerhafter atomarer Backupcommit mit Datei- und Verzeichnis-fsync.
+- Konservative Rotation ausschließlich verifizierter eigener Backups.
+- Crashreihenfolge und Orphan-Recovery.
+- Fehlersimulationen für Replace-/Commitpfade.
+- I/O-Effizienz der periodischen Backupstatusabfrage.
+
+2. WEITER OFFEN – STABLE BLOCKER
+- VIS-001: Original-SOLL/IST-PNGs numerisch gegen die tatsächlichen Binärbilder prüfen.
+- VIS-002: Physische KDE-X11-/Wayland-Abnahme auf realer Zielhardware.
+- REL-001: Langzeitrender/Soak mit realer großer Medienauswahl und langsamem/externalem Ziel.
+
+3. WEITER OFFEN – ARCHITEKTUR
+- SCHED-001: erst nach Checkpoint-5-Systemvertrag.
+- Externe/offline Backupkopie für echte 3-2-1-Abdeckung ist organisatorisch/außerhalb des lokalen Projektbackupmoduls zu lösen.
+
+4. VALIDIERUNG
+- 504/504 Tests bestanden.
+- Architektur 0 Befunde.
+- Interne Codequalität 0 Befunde.
+- Ereignisarchitektur 0 Befunde.
+- Design/Text/Version/Registry/Release-Literal/Compile bestanden.
+- Dedizierte visuelle Isolation in dieser Umgebung wegen externem Zeitlimit nicht neu abgeschlossen; kein falscher Erfolgsstatus gesetzt.

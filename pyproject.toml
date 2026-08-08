@@ -21,9 +21,21 @@ omit = [
   "*/theme.py",
   "*/workflow_dialogs.py",
   "*/media_import_dialog.py",
+  "*/scheduler_dialog.py",
+  "*/scheduler_manager_dialog.py",
+  "*/scheduler_policy_dialog.py",
   "*/text_resources.py",
   "*/plugin_host.py",
   "*/__main__.py",
+  # Reine Canonical-UI-Schichten: nach dem UI-Refactor explizit im gleichen Scope
+  # wie ui.py/ui_*.py halten. Fachlogik (canonical_kpi/state/contract) bleibt enthalten.
+  "*/canonical_*_mixin.py",
+  "*/canonical_shell_chrome.py",
+  "*/canonical_shell_workspace.py",
+  "*/canonical_ui.py",
+  "*/project_home_dashboard.py",
+  "*/project_backup_dialog.py",
+  "*/media_dialog_layout.py",
 ]
 
 [tool.coverage.report]

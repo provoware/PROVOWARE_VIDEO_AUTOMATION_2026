@@ -65,3 +65,16 @@ def test_generated_ci_evidence_is_ignored_and_not_packaged() -> None:
     }
     assert forbidden_files.isdisjoint(packaged)
     assert not any(path.startswith("matrix-logs/") for path in packaged)
+
+
+def test_release_contract_excludes_local_coverage_reports(tmp_path: Path) -> None:
+    from scripts.release_file_contract import included_release_file
+
+    for name in ("coverage.json", "coverage_w20.json", "coverage_w999.json"):
+        path = tmp_path / name
+        path.write_text("{}\n", encoding="utf-8")
+        assert not included_release_file(tmp_path, path)
+
+    product_json = tmp_path / "COVERAGE_POLICY.json"
+    product_json.write_text("{}\n", encoding="utf-8")
+    assert included_release_file(tmp_path, product_json)

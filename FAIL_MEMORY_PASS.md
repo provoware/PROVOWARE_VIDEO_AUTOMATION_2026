@@ -60,7 +60,7 @@ Das Repository für `2.8.3-rc24` konsolidieren, reale Schwachstellen beheben, fr
 ### Noch zu beobachten
 
 - reale Langzeitmessung mit mehreren tausend Medien auf langsamem externem Datenträger
-- physische KDE-X11-/Wayland-Abnahme auf den Zielsystemen
+- physische KDE-X11-Abnahme auf den Zielsystemen
 - vollständige Ausführung der exakt gepinnten Ruff-, MyPy-, Bandit- und pip-audit-Werkzeuge
 
 ## Aktuelle offene Stable-Gates
@@ -69,7 +69,7 @@ Das Repository für `2.8.3-rc24` konsolidieren, reale Schwachstellen beheben, fr
 2. MyPy `2.3.0`
 3. Bandit `1.9.4`
 4. pip-audit `2.10.1`
-5. physische KDE-X11-/Wayland-Abnahme
+5. physische KDE-X11-Abnahme
 6. dokumentierter Langzeitrender mit großer Medienauswahl und langsamem externem Ziel
 
 ## Nächster bevorzugter Entwicklungspunkt

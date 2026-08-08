@@ -1,0 +1,92 @@
+{
+  "method": "Python difflib.SequenceMatcher on intended iteration files only; generated test/cache/diagnostic side effects excluded",
+  "changed_files": 6,
+  "inserted_chars": 158846,
+  "deleted_chars": 24,
+  "replaced_old_chars": 57,
+  "replaced_new_chars": 34,
+  "net_chars": 158799,
+  "line_delta": 4448,
+  "files": [
+    {
+      "path": "src/videobatch_fast/project_home_dashboard.py",
+      "inserted_chars": 2596,
+      "deleted_chars": 24,
+      "replaced_old_chars": 57,
+      "replaced_new_chars": 34,
+      "old_lines": 389,
+      "new_lines": 437
+    },
+    {
+      "path": "tests/test_project_home_sources_wave25_phase2.py",
+      "inserted_chars": 2059,
+      "deleted_chars": 0,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "old_lines": 0,
+      "new_lines": 57
+    },
+    {
+      "path": "ARTIFACT_GITHUB_BASELINE_CONTRACT_WELLE25_UI_PHASE1_2026-08-08.json",
+      "inserted_chars": 625,
+      "deleted_chars": 0,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "old_lines": 0,
+      "new_lines": 11
+    },
+    {
+      "path": "ARTIFACT_GITHUB_BASELINE_INVENTORY_WELLE25_UI_PHASE1_2026-08-08.json",
+      "inserted_chars": 151216,
+      "deleted_chars": 0,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "old_lines": 0,
+      "new_lines": 4287
+    },
+    {
+      "path": "WELLE25_UI_PHASE2_QUELLENUEBERSICHT_AUDIT_2026-08-08.md",
+      "inserted_chars": 1341,
+      "deleted_chars": 0,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "old_lines": 0,
+      "new_lines": 23
+    },
+    {
+      "path": "FINAL_VALIDIERUNG_WELLE25_UI_PHASE2_2026-08-08.txt",
+      "inserted_chars": 1009,
+      "deleted_chars": 0,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "old_lines": 0,
+      "new_lines": 22
+    }
+  ],
+  "categories": {
+    "Produktcode": {
+      "files": 1,
+      "inserted_chars": 2596,
+      "deleted_chars": 24,
+      "replaced_old_chars": 57,
+      "replaced_new_chars": 34,
+      "line_delta": 48
+    },
+    "Tests": {
+      "files": 1,
+      "inserted_chars": 2059,
+      "deleted_chars": 0,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "line_delta": 57
+    },
+    "Dokumentation/Nachweise": {
+      "files": 4,
+      "inserted_chars": 154191,
+      "deleted_chars": 0,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "line_delta": 4343
+    }
+  }
+}

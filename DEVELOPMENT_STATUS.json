@@ -1,22 +1,22 @@
 {
   "schema_version": 2,
   "generated_from": "diagnostics/release_readiness/RELEASE_EVIDENCE.json",
-  "iteration": 24,
+  "iteration": 25,
   "version": "2.8.3-rc24",
-  "progress_percent": 80,
-  "completed": 24,
+  "progress_percent": 82,
+  "completed": 28,
   "open": 6,
-  "current_todo": "Kanonische Release-Nachweise synchronisiert; externe Stable-Gates bleiben offen",
+  "current_todo": "Welle 25 UI Phase 1 intern geschlossen; Quellenübersicht ist der nächste iterative UI-Ausbau; sechs externe Stable-Gates bleiben bewusst offen",
   "status": "yellow",
   "stable_ready": false,
   "approved_quality_report": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
   "stable_blockers": [
-    "Ruff 0.16.1: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
-    "MyPy 2.3.0: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
-    "Bandit 1.9.4: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
-    "pip-audit 2.10.1: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
-    "Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless",
-    "Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt"
+    "Ruff 0.16.1: Operator-Kit bereit; realer exakt gepinnter Lauf aus eingefrorenem Wheelhouse noch auszuführen",
+    "MyPy 2.3.0: Operator-Kit bereit; realer exakt gepinnter Lauf aus eingefrorenem Wheelhouse noch auszuführen",
+    "Bandit 1.9.4: Operator-Kit bereit; realer exakt gepinnter Lauf aus eingefrorenem Wheelhouse noch auszuführen",
+    "pip-audit 2.10.1: Operator-Kit mit gehashtem Advisory-Cache vorbereitet; realer finaler Offline-Gate-Lauf noch auszuführen",
+    "Physische KDE-X11-Abnahme: Operator-Harness bereit; reale KDE-X11-Sitzungsabnahme fehlt weiterhin",
+    "Langzeitrender mit großer Medienauswahl: Operator-Harness bereit; realer 96-Job-Lauf auf langsamem externem USB-ext4-Ziel fehlt weiterhin"
   ],
-  "total": 30
+  "total": 34
 }

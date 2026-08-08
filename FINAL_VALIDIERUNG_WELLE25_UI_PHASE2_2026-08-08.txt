@@ -1,0 +1,22 @@
+PROVOWARE VIDEO AUTOMATION – FINALVALIDIERUNG WELLE 25 UI PHASE 2
+Datum: 2026-08-08
+Thema: Quellenübersicht auf Project Home Dashboard
+
+ERGEBNIS
+- Baseline-Importvertrag für das validierte Phase-1-Artefakt erzeugt.
+- Artefakt SHA-256: db51ad50c7918775fd34e19fc5137395dce08e7256c2006fc0ee4b327d2ebea5
+- Artefakt-Inventar: 856 Dateien.
+- GitHub-Ausgangscommit: bf1a13dd92349910e31b5cb69ab9c3e2793cd8e6
+- Fokussierte Phase-1/Phase-2-Tests: 10/10 bestanden.
+- Vollständige Testsuite unter Xvfb: 696/696 bestanden.
+- py_compile: bestanden.
+
+UI-PHASE-2-VERTRAG
+- Nur Quellenübersicht wurde funktional ausgebaut.
+- Anzeige nutzt vorhandene audios-/media-Sammlungen.
+- Gesamtzahl, Audio, Bilder/Videos und nicht verfügbare Quellen werden kompakt dargestellt.
+- Detailweg führt in die bestehende Medienbibliothek.
+- Workflow-Module, Render-Profile und Historie / Logs bleiben unverändert Platzhalter.
+
+STABLE-GRENZE
+Externe Ruff/MyPy/Bandit/pip-audit- und physische KDE-/Soak-Nachweise bleiben separate Freigabegates.

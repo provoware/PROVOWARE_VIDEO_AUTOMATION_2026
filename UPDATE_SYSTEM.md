@@ -10,6 +10,14 @@ Diese Anleitung erklärt den sicheren Updateablauf mit signiertem Channel-Verzei
 - **Empfohlen:** Projekte und individuelle Konfigurationen vor einem größeren Update zusätzlich sichern.
 - **Optional:** Offline-Update über eine ausdrücklich gewählte lokale Quelle.
 
+## Voraussetzungen
+
+Vor dem Update müssen laufende Arbeiten abgeschlossen, Updatekanal und Sicherung geprüft sein.
+
+## Sicherung und Rückweg
+
+Der aktive Slot bleibt bis zur erfolgreichen Kandidatenprüfung unverändert. Rollback erfolgt auf den zuletzt bestätigten Slot.
+
 ## Vor dem Update
 
 ### Schritt 1: Laufende Arbeiten abschließen
@@ -49,7 +57,7 @@ Diese Anleitung erklärt den sicheren Updateablauf mit signiertem Channel-Verzei
 
 Remotequellen werden ausschließlich über HTTPS akzeptiert. Lokale `file://`-Quellen sind nur für bewusst gewählte Offline- und CI-Prüfungen zulässig.
 
-## Schritt-für-Schritt-Update
+## Schritt-für-Schritt-Anleitung
 
 ### Schritt 1: Channel-Index laden und prüfen
 

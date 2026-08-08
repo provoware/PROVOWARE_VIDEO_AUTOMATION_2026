@@ -8,6 +8,8 @@ from .canonical_kpi import KpiSnapshot, build_kpi_snapshots
 from .canonical_kpi_state import format_kpi_timestamp, merge_kpi_history, normalize_kpi_history
 from .effects import TRANSITIONS, VISUAL_EFFECTS
 from .retry_queue import RetryQueueStore
+from .scheduler import next_active_schedule
+from .scheduler_readiness import inspect_scheduler_readiness
 
 
 class CanonicalKpiDetailMixin:
@@ -23,25 +25,11 @@ class CanonicalKpiDetailMixin:
         keys = tuple(self._shell_kpi_buttons)
         self._shell_kpi_cause_vars = {key: StringVar(value="Ursache wird ermittelt") for key in keys}
         self._shell_kpi_updated_vars = {key: StringVar(value="Aktualisiert: –") for key in keys}
+        # Ursachen und Zeitstempel bleiben persistent und diagnostisch verfügbar,
+        # dominieren aber nicht mehr die Primär-KPI-Karten.
         for key in keys:
             button = self._shell_kpi_buttons[key]
-            card = button.master
-            button.pack_forget()
-            ttk.Label(
-                card,
-                textvariable=self._shell_kpi_cause_vars[key],
-                style="ShellKpiHint.TLabel",
-                wraplength=220,
-                justify="left",
-            ).pack(anchor="w", pady=(0, 4))
-            ttk.Label(
-                card,
-                textvariable=self._shell_kpi_updated_vars[key],
-                style="ShellKpiHint.TLabel",
-                wraplength=220,
-                justify="left",
-            ).pack(anchor="w", pady=(0, 5))
-            button.pack(fill="x")
+            button.configure(style="ShellKpiLink.TButton")
         self._refresh_kpi_cards()
 
     @staticmethod
@@ -106,6 +94,14 @@ class CanonicalKpiDetailMixin:
         result_reasons = tuple(str(getattr(result, "message", "")) for result in failed_results)
         retryable, blocked, retry_reasons = self._retry_snapshot_data()
         active_tasks = self.tasks.active_names() if hasattr(self, "tasks") else ()
+        try:
+            scheduler_record = next_active_schedule(getattr(self, "project_file", None))
+        except (OSError, ValueError):
+            scheduler_record = None
+        try:
+            scheduler_ready = inspect_scheduler_readiness().ready
+        except (OSError, ValueError):
+            scheduler_ready = False
         snapshots = build_kpi_snapshots(
             audio_count=len(getattr(self, "audios", ())),
             media_count=len(getattr(self, "media", ())),
@@ -123,6 +119,9 @@ class CanonicalKpiDetailMixin:
             quick_mode=self.quick_mode.get(),
             effect_valid=self.visual_effect.get() in VISUAL_EFFECTS,
             transition_valid=self.transition.get() in TRANSITIONS,
+            scheduler_ready=scheduler_ready,
+            scheduler_status=str(scheduler_record.get("status", "")) if scheduler_record else "",
+            scheduler_when=str(scheduler_record.get("scheduled_at", "")) if scheduler_record else "",
         )
         self._shell_kpi_snapshots = snapshots
         history, changed = merge_kpi_history(getattr(self, "_kpi_detail_history", {}), snapshots)
@@ -170,6 +169,7 @@ class CanonicalKpiDetailMixin:
             "open_retry_queue": self._kpi_open_retry_queue,
             "open_effects": lambda: self._select_shell_page(3),
             "reset_effects": self._kpi_reset_effects,
+            "open_scheduler": self._open_scheduler_dialog,
         }
         return actions.get(action)
 

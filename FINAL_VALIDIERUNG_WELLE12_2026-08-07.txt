@@ -1,0 +1,33 @@
+PROVOWARE VIDEO AUTOMATION – FINALVALIDIERUNG FORTSETZUNGSWELLE 12
+Stand: 2026-08-07
+
+SCHWERPUNKT
+Recovery Policy & Autonomous Repair Engine: REDO/ROLLBACK/QUARANTINE/REBUILD, Recovery-Severity, Health-Score, korrelierte Fehlerdomänen, Diagnosepakete, Loop-Schutz, Retry-Budget und Disaster-Recovery-Simulator.
+
+IMPLEMENTIERT
+1. Deterministische Recovery-Entscheidungsmatrix.
+2. Recovery-Signale für Transaction, Projekt, Backup, Config und Job-Journal.
+3. Health-Score 0–100 mit Severity- und Korrelationsgewichtung.
+4. Persistentes Retry-Budget pro Fehlersignatur; maximal 3 identische automatische Versuche pro Stunde.
+5. Budget-Eskalation von REDO auf kontrollierten ROLLBACK.
+6. Deterministischer REBUILD verwaister Revisionen.
+7. Deterministischer REBUILD der Backuphistorie ausschließlich aus erneut verifizierten Archiven.
+8. Automatische Diagnose-ZIPs bei verbleibendem degraded/critical Zustand; keine Projekt-Nutzdaten enthalten.
+9. Startup-Integration der autonomen Recovery-Policy; UI-Diagnose zeigt Health-Score und Policy-Aktion.
+10. Disaster-Recovery-Simulator mit 6 deterministischen Mehrfachfehlerketten.
+
+NACHWEISE
+- Neue Welle-12-Tests: 10/10 bestanden.
+- Disaster-Recovery-Simulator: 6/6 Szenarien bestanden.
+- Vollsuite unter Xvfb: 537/537 bestanden.
+- Interne Codequalität: 291 Dateien, 2417 Funktionen, max. Komplexität 29, Befunde 0.
+- Architektur: 127 Module, 1284 Funktionen, 158 Klassen, Befunde 0.
+- Ereignisarchitektur: 0 Befunde.
+- Ereignisregister: 0 Befunde.
+- Registry, Design, Text, Version, Release-Literal, Release-Dateistatus, Dokumentation und Compile: bestanden.
+
+HINWEIS ZUM RELEASE-SAMMELSKRIPT
+verify_release.sh bleibt in dieser Umgebung am bereits bekannten externen Toolchain-/Paketbasis-Gate mit Code 42 blockiert. Die einzelnen internen Qualitäts-, Architektur-, Registry-, Design-, Dokumentations-, Release- und Compile-Gates wurden deshalb separat vollständig ausgeführt und bestanden. Stable wurde nicht künstlich freigegeben.
+
+STABLE
+VIS-001, VIS-002, REL-001 und SCHED-001 bleiben unverändert offen. Welle 12 behauptet keine physische Stromausfall-/Controller-/Kernel-/Dateisystem-Fault-Abnahme.

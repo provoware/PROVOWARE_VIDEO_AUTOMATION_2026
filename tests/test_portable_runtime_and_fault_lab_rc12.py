@@ -54,7 +54,7 @@ def test_probe_prefers_explicit_portable_binaries(tmp_path: Path, monkeypatch: p
 def test_fault_lab_contract_and_all_scenarios_pass():
     contract = json.loads((ROOT / "FAULT_LAB_CONTRACT.json").read_text(encoding="utf-8"))
     results = run_fault_lab()
-    assert len(results) == len(contract["scenarios"]) == 15
+    assert len(results) == len(contract["scenarios"]) == 21
     assert {item.scenario_id for item in results} == set(contract["scenarios"])
     assert all(item.status == "pass" for item in results), results
 

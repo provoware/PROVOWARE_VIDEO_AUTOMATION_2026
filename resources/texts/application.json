@@ -143,6 +143,17 @@
     "help_center.tooltip.logs": "Öffnet den lokalen Protokollordner. Originalmedien bleiben unberührt.",
     "help_center.tooltip.manual": "Öffnet die releasefertige Schritt-für-Schritt-Anleitung; falls sie fehlt, wird die README geöffnet.",
     "help_center.tooltip.fault_lab": "Prüft definierte Fehler- und Recoverywege isoliert, ohne produktive Dateien zu ändern.",
-    "help_center.tooltip.close": "Schließt nur das Hilfezentrum."
+    "help_center.tooltip.close": "Schließt nur das Hilfezentrum.",
+    "ui.debug_footer.transaction_recovery_status": "Transaktions-/Recovery-Status",
+    "ui.debug_footer.transaction_audit_timeline": "Transaktions-Audit-Timeline",
+    "ui.debug_footer.transaction_audit_empty": "Noch keine Transaktionsereignisse aufgezeichnet.",
+    "ui.debug_footer.transaction_audit_unavailable": "Transaktions-Audit ist derzeit nicht verfügbar.",
+    "ui.debug_footer.checkpoint_restore_preview": "Checkpoint-Restore-Vorschau",
+    "ui.debug_footer.checkpoint_preview_button": "Vorschau prüfen",
+    "ui.debug_footer.checkpoint_preview_summary": "Bester Recovery-Punkt: {generation} · Trust {trust} · Änderungen {changed} · unverändert {unchanged} · Fingerprint {fingerprint}…",
+    "ui.debug_footer.checkpoint_preview_unavailable": "Noch kein vollständig verifizierter Systemcheckpoint verfügbar.",
+    "ui.debug_footer.checkpoint_preview_failed": "Restore-Vorschau nicht freigegeben: {issues}",
+    "ui.debug_footer.checkpoint_preview_dialog_title": "Sichere Restore-Vorschau",
+    "ui.debug_footer.checkpoint_preview_dialog_body": "Recovery-Punkt: {generation}\nTrust-Level: {trust}\nSHA-256-Fingerprint: {fingerprint}\n\nDry-Run: {changed} Änderungen, {unchanged} unverändert\nErsetzen: {replace} · Erstellen: {create} · Entfernen: {delete}\nRestore-Daten: {bytes} Byte\n\nLetzte Forensik-Ereignisse: {recent}\n\nEs wurden keine Nutzdaten verändert. Eine Rücksetzung muss bewusst separat ausgelöst werden."
   }
 }

@@ -244,29 +244,31 @@ def render_release_files(value: Mapping[str, Any]) -> dict[str, Any]:
 def release_status_block(value: Mapping[str, Any]) -> str:
     product = value["product"]
     tests = value["tests"]
-    matrix = value["matrix"]
     blockers = stable_blockers(value)
-    lines = [
-        STATUS_BEGIN,
-        f"# provoware - videoautomation - 2026 · {product['version']}",
-        "",
-        f"**Kanal:** {product['channel']}",
-        f"**Kanonische Quelle:** `{EVIDENCE_PATH.relative_to(ROOT)}`",
-        f"**Freigegebener Qualitätsbericht:** `{value['approved_quality_report']}`",
-        "",
-        f"- {tests['passed']}/{tests['passed']} automatisierte Tests bestanden",
-        f"- {tests['line_coverage_percent']:.2f} % Zeilenabdeckung",
-        f"- {tests['branch_coverage_percent']:.2f} % Zweigabdeckung",
-        f"- {tests['visual_scenarios']} visuelle Szenarien bestanden",
-        f"- Release-Manifest: {value['manifest']['file_count']} Dateien",
-        f"- Kubuntu-CI-Matrix: {matrix['passed_targets']}/{matrix['total_targets']} Kombinationen bestanden",
-        "",
-        "### Offene Stable-Gates",
-        "",
-    ]
-    lines.extend(f"- {item}" for item in blockers)
-    lines.append(STATUS_END)
-    return "\n".join(lines)
+    gate_lines = "\n".join(f"- {item}" for item in blockers) or "- keine"
+    line_coverage = f"{float(tests['line_coverage_percent']):.2f}".replace(".", ",")
+    branch_coverage = f"{float(tests['branch_coverage_percent']):.2f}".replace(".", ",")
+    combined = tests.get("combined_coverage_percent")
+    combined_line = (
+        ""
+        if combined is None
+        else f"- {float(combined):.2f} % kombinierte Coverage\n".replace(".", ",")
+    )
+    return f"""{STATUS_BEGIN}
+# {product['name']} · {product['version']}
+
+**Kanal:** {product['channel']}
+**Freigegebener Qualitätsbericht:** `{value['approved_quality_report']}`
+
+- {tests['passed']}/{tests['passed']} automatisierte Tests bestanden
+- {line_coverage} % Zeilenabdeckung
+- {branch_coverage} % Zweigabdeckung
+{combined_line}- {tests['visual_scenarios']} visuelle Szenarien bestanden
+
+### Offene Stable-Gates
+
+{gate_lines}
+{STATUS_END}"""
 
 
 def release_files_block(value: Mapping[str, Any]) -> str:
@@ -278,7 +280,7 @@ def release_files_block(value: Mapping[str, Any]) -> str:
         FILES_BEGIN,
         "## Release-Dateistatus",
         "",
-        str(files["policy"]),
+        "Der Zusatz `_save_` kennzeichnet ausschließlich eigenständige, freigabefähige Nutzer- und Releaseunterlagen. Python-Module, CI-Workflows, technische Manifeste, Einstiegsskripte und die kanonische README behalten stabile technische Namen, damit Importe und Buildverträge nicht brechen.",
         "",
         "| Releasefertig (`_save_`) | Noch nicht releasefertig |",
         "|---|---|",
@@ -286,8 +288,12 @@ def release_files_block(value: Mapping[str, Any]) -> str:
     for index in range(rows):
         left = ready[index] if index < len(ready) else None
         right = unfinished[index] if index < len(unfinished) else None
-        left_text = "—" if left is None else f"`{left['path']}`<br>{left['label']}: {left['evidence']}"
-        right_text = "—" if right is None else f"`{right['path']}`<br>{right['label']}: {right['reason']}"
+        left_text = "—" if left is None else f"`{left['path']}`<br>{left['label']}"
+        right_text = (
+            "—"
+            if right is None
+            else f"`{right['path']}`<br>{right['label']}: {right['reason']}"
+        )
         lines.append(f"| {left_text} | {right_text} |")
     lines.append(FILES_END)
     return "\n".join(lines)

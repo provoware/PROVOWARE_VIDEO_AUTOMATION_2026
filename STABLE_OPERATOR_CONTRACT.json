@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "contract_id": "videobatch-fast.stable-operator-wave18/1",
+  "release_target": "2.8.3-rc24",
+  "phases": [
+    "toolchain",
+    "quality",
+    "desktop_x11",
+    "long_render",
+    "promotion_rehearsal"
+  ],
+  "quality_tools": {
+    "ruff": "0.16.1",
+    "mypy": "2.3.0",
+    "bandit": "1.9.4",
+    "pip-audit": "2.10.1"
+  },
+  "wheelhouse": {
+    "only_binary": true,
+    "require_hashes_for_install": true,
+    "offline_quality_execution": true,
+    "manifest_schema": 2,
+    "pip_audit_advisory_cache_required": true,
+    "pip_audit_final_gate_offline": true
+  },
+  "desktop": {
+    "required_sessions": [
+      "x11"
+    ],
+    "required_desktop": "KDE/Plasma",
+    "geometries": [
+      "1440x900",
+      "1500x920",
+      "1920x1080"
+    ],
+    "font_scales_percent": [
+      90,
+      105,
+      125
+    ],
+    "profiles_per_session": 9,
+    "physical_acceptance_required": true,
+    "certification_scope": "x11-only"
+  },
+  "long_render": {
+    "jobs": 96,
+    "filesystem": "ext4",
+    "external_usb": true,
+    "maximum_write_mib_s": 35.0,
+    "minimum_free_gib": 500.0,
+    "hard_limits_required": true,
+    "rehearsal_allowed_for_stable": false
+  },
+  "evidence": {
+    "physical_schema": 2,
+    "candidate_identity_required": [
+      "candidate_id",
+      "manifest_sha256",
+      "source_sha256"
+    ],
+    "stale_evidence_fail_closed": true,
+    "promotion_requires_quality_and_physical_evidence": true
+  }
+}

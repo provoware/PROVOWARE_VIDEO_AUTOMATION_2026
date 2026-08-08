@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "wave": 21,
+  "date": "2026-08-08",
+  "contract": "Scheduler Queue Governance & Operational Recovery",
+  "scenarios": [
+    {
+      "id": "SGO-001",
+      "scenario": "Schema-2-zu-3-Migration",
+      "result": "passed"
+    },
+    {
+      "id": "SGO-002",
+      "scenario": "Priorität 0-100 und Fingerprint",
+      "result": "passed"
+    },
+    {
+      "id": "SGO-003",
+      "scenario": "Persistente Prioritätsqueue",
+      "result": "passed"
+    },
+    {
+      "id": "SGO-004",
+      "scenario": "Blackout über Mitternacht",
+      "result": "passed"
+    },
+    {
+      "id": "SGO-005",
+      "scenario": "Mindest-Freispeicher-Preflight",
+      "result": "passed"
+    },
+    {
+      "id": "SGO-006",
+      "scenario": "Pause/Fortsetzen",
+      "result": "passed"
+    },
+    {
+      "id": "SGO-007",
+      "scenario": "Pause nach laufendem Render",
+      "result": "passed"
+    },
+    {
+      "id": "SGO-008",
+      "scenario": "Löschen während laufendem Render",
+      "result": "passed"
+    },
+    {
+      "id": "SGO-009",
+      "scenario": "Queue-Rearm innerhalb Catch-up-Deadline",
+      "result": "passed"
+    },
+    {
+      "id": "SGO-010",
+      "scenario": "systemd-Drift-Reconciliation",
+      "result": "passed"
+    },
+    {
+      "id": "SGO-011",
+      "scenario": "Projektisolation der Queue beim Reconcile",
+      "result": "passed"
+    },
+    {
+      "id": "SGO-012",
+      "scenario": "Operationsgrund und projektbezogene Queue",
+      "result": "passed"
+    },
+    {
+      "id": "SGO-013",
+      "scenario": "Plan-/History-/Queue-/Policy-Export mit Hashmanifest",
+      "result": "passed"
+    },
+    {
+      "id": "SGO-014",
+      "scenario": "Konservatives Cleanup terminaler Serien",
+      "result": "passed"
+    },
+    {
+      "id": "SGO-015",
+      "scenario": "Globaler Parallelitätsvertrag max=1",
+      "result": "passed"
+    }
+  ],
+  "summary": {
+    "passed": 15,
+    "failed": 0
+  }
+}

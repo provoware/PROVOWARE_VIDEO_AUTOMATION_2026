@@ -3,6 +3,7 @@ from __future__ import annotations
 from tkinter import StringVar, ttk
 
 from .canonical_shell_contract import responsive_column_count
+from .system_metrics import collect_system_metrics, format_bytes
 
 
 class CanonicalHelpStatusMixin:
@@ -119,29 +120,49 @@ class CanonicalHelpStatusMixin:
         self.root.after_idle(self.main_notebook.focus_set)
 
     def _build_canonical_status_bar(self, parent) -> None:
-        bar = ttk.Frame(parent, style="Toolbar.TFrame", padding=(10, 5))
+        bar = ttk.Frame(parent, style="Toolbar.TFrame", padding=(9, 4))
         bar.pack(fill="x")
-        bar.columnconfigure(0, weight=1)
+        for column in range(7):
+            bar.columnconfigure(column, weight=1 if column in {0, 1, 4} else 0)
         self.shell_footer_guidance = StringVar(value="")
+        self.shell_footer_cpu = StringVar(value="CPU …")
+        self.shell_footer_ram = StringVar(value="RAM …")
+        self.shell_footer_ffmpeg = StringVar(value="FFmpeg …")
+        self.shell_footer_cache = StringVar(value="Cache …")
+        self.shell_footer_project = StringVar(value="Projekt …")
+        self.shell_footer_backup = StringVar(value="Backup …")
 
-        def sync_guidance(*_args) -> None:
-            value = self.guidance_text.get().replace("\n", " ").strip()
-            self.shell_footer_guidance.set(
-                value if len(value) <= 180 else value[:177] + "…"
-            )
+        ttk.Label(bar, textvariable=self.shell_footer_cpu, style="ShellHint.TLabel").grid(row=0, column=0, sticky="w")
+        ttk.Label(bar, textvariable=self.shell_footer_ram, style="ShellHint.TLabel").grid(row=0, column=1, sticky="w", padx=(10, 0))
+        ttk.Label(bar, textvariable=self.shell_footer_ffmpeg, style="ShellHint.TLabel").grid(row=0, column=2, sticky="w", padx=(10, 0))
+        ttk.Label(bar, textvariable=self.shell_footer_cache, style="ShellHint.TLabel").grid(row=0, column=3, sticky="w", padx=(10, 0))
+        ttk.Label(bar, textvariable=self.shell_footer_project, style="ShellHint.TLabel").grid(row=0, column=4, sticky="ew", padx=(10, 0))
+        ttk.Label(bar, textvariable=self.shell_footer_backup, style="ShellHint.TLabel").grid(row=0, column=5, sticky="w", padx=(10, 0))
+        ttk.Label(bar, textvariable=self.status_text, style="Status.TLabel", anchor="e").grid(row=0, column=6, sticky="e", padx=(10, 0))
+        self._refresh_footer_metrics()
+        self._shell_footer_poll_id = self.root.after(3000, self._poll_footer_metrics)
 
-        self.guidance_text.trace_add("write", sync_guidance)
-        sync_guidance()
-        ttk.Label(
-            bar,
-            textvariable=self.shell_footer_guidance,
-            style="ShellHint.TLabel",
-            width=1,
-            anchor="w",
-        ).grid(row=0, column=0, sticky="ew")
-        ttk.Label(
-            bar,
-            textvariable=self.status_text,
-            style="Status.TLabel",
-            anchor="e",
-        ).grid(row=0, column=1, sticky="e", padx=(10, 0))
+    def _refresh_footer_metrics(self) -> None:
+        if not hasattr(self, "shell_footer_cpu"):
+            return
+        metrics = collect_system_metrics()
+        self.shell_footer_cpu.set("CPU unbekannt" if metrics.cpu_percent is None else f"CPU {metrics.cpu_percent:.0f} %")
+        ram = "RAM unbekannt"
+        if metrics.ram_used_bytes is not None and metrics.ram_total_bytes is not None:
+            ram = f"RAM {format_bytes(metrics.ram_used_bytes)} / {format_bytes(metrics.ram_total_bytes)}"
+        self.shell_footer_ram.set(ram)
+        self.shell_footer_ffmpeg.set(f"FFmpeg {metrics.ffmpeg} · GPU {metrics.gpu_acceleration}")
+        self.shell_footer_cache.set(f"Cache {format_bytes(metrics.cache_bytes)}")
+        project = self.project_name.get().strip() if hasattr(self, "project_name") else ""
+        self.shell_footer_project.set(f"Projekt {project or 'Neues Projekt'}")
+        if hasattr(self, "_project_backup_status"):
+            self.shell_footer_backup.set(self._project_backup_status())
+
+    def _poll_footer_metrics(self) -> None:
+        try:
+            if not self.root.winfo_exists():
+                return
+            self._refresh_footer_metrics()
+            self._shell_footer_poll_id = self.root.after(3000, self._poll_footer_metrics)
+        except Exception:
+            return

@@ -4,11 +4,11 @@
 **Gültig ab:** 6. August 2026  
 **Zielgruppe:** Einsteiger, fortgeschrittene Nutzer, Administratoren und Entwickler
 
-## 1. Zweck
+## Zweck
 
 Dieser Standard sorgt dafür, dass jede Anleitung ohne Vorwissen nachvollziehbar ist. Niemand soll raten müssen, wo geklickt wird, welcher Befehl nötig ist, warum ein Schritt erforderlich ist oder woran ein erfolgreicher Abschluss erkennbar ist.
 
-## 2. Verbindlicher Aufbau jeder Anleitung
+## Verbindlicher Aufbau jeder Anleitung
 
 Jeder praktische Vorgang muss in dieser Reihenfolge beschrieben werden:
 
@@ -82,7 +82,7 @@ Jeder relevante Schritt erhält genau eine Kennzeichnung:
 
 Bei jeder Funktionsänderung muss geprüft werden, ob mindestens eine Anleitung, Hilfeseite, Fehlermeldung, Release-Notiz oder Entwicklerbeschreibung angepasst werden muss. Eine Codeänderung gilt nicht als vollständig dokumentiert, wenn die dazugehörige Nutzerhandlung oder Fehlerbehebung weiterhin veraltet ist.
 
-## 7. Abnahmekriterien
+## Abnahmekriterien
 
 Eine Anleitung besteht die Dokumentationsprüfung nur, wenn:
 

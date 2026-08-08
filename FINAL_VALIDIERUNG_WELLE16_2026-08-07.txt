@@ -1,0 +1,47 @@
+PROVOWARE VIDEO AUTOMATION 2026 – FINALVALIDIERUNG WELLE 16
+Datum: 2026-08-07
+
+ERGEBNIS
+- 578/578 automatisierte Tests bestanden.
+- Testbatch 1: 165/165.
+- Testbatch 2: 145/145.
+- Testbatch 3: 152/152.
+- Testbatch 4: 116/116.
+- Neue Trust-Enforcement-Tests: 8/8.
+- Fokussierte Trust-/Toolchain-/Entrypoint-/Coverage-Vertragstests nach finaler Pin-Korrektur: 20/20.
+- Interne Codequalität: 0 Befunde; maximale Komplexität 29.
+- Architektur: 0 Befunde; größte Datei ui.py mit 700 Zeilen.
+- Ereignisarchitektur: 0 Befunde.
+- Ereignisregister: 0 Befunde.
+- Registry-Prüfung bestanden.
+- Textvertrag bestanden.
+- Versionskonsistenz bestanden.
+- Release-Literal-Prüfung bestanden.
+- Release-Dateistatus bestanden.
+- Dokumentationsvertrag bestanden.
+- Isolierte Python-Kompilierung bestanden.
+- Coveragevertrag bestanden: 81,93 % Zeilen / 66,43 % Branches / 78,78 % kombiniert; Mindestwerte 80/65.
+- Historischer Offline-Qualitätslauf vom 2026-08-05 ist commitgebunden und wird nicht als Freigabe für den geänderten Welle-16-Quellstand gewertet.
+- RELEASE_MANIFEST neu aufgebaut und validiert: 566 Dateien, 0 Hash-/Größen-/Modusdrift; visuelle Freigabe bleibt bewusst false.
+- ./verify_release.sh --core ist direkt ausführbar; integriertes Gate endet ehrlich mit TOOLCHAIN_BLOCKED[42] wegen fehlender reproduzierbarer externer Paketbasis.
+
+WESENTLICHE FIXES
+- Restore erzwingt jetzt kryptografisch/kettenseitig trusted Generationen.
+- Automatische Recovery ignoriert untrusted/legacy/unlinked Generationen.
+- Trust kann nach untrusted Parent nicht still wieder aufgenommen werden.
+- Restore-Journal Schema 2 ist HMAC-authentifiziert und an Generation-Fingerprint gebunden.
+- Legacy-Migration kann manipulierte authentifizierte Generationen nicht neu legitimieren.
+- Toolchain-Vertrag gegen direkte Release-Seiten verifiziert: Ruff 0.16.1 (2026-07-30) und cryptography 50.0.0 (2026-07-31) sind veröffentlicht und bleiben aktiv gepinnt.
+- Zwischenzeitliche, auf veraltetem Suchindex beruhende Downgrade-Annahme vollständig zurückgenommen; Ruff 0.16.2 vom 2026-08-07 wird nicht ohne eigenen Toolchain-Validierungslauf übernommen.
+- Shell-/Desktop-Entrypoint-Rechte repariert und automatisiert abgesichert.
+- Coverage-Scope nach Canonical-UI-Refactor fachlich korrigiert; Kernlogik bleibt im Messumfang.
+
+BEWUSST OFFEN
+- Ruff 0.16.1 realer exakter Toollauf.
+- MyPy 2.3.0 realer exakter Toollauf.
+- Bandit 1.9.4 realer exakter Toollauf.
+- pip-audit 2.10.1 realer exakter Toollauf.
+- physische KDE-X11-/Wayland-Abnahme.
+- realer Large-Media-/Slow-Target-Soak.
+
+Stable bleibt korrekt gesperrt.
