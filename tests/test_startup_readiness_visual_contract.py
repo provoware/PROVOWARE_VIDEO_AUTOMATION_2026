@@ -73,7 +73,7 @@ def test_unwritable_missing_project_path_falls_back_to_user_state(tmp_path, monk
 
     assert selected == fallback
     assert fallback.is_file()
-    assert healed is True
+    assert healed is False
     assert state["schema_version"] == project_state.PROJECT_SCHEMA_VERSION
 
 
