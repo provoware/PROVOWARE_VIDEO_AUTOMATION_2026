@@ -1,349 +1,96 @@
 {
   "current_version_source": "RELEASE_MANIFEST.json",
   "documents": {
-    "AGENTS.md": {
-      "category": "technical"
-    },
-    "ANALYSE_BILDVERGLEICH_2026-08-07.md": {
-      "category": "internal"
-    },
-    "AUTHENTICATED_CHECKPOINT_AUDIT_WELLE15_2026-08-07.md": {
-      "category": "historical",
-      "purpose": "Technischer Nachweis der authentifizierten Checkpoint- und Trust-Chain-Härtung aus Fortsetzungswelle 15."
-    },
-    "AUTOINSTALLATION_save_.md": {
-      "category": "active",
-      "required_sections": [
-        "Ziel",
-        "Pflichtgrad",
-        "Voraussetzungen",
-        "Sicherung und Rückweg",
-        "Schritt-für-Schritt-Anleitung",
-        "Abschlussprüfung",
-        "Nächster Schritt"
-      ]
-    },
-    "BEST_PRACTICES.md": {
-      "category": "technical"
-    },
-    "CHANGELOG.md": {
-      "category": "historical"
-    },
-    "CHECKPOINT_FORENSICS_AUDIT_WELLE14_2026-08-07.md": {
-      "category": "historical"
-    },
-    "CODE_QUALITY_REPORT_2.8.3-rc24_save_.md": {
-      "category": "historical"
-    },
-    "DEVELOPER_GUIDE.md": {
-      "category": "active",
-      "required_sections": [
-        "Ziel",
-        "Pflichtgrad",
-        "Voraussetzungen",
-        "Sicherung und Rückweg",
-        "Schritt-für-Schritt-Anleitung",
-        "Abschlussprüfung",
-        "Nächster Schritt"
-      ]
-    },
-    "DEVELOPER_HANDBOOK.md": {
-      "category": "technical"
-    },
-    "ERROR_HANDLING.md": {
-      "category": "active",
-      "required_sections": [
-        "Ziel",
-        "Pflichtgrad",
-        "Voraussetzungen",
-        "Schritt-für-Schritt-Anleitung",
-        "Abschlussprüfung",
-        "Nächster Schritt"
-      ]
-    },
-    "FAIL_MEMORY_PASS.md": {
-      "category": "historical"
-    },
-    "FINAL_AUDIT_2.8.3-rc24_save_.md": {
-      "category": "historical"
-    },
-    "FRESH_PACKAGE_REPORT_save_.md": {
-      "category": "historical"
-    },
-    "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md": {
-      "category": "historical"
-    },
-    "KEY_ARCHIVE.md": {
-      "category": "technical"
-    },
-    "PLUGIN_SYSTEM.md": {
-      "category": "technical"
-    },
-    "PROJEKTORDNERSTRUKTUR_save_.md": {
-      "category": "technical"
-    },
-    "QUALITY_GATE_ATTEMPT_2.8.3-rc24.md": {
-      "category": "historical"
-    },
-    "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md": {
-      "category": "historical"
-    },
-    "README.md": {
-      "allowed_versions": [
-        "0.16.1",
-        "2.3.0",
-        "1.9.4",
-        "2.10.1"
-      ],
-      "category": "active",
-      "required_sections": [
-        "Dokumentation",
-        "Schnellstart",
-        "Abschlussprüfung"
-      ]
-    },
-    "REAL_STABLE_GATE_AUDIT_WELLE18_2026-08-07.md": {
-      "category": "historical"
-    },
-    "RECOVERY_AUDIT_WELLE9_2026-08-07.md": {
-      "category": "internal"
-    },
-    "RECOVERY_CHECKPOINT_AUDIT_WELLE13_2026-08-07.md": {
-      "category": "historical"
-    },
-    "RECOVERY_POLICY_AUDIT_WELLE12_2026-08-07.md": {
-      "category": "historical"
-    },
-    "REGISTRY_MANIFEST.md": {
-      "category": "technical"
-    },
-    "RELEASE_NOTES_save_.md": {
-      "category": "historical"
-    },
-    "SCHEDULER_DECISION_INTELLIGENCE_AUDIT_WELLE22_2026-08-08.md": {
-      "category": "historical",
-      "purpose": "Technischer Nachweis der Scheduler-Prognose-, Diagnose-, Dead-Letter- und Dry-Run-Härtung aus Fortsetzungswelle 22."
-    },
-    "SCHEDULER_ENVIRONMENT_BASELINE_AUDIT_WELLE24_2026-08-08.md": {
-      "category": "historical",
-      "purpose": "Technischer Nachweis der Environment-Profil-, Performance-Epochen- und automatischen Re-Baselining-Härtung aus Fortsetzungswelle 24."
-    },
-    "SCHEDULER_FORECAST_CALIBRATION_AUDIT_WELLE23_2026-08-08.md": {
-      "category": "historical",
-      "purpose": "Technischer Nachweis der Forecast-Kalibrierung, Rolling-Origin-Backtests, Drift- und Actual-vs-Predicted-Härtung aus Fortsetzungswelle 23."
-    },
-    "SCHEDULER_GOVERNANCE_AUDIT_WELLE21_2026-08-08.md": {
-      "category": "historical",
-      "purpose": "Technischer Nachweis der Scheduler-Governance-, Queue-, Reconciliation- und Operationshärtung aus Fortsetzungswelle 21."
-    },
-    "SCHEDULER_OPERATIONS_AUDIT_WELLE20_2026-08-08.md": {
-      "category": "historical",
-      "purpose": "Technischer Nachweis der Scheduler-Operations-, Recurrence-, DST- und Konflikthärtung aus Fortsetzungswelle 20."
-    },
-    "SCHEDULER_SYSTEM_AUDIT_WELLE19_2026-08-08.md": {
-      "category": "historical"
-    },
-    "STABLE_GATE_EVIDENCE_AUDIT_WELLE17_2026-08-07.md": {
-      "category": "historical",
-      "purpose": "Technischer Nachweis der kandidatengebundenen, reproduzierbaren Stable-Gate-Evidence-Härtung aus Fortsetzungswelle 17."
-    },
-    "STABLE_GATE_ITERATION_2.8.3-rc24_2026-08-04.md": {
-      "category": "historical"
-    },
-    "STABLE_UPDATE.md": {
-      "category": "technical"
-    },
-    "START_HIER_save_.md": {
-      "category": "active",
-      "required_sections": [
-        "Ziel",
-        "Pflichtgrad",
-        "Voraussetzungen",
-        "Schritt-für-Schritt-Anleitung",
-        "Abschlussprüfung",
-        "Nächster Schritt"
-      ]
-    },
-    "STATUS.md": {
-      "category": "internal"
-    },
-    "TEST_REPORT_save_.md": {
-      "category": "technical"
-    },
-    "TEST_SYSTEM.md": {
-      "category": "technical"
-    },
-    "TODO.md": {
-      "category": "internal"
-    },
-    "TRANSACTION_OBSERVABILITY_AUDIT_WELLE11_2026-08-07.md": {
-      "category": "internal"
-    },
-    "TRANSACTION_RECOVERY_AUDIT_WELLE10_2026-08-07.md": {
-      "category": "internal"
-    },
-    "TRUST_ENFORCEMENT_AUDIT_WELLE16_2026-08-07.md": {
-      "category": "historical",
-      "purpose": "Technischer Nachweis der Restore-Trust-Durchsetzung und Release-Vertragsreparatur aus Fortsetzungswelle 16."
-    },
-    "UPDATE_SYSTEM.md": {
-      "category": "active",
-      "required_sections": [
-        "Ziel",
-        "Pflichtgrad",
-        "Voraussetzungen",
-        "Sicherung und Rückweg",
-        "Schritt-für-Schritt-Anleitung",
-        "Abschlussprüfung",
-        "Nächster Schritt"
-      ]
-    },
-    "VISUAL_APPROVAL_NORMALIZATION.md": {
-      "category": "technical"
-    },
-    "VISUAL_DESKTOP_APPROVAL.md": {
-      "category": "technical"
-    },
-    "WELLE25_UI_PHASE1_AUDIT_2026-08-08.md": {
-      "category": "historical",
-      "purpose": "Technischer Nachweis der ersten realen Musterbild-Startseite mit bewusst leeren Ausbauflächen."
-    },
-    "debugging/README.md": {
-      "category": "technical"
-    },
-    "docs/ANALYSE_AUSGANGSTOOL.md": {
-      "category": "historical"
-    },
-    "docs/ARCHITEKTUR.md": {
-      "category": "technical"
-    },
-    "docs/BENUTZERHANDBUCH.md": {
-      "category": "active",
-      "required_sections": [
-        "Ziel",
-        "Pflichtgrad",
-        "Voraussetzungen",
-        "Schritt-für-Schritt-Anleitung",
-        "Abschlussprüfung",
-        "Nächster Schritt"
-      ]
-    },
-    "docs/CALENDAR_NOTES.md": {
-      "category": "internal"
-    },
-    "docs/CALENDAR_TASK_OVERVIEW.md": {
-      "category": "internal"
-    },
-    "docs/CODE_QUALITY_PIPELINE.md": {
-      "category": "technical"
-    },
-    "docs/DATA_INTEGRITY_HARDENING.md": {
-      "category": "technical"
-    },
-    "docs/DESIGN_SYSTEM_ANALYSIS_2_5.md": {
-      "category": "historical"
-    },
-    "docs/DOKUMENTATIONSINDEX.md": {
-      "category": "active",
-      "required_sections": [
-        "Ziel",
-        "Aktive Nutzeranleitungen",
-        "Technische Fachanleitungen",
-        "Historische Nachweise"
-      ]
-    },
-    "docs/DOKUMENTATIONSSTANDARD.md": {
-      "category": "active",
-      "required_sections": [
-        "Zweck",
-        "Verbindlicher Aufbau jeder Anleitung",
-        "Abnahmekriterien"
-      ]
-    },
-    "docs/DOKUMENTATIONS_AUDIT_2026-08-06.md": {
-      "category": "historical"
-    },
-    "docs/FAST_EFFECTS.md": {
-      "category": "technical"
-    },
-    "docs/LONG_RENDER_2.8.3-rc24.md": {
-      "category": "historical"
-    },
-    "docs/OFFLINE_QUALITY_ENVIRONMENT.md": {
-      "category": "technical"
-    },
-    "docs/PLUGIN_APPROVALS.md": {
-      "category": "technical"
-    },
-    "docs/PLUGIN_APPROVAL_MANAGEMENT.md": {
-      "category": "technical"
-    },
-    "docs/PLUGIN_OS_ISOLATION.md": {
-      "category": "technical"
-    },
-    "docs/PLUGIN_PERMISSIONS.md": {
-      "category": "technical"
-    },
-    "docs/PLUGIN_SIGNING.md": {
-      "category": "technical"
-    },
-    "docs/QUALITY_TOOLCHAIN_2_8_3_RC3.md": {
-      "category": "historical"
-    },
-    "docs/QUALITY_TOOLCHAIN_2_8_3_RC4.md": {
-      "category": "historical"
-    },
-    "docs/QUICK_MODES.md": {
-      "category": "technical"
-    },
-    "docs/REPRODUCIBLE_UPDATE_PIPELINE.md": {
-      "category": "technical"
-    },
-    "docs/SCHEDULER_OPERATIONS.md": {
-      "category": "technical"
-    },
-    "docs/SETUP_2_8_3_RC5.md": {
-      "category": "historical"
-    },
-    "docs/STABLE_ACCEPTANCE_EVIDENCE.md": {
-      "category": "historical"
-    },
-    "docs/STABLE_OPERATOR_WELLE18.md": {
-      "category": "technical"
-    },
-    "docs/VISUAL_DESKTOP_APPROVAL.md": {
-      "category": "technical"
-    },
-    "docs/VISUAL_INSPECTION_HTML.md": {
-      "category": "technical"
-    },
-    "docs/VISUAL_LAYOUT_ANALYSIS_2_4.md": {
-      "category": "historical"
-    },
-    "docs/VISUAL_REGRESSION.md": {
-      "category": "technical"
-    },
-    "docs/WORKSPACE_2X2_AND_DEBUGGING.md": {
-      "category": "technical"
-    },
-    "docs/WORKSPACE_LAYOUT_PROFILES.md": {
-      "category": "technical"
-    },
-    "docs/WORKSPACE_VISUAL_REGRESSION.md": {
-      "category": "technical"
-    },
-    "docs/design/VIDEOBATCH_DESIGN_IMPLEMENTATION_PLAN.md": {
-      "category": "technical"
-    },
-    "docs/design/VIDEOBATCH_GRAPHICS_MANIFEST.md": {
-      "category": "technical"
-    },
-    "resources/signing/README.md": {
-      "category": "technical"
-    },
-    "toolchain_wheelhouse/README.md": {
-      "category": "technical"
-    }
+    "AGENTS.md": {"category": "technical"},
+    "ANALYSE_BILDVERGLEICH_2026-08-07.md": {"category": "internal"},
+    "AUTHENTICATED_CHECKPOINT_AUDIT_WELLE15_2026-08-07.md": {"category": "historical", "purpose": "Technischer Nachweis der authentifizierten Checkpoint- und Trust-Chain-Härtung aus Fortsetzungswelle 15."},
+    "AUTOINSTALLATION_save_.md": {"category": "active", "required_sections": ["Ziel", "Pflichtgrad", "Voraussetzungen", "Sicherung und Rückweg", "Schritt-für-Schritt-Anleitung", "Abschlussprüfung", "Nächster Schritt"]},
+    "BEST_PRACTICES.md": {"category": "technical"},
+    "CHANGELOG.md": {"category": "historical"},
+    "CHECKPOINT_FORENSICS_AUDIT_WELLE14_2026-08-07.md": {"category": "historical"},
+    "CODE_QUALITY_REPORT_2.8.3-rc24_save_.md": {"category": "historical"},
+    "DEVELOPER_GUIDE.md": {"category": "active", "required_sections": ["Ziel", "Pflichtgrad", "Voraussetzungen", "Sicherung und Rückweg", "Schritt-für-Schritt-Anleitung", "Abschlussprüfung", "Nächster Schritt"]},
+    "DEVELOPER_HANDBOOK.md": {"category": "technical"},
+    "ERROR_HANDLING.md": {"category": "active", "required_sections": ["Ziel", "Pflichtgrad", "Voraussetzungen", "Schritt-für-Schritt-Anleitung", "Abschlussprüfung", "Nächster Schritt"]},
+    "FAIL_MEMORY_PASS.md": {"category": "historical"},
+    "FINAL_AUDIT_2.8.3-rc24_save_.md": {"category": "historical"},
+    "FRESH_PACKAGE_REPORT_save_.md": {"category": "historical"},
+    "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md": {"category": "historical"},
+    "KEY_ARCHIVE.md": {"category": "technical"},
+    "PLUGIN_SYSTEM.md": {"category": "technical"},
+    "PROJEKTORDNERSTRUKTUR_save_.md": {"category": "technical"},
+    "QUALITY_GATE_ATTEMPT_2.8.3-rc24.md": {"category": "historical"},
+    "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md": {"category": "historical"},
+    "README.md": {"allowed_versions": ["0.16.1", "2.3.0", "1.9.4", "2.10.1"], "category": "active", "required_sections": ["Dokumentation", "Schnellstart", "Abschlussprüfung"]},
+    "REAL_STABLE_GATE_AUDIT_WELLE18_2026-08-07.md": {"category": "historical"},
+    "RECOVERY_AUDIT_WELLE9_2026-08-07.md": {"category": "internal"},
+    "RECOVERY_CHECKPOINT_AUDIT_WELLE13_2026-08-07.md": {"category": "historical"},
+    "RECOVERY_POLICY_AUDIT_WELLE12_2026-08-07.md": {"category": "historical"},
+    "REGISTRY_MANIFEST.md": {"category": "technical"},
+    "RELEASE_NOTES_save_.md": {"category": "historical"},
+    "SCHEDULER_DECISION_INTELLIGENCE_AUDIT_WELLE22_2026-08-08.md": {"category": "historical", "purpose": "Technischer Nachweis der Scheduler-Prognose-, Diagnose-, Dead-Letter- und Dry-Run-Härtung aus Fortsetzungswelle 22."},
+    "SCHEDULER_ENVIRONMENT_BASELINE_AUDIT_WELLE24_2026-08-08.md": {"category": "historical", "purpose": "Technischer Nachweis der Environment-Profil-, Performance-Epochen- und automatischen Re-Baselining-Härtung aus Fortsetzungswelle 24."},
+    "SCHEDULER_FORECAST_CALIBRATION_AUDIT_WELLE23_2026-08-08.md": {"category": "historical", "purpose": "Technischer Nachweis der Forecast-Kalibrierung, Rolling-Origin-Backtests, Drift- und Actual-vs-Predicted-Härtung aus Fortsetzungswelle 23."},
+    "SCHEDULER_GOVERNANCE_AUDIT_WELLE21_2026-08-08.md": {"category": "historical", "purpose": "Technischer Nachweis der Scheduler-Governance-, Queue-, Reconciliation- und Operationshärtung aus Fortsetzungswelle 21."},
+    "SCHEDULER_OPERATIONS_AUDIT_WELLE20_2026-08-08.md": {"category": "historical", "purpose": "Technischer Nachweis der Scheduler-Operations-, Recurrence-, DST- und Konflikthärtung aus Fortsetzungswelle 20."},
+    "SCHEDULER_SYSTEM_AUDIT_WELLE19_2026-08-08.md": {"category": "historical"},
+    "STABLE_GATE_EVIDENCE_AUDIT_WELLE17_2026-08-07.md": {"category": "historical", "purpose": "Technischer Nachweis der kandidatengebundenen, reproduzierbaren Stable-Gate-Evidence-Härtung aus Fortsetzungswelle 17."},
+    "STABLE_GATE_ITERATION_2.8.3-rc24_2026-08-04.md": {"category": "historical"},
+    "STABLE_UPDATE.md": {"category": "technical"},
+    "START_HIER_save_.md": {"category": "active", "required_sections": ["Ziel", "Pflichtgrad", "Voraussetzungen", "Schritt-für-Schritt-Anleitung", "Abschlussprüfung", "Nächster Schritt"]},
+    "STATUS.md": {"category": "internal"},
+    "TEST_REPORT_save_.md": {"category": "technical"},
+    "TEST_SYSTEM.md": {"category": "technical"},
+    "TODO.md": {"category": "internal"},
+    "TRANSACTION_OBSERVABILITY_AUDIT_WELLE11_2026-08-07.md": {"category": "internal"},
+    "TRANSACTION_RECOVERY_AUDIT_WELLE10_2026-08-07.md": {"category": "internal"},
+    "TRUST_ENFORCEMENT_AUDIT_WELLE16_2026-08-07.md": {"category": "historical", "purpose": "Technischer Nachweis der Restore-Trust-Durchsetzung und Release-Vertragsreparatur aus Fortsetzungswelle 16."},
+    "UPDATE_SYSTEM.md": {"category": "active", "required_sections": ["Ziel", "Pflichtgrad", "Voraussetzungen", "Sicherung und Rückweg", "Schritt-für-Schritt-Anleitung", "Abschlussprüfung", "Nächster Schritt"]},
+    "VISUAL_APPROVAL_NORMALIZATION.md": {"category": "technical"},
+    "VISUAL_DESKTOP_APPROVAL.md": {"category": "technical"},
+    "WELLE25_UI_PHASE1_AUDIT_2026-08-08.md": {"category": "historical", "purpose": "Technischer Nachweis der ersten realen Musterbild-Startseite mit bewusst leeren Ausbauflächen."},
+    "WELLE25_UI_PHASE2_QUELLENUEBERSICHT_AUDIT_2026-08-08.md": {"category": "historical", "purpose": "Technischer Nachweis der Welle-25-UI-Phase-2-Anbindung der Quellenübersicht an die bestehende Medien- und Detailansicht."},
+    "WELLE25_UI_PHASE3_WORKFLOW_MODULE_AUDIT_2026-08-08.md": {"category": "historical", "purpose": "Technischer Nachweis der Welle-25-UI-Phase-3-Anbindung der Workflow-Module an bestehende Quick-Mode-, Effekt-, Übergangs- und Queue-Zustände."},
+    "WELLE25_UI_PHASE4_RENDER_PROFILE_AUDIT_2026-08-08.md": {"category": "historical", "purpose": "Technischer Nachweis der Welle-25-UI-Phase-4-Anbindung der Render-Profile an bestehende Profil-, Codec-, Auflösungs- und Ausgabezustände."},
+    "debugging/README.md": {"category": "technical"},
+    "docs/ANALYSE_AUSGANGSTOOL.md": {"category": "historical"},
+    "docs/ARCHITEKTUR.md": {"category": "technical"},
+    "docs/BENUTZERHANDBUCH.md": {"category": "active", "required_sections": ["Ziel", "Pflichtgrad", "Voraussetzungen", "Schritt-für-Schritt-Anleitung", "Abschlussprüfung", "Nächster Schritt"]},
+    "docs/CALENDAR_NOTES.md": {"category": "internal"},
+    "docs/CALENDAR_TASK_OVERVIEW.md": {"category": "internal"},
+    "docs/CODE_QUALITY_PIPELINE.md": {"category": "technical"},
+    "docs/DATA_INTEGRITY_HARDENING.md": {"category": "technical"},
+    "docs/DESIGN_SYSTEM_ANALYSIS_2_5.md": {"category": "historical"},
+    "docs/DOKUMENTATIONSINDEX.md": {"category": "active", "required_sections": ["Ziel", "Aktive Nutzeranleitungen", "Technische Fachanleitungen", "Historische Nachweise"]},
+    "docs/DOKUMENTATIONSSTANDARD.md": {"category": "active", "required_sections": ["Zweck", "Verbindlicher Aufbau jeder Anleitung", "Abnahmekriterien"]},
+    "docs/DOKUMENTATIONS_AUDIT_2026-08-06.md": {"category": "historical"},
+    "docs/FAST_EFFECTS.md": {"category": "technical"},
+    "docs/LONG_RENDER_2.8.3-rc24.md": {"category": "historical"},
+    "docs/OFFLINE_QUALITY_ENVIRONMENT.md": {"category": "technical"},
+    "docs/PLUGIN_APPROVALS.md": {"category": "technical"},
+    "docs/PLUGIN_APPROVAL_MANAGEMENT.md": {"category": "technical"},
+    "docs/PLUGIN_OS_ISOLATION.md": {"category": "technical"},
+    "docs/PLUGIN_PERMISSIONS.md": {"category": "technical"},
+    "docs/PLUGIN_SIGNING.md": {"category": "technical"},
+    "docs/QUALITY_TOOLCHAIN_2_8_3_RC3.md": {"category": "historical"},
+    "docs/QUALITY_TOOLCHAIN_2_8_3_RC4.md": {"category": "historical"},
+    "docs/QUICK_MODES.md": {"category": "technical"},
+    "docs/REPRODUCIBLE_UPDATE_PIPELINE.md": {"category": "technical"},
+    "docs/SCHEDULER_OPERATIONS.md": {"category": "technical"},
+    "docs/SETUP_2_8_3_RC5.md": {"category": "historical"},
+    "docs/STABLE_ACCEPTANCE_EVIDENCE.md": {"category": "historical"},
+    "docs/STABLE_OPERATOR_WELLE18.md": {"category": "technical"},
+    "docs/VISUAL_DESKTOP_APPROVAL.md": {"category": "technical"},
+    "docs/VISUAL_INSPECTION_HTML.md": {"category": "technical"},
+    "docs/VISUAL_LAYOUT_ANALYSIS_2_4.md": {"category": "historical"},
+    "docs/VISUAL_REGRESSION.md": {"category": "technical"},
+    "docs/WORKSPACE_2X2_AND_DEBUGGING.md": {"category": "technical"},
+    "docs/WORKSPACE_LAYOUT_PROFILES.md": {"category": "technical"},
+    "docs/WORKSPACE_VISUAL_REGRESSION.md": {"category": "technical"},
+    "docs/design/VIDEOBATCH_DESIGN_IMPLEMENTATION_PLAN.md": {"category": "technical"},
+    "docs/design/VIDEOBATCH_GRAPHICS_MANIFEST.md": {"category": "technical"},
+    "resources/signing/README.md": {"category": "technical"},
+    "toolchain_wheelhouse/README.md": {"category": "technical"}
   },
   "excluded_relative_links": [],
   "schema_version": 1
