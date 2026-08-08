@@ -41,6 +41,12 @@ jobs:
             src/videobatch_fast/canonical_shell_workspace.py \
             tests/test_documentation_contract.py
 
+      - name: Install exact test runner
+        run: |
+          set -Eeuo pipefail
+          python3 -m pip install pytest==9.0.2
+          test "$(python3 -m pytest --version)" = "pytest 9.0.2"
+
       - name: Run documentation contract
         run: |
           set -Eeuo pipefail
