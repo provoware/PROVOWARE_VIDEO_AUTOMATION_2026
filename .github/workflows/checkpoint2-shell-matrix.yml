@@ -210,7 +210,18 @@ jobs:
           assert len(app._shell_kpi_buttons) == 4
           assert len(app._shell_kpi_cause_vars) == 4
           assert len(app._shell_kpi_updated_vars) == 4
-          assert app.main_notebook.index("end") == 6
+          notebook_tabs = tuple(
+              app.main_notebook.tab(index, "text")
+              for index in range(app.main_notebook.index("end"))
+          )
+          assert notebook_tabs == (
+              "Dashboard",
+              "Medien",
+              "Vorschau",
+              "Effekte",
+              "Queue",
+              "Hilfe",
+          ), notebook_tabs
           assert app._shell_kpi_status_vars["media"].get() == "Leer"
           assert str(app._shell_kpi_buttons["scheduler"].cget("state")) == "disabled"
 
