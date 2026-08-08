@@ -1,0 +1,45 @@
+name: One-shot release manifest regeneration
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-manifest-one-shot-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  regenerate:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      PYTHONPATH: src
+    steps:
+      - name: Check out PR branch with write credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Regenerate final manifest and remove one-shot workflow
+        run: |
+          set -Eeuo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+          rm .github/workflows/release-manifest-one-shot.yml
+          python3 scripts/build_release_manifest.py
+          python3 scripts/build_release_manifest.py --check --json
+          git diff --check
+          git add RELEASE_MANIFEST.json .github/workflows/release-manifest-one-shot.yml
+          git diff --cached --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: regenerate release manifest from PR head"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
