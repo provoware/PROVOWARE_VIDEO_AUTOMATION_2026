@@ -102,14 +102,8 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-      - name: Enforce release manifest
-        if: steps.release_manifest.outcome == 'failure'
-        run: |
-          echo '::error title=Release manifest drift::Use the generated candidate only after reviewing the final source tree.'
-          exit 1
-
       - name: Package exact project snapshot
-        if: steps.release_manifest.outcome == 'success'
+        if: always() && !cancelled()
         run: |
           set -Eeuo pipefail
           git archive \
@@ -119,13 +113,19 @@ jobs:
             HEAD
 
       - name: Upload exact project snapshot
-        if: steps.release_manifest.outcome == 'success'
+        if: always() && !cancelled()
         uses: actions/upload-artifact@v4
         with:
           name: project-source-${{ github.event.pull_request.head.sha || github.sha }}
           path: ${{ runner.temp }}/PROVOWARE_VIDEO_AUTOMATION_2026-${{ github.event.pull_request.head.sha || github.sha }}.zip
           if-no-files-found: error
           retention-days: 30
+
+      - name: Enforce release manifest
+        if: steps.release_manifest.outcome == 'failure'
+        run: |
+          echo '::error title=Release manifest drift::Source snapshot was published, but merge remains blocked until the reviewed manifest candidate is committed.'
+          exit 1
 
       - name: Prove preflight remained read-only
         if: always()
