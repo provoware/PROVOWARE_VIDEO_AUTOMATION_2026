@@ -29,24 +29,23 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Restore canonical preflight and synchronize full manifest
+      - name: Build canonical full manifest and push manifest only
         env:
           HEAD_BRANCH: ${{ github.head_ref }}
         run: |
           set -Eeuo pipefail
           test -n "$HEAD_BRANCH"
-          git show HEAD^:.github/workflows/design-manifest-gate.yml \
+          git show 398d29fab312e42d9beeb751461be8a5bae4e802:.github/workflows/design-manifest-gate.yml \
             > .github/workflows/design-manifest-gate.yml
           python3 scripts/build_release_manifest.py
           python3 scripts/validate_release_manifest.py
           python3 scripts/build_release_manifest.py --check --json
           git diff --check
-          git status --short
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .github/workflows/design-manifest-gate.yml RELEASE_MANIFEST.json
+          git add RELEASE_MANIFEST.json
           git diff --cached --exit-code >/dev/null && {
-            echo '::error::Expected canonical workflow restoration and manifest refresh produced no staged change.'
+            echo '::error::Expected release manifest refresh produced no staged change.'
             exit 1
           }
           git commit -m 'chore: synchronize final release manifest'
