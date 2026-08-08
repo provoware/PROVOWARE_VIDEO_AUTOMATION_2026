@@ -27,6 +27,12 @@ jobs:
           ref: fix/start-readiness-traffic-lights-20260808
           fetch-depth: 0
 
+      - name: Install exact test runner
+        run: |
+          set -Eeuo pipefail
+          python3 -m pip install --disable-pip-version-check pytest==9.0.2
+          python3 -m pytest --version | grep -F 'pytest 9.0.2'
+
       - name: Repair stale matrix expectation, prove semantics and refresh manifest
         run: |
           set -Eeuo pipefail
