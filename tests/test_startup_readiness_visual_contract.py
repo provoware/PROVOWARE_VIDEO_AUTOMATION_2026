@@ -77,7 +77,7 @@ def test_unwritable_missing_project_path_falls_back_to_user_state(tmp_path, monk
     assert state["schema_version"] == project_state.PROJECT_SCHEMA_VERSION
 
 
-def test_canonical_shell_contains_start_check_without_dashboard_bloat() -> None:
+def test_canonical_shell_owns_start_check_without_new_mro_layer() -> None:
     ui_source = (ROOT / "src/videobatch_fast/canonical_ui.py").read_text(encoding="utf-8")
     workspace = (ROOT / "src/videobatch_fast/canonical_shell_workspace.py").read_text(
         encoding="utf-8"
@@ -86,9 +86,10 @@ def test_canonical_shell_contains_start_check_without_dashboard_bloat() -> None:
         encoding="utf-8"
     )
 
-    assert "CanonicalStartCheckMixin" in ui_source
+    assert "CanonicalStartCheckMixin" not in ui_source
     assert "self._build_shell_start_check(content)" in workspace
     assert "workspace.grid(row=4" in workspace
+    assert "build_startup_readiness" in workspace
     assert "build_startup_readiness" not in dashboard
 
 
