@@ -53,6 +53,22 @@ jobs:
           python3 -m pytest -q tests/test_documentation_contract.py
           python3 scripts/validate_documentation.py --json
 
+      - name: Generate expected release manifest evidence
+        run: |
+          set -Eeuo pipefail
+          cp RELEASE_MANIFEST.json "$RUNNER_TEMP/RELEASE_MANIFEST.original.json"
+          python3 scripts/build_release_manifest.py
+          cp RELEASE_MANIFEST.json "$RUNNER_TEMP/RELEASE_MANIFEST.generated.json"
+          mv "$RUNNER_TEMP/RELEASE_MANIFEST.original.json" RELEASE_MANIFEST.json
+
+      - name: Upload expected release manifest evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: expected-release-manifest-${{ github.event.pull_request.head.sha || github.sha }}
+          if-no-files-found: error
+          retention-days: 7
+          path: ${{ runner.temp }}/RELEASE_MANIFEST.generated.json
+
       - name: Verify release manifest
         run: |
           set -Eeuo pipefail
