@@ -193,6 +193,7 @@ class SolutionDialog:
             "retry_runtime": "Erneut prüfen",
             "open_install_help": "Installationshilfe",
             "focus_file_lists": "Dateilisten öffnen",
+            "focus_missing_audio": "Fehlende Zuordnung anzeigen",
             "show_pairing": "Zuordnung anzeigen",
             "reselect_file": "Datei erneut auswählen",
             "remove_missing": "Fehlenden Eintrag entfernen",

@@ -7,6 +7,8 @@ from videobatch_fast.media_import_dialog import preview_candidate
 from videobatch_fast.permission_service import create_writable_subdirectory
 from videobatch_fast.selection_summary import build_selection_summary
 from videobatch_fast.slideshow import SLIDESHOW_MODE_ALL_IMAGES
+from videobatch_fast.ui_components import SolutionDialog
+from videobatch_fast.ui_resolution_mixin import UiResolutionMixin
 from videobatch_fast.validation import validate_output_dir
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -93,3 +95,96 @@ def test_header_selection_statistics_are_always_bound() -> None:
     assert "header_selection_stats" in source
     assert "_bind_header_statistics" in source
     assert "build_selection_summary" in source
+
+
+class _SelectionNotebook:
+    def __init__(self) -> None:
+        self.selected: list[object] = []
+
+    def select(self, value) -> None:
+        self.selected.append(value)
+
+
+class _SelectionTree:
+    def __init__(self, rows: dict[str, tuple[object, ...]]) -> None:
+        self.rows = rows
+        self.selected: list[str] = []
+        self.focused = ""
+        self.seen = ""
+        self.focus_calls = 0
+
+    def get_children(self):
+        return tuple(self.rows)
+
+    def item(self, iid: str, option: str):
+        assert option == "values"
+        return self.rows[iid]
+
+    def selection_set(self, iid: str) -> None:
+        self.selected = [iid]
+
+    def focus(self, iid: str) -> None:
+        self.focused = iid
+
+    def see(self, iid: str) -> None:
+        self.seen = iid
+
+    def focus_set(self) -> None:
+        self.focus_calls += 1
+
+
+class _Guidance:
+    def __init__(self) -> None:
+        self.value = ""
+
+    def set(self, value: str) -> None:
+        self.value = value
+
+
+class _AudioMissingHarness(UiResolutionMixin):
+    def __init__(self) -> None:
+        self.main_notebook = _SelectionNotebook()
+        self.production_notebook = _SelectionNotebook()
+        self.library_notebook = _SelectionNotebook()
+        self.audio_tab = object()
+        self.pair_tree = _SelectionTree({
+            "pair-1": (1, "ok.wav", "bild.png"),
+            "pair-2": (2, "missing.wav", "bild2.png"),
+        })
+        self.audio_tree = _SelectionTree({})
+        self.tree_path_map: dict[str, Path] = {}
+        self.guidance_text = _Guidance()
+
+
+def test_audio_missing_navigation_marks_exact_pairing_row() -> None:
+    harness = _AudioMissingHarness()
+    harness._focus_missing_audio("missing.wav")
+    assert harness.main_notebook.selected[-1] == 4
+    assert harness.production_notebook.selected[-1] == 0
+    assert harness.pair_tree.selected == ["pair-2"]
+    assert harness.pair_tree.focused == "pair-2"
+    assert harness.pair_tree.seen == "pair-2"
+    assert harness.pair_tree.focus_calls == 1
+    assert "missing.wav" in harness.guidance_text.value
+
+
+def test_audio_missing_navigation_falls_back_to_offline_audio_row() -> None:
+    harness = _AudioMissingHarness()
+    harness.pair_tree = _SelectionTree({"pair-1": (1, "ok.wav", "bild.png")})
+    harness.audio_tree = _SelectionTree({"audio:0": ()})
+    harness.tree_path_map = {"audio:0": Path("/tmp/missing.wav")}
+    harness._focus_missing_audio("missing.wav")
+    assert harness.main_notebook.selected[-1] == 1
+    assert harness.library_notebook.selected[-1] is harness.audio_tab
+    assert harness.audio_tree.selected == ["audio:0"]
+    assert harness.audio_tree.focused == "audio:0"
+    assert harness.audio_tree.seen == "audio:0"
+    assert "missing.wav" in harness.guidance_text.value
+
+
+def test_audio_missing_dialog_uses_targeted_primary_action() -> None:
+    validation_source = (ROOT / "src/videobatch_fast/validation.py").read_text(encoding="utf-8")
+    resolution_source = (ROOT / "src/videobatch_fast/ui_resolution_mixin.py").read_text(encoding="utf-8")
+    assert 'actions=("focus_missing_audio", "add_audio", "remove_missing")' in validation_source
+    assert 'action_overrides["focus_missing_audio"]' in resolution_source
+    assert SolutionDialog._label("focus_missing_audio") == "Fehlende Zuordnung anzeigen"

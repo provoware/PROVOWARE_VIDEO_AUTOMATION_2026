@@ -163,8 +163,8 @@ def validate_pairs(jobs: list[PairJob], options: BatchOptions) -> list[Validatio
         if not job.audio.is_file():
             issues.append(ValidationIssue(
                 "AUDIO_MISSING", "Audiodatei fehlt", job.audio.name,
-                "Entferne den Eintrag oder wähle eine neue Audiodatei.",
-                actions=("add_audio", "remove_missing", "focus_file_lists"),
+                "Zeige die fehlende Zuordnung an, ergänze die Audiodatei oder entferne den verwaisten Eintrag.",
+                actions=("focus_missing_audio", "add_audio", "remove_missing"),
             ))
         if not job.media.is_file():
             issues.append(ValidationIssue(

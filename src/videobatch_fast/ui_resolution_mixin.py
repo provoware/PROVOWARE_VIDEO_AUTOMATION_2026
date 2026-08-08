@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from tkinter import simpledialog
+from typing import Callable
 
 from .error_handling import ErrorDefinition, error_definition
 from .paths import default_output_dir
@@ -68,24 +69,46 @@ class UiResolutionMixin:
 
     def _show_validation_issue(self, issue: ValidationIssue) -> None:
         actions = issue.actions or self._fallback_actions(issue.code)
+        action_overrides: dict[str, Callable[[], None]] = {}
+        cause = issue.message
+        solution = issue.solution
+        alternative = "Die Eingaben können angepasst oder der Vorgang später erneut gestartet werden."
+        if issue.code == "AUDIO_MISSING":
+            cause = f"Diese Audiodatei fehlt: {issue.message}"
+            solution = (
+                "Öffne zuerst die fehlende Zuordnung. VideoBatch markiert die betroffene Zeile; "
+                "ergänze danach die Audiodatei oder entferne den verwaisten Eintrag."
+            )
+            alternative = "Audiodatei ergänzen und die Zuordnung anschließend erneut prüfen."
+            action_overrides["focus_missing_audio"] = lambda name=issue.message: self._focus_missing_audio(name)
         definition = ErrorDefinition(
             code=issue.code,
             title=issue.title,
-            cause=issue.message,
+            cause=cause,
             effect="Der betroffene Schritt wurde vor einer unsicheren Änderung gestoppt.",
             automatic_action="Originaldateien, vorhandene Ausgaben und der bestätigte Projektzustand bleiben unverändert.",
-            solution=issue.solution,
-            alternative="Die Eingaben können angepasst oder der Vorgang später erneut gestartet werden.",
+            solution=solution,
+            alternative=alternative,
             severity="blocking" if issue.blocking else "warning",
             actions=actions,
         )
-        self._show_solution_dialog(definition, f"{issue.code}\n{issue.message}")
+        self._show_solution_dialog(
+            definition,
+            f"{issue.code}\n{issue.message}",
+            action_overrides=action_overrides,
+        )
         self.guidance_text.set(f"{issue.title}. Wähle im Lösungsfenster eine passende Aktion.")
 
     def _show_error(self, code: str, detail: str = "") -> None:
         self._show_solution_dialog(error_definition(code), detail)
 
-    def _show_solution_dialog(self, definition: ErrorDefinition, detail: str = "") -> None:
+    def _show_solution_dialog(
+        self,
+        definition: ErrorDefinition,
+        detail: str = "",
+        *,
+        action_overrides: dict[str, Callable[[], None]] | None = None,
+    ) -> None:
         actions = {
             "retry_runtime": self._refresh_runtime_status,
             "choose_output": self._choose_output_and_retry,
@@ -108,6 +131,8 @@ class UiResolutionMixin:
             "choose_project_folder": self._choose_project_folder,
             "disable_archive": self._disable_archive_and_retry,
         }
+        if action_overrides:
+            actions.update(action_overrides)
         SolutionDialog(self.root, definition, detail, actions)
 
     @staticmethod
@@ -183,6 +208,52 @@ class UiResolutionMixin:
             self.audio_tree.focus_set()
         except Exception:
             pass
+
+    def _focus_missing_audio(self, filename: str) -> None:
+        target = Path(str(filename)).name
+
+        # Prefer the actual production pairing because that is the actionable row
+        # the user needs to repair. Selection is purely UI state; no project data
+        # is modified by this navigation step.
+        try:
+            self._focus_pairing()
+            for iid in self.pair_tree.get_children():
+                values = self.pair_tree.item(iid, "values") or ()
+                if len(values) > 1 and Path(str(values[1])).name == target:
+                    self.pair_tree.selection_set(iid)
+                    self.pair_tree.focus(iid)
+                    self.pair_tree.see(iid)
+                    self.guidance_text.set(
+                        f"Fehlende Audio-Zuordnung markiert: {target}. "
+                        "Audiodatei ergänzen oder den verwaisten Eintrag entfernen."
+                    )
+                    return
+        except Exception:
+            pass
+
+        # Fallback for incomplete pairing views: open the audio library and mark
+        # the matching source row if it is still present as an offline entry.
+        self._focus_file_lists()
+        try:
+            if hasattr(self, "library_notebook") and hasattr(self, "audio_tab"):
+                self.library_notebook.select(self.audio_tab)
+            for iid, path in getattr(self, "tree_path_map", {}).items():
+                if str(iid).startswith("audio:") and Path(path).name == target:
+                    self.audio_tree.selection_set(iid)
+                    self.audio_tree.focus(iid)
+                    self.audio_tree.see(iid)
+                    self.audio_tree.focus_set()
+                    self.guidance_text.set(
+                        f"Fehlende Audiodatei markiert: {target}. "
+                        "Datei ergänzen oder den Eintrag entfernen."
+                    )
+                    return
+        except Exception:
+            pass
+        self.guidance_text.set(
+            f"Die fehlende Audiodatei {target} ist in der aktuellen Liste nicht mehr sichtbar. "
+            "Audiodatei ergänzen oder Zuordnung neu aufbauen."
+        )
 
     def _focus_pairing(self) -> None:
         try:
