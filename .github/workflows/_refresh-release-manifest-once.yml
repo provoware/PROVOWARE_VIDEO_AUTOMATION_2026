@@ -1,0 +1,48 @@
+name: One-shot release manifest refresh
+
+on:
+  push:
+    branches:
+      - fix/start-readiness-traffic-lights-20260808
+
+permissions:
+  contents: write
+
+concurrency:
+  group: one-shot-release-manifest-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      PYTHONPATH: src
+    steps:
+      - name: Check out exact branch head
+        uses: actions/checkout@v4
+        with:
+          ref: fix/start-readiness-traffic-lights-20260808
+          fetch-depth: 0
+
+      - name: Generate final full manifest and remove one-shot workflow
+        run: |
+          set -Eeuo pipefail
+          workflow='.github/workflows/_refresh-release-manifest-once.yml'
+          rm -f "$workflow"
+          python3 scripts/build_release_manifest.py
+          python3 scripts/validate_release_manifest.py
+          python3 scripts/build_release_manifest.py --check --json
+          git diff --check
+          git status --short
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add RELEASE_MANIFEST.json "$workflow"
+          git diff --cached --exit-code >/dev/null && {
+            echo '::error::Expected manifest refresh produced no staged change.'
+            exit 1
+          }
+          git commit -m 'chore: refresh release manifest'
+          git push origin HEAD:fix/start-readiness-traffic-lights-20260808
