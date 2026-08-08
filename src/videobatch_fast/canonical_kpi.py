@@ -195,7 +195,7 @@ def build_kpi_snapshots(
             "empty",
             cause="Audio und Medien sind noch nicht zu ausführbaren Aufträgen kombiniert.",
             action_label="Zuordnung öffnen",
-            recovery_action="open_media",
+            recovery_action="open_queue",
         )
 
     effect = str(visual_effect or "none")

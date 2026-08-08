@@ -1,8 +1,14 @@
 from __future__ import annotations
 
-from tkinter import BooleanVar, ttk
+from tkinter import BooleanVar, filedialog, ttk
 
 from .debug_runtime import RUNTIME
+from .permission_service import downloads_dir
+from .support_bundle import (
+    SupportBundleError,
+    export_safe_mode_support_bundle,
+    support_bundle_filename,
+)
 
 
 class CanonicalDebugMixin:
@@ -48,7 +54,77 @@ class CanonicalDebugMixin:
             text="Debugging-Ordner öffnen",
             command=self._open_debug_folder,
         ).grid(row=0, column=1, sticky="ew", padx=(3, 0))
+        if self.safe_mode:
+            self._build_safe_mode_support_export(card)
         return card
+
+    def _build_safe_mode_support_export(self, card) -> None:
+        ttk.Separator(card).grid(row=8, column=0, sticky="ew", pady=(11, 8))
+        safe = ttk.Frame(card, style="ShellCard.TFrame")
+        safe.grid(row=9, column=0, sticky="ew")
+        safe.columnconfigure(0, weight=1)
+        ttk.Label(
+            safe,
+            text="Sicherer Startmodus · Supportpaket",
+            style="SectionHeader.TLabel",
+        ).grid(row=0, column=0, sticky="w")
+        ttk.Label(
+            safe,
+            text=(
+                "Exportiert Bootstrap-/Application-Logs, Startup-Prüfungen, Versionsdaten, "
+                "aktuelle Vorbereitung und die ermittelte Safe-Mode-Ursache. "
+                "Quelldateien werden nur gelesen; das ZIP wird read-only gespeichert."
+            ),
+            style="Hint.TLabel",
+            wraplength=360,
+            justify="left",
+        ).grid(row=1, column=0, sticky="ew", pady=(4, 7))
+        ttk.Button(
+            safe,
+            text="Diagnose exportieren",
+            style="Accent.TButton",
+            command=self._export_safe_mode_diagnostics,
+        ).grid(row=2, column=0, sticky="ew")
+
+    def _export_safe_mode_diagnostics(self) -> None:
+        if not self.safe_mode:
+            self.guidance_text.set("Der Safe-Mode-Diagnoseexport ist nur im sicheren Startmodus verfügbar.")
+            return
+        target = filedialog.asksaveasfilename(
+            parent=self.root,
+            title="Safe-Mode-Diagnose exportieren",
+            initialdir=str(downloads_dir()),
+            initialfile=support_bundle_filename(),
+            defaultextension=".zip",
+            filetypes=(("ZIP-Supportpaket", "*.zip"),),
+        )
+        if not target:
+            self.guidance_text.set("Diagnoseexport abgebrochen; es wurde nichts geschrieben.")
+            return
+        try:
+            path = export_safe_mode_support_bundle(
+                target,
+                checks=self._preparation_checks(),
+                context=self._debug_context(),
+            )
+        except (OSError, ValueError, SupportBundleError) as exc:
+            self.guidance_text.set(f"Diagnoseexport fehlgeschlagen: {exc}")
+            self._event(
+                "SAFE_MODE_SUPPORT_EXPORT_FAILED",
+                "Diagnoseexport fehlgeschlagen",
+                str(exc),
+                level="error",
+                solution="Anderen beschreibbaren Zielordner wählen und Export erneut ausführen.",
+            )
+            return
+        self.guidance_text.set(f"Read-only Diagnosepaket gespeichert: {path}")
+        self._event(
+            "SAFE_MODE_SUPPORT_EXPORTED",
+            "Safe-Mode-Diagnose exportiert",
+            str(path),
+            level="success",
+            solution="ZIP bei Bedarf manuell an den Support weitergeben; es wurde nicht automatisch versendet.",
+        )
 
     def _toggle_debug_mode(self) -> None:
         enabled = bool(self.debug_mode.get())

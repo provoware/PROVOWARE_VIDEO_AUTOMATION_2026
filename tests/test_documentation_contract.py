@@ -28,6 +28,25 @@ def test_github_slug_is_deterministic() -> None:
     assert module.github_slug("„Ich möchte …“") == "ich-möchte"
 
 
+def test_contract_headings_accept_numbered_sections_and_descriptive_suffixes() -> None:
+    module = load_validator()
+    assert module.contract_heading("12. Abschlussprüfung vor Veröffentlichung") == (
+        "abschlussprüfung vor veröffentlichung"
+    )
+    assert module.required_section_present(
+        ["12. Abschlussprüfung vor Veröffentlichung"], "Abschlussprüfung"
+    )
+    assert not module.required_section_present(["12. Ergebnis"], "Abschlussprüfung")
+
+
+def test_toolchain_versions_are_not_product_version_findings() -> None:
+    module = load_validator()
+    versions = module.allowed_non_product_versions()
+    assert "9.0.2" in versions
+    assert "0.16.1" in versions
+    assert "2.3.0" in versions
+
+
 def test_duplicate_heading_detection_uses_anchor_collisions() -> None:
     module = load_validator()
     with tempfile.TemporaryDirectory(prefix="videobatch-doc-heading-") as directory:
@@ -75,7 +94,7 @@ def test_classification_schema_is_complete_and_unique() -> None:
 
 def test_intent_help_is_safe_and_complete() -> None:
     source = (
-        ROOT / "src" / "videobatch_fast" / "canonical_shell_workspace.py"
+        ROOT / "src" / "videobatch_fast" / "canonical_help_status_mixin.py"
     ).read_text(encoding="utf-8")
     for label in (
         "Ich möchte …",
@@ -88,7 +107,7 @@ def test_intent_help_is_safe_and_complete() -> None:
         assert label in source
     assert "keine Produktion, Löschung oder Aktualisierung automatisch gestartet" in source
     help_start = source.index("def _build_canonical_help_page")
-    help_end = source.index("def _restore_shell_selection")
+    help_end = source.index("def _layout_help_intents")
     assert "self._start(" not in source[help_start:help_end]
 
 

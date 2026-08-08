@@ -28,3 +28,9 @@ dist/
 /warmup-metrics/
 /release-audit/
 /dist-matrix-*/
+
+# Runtime/editor residue not covered by directory-local ignore contracts.
+/diagnostics/**/*.log
+*.tmp
+*.bak
+*~

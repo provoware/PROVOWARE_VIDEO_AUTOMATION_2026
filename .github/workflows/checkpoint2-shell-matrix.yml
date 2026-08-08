@@ -47,6 +47,12 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
 
+      - name: Install exact test runner
+        run: |
+          set -Eeuo pipefail
+          python3 -m pip install --disable-pip-version-check pytest==9.0.2
+          python3 -m pytest --version | grep -F 'pytest 9.0.2'
+
       - name: Compile and validate contracts
         run: |
           set -Eeuo pipefail
@@ -110,6 +116,12 @@ jobs:
           os: ${{ matrix.os }}
           session: ${{ matrix.session }}
           mode: matrix
+
+      - name: Install exact test runner
+        run: |
+          set -Eeuo pipefail
+          python3 -m pip install --disable-pip-version-check pytest==9.0.2
+          python3 -m pytest --version | grep -F 'pytest 9.0.2'
 
       - name: Start deterministic display
         run: |
