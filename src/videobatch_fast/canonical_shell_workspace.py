@@ -287,18 +287,6 @@ class CanonicalShellWorkspaceMixin:
         self._start_next_action.set(f"{next_step.title}: {next_step.detail}")
         self._start_next_button.configure(text=f"→ {next_step.title} prüfen")
 
-    def _start_action_callbacks(self) -> dict[str, object]:
-        return {
-            "add_audio": self._add_audio,
-            "add_media": self._add_media,
-            "choose_output": lambda: self._choose_directory(self.output_dir),
-            "repair_settings": self._repair_settings_and_retry,
-            "switch_to_slideshow": self._switch_to_slideshow,
-            "show_pairing": self._focus_pairing,
-            "create_project_folder": self._create_project_folder,
-            "focus_waveform": lambda: self.main_notebook.select(2),
-        }
-
     def _run_shell_next_action(self) -> None:
         model = getattr(self, "_shell_start_readiness", None)
         if model is None:
@@ -307,13 +295,8 @@ class CanonicalShellWorkspaceMixin:
             self._start()
             return
         next_step = next(step for step in model.steps if step.key == model.next_step_key)
-        callback = self._start_action_callbacks().get(next_step.action)
-        if callable(callback):
-            callback()
-            self.root.after_idle(self._refresh_shell_start_check)
-            return
-        self._show_dashboard_view("assistant")
-        self.root.after_idle(self._refresh_preparation_assistant)
+        self.guidance_text.set(f"Nächster Startpunkt: {next_step.title} · {next_step.detail}")
+        self._focus_preparation_assistant()
 
     def _poll_shell_start_check(self) -> None:
         try:
