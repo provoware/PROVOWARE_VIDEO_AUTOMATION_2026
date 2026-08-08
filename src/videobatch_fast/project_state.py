@@ -142,17 +142,17 @@ def normalize_project_state(raw: Any) -> dict[str, Any]:
 
 def _save_initial_project_with_fallback(
     project_path: Path, state: dict[str, Any]
-) -> tuple[Path, bool]:
+) -> Path:
     """Persist a new/healed project without crashing on a stale unwritable path."""
     try:
         save_project_state(project_path, state)
-        return project_path, False
+        return project_path
     except OSError:
         fallback = default_project_file()
         if fallback == project_path:
             raise
         save_project_state(fallback, state)
-        return fallback, True
+        return fallback
 
 
 def load_project_state(path: Path | str | None = None) -> tuple[Path, dict[str, Any], bool]:
@@ -160,8 +160,8 @@ def load_project_state(path: Path | str | None = None) -> tuple[Path, dict[str, 
     project_path = Path(path).expanduser() if path else default_project_file()
     if not project_path.exists():
         state = normalize_project_state({})
-        saved_path, fell_back = _save_initial_project_with_fallback(project_path, state)
-        return saved_path, state, fell_back
+        saved_path = _save_initial_project_with_fallback(project_path, state)
+        return saved_path, state, False
     try:
         state = normalize_project_state(json.loads(project_path.read_text(encoding="utf-8")))
         return project_path, state, False
@@ -171,7 +171,7 @@ def load_project_state(path: Path | str | None = None) -> tuple[Path, dict[str, 
         except OSError:
             pass
         state = normalize_project_state({})
-        saved_path, _fell_back = _save_initial_project_with_fallback(project_path, state)
+        saved_path = _save_initial_project_with_fallback(project_path, state)
         return saved_path, state, True
 
 
