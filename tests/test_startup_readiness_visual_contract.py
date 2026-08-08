@@ -92,9 +92,15 @@ def test_canonical_shell_contains_start_check_without_dashboard_bloat() -> None:
     assert "build_startup_readiness" not in dashboard
 
 
-def test_runtime_residue_is_ignored_but_release_docs_are_not() -> None:
-    ignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
-    assert "/debugging/*" in ignore
-    assert "/diagnostics/**/*.log" in ignore
-    assert "*.tmp" in ignore
-    assert "*_save_.md" not in ignore
+def test_runtime_residue_is_ignored_without_overblocking_debugging() -> None:
+    root_ignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
+    debug_ignore = (ROOT / "debugging/.gitignore").read_text(encoding="utf-8")
+
+    assert "/diagnostics/**/*.log" in root_ignore
+    assert "*.tmp" in root_ignore
+    assert "*.bak" in root_ignore
+    assert "/debugging/*" not in root_ignore
+    assert "*.txt" in debug_ignore
+    assert "*.log" in debug_ignore
+    assert "*.json" in debug_ignore
+    assert "*_save_.md" not in root_ignore
