@@ -1,0 +1,16 @@
+{
+  "wave": 15,
+  "date": "2026-08-07",
+  "scenarios": [
+    {"id":"TRUST-001","scenario":"authenticated checkpoint","expected":"trusted","result":"pass"},
+    {"id":"TRUST-002","scenario":"manifest replacement with recomputed unkeyed fingerprint","expected":"HMAC reject","result":"pass"},
+    {"id":"TRUST-003","scenario":"deleted middle generation","expected":"broken parent chain detected","result":"pass"},
+    {"id":"TRUST-004","scenario":"inserted unsigned generation","expected":"compromised chain","result":"pass"},
+    {"id":"TRUST-005","scenario":"key rotation","expected":"old verifies, new uses new key id","result":"pass"},
+    {"id":"TRUST-006","scenario":"explicit legacy migration","expected":"legacy to authenticated chain","result":"pass"},
+    {"id":"TRUST-007","scenario":"audit line tampering","expected":"audit HMAC/hash chain invalid","result":"pass"},
+    {"id":"TRUST-008","scenario":"partial checkpoint directory compromise","expected":"compromised state without harming valid generation","result":"pass"},
+    {"id":"TRUST-009","scenario":"authorized retention prefix removal","expected":"signed prune anchor preserves trust","result":"pass"},
+    {"id":"TRUST-010","scenario":"forged/missing prune anchor","expected":"deletion remains compromised","result":"pass"}
+  ]
+}

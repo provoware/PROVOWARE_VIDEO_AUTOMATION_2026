@@ -1,0 +1,17 @@
+PROVOWARE VIDEO AUTOMATION – FORTSETZUNGSWELLE 19
+Datum: 2026-08-08
+
+Scheduler & Energy-Aware Automation
+
+Gesamtregression: 609/609 bestanden
+Coverage: Lines 80,96 % / Branches 65,49 % / kombiniert 77,80 %
+Coverage-Policy 80/65: bestanden
+Interne Codequalität: 313 Dateien / 2.692 Funktionen / max. Komplexität 29 / 0 Befunde
+Architektur: 0 Befunde
+Ereignisarchitektur: 0 Befunde
+Ereignisregister: 0 Befunde
+Design: bestanden
+Isolierte Python-Kompilierung: bestanden
+
+SCHED-001: intern geschlossen.
+Externe Stable-Nachweise: weiterhin offen; vom Nutzer übersprungen, nicht simuliert.

@@ -16,13 +16,14 @@ ROOT = Path(__file__).resolve().parents[1]
 NOW = datetime(2026, 8, 4, 12, 0, tzinfo=timezone.utc)
 
 
-def _write_evidence(directory: Path, candidate: str = "2.8.3-rc24", digest: str = "a" * 64) -> None:
+def _write_evidence(directory: Path, candidate: str = "2.8.3-rc24", digest: str = "a" * 64, source_digest: str = "c" * 64) -> None:
     for kind, required in REQUIRED_CHECKS.items():
         payload = {
-            "schema_version": 1,
+            "schema_version": 2,
             "evidence_type": kind,
             "candidate_id": candidate,
             "manifest_sha256": digest,
+            "source_sha256": source_digest,
             "environment": {"system": "Kubuntu 24.04", "session_or_target": kind},
             "timestamp": "2026-08-04T10:00:00Z",
             "result": "passed",
@@ -33,7 +34,7 @@ def _write_evidence(directory: Path, candidate: str = "2.8.3-rc24", digest: str 
 
 def test_stable_acceptance_blocks_missing_evidence(tmp_path: Path) -> None:
     with pytest.raises(AcceptanceBlocked, match="kde_x11.json fehlt") as error:
-        validate_evidence(tmp_path, "2.8.3-rc24", "a" * 64, now=NOW)
+        validate_evidence(tmp_path, "2.8.3-rc24", "a" * 64, "c" * 64, now=NOW)
     for section in ("Ursache:", "Auswirkung:", "Automatische Schutzmaßnahme:", "Lösung:", "Alternative:"):
         assert section in str(error.value)
 
@@ -41,14 +42,13 @@ def test_stable_acceptance_blocks_missing_evidence(tmp_path: Path) -> None:
 def test_stable_acceptance_blocks_wrong_candidate_hash(tmp_path: Path) -> None:
     _write_evidence(tmp_path, digest="b" * 64)
     with pytest.raises(AcceptanceBlocked, match="gehört nicht"):
-        validate_evidence(tmp_path, "2.8.3-rc24", "a" * 64, now=NOW)
+        validate_evidence(tmp_path, "2.8.3-rc24", "a" * 64, "c" * 64, now=NOW)
 
 
-def test_stable_acceptance_blocks_only_one_kde_session(tmp_path: Path) -> None:
+def test_stable_acceptance_does_not_require_wayland(tmp_path: Path) -> None:
     _write_evidence(tmp_path)
-    (tmp_path / "kde_wayland.json").unlink()
-    with pytest.raises(AcceptanceBlocked, match="kde_wayland.json fehlt"):
-        validate_evidence(tmp_path, "2.8.3-rc24", "a" * 64, now=NOW)
+    assert not (tmp_path / "kde_wayland.json").exists()
+    validate_evidence(tmp_path, "2.8.3-rc24", "a" * 64, "c" * 64, now=NOW)
 
 
 def test_stable_acceptance_blocks_failed_long_render(tmp_path: Path) -> None:
@@ -58,12 +58,18 @@ def test_stable_acceptance_blocks_failed_long_render(tmp_path: Path) -> None:
     payload["result"] = "failed"
     path.write_text(json.dumps(payload), encoding="utf-8")
     with pytest.raises(AcceptanceBlocked, match="kein bestandenes Ergebnis"):
-        validate_evidence(tmp_path, "2.8.3-rc24", "a" * 64, now=NOW)
+        validate_evidence(tmp_path, "2.8.3-rc24", "a" * 64, "c" * 64, now=NOW)
+
+
+def test_stable_acceptance_blocks_wrong_source_hash(tmp_path: Path) -> None:
+    _write_evidence(tmp_path, source_digest="d" * 64)
+    with pytest.raises(AcceptanceBlocked, match="Source-Hash"):
+        validate_evidence(tmp_path, "2.8.3-rc24", "a" * 64, "c" * 64, now=NOW)
 
 
 def test_stable_acceptance_accepts_complete_evidence_set(tmp_path: Path) -> None:
     _write_evidence(tmp_path)
-    validate_evidence(tmp_path, "2.8.3-rc24", "a" * 64, now=NOW)
+    validate_evidence(tmp_path, "2.8.3-rc24", "a" * 64, "c" * 64, now=NOW)
 
 
 def test_stable_version_contract_is_supported(tmp_path: Path) -> None:

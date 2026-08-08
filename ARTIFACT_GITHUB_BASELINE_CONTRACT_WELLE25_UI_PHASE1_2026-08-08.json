@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "artifact": "PROVOWARE_VIDEO_AUTOMATION_2026_Fortsetzung_Welle25_UI_PHASE1_validiert.zip",
+  "artifact_sha256": "db51ad50c7918775fd34e19fc5137395dce08e7256c2006fc0ee4b327d2ebea5",
+  "artifact_file_count": 856,
+  "github_repository": "provoware/PROVOWARE_VIDEO_AUTOMATION_2026",
+  "github_base_commit": "bf1a13dd92349910e31b5cb69ab9c3e2793cd8e6",
+  "baseline_scope": "Welle 25 UI Phase 1 validated artifact before UI Phase 2",
+  "validation_evidence": "FINAL_VALIDIERUNG_WELLE25_UI_PHASE1_2026-08-08.txt",
+  "inventory_file": "ARTIFACT_GITHUB_BASELINE_INVENTORY_WELLE25_UI_PHASE1_2026-08-08.json"
+}

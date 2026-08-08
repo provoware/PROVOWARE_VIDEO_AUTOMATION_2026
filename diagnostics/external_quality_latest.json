@@ -1,0 +1,29 @@
+{
+  "schema_version": 3,
+  "mode": "auto",
+  "offline": true,
+  "python": "3.13.5 (main, May  5 2026, 21:05:52) [GCC 14.2.0]",
+  "interpreter": "/opt/pyvenv/bin/python",
+  "results": [
+    {
+      "tool": "ruff",
+      "status": "blocked",
+      "message": "Werkzeug ist nicht installiert."
+    },
+    {
+      "tool": "mypy",
+      "status": "blocked",
+      "message": "Werkzeug ist nicht installiert."
+    },
+    {
+      "tool": "bandit",
+      "status": "blocked",
+      "message": "Werkzeug ist nicht installiert."
+    },
+    {
+      "tool": "pip-audit",
+      "status": "blocked",
+      "message": "Werkzeug ist nicht installiert."
+    }
+  ]
+}

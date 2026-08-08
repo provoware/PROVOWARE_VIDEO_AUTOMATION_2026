@@ -1,0 +1,88 @@
+{
+  "method": "Python difflib.SequenceMatcher on intended iteration files; metric report itself and generated caches excluded",
+  "changed_files": 5,
+  "inserted_chars": 8923,
+  "deleted_chars": 0,
+  "replaced_old_chars": 0,
+  "replaced_new_chars": 0,
+  "net_chars": 8923,
+  "line_delta": 193,
+  "files": [
+    {
+      "path": "src/videobatch_fast/project_home_dashboard.py",
+      "inserted_chars": 2927,
+      "deleted_chars": 0,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "old_lines": 487,
+      "new_lines": 545,
+      "line_delta": 58
+    },
+    {
+      "path": "tests/test_project_home_render_wave25_phase4.py",
+      "inserted_chars": 2655,
+      "deleted_chars": 0,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "old_lines": 0,
+      "new_lines": 73,
+      "line_delta": 73
+    },
+    {
+      "path": "ITERATION_BASELINE_WELLE25_UI_PHASE4_2026-08-08.json",
+      "inserted_chars": 402,
+      "deleted_chars": 0,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "old_lines": 0,
+      "new_lines": 9,
+      "line_delta": 9
+    },
+    {
+      "path": "WELLE25_UI_PHASE4_RENDER_PROFILE_AUDIT_2026-08-08.md",
+      "inserted_chars": 1944,
+      "deleted_chars": 0,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "old_lines": 0,
+      "new_lines": 29,
+      "line_delta": 29
+    },
+    {
+      "path": "FINAL_VALIDIERUNG_WELLE25_UI_PHASE4_2026-08-08.txt",
+      "inserted_chars": 995,
+      "deleted_chars": 0,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "old_lines": 0,
+      "new_lines": 24,
+      "line_delta": 24
+    }
+  ],
+  "categories": {
+    "Produktcode": {
+      "files": 1,
+      "inserted_chars": 2927,
+      "deleted_chars": 0,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "line_delta": 58
+    },
+    "Tests": {
+      "files": 1,
+      "inserted_chars": 2655,
+      "deleted_chars": 0,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "line_delta": 73
+    },
+    "Dokumentation/Nachweise": {
+      "files": 3,
+      "inserted_chars": 3341,
+      "deleted_chars": 0,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "line_delta": 62
+    }
+  }
+}

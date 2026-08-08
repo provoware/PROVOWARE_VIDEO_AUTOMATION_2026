@@ -1,0 +1,46 @@
+VIDEOBATCH FAST · FORTSETZUNGSBERICHT OFFENE PUNKTE
+Stand: 2026-08-07
+
+ERLEDIGT
+1. START-001 – Startzeit-/Handshake-Telemetrie
+   - launch_to_run_app
+   - tk_create
+   - ui_construct
+   - first_idle_flush
+   - launch_to_ready
+   - Werte im Ready-Marker, Bootstrap-Log und ui_timing_latest.json.
+
+2. KPI-001 – Untermetriken
+   - Bilder, Videos und Audio werden getrennt aus echten Quellen gezählt.
+   - Queue zeigt Wartend und Abgeschlossen aus realen Jobs/Ergebnissen.
+
+3. QUEUE-001A – Queue-Überblick
+   - Textsuche vorhanden.
+   - Statusfilter Alle/Wartend/Fertig/Fehler ergänzt.
+   - Keine Musterdaten.
+
+4. PREVIEW-001A – vorhandene Vorschaufunktionen direkt in Job Details
+   - Zoom −
+   - Einpassen
+   - Zoom +
+   - Vollbild
+
+VALIDIERUNG
+- 454 Tests bestanden.
+- Python compileall bestanden.
+- 61 JSON-Dateien gelesen.
+- Shell-Syntax bestanden.
+- Designregelwerk bestanden.
+- Release-Dateistatus bestanden (11 fertig, 8 offen).
+
+WEITER OFFEN
+- VIS-001 Original-PNG-Paar numerisch vergleichen.
+- VIS-002 physische X11/Wayland-Abnahme.
+- REL-001 realer Langzeitrender.
+- UI-ICON-001 Offline-Iconset.
+- QUEUE-001B Queue-Thumbnails.
+- PREVIEW-001B echter Video-Transport, sofern bestehende Playerpipeline ihn unterstützt.
+- FOOTER-001 Backuphistorie.
+- DATA-001 persistente Tags.
+- QUEUE-002 Virtualisierung erst nach Lastmessung.
+- SCHED-001 nach Checkpoint 5.

@@ -32,6 +32,11 @@ def _parser() -> argparse.ArgumentParser:
         help="Nur für CI-Probeläufe: Threadbegrenzung statt systemd-cgroup-Hartgrenzen zulassen",
     )
     parser.add_argument(
+        "--evidence-dir",
+        type=Path,
+        help="Nach vollständig bestandenem realem Lauf sourcegebundenes long_render.json exportieren",
+    )
+    parser.add_argument(
         "--checkpoint-stop-after",
         type=int,
         default=0,
@@ -73,6 +78,12 @@ def main(argv: list[str] | None = None) -> int:
     }
     print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
     if state.get("state") == "completed":
+        if args.evidence_dir is not None:
+            if bool(state.get("rehearsal_only")):
+                print("LANGZEITRENDER EVIDENCE BLOCKIERT: Probelauf darf kein Stable-Evidence erzeugen.", file=sys.stderr)
+                return 2
+            from export_stable_evidence import export_long_render
+            export_long_render(contract.state_file.parent / "final-report.json", args.evidence_dir / "long_render.json")
         return 0
     if state.get("state") in {"paused", "paused_timeout", "paused_failure"}:
         return 75

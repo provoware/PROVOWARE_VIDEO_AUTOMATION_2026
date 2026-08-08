@@ -1,6 +1,6 @@
 {
-  "schema_version": 2,
-  "contract_id": "videobatch-fast.fault-lab/2.8.3-rc24-v2",
+  "schema_version": 3,
+  "contract_id": "videobatch-fast.fault-lab/2.8.3-rc24-v3",
   "release_target": "2.8.3-rc24",
   "destructive_operations_forbidden": true,
   "workspace_must_be_temporary": true,
@@ -12,6 +12,12 @@
   "scenarios": [
     "atomic_write_disk_full",
     "atomic_write_interrupted",
+    "atomic_fsync_disk_full",
+    "atomic_permission_denied",
+    "crashed_temp_recovery",
+    "lock_released_after_process_kill",
+    "concurrent_project_backups_serialized",
+    "corrupt_backup_history_restart_recovery",
     "read_only_output",
     "removed_external_target",
     "ffmpeg_crash",
@@ -25,5 +31,13 @@
     "retry_queue_attempt_limit",
     "retry_queue_preserves_unstarted",
     "ui_event_handler_isolation"
-  ]
+  ],
+  "recovery_requirements": {
+    "atomic_write_preserves_last_valid_state": true,
+    "dead_writer_locks_release_via_kernel": true,
+    "dead_pid_tempfiles_self_clean_on_next_write": true,
+    "parallel_backup_mutations_are_serialized": true,
+    "backup_history_is_reconstructible_from_verified_archives": true,
+    "fault_injection_must_be_non_destructive_and_workspace_scoped": true
+  }
 }

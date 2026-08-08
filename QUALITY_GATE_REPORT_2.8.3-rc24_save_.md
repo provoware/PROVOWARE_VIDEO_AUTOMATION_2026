@@ -1,5 +1,7 @@
 # Exakter Offline-Qualitätsbericht 2.8.3-rc24
 
+> **Geltungsbereich:** Dieser Nachweis gilt ausschließlich für den unten genannten Commit `2e33a2c00a0b2e7aa44f3db38a0a60a2d6998710` vom 5. August 2026. Welle 16 verändert danach sicherheitsrelevanten Quellcode und Toolchain-/Coverage-Verträge. Der Bericht darf deshalb **nicht** als Freigabenachweis für den aktuellen Welle-16-Stand verwendet werden. Für Welle 16 bleiben Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4 und pip-audit 2.10.1 bis zu einem erneuten exakten Lauf offen.
+
 ## Ergebnis
 
 Die exakt gepinnte Qualitätswerkzeugkette wurde am 5. August 2026 vollständig und reproduzierbar ausgeführt. Alle vier Pflichtwerkzeuge bestanden ohne Quell- oder Sicherheitsbefund.
@@ -61,7 +63,7 @@ Es wurden keine Anwendungsdateien geändert, weil kein konkreter reproduzierbare
 
 Die externen Python-Qualitätswerkzeuge blockieren Stable nicht mehr. Weiterhin offen bleiben:
 
-1. physische KDE-Abnahme unter echten X11- und Wayland-Sitzungen,
+1. physische KDE-Abnahme unter echter X11-Sitzung,
 2. dokumentierter Langzeitrender mit großer Medienauswahl und langsamem externem Ziel.
 
 Der Kandidat bleibt bis zu diesen beiden Nachweisen `2.8.3-rc24` und wird nicht als Stable bezeichnet.

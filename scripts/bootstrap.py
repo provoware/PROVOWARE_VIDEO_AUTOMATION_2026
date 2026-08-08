@@ -15,12 +15,6 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
-
-from videobatch_fast.startup_handshake import read_ready_marker  # noqa: E402
-
 CHECK_ONLY = "--check-only" in sys.argv
 if CHECK_ONLY:
     sys.argv.remove("--check-only")
@@ -110,6 +104,7 @@ def verify_project() -> None:
         raise BootstrapFailure("Das Programmpaket ist unvollständig: " + ", ".join(missing))
 
 
+
 def load_startup_contract() -> dict[str, Any]:
     try:
         contract = json.loads(STARTUP_CONTRACT.read_text(encoding="utf-8"))
@@ -136,7 +131,6 @@ def load_startup_contract() -> dict[str, Any]:
     if missing:
         raise BootstrapFailure("Der Startvertrag verletzt Pflichtregeln: " + ", ".join(missing))
     return contract
-
 
 def install_user_launchers(sink: EventSink) -> None:
     """Maintain menu and command launchers without requiring root privileges."""
@@ -200,6 +194,7 @@ def system_runtime_fallback(sink: EventSink) -> Path | None:
     return None
 
 
+
 def _portable_runtime(sink: EventSink) -> Path | None:
     if os.environ.get("VIDEOBATCH_PORTABLE") != "1":
         return None
@@ -213,7 +208,6 @@ def _portable_runtime(sink: EventSink) -> Path | None:
         raise BootstrapFailure("Die eingebettete portable Laufzeit ist beschädigt.")
     sink.log("PORTABLE RUNTIME VERIFIED")
     return Path(sys.executable).resolve()
-
 
 def ensure_runtime(sink: EventSink, *, maximum_attempts: int = 2) -> tuple[Path, bool]:
     portable = _portable_runtime(sink)
@@ -241,13 +235,13 @@ def ensure_runtime(sink: EventSink, *, maximum_attempts: int = 2) -> tuple[Path,
     return python, False
 
 
+
 def _project_pythonpath() -> str:
     existing = os.environ.get("PYTHONPATH", "").strip()
     parts = [str(ROOT / "src")]
     if existing:
         parts.append(existing)
     return os.pathsep.join(parts)
-
 
 def run_startup_probe(python: Path, sink: EventSink) -> dict[str, Any]:
     env = {**os.environ, "PYTHONPATH": _project_pythonpath()}
@@ -277,12 +271,48 @@ def run_startup_probe(python: Path, sink: EventSink) -> dict[str, Any]:
     return {"status": "ready" if completed.returncode == 0 else "warning"}
 
 
+def _read_ready_marker(path: Path) -> dict[str, Any] | None:
+    if not path.is_file() or path.is_symlink():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
+    if not isinstance(payload, dict) or payload.get("schema_version") not in {1, 2}:
+        return None
+    return payload
+
+
 def _tail(path: Path, limit: int = 5000) -> str:
     try:
         value = path.read_text(encoding="utf-8", errors="replace")
     except OSError:
         return ""
     return value[-limit:]
+
+
+def _write_ui_timing_report(payload: dict[str, Any], *, safe_mode: bool) -> None:
+    """Persist non-blocking UI startup phase timings for later diagnosis."""
+    startup_dir = STATE / "startup"
+    startup_dir.mkdir(parents=True, exist_ok=True)
+    target = startup_dir / "ui_timing_latest.json"
+    temporary = target.with_name(f".{target.name}.{os.getpid()}.tmp")
+    report = {
+        "schema_version": 1,
+        "recorded_at": datetime.now().astimezone().isoformat(timespec="seconds"),
+        "safe_mode": bool(safe_mode),
+        "pid": payload.get("pid"),
+        "startup_status": payload.get("startup_status", ""),
+        "timing_ms": payload.get("timing_ms", {}),
+    }
+    try:
+        temporary.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        os.replace(temporary, target)
+    except OSError:
+        try:
+            temporary.unlink(missing_ok=True)
+        except OSError:
+            pass
 
 
 def launch_application(
@@ -296,6 +326,7 @@ def launch_application(
     """Launch and require a real UI-ready handshake before closing the starter."""
     handshake_dir = STATE / "startup" / "handshakes"
     handshake_dir.mkdir(parents=True, exist_ok=True)
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
     token = f"{os.getpid()}-{time.time_ns()}-{'safe' if safe_mode else 'normal'}"
     marker = handshake_dir / f"{token}.json"
     app_log = LOG_DIR / f"application_{token}.log"
@@ -304,6 +335,7 @@ def launch_application(
         "VIDEOBATCH_UI_READY_FILE": str(marker),
         "VIDEOBATCH_SAFE_MODE": "1" if safe_mode else "0",
         "PYTHONUNBUFFERED": "1",
+        "VIDEOBATCH_LAUNCH_MONOTONIC_NS": str(time.monotonic_ns()),
     }
     sink.log(f"APPLICATION ATTEMPT safe_mode={safe_mode} log={app_log}")
     try:
@@ -322,9 +354,11 @@ def launch_application(
 
     deadline = time.monotonic() + max(5.0, timeout)
     while time.monotonic() < deadline:
-        payload = read_ready_marker(marker)
+        payload = _read_ready_marker(marker)
         if payload is not None:
-            sink.log(f"UI_READY pid={process.pid} safe_mode={safe_mode} payload={payload}")
+            timing = payload.get("timing_ms", {})
+            _write_ui_timing_report(payload, safe_mode=safe_mode)
+            sink.log(f"UI_READY pid={process.pid} safe_mode={safe_mode} timing_ms={timing} payload={payload}")
             try:
                 marker.unlink(missing_ok=True)
             except OSError:

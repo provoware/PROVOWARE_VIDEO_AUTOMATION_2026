@@ -69,7 +69,8 @@ def test_missing_quality_package_is_reported_without_traceback(monkeypatch: pyte
 def test_launcher_uses_predictive_bootstrap_and_does_not_require_ffmpeg_to_open_ui() -> None:
     launcher = (ROOT / "videobatch.sh").read_text(encoding="utf-8")
     bootstrap = (SCRIPTS / "bootstrap.py").read_text(encoding="utf-8")
-    assert 'exec "$BOOTSTRAP_PYTHON" "$ROOT_DIR/scripts/bootstrap.py"' in launcher
+    assert 'scripts/debug_launcher.py' in launcher
+    assert 'scripts/bootstrap.py' in (SCRIPTS / 'debug_launcher.py').read_text(encoding='utf-8')
     assert 'command -v "$tool"' not in launcher
     assert '"prepare", "--scope", "runtime"' in bootstrap
     assert '"prepare", "--scope", "quality"' not in bootstrap

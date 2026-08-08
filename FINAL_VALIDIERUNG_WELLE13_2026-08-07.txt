@@ -1,0 +1,31 @@
+PROVOWARE VIDEO AUTOMATION – FINALVALIDIERUNG FORTSETZUNGSWELLE 13
+Stand: 2026-08-07
+
+SCHWERPUNKT
+Recovery Checkpoints & Generational State Engine: konsistente Multi-Domain-Systemcheckpoints, Generation-Graph, Restore-Probe, crashsicheres Restore-Journal, Retention/GC und deterministische Point-in-Time-Recovery.
+
+IMPLEMENTIERT
+1. Gemeinsame Checkpoint-Generationen für Projekt, Config, Retry-Queue, Job-Journale und Backup-Metadaten.
+2. Verdeckte `.creating-*`-Erstellung mit atomarem Publish erst nach vollständigem Snapshot-/Manifest-fsync.
+3. Zweiphasige Stable-read-Prüfung gegen gemischte Generationen bei parallelen Änderungen.
+4. Rekonstruierbarer Generation-Graph mit Parent-Kette.
+5. Crash-Recovery für Abbruch vor und nach Checkpoint-Publish.
+6. SHA-256-/Größen-/Manifest-Integritätsprüfung jeder Generation.
+7. Restore-Probe mit echter temporärer Write/fsync/Delete-Prüfung auf Ziel-Dateisystemen.
+8. Durables Restore-Journal für idempotentes Roll-forward nach Crash mitten im Multi-Datei-Restore.
+9. Point-in-Time-Auswahl auf neueste verifizierte Generation <= Zielzeitpunkt.
+10. Retention/GC alter Generationen mit Graph-Rebuild und Sperre bei offenem Restore.
+11. Startup-Integration: Restore-Recovery vor Config-/Projektload; neuer Systemcheckpoint nach erfolgreichem Recovery-Startup.
+
+NACHWEISE
+- Neue Welle-13-Tests: 11/11 bestanden.
+- Kombinierte Welle-12/13-Recoverytests: 21/21 bestanden.
+- Vollsuite unter Xvfb: 548/548 bestanden.
+- Interne Codequalität: 293 Dateien, 2463 Funktionen, max. Komplexität 29, Befunde 0.
+- Architektur: 128 Module, 1318 Funktionen, 162 Klassen, Befunde 0.
+- Ereignisarchitektur: 0 Befunde.
+- Ereignisregister: 0 Befunde.
+- Registry, Design, Text, Version, Release-Literal, Release-Dateistatus, Dokumentation und Compile: bestanden.
+
+STABLE
+VIS-001, VIS-002, REL-001 und SCHED-001 bleiben unverändert offen. Welle 13 behauptet keine physische Stromausfall-/Controller-/Kernel-/Dateisystem-Fault-Abnahme.

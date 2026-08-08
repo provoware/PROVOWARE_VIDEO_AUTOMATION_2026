@@ -1,0 +1,596 @@
+{
+  "schema_version": 2,
+  "passed": true,
+  "contract_errors": [],
+  "results": [
+    {
+      "scenario_id": "dashboard_1280x720_100",
+      "passed": true,
+      "mean_difference": 0.0008959493262325507,
+      "dhash_distance": 1,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/dashboard_1280x720_100.png",
+      "actual": "/mnt/data/videobatch_visual_w6/dashboard_1280x720_100.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.02242324256206735,
+      "changed_pixel_ratio": 0.002322530864197531,
+      "edge_difference": 0.0011578991164366982,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.399,
+        0.0556,
+        0.85,
+        0.9815
+      ],
+      "baseline_size": [
+        1280,
+        720
+      ],
+      "actual_size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "scenario_id": "dashboard_1366x768_100",
+      "passed": true,
+      "mean_difference": 0.0007815273743242152,
+      "dhash_distance": 0,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/dashboard_1366x768_100.png",
+      "actual": "/mnt/data/videobatch_visual_w6/dashboard_1366x768_100.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.020900778425665976,
+      "changed_pixel_ratio": 0.002044753086419753,
+      "edge_difference": 0.001003578128782377,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.4156,
+        0.0519,
+        0.8583,
+        0.9833
+      ],
+      "baseline_size": [
+        1366,
+        768
+      ],
+      "actual_size": [
+        1366,
+        768
+      ]
+    },
+    {
+      "scenario_id": "dashboard_1920x1080_100",
+      "passed": true,
+      "mean_difference": 0.01028250827079803,
+      "dhash_distance": 7,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/dashboard_1920x1080_100.png",
+      "actual": "/mnt/data/videobatch_visual_w6/dashboard_1920x1080_100.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.061632180024356636,
+      "changed_pixel_ratio": 0.04484375,
+      "edge_difference": 0.016658163882837085,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.0344,
+        0.037,
+        0.9656,
+        0.9889
+      ],
+      "baseline_size": [
+        1920,
+        1080
+      ],
+      "actual_size": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "scenario_id": "dashboard_1920x1080_140",
+      "passed": true,
+      "mean_difference": 0.01691677761639635,
+      "dhash_distance": 12,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/dashboard_1920x1080_140.png",
+      "actual": "/mnt/data/videobatch_visual_w6/dashboard_1920x1080_140.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.08183811453889109,
+      "changed_pixel_ratio": 0.08679976851851852,
+      "edge_difference": 0.020286129266521423,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.1812,
+        0.0407,
+        0.9771,
+        0.987
+      ],
+      "baseline_size": [
+        1920,
+        1080
+      ],
+      "actual_size": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "scenario_id": "dashboard_1440x900_90",
+      "passed": true,
+      "mean_difference": 0.008676921951908336,
+      "dhash_distance": 0,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/dashboard_1440x900_90.png",
+      "actual": "/mnt/data/videobatch_visual_w6/dashboard_1440x900_90.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.05874214368092853,
+      "changed_pixel_ratio": 0.035264274691358025,
+      "edge_difference": 0.015490831517792302,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.2021,
+        0.0426,
+        0.9625,
+        0.9852
+      ],
+      "baseline_size": [
+        1440,
+        900
+      ],
+      "actual_size": [
+        1440,
+        900
+      ]
+    },
+    {
+      "scenario_id": "dashboard_1500x920_105",
+      "passed": true,
+      "mean_difference": 0.010780092592592591,
+      "dhash_distance": 6,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/dashboard_1500x920_105.png",
+      "actual": "/mnt/data/videobatch_visual_w6/dashboard_1500x920_105.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.06615154695910083,
+      "changed_pixel_ratio": 0.04868055555555555,
+      "edge_difference": 0.01530914124909223,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.2031,
+        0.0463,
+        0.9708,
+        0.9852
+      ],
+      "baseline_size": [
+        1500,
+        920
+      ],
+      "actual_size": [
+        1500,
+        920
+      ]
+    },
+    {
+      "scenario_id": "dashboard_1440x900_125",
+      "passed": true,
+      "mean_difference": 0.004031212176228516,
+      "dhash_distance": 1,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/dashboard_1440x900_125.png",
+      "actual": "/mnt/data/videobatch_visual_w6/dashboard_1440x900_125.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.04690353987699894,
+      "changed_pixel_ratio": 0.011780478395061729,
+      "edge_difference": 0.006467933006535948,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.2656,
+        0.0463,
+        0.9333,
+        0.9852
+      ],
+      "baseline_size": [
+        1440,
+        900
+      ],
+      "actual_size": [
+        1440,
+        900
+      ]
+    },
+    {
+      "scenario_id": "dashboard_1920x1080_125",
+      "passed": true,
+      "mean_difference": 0.016796434983458404,
+      "dhash_distance": 11,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/dashboard_1920x1080_125.png",
+      "actual": "/mnt/data/videobatch_visual_w6/dashboard_1920x1080_125.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.0821911429475053,
+      "changed_pixel_ratio": 0.07997492283950618,
+      "edge_difference": 0.022728795993706124,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.0406,
+        0.0389,
+        0.9667,
+        0.987
+      ],
+      "baseline_size": [
+        1920,
+        1080
+      ],
+      "actual_size": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "scenario_id": "workspace_files_1366x768_100",
+      "passed": true,
+      "mean_difference": 0.0007996802630517226,
+      "dhash_distance": 0,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/workspace_files_1366x768_100.png",
+      "actual": "/mnt/data/videobatch_visual_w6/workspace_files_1366x768_100.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.021053298590005515,
+      "changed_pixel_ratio": 0.0021141975308641976,
+      "edge_difference": 0.001038277656741709,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.0885,
+        0.0519,
+        0.8583,
+        0.9833
+      ],
+      "baseline_size": [
+        1366,
+        768
+      ],
+      "actual_size": [
+        1366,
+        768
+      ]
+    },
+    {
+      "scenario_id": "workspace_preview_1920x1080_100",
+      "passed": true,
+      "mean_difference": 0.0016757998466876464,
+      "dhash_distance": 0,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/workspace_preview_1920x1080_100.png",
+      "actual": "/mnt/data/videobatch_visual_w6/workspace_preview_1920x1080_100.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.02724060427171108,
+      "changed_pixel_ratio": 0.005968364197530864,
+      "edge_difference": 0.0031735354635681434,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.1583,
+        0.037,
+        0.9656,
+        0.9889
+      ],
+      "baseline_size": [
+        1920,
+        1080
+      ],
+      "actual_size": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "scenario_id": "workspace_playlist_1366x768_100",
+      "passed": true,
+      "mean_difference": 0.0007996802630517226,
+      "dhash_distance": 0,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/workspace_playlist_1366x768_100.png",
+      "actual": "/mnt/data/videobatch_visual_w6/workspace_playlist_1366x768_100.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.021053298590005515,
+      "changed_pixel_ratio": 0.0021141975308641976,
+      "edge_difference": 0.001038277656741709,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.0885,
+        0.0519,
+        0.8583,
+        0.9833
+      ],
+      "baseline_size": [
+        1366,
+        768
+      ],
+      "actual_size": [
+        1366,
+        768
+      ]
+    },
+    {
+      "scenario_id": "workspace_monitor_1920x1080_140",
+      "passed": true,
+      "mean_difference": 0.0007932048333736787,
+      "dhash_distance": 1,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/workspace_monitor_1920x1080_140.png",
+      "actual": "/mnt/data/videobatch_visual_w6/workspace_monitor_1920x1080_140.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.02137652303787422,
+      "changed_pixel_ratio": 0.0020119598765432098,
+      "edge_difference": 0.0010724779109174535,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.0896,
+        0.0407,
+        0.8812,
+        0.987
+      ],
+      "baseline_size": [
+        1920,
+        1080
+      ],
+      "actual_size": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "scenario_id": "dialog_update_assistant_780x620_100",
+      "passed": true,
+      "mean_difference": 0.046147048737190347,
+      "dhash_distance": 3,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/dialog_update_assistant_780x620_100.png",
+      "actual": "/mnt/data/videobatch_visual_w6/dialog_update_assistant_780x620_100.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.10980327631120135,
+      "changed_pixel_ratio": 0.07265625,
+      "edge_difference": 0.012606163761801016,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.0229,
+        0.1093,
+        0.9771,
+        0.9741
+      ],
+      "baseline_size": [
+        780,
+        620
+      ],
+      "actual_size": [
+        780,
+        620
+      ]
+    },
+    {
+      "scenario_id": "dialog_archive_760x600_100",
+      "passed": true,
+      "mean_difference": 0.0420179410756072,
+      "dhash_distance": 6,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/dialog_archive_760x600_100.png",
+      "actual": "/mnt/data/videobatch_visual_w6/dialog_archive_760x600_100.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.09626617645298698,
+      "changed_pixel_ratio": 0.05823109567901234,
+      "edge_difference": 0.012018488259501331,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.024,
+        0.113,
+        0.976,
+        0.9722
+      ],
+      "baseline_size": [
+        760,
+        600
+      ],
+      "actual_size": [
+        760,
+        600
+      ]
+    },
+    {
+      "scenario_id": "dialog_plugin_permissions_860x740_100",
+      "passed": true,
+      "mean_difference": 0.04949887033002501,
+      "dhash_distance": 2,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/dialog_plugin_permissions_860x740_100.png",
+      "actual": "/mnt/data/videobatch_visual_w6/dialog_plugin_permissions_860x740_100.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.11590557974244457,
+      "changed_pixel_ratio": 0.08615162037037037,
+      "edge_difference": 0.01916364076494795,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.0208,
+        0.0759,
+        0.9792,
+        0.9778
+      ],
+      "baseline_size": [
+        860,
+        740
+      ],
+      "actual_size": [
+        860,
+        740
+      ]
+    },
+    {
+      "scenario_id": "dialog_recovery_780x610_100",
+      "passed": true,
+      "mean_difference": 0.039979096062293225,
+      "dhash_distance": 3,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/dialog_recovery_780x610_100.png",
+      "actual": "/mnt/data/videobatch_visual_w6/dialog_recovery_780x610_100.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.08778227708594412,
+      "changed_pixel_ratio": 0.05919753086419753,
+      "edge_difference": 0.00785218470104091,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.0229,
+        0.1111,
+        0.9771,
+        0.9741
+      ],
+      "baseline_size": [
+        780,
+        610
+      ],
+      "actual_size": [
+        780,
+        610
+      ]
+    },
+    {
+      "scenario_id": "workspace_grid_1280x720_100",
+      "passed": true,
+      "mean_difference": 0.0009158219357701929,
+      "dhash_distance": 0,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/workspace_grid_1280x720_100.png",
+      "actual": "/mnt/data/videobatch_visual_w6/workspace_grid_1280x720_100.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.02259699467565224,
+      "changed_pixel_ratio": 0.0023861882716049382,
+      "edge_difference": 0.0011894214475913821,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.0719,
+        0.0556,
+        0.85,
+        0.9815
+      ],
+      "baseline_size": [
+        1280,
+        720
+      ],
+      "actual_size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "scenario_id": "workspace_debug_machine_1920x1080_100",
+      "passed": true,
+      "mean_difference": 0.0016996187363834425,
+      "dhash_distance": 0,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/workspace_debug_machine_1920x1080_100.png",
+      "actual": "/mnt/data/videobatch_visual_w6/workspace_debug_machine_1920x1080_100.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.027371744470515148,
+      "changed_pixel_ratio": 0.006070601851851852,
+      "edge_difference": 0.0032295070806100216,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.0281,
+        0.037,
+        0.9656,
+        0.9889
+      ],
+      "baseline_size": [
+        1920,
+        1080
+      ],
+      "actual_size": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "scenario_id": "dialog_plugin_approval_manager_1180x700_100",
+      "passed": true,
+      "mean_difference": 0.04305758290970709,
+      "dhash_distance": 6,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/dialog_plugin_approval_manager_1180x700_100.png",
+      "actual": "/mnt/data/videobatch_visual_w6/dialog_plugin_approval_manager_1180x700_100.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.08427302385576817,
+      "changed_pixel_ratio": 0.0991184413580247,
+      "edge_difference": 0.031169019305252964,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.0104,
+        0.0889,
+        0.9896,
+        0.9833
+      ],
+      "baseline_size": [
+        1180,
+        700
+      ],
+      "actual_size": [
+        1180,
+        700
+      ]
+    },
+    {
+      "scenario_id": "dialog_visual_approval_760x540_100",
+      "passed": true,
+      "mean_difference": 0.044303084402485274,
+      "dhash_distance": 3,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/dialog_visual_approval_760x540_100.png",
+      "actual": "/mnt/data/videobatch_visual_w6/dialog_visual_approval_760x540_100.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.10039202694194596,
+      "changed_pixel_ratio": 0.07078896604938271,
+      "edge_difference": 0.009543459513435004,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.0208,
+        0.1204,
+        0.9792,
+        0.9704
+      ],
+      "baseline_size": [
+        760,
+        540
+      ],
+      "actual_size": [
+        760,
+        540
+      ]
+    },
+    {
+      "scenario_id": "dialog_solution_actions_760x620_100",
+      "passed": true,
+      "mean_difference": 0.0,
+      "dhash_distance": 0,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/dialog_solution_actions_760x620_100.png",
+      "actual": "/mnt/data/videobatch_visual_w6/dialog_solution_actions_760x620_100.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.0,
+      "changed_pixel_ratio": 0.0,
+      "edge_difference": 0.0,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": null,
+      "baseline_size": [
+        760,
+        620
+      ],
+      "actual_size": [
+        760,
+        620
+      ]
+    },
+    {
+      "scenario_id": "dialog_media_import_icons_1220x760_100",
+      "passed": true,
+      "mean_difference": 0.0018277530662470748,
+      "dhash_distance": 0,
+      "baseline": "/mnt/data/videobatch_w5/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/baselines/dialog_media_import_icons_1220x760_100.png",
+      "actual": "/mnt/data/videobatch_visual_w6/dialog_media_import_icons_1220x760_100.png",
+      "message": "Visuelle Referenz bestanden.",
+      "rmse": 0.030467989451257067,
+      "changed_pixel_ratio": 0.005121527777777778,
+      "edge_difference": 0.0027266173444686517,
+      "aspect_ratio_delta": 0.0,
+      "difference_bbox": [
+        0.4917,
+        0.1389,
+        0.8354,
+        0.1648
+      ],
+      "baseline_size": [
+        1220,
+        760
+      ],
+      "actual_size": [
+        1220,
+        760
+      ]
+    }
+  ]
+}

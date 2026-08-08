@@ -1,8 +1,8 @@
 # VideoBatch Fast – Umsetzungs- und Erfolgsprüfplan
 
-**Plan-ID:** `VB-DESIGN-2026-01`  
-**Ausgangsbasis:** synchronisierter `main`-Stand `049376fc8273a17f97d8b211d550ec8e9b6be4ca`  
-**Arbeitsbranch:** `agent/canonical-design-manifest-20260806`  
+**Plan-ID:** `VB-DESIGN-2026-01`
+**Ausgangsbasis:** synchronisierter `main`-Stand `049376fc8273a17f97d8b211d550ec8e9b6be4ca`
+**Arbeitsbranch:** `agent/canonical-design-manifest-20260806`
 **Ziel:** Die kanonische Dashboard-Referenz wird schrittweise, testbar und ohne Funktionsverlust in VideoBatch Fast übernommen.
 
 ## 1. Verbindliche Arbeitsregeln
@@ -38,27 +38,27 @@
 
 **Umsetzung:** feste linke Navigation, kompakter Top-Header, KPI-Zeile und Aktionsleiste einführen; bestehende Funktionsseiten vollständig erreichbar halten; Shell modularisieren.
 
-**Teilprüfungen:**  
-- **2.1 Shell-Vertrag:** Navigation, Header, KPI-Zeile und Aktionsleiste sind eigenständige Module.  
-- **2.2 Funktionserhalt:** Start, Medien, Vorschau, Effekte/Einstellungen, Produktion/Queue und Hilfe bleiben vollständig eingebunden.  
-- **2.3 Primäraktionen:** Projekt, Audioimport, Medienimport, Effekte/Einstellungen, Queue-Start und Ausgabeordner verwenden unverändert die vorhandenen Funktionen.  
-- **2.4 Responsive Härtung:** Die Aktionsleiste wechselt bei schmalem Arbeitsbereich kontrolliert in mehrere Zeilen.  
-- **2.5 Tastaturzugang:** Seitenwechsel fokussiert den Arbeitsbereich; Suche öffnet definierte Funktionsseiten.  
-- **2.6 Ehrlicher Funktionsstatus:** Die Startzeituhr ist sichtbar, aber bis Checkpoint 5 ausdrücklich deaktiviert.  
+**Teilprüfungen:**
+- **2.1 Shell-Vertrag:** Navigation, Header, KPI-Zeile und Aktionsleiste sind eigenständige Module.
+- **2.2 Funktionserhalt:** Start, Medien, Vorschau, Effekte/Einstellungen, Produktion/Queue und Hilfe bleiben vollständig eingebunden.
+- **2.3 Primäraktionen:** Projekt, Audioimport, Medienimport, Effekte/Einstellungen, Queue-Start und Ausgabeordner verwenden unverändert die vorhandenen Funktionen.
+- **2.4 Responsive Härtung:** Die Aktionsleiste wechselt bei schmalem Arbeitsbereich kontrolliert in mehrere Zeilen.
+- **2.5 Tastaturzugang:** Seitenwechsel fokussiert den Arbeitsbereich; Suche öffnet definierte Funktionsseiten.
+- **2.6 Ehrlicher Funktionsstatus:** Die Startzeituhr war bis Checkpoint 5 ausdrücklich deaktiviert; seit Welle 19 ist sie nach abgeschlossenem Systemvertrag produktiv freigegeben.
 - **2.7 Pflicht-Gate:** Das Grafik-Manifest und die Anwendungsshell werden bei jedem PR und jedem Push nach `main` fail-closed geprüft.
 
 **Erfolgsprüfung:** Maus- und Tastaturnavigation vollständig; kein bestehender Befehl verloren; Mindestfenster 1024×680 bleibt bedienbar; alle Shell-Module syntaktisch gültig; Manifestvalidator und Shellvertrag grün; CI-Gate bleibt read-only.
 
-**Ergebnis vom 6. August 2026:**  
-- Branch kontrolliert durch echten Zwei-Eltern-Merge auf `main`-SHA `049376fc…` synchronisiert  
-- Abstammung danach `ahead`, `behind_by = 0`, Merge-Base entspricht exakt `main`  
-- Release-Manifest nach dem Merge deterministisch regeneriert und geprüft  
-- Designvertrag und Release-Manifest auf Prüf-Head `33c07d0d…` bestanden  
-- Ubuntu 22.04 X11 bestanden  
-- Ubuntu 22.04 Wayland bestanden  
-- Ubuntu 24.04 X11 bestanden  
-- Ubuntu 24.04 Wayland bestanden  
-- realer Tk-Start bei 1024×680 bestanden  
+**Ergebnis vom 6. August 2026:**
+- Branch kontrolliert durch echten Zwei-Eltern-Merge auf `main`-SHA `049376fc…` synchronisiert
+- Abstammung danach `ahead`, `behind_by = 0`, Merge-Base entspricht exakt `main`
+- Release-Manifest nach dem Merge deterministisch regeneriert und geprüft
+- Designvertrag und Release-Manifest auf Prüf-Head `33c07d0d…` bestanden
+- Ubuntu 22.04 X11 bestanden
+- Ubuntu 22.04 Wayland bestanden
+- Ubuntu 24.04 X11 bestanden
+- Ubuntu 24.04 Wayland bestanden
+- realer Tk-Start bei 1024×680 bestanden
 - alle sechs vorhandenen Funktionsseiten, vier Themes und drei Schriftprofile durchgeschaltet
 
 **Exit-Kriterium:** erfüllt. Die neue Shell ist vollständig nutzbar, rückwärtskompatibel und gegen den aktuellen `main`-Stand geprüft.
@@ -67,14 +67,14 @@
 
 **Umsetzung:** Karten `Medien`, `Queue`, `Effekte` und `Startzeituhr` produktiv an reale Zustände anbinden.
 
-**Iteration 3.1 – reale Zustände und Bereichsaktionen:**  
-- eigenständiger, rein testbarer KPI-Zustandsvertrag  
-- getrennte Zustände `empty`, `ready`, `loading`, `success`, `warning`, `error` und `disabled`  
-- Medienkarte berücksichtigt Audio-/Medienzahl, fehlende Gegenstücke, nicht erreichbare Quellen und laufende Medienaufgaben  
-- Queuekarte berücksichtigt vorbereitete Jobs, laufende Produktion, abgeschlossene und fehlgeschlagene Ergebnisse  
-- Effektkarte reagiert auf Effekt, Übergang und Schnellmodus  
-- Medien-, Queue- und Effektkarte öffnen den jeweils korrekten vorhandenen Arbeitsbereich  
-- Startzeituhr bleibt bis Checkpoint 5 sichtbar und technisch deaktiviert  
+**Iteration 3.1 – reale Zustände und Bereichsaktionen:**
+- eigenständiger, rein testbarer KPI-Zustandsvertrag
+- getrennte Zustände `empty`, `ready`, `loading`, `success`, `warning`, `error` und `disabled`
+- Medienkarte berücksichtigt Audio-/Medienzahl, fehlende Gegenstücke, nicht erreichbare Quellen und laufende Medienaufgaben
+- Queuekarte berücksichtigt vorbereitete Jobs, laufende Produktion, abgeschlossene und fehlgeschlagene Ergebnisse
+- Effektkarte reagiert auf Effekt, Übergang und Schnellmodus
+- Medien-, Queue- und Effektkarte öffnen den jeweils korrekten vorhandenen Arbeitsbereich
+- Startzeituhr war bis Checkpoint 5 sichtbar und technisch deaktiviert; Welle 19 schaltet sie erst nach Preflight und systemd-User-Readiness frei
 - KPI-Werte werden ereignisgesteuert und zusätzlich in einem begrenzten Ein-Sekunden-Takt aktualisiert
 
 **Erfolgsprüfung:** Zahlen aktualisieren sich nach Import, Queue-Änderung und Effektwahl; Kartenaktionen öffnen den korrekten Bereich; Leer-, Lade-, Warn-, Fehler- und Erfolgslagen sind getrennt; Schedulerstatus täuscht keine noch nicht vorhandene Funktion vor.
@@ -98,6 +98,8 @@
 **Erfolgsprüfung:** Neustart, Sommerzeit, vergangene Zeitpunkte und Doppelstartschutz getestet; realer verzögerter Testauftrag startet genau einmal und wird protokolliert.
 
 **Exit-Kriterium:** Startzeituhr arbeitet sicher, persistent und nachvollziehbar.
+
+**Ergebnis Welle 19 vom 8. August 2026:** erfüllt. Persistente `systemd --user`-Planung, semantischer Render-Fingerprint, Stale-Schutz, begrenztes Verspätungsfenster, optionales `systemd-inhibit`, headless Worker und getrennte Energieaktionsauswertung sind implementiert; 609/609 Gesamtregressionstests bestanden.
 
 ### Checkpoint 6 – RenderProof sichtbar integrieren
 
@@ -127,13 +129,13 @@
 
 **Umsetzung:** Screenshots für Referenzauflösungen, Themes und Schriftgrößen; Abweichungsbericht nach Layoutzonen.
 
-**Erfolgsprüfung:** Pflichtzonen vorhanden und überlappungsfrei; Abweichungen begründet oder korrigiert; KDE-X11-/Wayland-Sichtprüfung dokumentiert.
+**Erfolgsprüfung:** Pflichtzonen vorhanden und überlappungsfrei; Abweichungen begründet oder korrigiert; KDE-X11-Sichtprüfung dokumentiert.
 
 **Exit-Kriterium:** Referenzabgleich und physische Sichtprüfung bestanden.
 
 ### Checkpoint 10 – Abschluss- und Releaseprüfung
 
-**Umsetzung:** Unit-, Integrations-, visuelle, Architektur-, Sicherheits- und Offline-Gates; Ubuntu 22.04/24.04 × X11/Wayland sowie Langzeitrender.
+**Umsetzung:** Unit-, Integrations-, visuelle, Architektur-, Sicherheits- und Offline-Gates; Ubuntu 22.04/24.04 × X11 sowie Langzeitrender.
 
 **Erfolgsprüfung:** keine roten, fehlenden, übersprungenen oder veralteten Nachweise; Manifest, Artefaktinhalt und Release-Dokumente stimmen überein.
 
@@ -162,6 +164,6 @@
 | `tests/test_canonical_application_shell_contract.py` | Funktionserhalt, Navigation, Aktionen, Themes und Schriftprofile |
 | `tests/test_canonical_kpi_contract.py` | getrennte KPI-Zustände und ehrlicher Schedulervertrag |
 | `.github/workflows/design-manifest-gate.yml` | verpflichtender read-only Vertragslauf für PR und `main` |
-| `.github/workflows/checkpoint2-shell-matrix.yml` | realer Tk-Start und KPI-Bedienung unter Ubuntu 22.04/24.04 × X11/Wayland |
+| `.github/workflows/checkpoint2-shell-matrix.yml` | realer Tk-Start und KPI-Bedienung unter Ubuntu 22.04/24.04 × X11 |
 | `scripts/validate_design_manifest.py` | fail-closed Prüfung von Manifest, Shell, KPI-Vertrag und CI-Gate |
 | `diagnostics/checkpoint2/CHECKPOINT2_RESULT.json` | maschinenlesbarer Abschlussnachweis für Checkpoint 2 |

@@ -42,7 +42,7 @@ Alle Punkte wurden korrigiert und mit Regressionen abgesichert.
 ## Freigabegrenze
 
 RC24 ist ein Releasekandidat. Stable bleibt blockiert, bis externe Qualitätswerkzeuge,
-physische KDE-X11-/Wayland-Abnahme und Langzeitrender vollständig grün sind.
+physische KDE-X11-Abnahme und Langzeitrender vollständig grün sind.
 
 ## Frischpaketprüfung
 

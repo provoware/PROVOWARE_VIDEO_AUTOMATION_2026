@@ -1,0 +1,11 @@
+{
+  "schema_version": 2,
+  "status": "pass",
+  "source_root": "/mnt/data/pva_phase4_work/PROVOWARE_VIDEO_AUTOMATION_2026-main/src/videobatch_fast",
+  "allowed_legacy_adapter": "EventBuffer.put_legacy",
+  "migrated_producers": [
+    "BatchRunner",
+    "SelectionPreviewController"
+  ],
+  "findings": []
+}

@@ -1,0 +1,46 @@
+VIDEOBATCH FAST · FORTSETZUNGSBERICHT WELLE 5
+Stand: 2026-08-07
+
+ZIEL
+Die verbleibenden physisch nicht prüfbaren P0-Gates nicht künstlich schließen, sondern release-sichere lokale Funktionen weiter professionalisieren.
+
+UMGESETZT
+1. Sicherungsmanager
+   - verifizierte Sicherungshistorie
+   - neue Sicherung erzeugen
+   - ausgewählte Sicherung erneut prüfen
+   - als neue Projektkopie wiederherstellen
+   - aktive Projektdatei wird aus dem Dialog nie überschrieben
+   - beschädigte/fehlende Archive werden nicht als gültige Historie angezeigt
+
+2. Backupkern
+   - list_project_backups() liefert nur vollständig verifizierte ProjectBackupRecord-Einträge
+   - latest_project_backup() verwendet dieselbe zentrale Prüflogik
+   - keine doppelte Verifikationslogik in UI und Kern
+
+3. Scheduler-Vorbereitung
+   - FFmpeg vorhanden?
+   - FFprobe vorhanden?
+   - systemd-inhibit vorhanden?
+   - systemctl vorhanden?
+   - Ergebnis wird im Zeitplanbereich verständlich angezeigt
+   - ready bleibt unabhängig von Hostfähigkeiten FALSE; Checkpoint 5 ist weiterhin autoritativ
+
+VALIDIERUNG
+- Pytest: 485 passed
+- Visuelle Regression: 22/22 bestanden
+- Interne Codequalität: 281 Dateien, 2269 Funktionen, max. Komplexität 29, 0 Befunde
+- Architektur: 125 Module, 1208 Funktionen, 151 Klassen, 0 Befunde
+- Ereignisarchitektur: 0 Befunde
+- Designregelwerk: bestanden
+- Release-Literal-Hygiene: 226 sensible Dateien, bestanden
+- Release-Dateistatus: technisch bestanden (Stable-Gates bleiben offen)
+- Python compileall: bestanden
+- JSON: 65 Dateien validiert
+- Shell-Syntax: bestanden
+
+VERBLEIBENDE PFLICHTPUNKTE
+P0 VIS-001: Original-SOLL/IST-PNGs direkt vergleichen.
+P0 VIS-002: reale KDE-X11-/Wayland-Sichtabnahme.
+P0 REL-001: Langzeitrender auf echter Hardware.
+P2 SCHED-001: vollständige Schedulerfreigabe erst nach Checkpoint 5.

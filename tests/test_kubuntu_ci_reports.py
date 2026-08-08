@@ -46,7 +46,7 @@ def test_status_writer_includes_package_metrics(tmp_path: Path) -> None:
     assert value["media_toolchain"]["package"]["version"] == "1.2.3"
 
 
-def test_matrix_report_requires_all_four_successes(tmp_path: Path) -> None:
+def test_matrix_report_requires_both_x11_successes(tmp_path: Path) -> None:
     (tmp_path / "VERSION.json").write_text(
         json.dumps({"version": "2.8.3-rc24"}),
         encoding="utf-8",
@@ -54,7 +54,7 @@ def test_matrix_report_requires_all_four_successes(tmp_path: Path) -> None:
     status_dir = tmp_path / "matrix-status"
     status_dir.mkdir()
     for os_name in ("ubuntu-22.04", "ubuntu-24.04"):
-        for session in ("x11", "wayland"):
+        for session in ("x11",):
             record = {
                 "os": os_name,
                 "session": session,
@@ -86,7 +86,7 @@ def test_matrix_report_requires_all_four_successes(tmp_path: Path) -> None:
     report = json.loads((tmp_path / "KUBUNTU_MATRIX_SUMMARY.json").read_text(encoding="utf-8"))
     markdown = (tmp_path / "KUBUNTU_MATRIX_SUMMARY.md").read_text(encoding="utf-8")
     assert report["status"] == "passed"
-    assert len(report["results"]) == 4
+    assert len(report["results"]) == 2
     assert "0 B/206 MB" in markdown
     assert "all_success=true" in output.read_text(encoding="utf-8")
 

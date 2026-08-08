@@ -1,8 +1,12 @@
 # VideoBatch-Dokumentationswegweiser
 
+## Ziel
+
+Dieser Wegweiser ordnet aktive Anleitungen, technische Fachtexte und historische Nachweise eindeutig ein.
+
 **Zweck:** Diese Seite zeigt, welche Datei für welchen Vorgang verwendet werden soll. Sie verhindert, dass Einsteiger versehentlich einen historischen Prüfbericht oder eine technische Vertragsdatei als Bedienungsanleitung verwenden.
 
-## 1. Ich möchte VideoBatch benutzen
+## Aktive Nutzeranleitungen
 
 | Ziel | Richtige Datei | Pflichtgrad |
 |---|---|---|
@@ -27,19 +31,20 @@
 | visuelle Prüfung | `docs/VISUAL_INSPECTION_HTML.md`, `docs/VISUAL_REGRESSION.md`, `docs/WORKSPACE_VISUAL_REGRESSION.md` |
 | Designvertrag | `docs/design/VIDEOBATCH_GRAPHICS_MANIFEST.md`, `docs/design/VIDEOBATCH_DESIGN_IMPLEMENTATION_PLAN.md` |
 
-## 3. Aktive technische Fachanleitungen
+## Technische Fachanleitungen
 
 Diese Dateien beschreiben weiterhin gültige Teilbereiche, setzen aber technisches Grundwissen voraus:
 
 - `BEST_PRACTICES.md`
 - `docs/DATA_INTEGRITY_HARDENING.md`
 - `docs/FAST_EFFECTS.md`
+- `docs/STABLE_OPERATOR_WELLE18.md`
 - `docs/WORKSPACE_2X2_AND_DEBUGGING.md`
 - `docs/WORKSPACE_LAYOUT_PROFILES.md`
 - `resources/signing/README.md`
 - `toolchain_wheelhouse/README.md`
 
-## 4. Historische oder versionsgebundene Nachweise
+## Historische Nachweise
 
 Die folgenden Dateien sind Belege eines bestimmten Entwicklungs- oder Prüfstands. Sie dürfen nicht als aktuelle Bedienungsanleitung verwendet werden:
 

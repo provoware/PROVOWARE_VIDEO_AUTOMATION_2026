@@ -1,0 +1,35 @@
+VIDEOBATCH FAST – ABSCHLUSSVALIDIERUNG
+Datum: 2026-08-07
+
+ERGEBNIS
+- Registry-Prüfung: BESTANDEN
+- Dokumentationsvertrag: BESTANDEN (68 klassifiziert, 44 streng geprüft, 3 interne Links)
+- Versionskonsistenz: BESTANDEN
+- Architekturaudit: BESTANDEN, 0 Befunde
+- Designregelwerk: BESTANDEN
+- Pytest unter Xvfb: 446 bestanden, 0 fehlgeschlagen
+- Shell-Syntax: BESTANDEN
+- Python-Kompilierung: BESTANDEN (187 geprüfte src/scripts-Python-Dateien beim statischen Lauf)
+- JSON-Lesbarkeit: BESTANDEN (61 geprüfte JSON-Dateien beim statischen Lauf)
+
+WESENTLICHE FIXES
+1. Visuelle Regression instanziiert die reale CanonicalVideoBatchFastUI statt der Legacy-UI.
+2. Bildvergleich erweitert: relative Viewportnormalisierung, Mean Difference, RMSE, Changed Pixel Ratio, Edge Difference, dHash, Aspect Ratio Delta und relative Diff-Bounding-Box.
+3. Canonical-Shell ohne native helle Menüleiste im Primärpfad.
+4. Header, KPI-Zone und Actionbar verdichtet.
+5. Quellen / Render Queue / Job Details als primäre Drei-Spalten-Arbeitsoberfläche.
+6. Queue-Zielspalten, Jobdetailtabs, Vorschau-, Effekt-, Ausgabe- und sichere Schedulerstruktur.
+7. Reale CPU/RAM/FFmpeg/GPU/Cache/Projektmetriken in Header/Footer.
+8. Dashboard-Mixin strukturell aufgeteilt und Architekturgrenze wieder eingehalten.
+9. Unicode-Testfixture, Launcher-, Dokumentations- und Releaseverträge synchronisiert.
+
+NICHT FALSCH ALS ABGESCHLOSSEN BEHAUPTET
+- Die zwei in der Checkliste benannten Original-SOLL/IST-PNGs befinden sich nicht als Binärbilder im Projektarchiv. Deshalb wurde für genau dieses Paar kein erfundener Pixelvergleich ausgegeben.
+- Physische KDE-X11-Abnahme bleibt offen.
+- Realer Langzeitrender mit großer Medienauswahl und langsamem Ziel bleibt offen.
+- Stable darf erst nach diesen physischen Nachweisen freigegeben werden.
+
+DETAILS
+- ANALYSE_BILDVERGLEICH_2026-08-07.md
+- OFFENE_PUNKTE_UND_VERBESSERUNGEN_2026-08-07.txt
+- TODO.md

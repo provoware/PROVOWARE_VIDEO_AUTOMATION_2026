@@ -86,7 +86,7 @@ def _stream_file(path: Path | None, offset: int, *, prefix: str) -> int:
                 "Bootstrap → Application-Prozess",
                 "Wenn dieser Versuch scheitert, werden Application-Log und Python-Fehler automatisch übernommen.",
             )
-        elif text.startswith("UI_READY pid="):
+        elif _UI_READY_RE.match(text):
             RUNTIME.verbose(
                 "Die Oberfläche meldet Startbereitschaft.",
                 text,
@@ -94,7 +94,7 @@ def _stream_file(path: Path | None, offset: int, *, prefix: str) -> int:
                 "Der Debug-Wächter bleibt aktiv und zeigt die weitere Anwendungsausgabe im Terminal.",
                 level="OK",
             )
-        elif text.startswith("UI_READY TIMEOUT") or "FAILED:" in text or "APPLICATION EXITED" in text:
+        elif "UI_READY TIMEOUT" in text or "FAILED:" in text or "APPLICATION EXITED" in text:
             RUNTIME.verbose(
                 "Ein Startfehler wurde erkannt.",
                 text,

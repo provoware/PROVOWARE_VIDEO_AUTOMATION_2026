@@ -1,27 +1,28 @@
 <!-- release-status:start -->
-# provoware – videoautomation – 2026 · 2.8.3-rc24
+# VideoBatch Fast · 2.8.3-rc24
 
-**Kanal:** RC – noch keine Stable-Freigabe  
-**Kanonische Quelle:** `diagnostics/release_readiness/RELEASE_EVIDENCE.json`  
+**Kanal:** rc
 **Freigegebener Qualitätsbericht:** `VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json`
 
-- 325/325 automatisierte Tests bestanden
-- 82,43 % Zeilenabdeckung
-- 67,21 % Zweigabdeckung
-- 18/18 visuelle Szenarien bestanden
-- Kubuntu-CI-Matrix: 4/4 Kombinationen bestanden
+- 693/693 automatisierte Tests bestanden
+- 81,35 % Zeilenabdeckung
+- 65,33 % Zweigabdeckung
+- 77,98 % kombinierte Coverage
+- 22/22 visuelle Szenarien bestanden
 
-## Noch offene Stable-Gates
+### Offene Stable-Gates
 
-- Ruff 0.16.1: exakt gepinnter Offline-Lauf noch nicht abgeschlossen
-- MyPy 2.3.0: exakt gepinnter Offline-Lauf noch nicht abgeschlossen
-- Bandit 1.9.4: exakt gepinnter Offline-Lauf noch nicht abgeschlossen
-- pip-audit 2.10.1: exakt gepinnter Offline-Lauf noch nicht abgeschlossen
-- reale KDE-X11-/Wayland-Abnahme fehlt; die CI-Matrix ist headless
-- realer Langzeitrender mit großer Medienauswahl und langsamem externem Ziel fehlt
+- Ruff 0.16.1: Operator-Kit bereit; realer exakt gepinnter Lauf aus eingefrorenem Wheelhouse noch auszuführen
+- MyPy 2.3.0: Operator-Kit bereit; realer exakt gepinnter Lauf aus eingefrorenem Wheelhouse noch auszuführen
+- Bandit 1.9.4: Operator-Kit bereit; realer exakt gepinnter Lauf aus eingefrorenem Wheelhouse noch auszuführen
+- pip-audit 2.10.1: Operator-Kit mit gehashtem Advisory-Cache vorbereitet; realer finaler Offline-Gate-Lauf noch auszuführen
+- Physische KDE-X11-Abnahme: Operator-Harness bereit; reale KDE-X11-Sitzungsabnahme fehlt weiterhin
+- Langzeitrender mit großer Medienauswahl: Operator-Harness bereit; realer 96-Job-Lauf auf langsamem externem USB-ext4-Ziel fehlt weiterhin
 <!-- release-status:end -->
 
-## Welche Anleitung brauche ich?
+## Dokumentation
+
+### Welche Anleitung brauche ich?
 
 | Aufgabe | Datei | Pflichtgrad |
 |---|---|---|
@@ -34,7 +35,7 @@
 | alle Dokumente einordnen | `docs/DOKUMENTATIONSINDEX.md` | Empfohlen |
 | Dokumentationen schreiben | `docs/DOKUMENTATIONSSTANDARD.md` | Pflicht für Beiträge |
 
-## Sicherer Schnellstart
+## Schnellstart
 
 ### Schritt 1: ZIP vollständig entpacken
 
@@ -144,20 +145,23 @@ Originalmedien und gespeicherte Projekte bleiben bei blockierenden Fehlern unver
 ## Release- und Dateistatus
 
 <!-- release-files:start -->
-Only standalone user and release deliverables receive _save_. Source modules, CI workflows, canonical manifests, entrypoints and README retain stable technical names.
+## Release-Dateistatus
+
+Der Zusatz `_save_` kennzeichnet ausschließlich eigenständige, freigabefähige Nutzer- und Releaseunterlagen. Python-Module, CI-Workflows, technische Manifeste, Einstiegsskripte und die kanonische README behalten stabile technische Namen, damit Importe und Buildverträge nicht brechen.
 
 | Releasefertig (`_save_`) | Noch nicht releasefertig |
 |---|---|
-| `START_HIER_save_.md` – sicherer erster Start | `TODO.md` – verbleibende Stable-Arbeiten |
-| `AUTOINSTALLATION_save_.md` – Installation und Rückfall | `QUALITY_GATE_ATTEMPT_2.8.3-rc24.md` – externe Qualitätswerkzeuge offen |
-| `PROJEKTORDNERSTRUKTUR_save_.md` – Ordner und Funktionen | `STABLE_GATE_ITERATION_2.8.3-rc24_2026-08-04.md` – Stable blockiert |
-| `RELEASE_NOTES_save_.md` – RC24-Funktionsstand | `docs/LONG_RENDER_2.8.3-rc24.md` – realer Langzeitrender offen |
-| `TEST_REPORT_save_.md` – Teststand | `docs/STABLE_ACCEPTANCE_EVIDENCE.md` – physische Nachweise offen |
-| `FRESH_PACKAGE_REPORT_save_.md` – Paketprüfung | `VISUAL_DESKTOP_APPROVAL.md` – reale Desktopprüfung offen |
-| `CODE_QUALITY_REPORT_2.8.3-rc24_save_.md` – interne Qualität | `QUALITY_ENVIRONMENT_STATUS.json` – Offline-Werkzeuge nicht vollständig freigegeben |
-| `IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md` – Implementierungsstand | `VISUAL_INSPECTION_MANIFEST.json` – physischer Lauf nicht vollständig bestätigt |
-| `FINAL_AUDIT_2.8.3-rc24_save_.md` – RC-Audit | — |
-| `VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json` – Buildbericht | — |
+| `START_HIER_save_.md`<br>Schnellstart | `TODO.md`<br>Offene Arbeitsliste: Enthält bewusst die verbleibenden Stable-Gates |
+| `AUTOINSTALLATION_save_.md`<br>Installationsanleitung | `QUALITY_GATE_ATTEMPT_2.8.3-rc24.md`<br>Externe Qualitätswerkzeuge: Ruff, MyPy, Bandit und pip-audit sind noch nicht abschließend ausgeführt |
+| `PROJEKTORDNERSTRUKTUR_save_.md`<br>Projektübersicht | `STABLE_GATE_ITERATION_2.8.3-rc24_2026-08-04.md`<br>Stable-Freigabeiteration: Stable-Freigabe ist ausdrücklich noch blockiert |
+| `RELEASE_NOTES_save_.md`<br>Releasehinweise | `docs/LONG_RENDER_2.8.3-rc24.md`<br>Langzeitrender: Realer Langzeitrender mit großer Auswahl und langsamem Ziel fehlt |
+| `TEST_REPORT_save_.md`<br>Testbericht | `docs/STABLE_ACCEPTANCE_EVIDENCE.md`<br>Stable-Abnahmenachweis: Physische KDE-X11- und Langzeitnachweise fehlen |
+| `FRESH_PACKAGE_REPORT_save_.md`<br>Paketbericht | `VISUAL_DESKTOP_APPROVAL.md`<br>Desktop-Sichtprüfung: Physische KDE-X11-Abnahme bleibt offen |
+| `CODE_QUALITY_REPORT_2.8.3-rc24_save_.md`<br>Codequalitätsbericht | `QUALITY_ENVIRONMENT_STATUS.json`<br>Qualitätsumgebung: Exakte Offline-Werkzeugumgebung ist nicht vollständig freigegeben |
+| `QUALITY_GATE_REPORT_2.8.3-rc24_save_.md`<br>Exakter Offline-Qualitätsbericht | `VISUAL_INSPECTION_MANIFEST.json`<br>Visuelles Prüfmanifest: Aktueller physischer Lauf ist nicht vollständig bestätigt |
+| `IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md`<br>Implementierungsbericht | — |
+| `FINAL_AUDIT_2.8.3-rc24_save_.md`<br>RC-Abschlussaudit | — |
+| `VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json`<br>Maschinenlesbarer Buildbericht | — |
 <!-- release-files:end -->
 
 **Vor Stable gilt:** Auslieferung als vollständiges Projekt-ZIP. Teil- und Onlineupdates bleiben bis nach der Stable-Freigabe deaktiviert.
@@ -169,3 +173,8 @@ Aktive Anleitungen müssen Ziel, Pflichtgrad, Voraussetzungen, Sicherung, nummer
 ## Nächster Schritt
 
 Einsteiger öffnen `START_HIER_save_.md`. Fortgeschrittene Nutzer verwenden `docs/BENUTZERHANDBUCH.md`. Entwickler beginnen mit `DEVELOPER_GUIDE.md` und `docs/DOKUMENTATIONSSTANDARD.md`.
+
+
+## Abschlussprüfung
+
+Vor einer Stable-Freigabe müssen automatisierte Tests, reale visuelle Abnahme und Langzeitrender auf demselben unveränderten Kandidaten bestanden sein.

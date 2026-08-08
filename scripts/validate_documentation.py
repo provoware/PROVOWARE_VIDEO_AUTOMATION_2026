@@ -266,15 +266,28 @@ def validate() -> dict[str, Any]:
                             )
                         )
 
+            raw_allowed_versions = entry.get("allowed_versions", [])
+            if not isinstance(raw_allowed_versions, list):
+                findings.append(
+                    Finding(
+                        "DOC_ALLOWED_VERSIONS_INVALID",
+                        rel_path,
+                        "allowed_versions muss eine Liste externer, bewusst erlaubter Versionsangaben sein",
+                    )
+                )
+                allowed_versions: set[str] = set()
+            else:
+                allowed_versions = {str(item).strip() for item in raw_allowed_versions if str(item).strip()}
+
             for match in VERSION_RE.finditer(text):
                 found = match.group(1)
-                if found != version:
+                if found != version and found not in allowed_versions:
                     line = text.count("\n", 0, match.start()) + 1
                     findings.append(
                         Finding(
                             "DOC_STALE_VERSION",
                             rel_path,
-                            f"Veraltete Versionsangabe {found}; aktuell ist {version}",
+                            f"Nicht freigegebene Versionsangabe {found}; Produktversion ist {version}",
                             line,
                         )
                     )

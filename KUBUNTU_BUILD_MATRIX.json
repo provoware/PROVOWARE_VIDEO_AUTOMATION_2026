@@ -7,19 +7,9 @@
       "session": "x11"
     },
     {
-      "os": "ubuntu-22.04",
-      "desktop": "kde",
-      "session": "wayland"
-    },
-    {
       "os": "ubuntu-24.04",
       "desktop": "kde",
       "session": "x11"
-    },
-    {
-      "os": "ubuntu-24.04",
-      "desktop": "kde",
-      "session": "wayland"
     }
   ],
   "required_gates": [

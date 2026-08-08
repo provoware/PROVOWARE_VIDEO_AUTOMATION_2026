@@ -1,0 +1,53 @@
+VIDEOBATCH FAST · FORTSETZUNGSBERICHT WELLE 4
+Datum: 2026-08-07
+
+1. Topbar-Reflow nachhaltig behoben
+- Ursache: Runtime-Badges/Status wurden nach initialem Layout länger, ohne Header-Configure-Ereignis.
+- Fix: deduplizierter after_idle-Relayout bei Status-, Badge- und Schriftänderungen.
+- Priorität: Suche + Hilfe/Einstellungen > Runtime-Badges > redundanter Statussatz.
+- Ergebnis: 1920×1080 bei 140 % ohne Clipping.
+
+2. Visuelle Matrix erweitert und geprüft
+- 1280×720 @ 100 %
+- 1366×768 @ 100 %
+- 1440×900 @ 90 %
+- 1440×900 @ 125 %
+- 1500×920 @ 105 %
+- 1920×1080 @ 100 %
+- 1920×1080 @ 125 %
+- 1920×1080 @ 140 %
+- plus Workspace-/Dialog-Szenarien
+- Gesamt: 22/22 bestanden, keine Contract-Failures.
+
+3. Screenshot-Runner gehärtet
+- Erkennt zu kleine Testanzeige vor Bewertung.
+- Verhindert Offscreen-Schwarz bei 1920er Szenarien auf Standard-Xvfb.
+- Empfohlene Xvfb-Fläche: 2560×1440×24.
+
+4. Datenmodell
+- Persistente Tags abgeschlossen.
+- „Unbenutzt“ basiert auf realer Job-Verwendung.
+
+5. Release-Hygiene
+- Langzeitrendervertrag verwendet build_label().
+- Workflow-Artefaktnamen lesen VERSION.json.
+- Versionierter Dokumentpfad im Workflow durch Glob ersetzt.
+- Release-Literal-Gate bestanden.
+
+6. Prüfstand
+- 480 Pytest-Tests bestanden.
+- 22/22 visuelle Szenarien bestanden.
+- Designregelwerk bestanden.
+- Release-Dateistatus technisch bestanden (Stable-Evidenz bleibt offen).
+- Interne Codequalität: 0 Befunde, max. Komplexität 29.
+- Architektur: 0 Befunde.
+- Ereignisarchitektur: 0 Befunde.
+- 62 JSON-Dateien gelesen.
+- Shell-Syntax bestanden.
+- Externe Werkzeuge ruff/mypy/bandit/pip-audit sind in dieser lokalen Umgebung nicht installiert; deshalb kein falscher Pass-Claim.
+
+7. Verbleibend
+- VIS-001 Originalbildpaar
+- VIS-002 reale KDE-X11/Wayland-Abnahme
+- REL-001 realer Langzeitrender
+- SCHED-001 erst nach Checkpoint 5

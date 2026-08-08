@@ -1,0 +1,56 @@
+VIDEOBATCH FAST · FORTSETZUNGSWELLE 3
+Stand: 2026-08-07
+
+ZIEL
+Sichtbare P1-Lücken schließen, bestehende Dienste wiederverwenden und unnötige neue Systeme vermeiden.
+
+ERLEDIGT
+1. UI-ICON-001 – Lokales Iconset
+   - 13 Funktionsicons in 20/32/40 px als paketierte PNGs.
+   - Sidebar und Hauptaktionsleiste verwenden lokale Bilder statt systemabhängiger Navigationszeichen.
+   - Fallback bleibt textuell, falls ein Asset beschädigt oder nicht lesbar ist.
+
+2. QUEUE-001B – Queue-Thumbnails
+   - Bestehender persistenter Preview-Cache wird wiederverwendet.
+   - Erzeugung läuft in daemonisierten Hintergrundthreads.
+   - Tk-PhotoImages werden ausschließlich im UI-Thread erzeugt und stark referenziert.
+   - Pro sichtbarer Queue werden nur aktuell benötigte Referenzen behalten.
+   - Jobauswahl lädt dieselbe reale Quelle in die vorhandene Previewpipeline.
+
+3. PREVIEW-001B – Video-Transport
+   - FFplay wird als vorhandene Runtime-Komponente wiederverwendet.
+   - Abspielen, Pause/Weiter, Stopp und Seek verfügbar.
+   - Seek erfolgt robust durch kontrollierten Neustart von FFplay am Zielzeitpunkt.
+   - Kein zweiter Decoder-/Videozustand neben der bestehenden Previewpipeline.
+   - Player wird beim regulären Schließen sicher beendet.
+
+4. FOOTER-001 – Reale Projektsicherung
+   - Aktion heißt bewusst „Projekt sichern“ und sichert nur den Projektzustand, nicht große Mediendateien.
+   - ZIP enthält Projekt-JSON + Backupmanifest.
+   - SHA-256 des Projektinhalts wird geprüft.
+   - ZIP-Test und Restore-Hash werden unmittelbar nach Erzeugung validiert.
+   - Historie wird atomar gespeichert und auf 50 Einträge begrenzt.
+   - Footer zeigt ausschließlich einen tatsächlich existierenden letzten Sicherungsstand.
+
+5. QUEUE-002 – Keine unnötige Virtualisierung
+   - Treeview bleibt bewusst auf 100 sichtbare Zeilen begrenzt.
+   - Synthetischer Modell-/Filterlauf: 2.000 Jobs ca. 0,52 ms; 10.000 Jobs ca. 3,05 ms.
+   - Deshalb aktuell keine zusätzliche Pagination-/Virtualisierungsarchitektur nötig.
+
+TESTERGEBNIS
+- 470 automatisierte Tests bestanden.
+- 22 gezielte neue/nahe Verträge vor der Vollsuite bestanden.
+
+WEITER OFFEN
+- VIS-001 Originalbildpaar fehlt für exakten Bildvergleich.
+- VIS-002 reale X11-/Wayland-Sichtabnahme.
+- REL-001 realer Langzeitrender.
+- DATA-001 persistente Tags nur bei tatsächlichem Bedarf.
+- SCHED-001 erst nach Checkpoint 5.
+
+START-/EFFIZIENZHÄRTUNG
+- WorkflowGrid führt beim Hinzufügen einzelner Karten keine synchronen update_idletasks()-Schleifen mehr aus.
+- Geometrieupdates werden per after_idle zusammengefasst.
+- KPI-/Dashboard-wraplength wird nur geändert, wenn sich der Zielwert tatsächlich ändert.
+- UI-Ready wird direkt nach erfolgreicher Konstruktion signalisiert; die komplette Tk-Idlequeue wird nicht mehr als Startbedingung missbraucht.
+- Echter separater Xvfb-Prozess: UI-Ready nach ca. 0,75 s, davon ca. 0,72 s UI-Konstruktion.

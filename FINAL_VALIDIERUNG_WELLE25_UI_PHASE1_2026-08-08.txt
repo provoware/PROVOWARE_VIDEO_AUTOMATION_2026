@@ -1,0 +1,26 @@
+PROVOWARE VIDEO AUTOMATION – FINALVALIDIERUNG WELLE 25 UI PHASE 1
+Datum: 2026-08-08
+Thema: Project Home Dashboard nach freigegebenem Musterbild
+
+ERGEBNIS
+- 693/693 automatisierte Tests bestanden.
+- Testpartitionen: 102 + 101 + 90 + 83 + 78 + 83 + 82 + 74.
+- Coverage: 81,35 % Lines / 65,33 % Branches / 77,98 % kombiniert.
+- Coverage-Vertrag 80/65 bestanden.
+- Interne Codequalität: 338 Python-Dateien / 2.987 Funktionen / maximale Komplexität 30 / 0 Befunde.
+- Architektur: 0 Befunde.
+- Ereignisarchitektur: 0 Befunde.
+- Ereignisregister: 0 Befunde / 18 Kennungen.
+- Fokussierte Canonical-/Layout-/Startup-Prüfung: 48/48 bestanden.
+
+UI-PHASE-1-VERTRAG
+- Startansicht folgt exakt der freigegebenen Grundaufteilung: Header; 4 Hauptkacheln; Infodashboard + Tipps; 4 Platzhalter; 4 Grundeinstellungsaktionen; Footer.
+- Vier Ausbauflächen bleiben bewusst leer und enthalten keine Fachmodule.
+- Bestehende vollständige Canonical-Oberfläche bleibt darunter erhalten und wird über die neuen Navigationskacheln geöffnet.
+- Sidebar-Dashboard führt zurück zur neuen Startansicht.
+- X11-Tk-Aufbau bei 1500x920 unter Xvfb erfolgreich visuell kontrolliert.
+- Sichtbare Scrollleiste wird bei normal passendem Inhalt automatisch ausgeblendet.
+- Reine UI-Datei wird konsistent mit den bisherigen Canonical-/Tk-Schichten aus Business-Coverage ausgeschlossen.
+
+STABLE-GRENZE
+Die externen Nachweise Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4, pip-audit 2.10.1, physische KDE-X11-Abnahme und realer 96-Job-Slow-Target-Soak bleiben offen und werden nicht simuliert.

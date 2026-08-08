@@ -6,9 +6,9 @@
     "maximum_dhash_distance": 24,
     "maximum_mean_difference": 0.075,
     "required_semantic_colors": [
-      "#FFD43B",
-      "#E83E9E",
-      "#25B96B"
+      "#3B82F6",
+      "#8B5CF6",
+      "#22C55E"
     ],
     "required_visible_texts": [
       "provoware - videoautomation - 2026",
@@ -17,7 +17,10 @@
       "Schnellzugriff",
       "Audio hinzufügen",
       "Bilder/Videos"
-    ]
+    ],
+    "maximum_changed_pixel_ratio": 0.55,
+    "maximum_edge_difference": 0.18,
+    "maximum_aspect_ratio_delta": 0.4
   },
   "reference_image": "resources/reference/laienmodus_einfach_reference.png",
   "scenarios": [
@@ -27,18 +30,14 @@
       "height": 720,
       "id": "dashboard_1280x720_100",
       "page": "dashboard",
-      "required_semantic_colors": [
-        "#FFD43B",
-        "#E83E9E",
-        "#25B96B"
-      ],
+      "required_semantic_colors": [],
       "required_visible_texts": [
-        "provoware - videoautomation - 2026",
-        "Version 2.8.3-rc24",
-        "Projekt",
-        "Schnellzugriff",
-        "Audio hinzufügen",
-        "Bilder/Videos"
+        "VideoBatch Fast",
+        "Dashboard",
+        "Quellen & Projekt",
+        "Render Queue",
+        "Job Details",
+        "Startzeituhr"
       ],
       "width": 1280
     },
@@ -48,18 +47,14 @@
       "height": 768,
       "id": "dashboard_1366x768_100",
       "page": "dashboard",
-      "required_semantic_colors": [
-        "#FFD43B",
-        "#E83E9E",
-        "#25B96B"
-      ],
+      "required_semantic_colors": [],
       "required_visible_texts": [
-        "provoware - videoautomation - 2026",
-        "Version 2.8.3-rc24",
-        "Projekt",
-        "Schnellzugriff",
-        "Audio hinzufügen",
-        "Bilder/Videos"
+        "VideoBatch Fast",
+        "Dashboard",
+        "Quellen & Projekt",
+        "Render Queue",
+        "Job Details",
+        "Startzeituhr"
       ],
       "width": 1366
     },
@@ -69,18 +64,14 @@
       "height": 1080,
       "id": "dashboard_1920x1080_100",
       "page": "dashboard",
-      "required_semantic_colors": [
-        "#FFD43B",
-        "#E83E9E",
-        "#25B96B"
-      ],
+      "required_semantic_colors": [],
       "required_visible_texts": [
-        "provoware - videoautomation - 2026",
-        "Version 2.8.3-rc24",
-        "Projekt",
-        "Schnellzugriff",
-        "Audio hinzufügen",
-        "Bilder/Videos"
+        "VideoBatch Fast",
+        "Dashboard",
+        "Quellen & Projekt",
+        "Render Queue",
+        "Job Details",
+        "Startzeituhr"
       ],
       "width": 1920
     },
@@ -90,18 +81,82 @@
       "height": 1080,
       "id": "dashboard_1920x1080_140",
       "page": "dashboard",
-      "required_semantic_colors": [
-        "#FFD43B",
-        "#E83E9E",
-        "#25B96B"
-      ],
+      "required_semantic_colors": [],
       "required_visible_texts": [
-        "provoware - videoautomation - 2026",
-        "Version 2.8.3-rc24",
-        "Projekt",
-        "Schnellzugriff",
-        "Audio hinzufügen",
-        "Bilder/Videos"
+        "VideoBatch Fast",
+        "Dashboard",
+        "Quellen & Projekt",
+        "Render Queue",
+        "Job Details",
+        "Startzeituhr"
+      ],
+      "width": 1920
+    },
+    {
+      "font_scale": 90,
+      "group": "dashboard",
+      "height": 900,
+      "id": "dashboard_1440x900_90",
+      "page": "dashboard",
+      "required_semantic_colors": [],
+      "required_visible_texts": [
+        "VideoBatch Fast",
+        "Dashboard",
+        "Quellen & Projekt",
+        "Render Queue",
+        "Job Details",
+        "Startzeituhr"
+      ],
+      "width": 1440
+    },
+    {
+      "font_scale": 105,
+      "group": "dashboard",
+      "height": 920,
+      "id": "dashboard_1500x920_105",
+      "page": "dashboard",
+      "required_semantic_colors": [],
+      "required_visible_texts": [
+        "VideoBatch Fast",
+        "Dashboard",
+        "Quellen & Projekt",
+        "Render Queue",
+        "Job Details",
+        "Startzeituhr"
+      ],
+      "width": 1500
+    },
+    {
+      "font_scale": 125,
+      "group": "dashboard",
+      "height": 900,
+      "id": "dashboard_1440x900_125",
+      "page": "dashboard",
+      "required_semantic_colors": [],
+      "required_visible_texts": [
+        "VideoBatch Fast",
+        "Dashboard",
+        "Quellen & Projekt",
+        "Render Queue",
+        "Job Details",
+        "Startzeituhr"
+      ],
+      "width": 1440
+    },
+    {
+      "font_scale": 125,
+      "group": "dashboard",
+      "height": 1080,
+      "id": "dashboard_1920x1080_125",
+      "page": "dashboard",
+      "required_semantic_colors": [],
+      "required_visible_texts": [
+        "VideoBatch Fast",
+        "Dashboard",
+        "Quellen & Projekt",
+        "Render Queue",
+        "Job Details",
+        "Startzeituhr"
       ],
       "width": 1920
     },

@@ -1,0 +1,35 @@
+PROVOWARE VIDEO AUTOMATION – FINALVALIDIERUNG FORTSETZUNGSWELLE 24
+Datum: 2026-08-08
+Thema: Environment-Aware Forecast Profiles & Automatic Re-Baselining
+
+ERGEBNIS
+- 686/686 automatisierte Tests bestanden.
+- Testpartitionen: 100 + 78 + 103 + 59 + 88 + 78 + 90 + 90.
+- Coverage: 81,35 % Lines / 65,33 % Branches / 77,98 % kombiniert.
+- Coverage-Vertrag 80/65 bestanden.
+- Interne Codequalität: 336 Python-Dateien / 2.960 Funktionen / maximale Komplexität 30 / 0 Befunde.
+- Architektur: 0 Befunde.
+- Ereignisarchitektur: 0 Befunde.
+- Ereignisregister: 0 Befunde / 18 Kennungen.
+
+WESENTLICHE WELLE-24-VERTRÄGE
+- Renderhistorie ist an datensparsames Runtime-Environment gebunden.
+- FFmpeg-Version und Buildkonfiguration, CPU-/Threadprofil, Encoderpfad und Zielmediumklasse fließen in den Environment-Fingerprint ein.
+- Unterschiedliche Umgebungen werden nicht unbemerkt als gemeinsame Prognosebasis verwendet.
+- Performance-Epochen erlauben kontrolliertes Re-Baselining ohne Datenverlust.
+- Frühere Epochen bleiben auditierbar und sind nur Low-Confidence-Fallback.
+- Automatisches Re-Baselining lernt aus Scheduler- und manuellen realen Batchabschlüssen.
+- Driftursache trennt Environment-Wechsel, Same-Environment-Performance-Drift und Forecast-Modell-Drift.
+- Dry-Run/Forecast bleibt vollständig read-only; während der Altregression gefundene State-Schreibnebenwirkung wurde behoben.
+- Scheduler-Export enthält das Environment-Epochenarchiv.
+
+STABLE-GRENZE
+Die externen Nachweise Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4, pip-audit 2.10.1, physische KDE-X11-Abnahme und realer 96-Job-Slow-Target-Soak bleiben offen und werden nicht simuliert.
+
+RELEASE-ABSCHLUSS
+- Release-nahe Nachtests: 76/76 bestanden.
+- Dokumentation: 86 klassifiziert / 46 streng geprüft.
+- Release-Manifest: 629 Dateien, keine Drift.
+- Ausführungsrelevante Source-Dateien: 427.
+- Source-SHA-256: db5e49eb45b1861597912e1f0e45d0bc2230705cf6718257ba7155fdd8e25843
+- verify_release.sh --core: erwartungsgemäß TOOLCHAIN_BLOCKED[42]; externe Toolchain-Evidence bleibt offen und wurde nicht als bestanden umgedeutet.

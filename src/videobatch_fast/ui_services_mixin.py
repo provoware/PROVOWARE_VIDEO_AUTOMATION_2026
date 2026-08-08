@@ -429,35 +429,82 @@ class UiServicesMixin:
         })
 
     def _close(self) -> None:
-        if self.runner.running and not messagebox.askyesno(text('ui.services.provoware_videoautomation_2026_beenden'), text('ui.services.ein_stapel_lauft_noch_prozess_kontrolliert_abbrechen_und')):
+        # A double click on the window close control must never run the shutdown
+        # sequence twice.  In particular, two concurrent waits/cancels can make Tk
+        # appear frozen even though every individual service is bounded.
+        if getattr(self, "_shutdown_in_progress", False):
             return
-        if self.runner.running:
-            self.runner.cancel()
-            self.runner.wait(timeout=8.0)
-        self._cancel_pending_selection_preview()
-        preview_stopped = self.selection_previews.shutdown(timeout=3.0)
-        unfinished = self.tasks.shutdown(timeout=4.0)
-        if not preview_stopped:
-            self._event(
-                "SELECTION_PREVIEW_PENDING",
-                "Vorschau wird noch beendet",
-                "Der letzte Vorschauprozess reagiert verzögert.",
-                level="warning",
-                solution="VideoBatch wurde trotzdem kontrolliert geschlossen; beim nächsten Start Protokoll prüfen.",
-            )
-        if unfinished:
-            self._event(
-                "BACKGROUND_TASKS_PENDING",
-                "Hintergrundaufgaben noch aktiv",
-                ", ".join(unfinished),
-                level="warning",
-                solution="Beim nächsten Start Diagnosebericht prüfen.",
-            )
-        self.audio_player.stop()
-        if hasattr(self, "_autosave_project"):
-            self._autosave_project(force=True)
-        self._save_settings()
-        self.root.destroy()
+        if self.runner.running and not messagebox.askyesno(
+            text('ui.services.provoware_videoautomation_2026_beenden'),
+            text('ui.services.ein_stapel_lauft_noch_prozess_kontrolliert_abbrechen_und'),
+        ):
+            return
+        self._shutdown_in_progress = True
+        shutdown_errors: list[str] = []
+        try:
+            if self.runner.running:
+                try:
+                    self.runner.cancel()
+                    self.runner.wait(timeout=8.0)
+                except Exception as exc:
+                    shutdown_errors.append(f"Renderprozess: {type(exc).__name__}: {exc}")
+            try:
+                self._cancel_pending_selection_preview()
+                preview_stopped = self.selection_previews.shutdown(timeout=3.0)
+                if not preview_stopped:
+                    self._event(
+                        "SELECTION_PREVIEW_PENDING",
+                        "Vorschau wird noch beendet",
+                        "Der letzte Vorschauprozess reagiert verzögert.",
+                        level="warning",
+                        solution="VideoBatch wurde trotzdem kontrolliert geschlossen; beim nächsten Start Protokoll prüfen.",
+                    )
+            except Exception as exc:
+                shutdown_errors.append(f"Auswahlvorschau: {type(exc).__name__}: {exc}")
+            try:
+                unfinished = self.tasks.shutdown(timeout=4.0)
+                if unfinished:
+                    self._event(
+                        "BACKGROUND_TASKS_PENDING",
+                        "Hintergrundaufgaben noch aktiv",
+                        ", ".join(unfinished),
+                        level="warning",
+                        solution="Beim nächsten Start Diagnosebericht prüfen.",
+                    )
+            except Exception as exc:
+                shutdown_errors.append(f"Hintergrundaufgaben: {type(exc).__name__}: {exc}")
+            try:
+                self.audio_player.stop()
+            except Exception as exc:
+                shutdown_errors.append(f"Audioplayer: {type(exc).__name__}: {exc}")
+            if hasattr(self, "_autosave_project"):
+                try:
+                    self._autosave_project(force=True)
+                except Exception as exc:
+                    shutdown_errors.append(f"Projekt speichern: {type(exc).__name__}: {exc}")
+            try:
+                self._save_settings()
+            except Exception as exc:
+                shutdown_errors.append(f"Einstellungen speichern: {type(exc).__name__}: {exc}")
+            if shutdown_errors:
+                try:
+                    self._event(
+                        "SHUTDOWN_PARTIAL_FAILURE",
+                        "Schließen mit Teilfehlern",
+                        " | ".join(shutdown_errors),
+                        level="warning",
+                        solution="Die Anwendung wurde dennoch beendet. Beim nächsten Start Diagnosebericht prüfen.",
+                    )
+                except Exception:
+                    pass
+        finally:
+            # Closing must remain guaranteed even when persistence or a background
+            # service reports an error.  This prevents a half-shut-down UI that no
+            # longer accepts input but remains on screen.
+            try:
+                self.root.destroy()
+            except Exception:
+                pass
 
     @staticmethod
     def _duration(seconds: float | None) -> str:

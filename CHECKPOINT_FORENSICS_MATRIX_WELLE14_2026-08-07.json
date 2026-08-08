@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "wave": 14,
+  "date": "2026-08-07",
+  "scenarios": [
+    {"id":"CFX-001","scenario":"manifest semantic tamper","expected":"fingerprint reject","status":"pass"},
+    {"id":"CFX-002","scenario":"restore dry-run mixed target state","expected":"unchanged/replace/create/delete diff","status":"pass"},
+    {"id":"CFX-003","scenario":"newer partial generation vs older complete generation","expected":"complete recovery point selected","status":"pass"},
+    {"id":"CFX-004","scenario":"corrupt snapshot generation","expected":"quarantine, preserve evidence, remove active graph node","status":"pass"},
+    {"id":"CFX-005","scenario":"malformed forensics audit line","expected":"remaining timeline stays readable","status":"pass"},
+    {"id":"CFX-006","scenario":"lower-domain restore target","expected":"safe restore blocked","status":"pass"},
+    {"id":"CFX-007","scenario":"older equivalent restore target","expected":"blocked unless explicit point-in-time override","status":"pass"},
+    {"id":"CFX-008","scenario":"checkpoint-corruption-diagnose-select-probe-restore-recheckpoint","expected":"end-to-end recovery completes and creates new valid generation","status":"pass"}
+  ]
+}

@@ -11,6 +11,11 @@ import sys
 import tempfile
 from pathlib import Path
 
+try:
+    from release_identity import release_identity
+except ModuleNotFoundError:  # Import als scripts.run_external_quality
+    from scripts.release_identity import release_identity
+
 ROOT = Path(__file__).resolve().parents[1]
 LOCK = ROOT / "requirements-quality.lock"
 
@@ -191,11 +196,12 @@ def main() -> int:
     )
     output_dir.mkdir(parents=True, exist_ok=True)
     report = {
-        "schema_version": 3,
+        "schema_version": 4,
         "mode": args.mode,
         "offline": args.offline,
         "python": sys.version,
         "interpreter": sys.executable,
+        "candidate_identity": release_identity(ROOT),
         "results": results,
     }
     (output_dir / "external_quality_latest.json").write_text(

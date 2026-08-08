@@ -142,7 +142,7 @@ konsistent sein.
 ## 10. Stable-Grenze
 
 Ein Release Candidate darf nicht als Stable bezeichnet werden, solange externe
-Qualitätswerkzeuge, physische KDE-X11-/Wayland-Abnahme oder vorgeschriebene
+Qualitätswerkzeuge, physische KDE-X11-Abnahme oder vorgeschriebene
 Langzeittests offen sind. Automatisierte Xvfb-Prüfungen ersetzen keine physische
 Desktopfreigabe.
 

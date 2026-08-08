@@ -79,13 +79,12 @@ def test_canonical_dashboard_contains_real_scrollable_zones() -> None:
         "yscrollcommand",
         "scrollregion",
         "dashboard_layout_mode",
-        "Reale Aufträge aus dem aktuellen Projekt; keine Musterwerte.",
         "_refresh_dashboard_sources",
         "_select_dashboard_job",
     ):
         assert token in dashboard
     assert "self._build_start_page(assistant_body)" in dashboard
-    assert "kein automatischer Start" in dashboard
+    assert "_active_scheduler_record" in dashboard
     assert "self._build_dashboard_page(pages[0])" in workspace
     assert "responsive_column_count" in help_status
     assert "_build_canonical_status_bar" in help_status
@@ -98,7 +97,8 @@ def test_header_and_controls_use_requested_width_instead_of_fixed_wrap_only() ->
     assert "_layout_shell_header" in source
     assert "_layout_shell_kpis" in source
     assert "_layout_shell_actions" in source
-    assert "wraplength=max(130" in source
+    assert "_set_wraplength_if_changed" in source
+    assert "max(130" in source
 
 
 def test_canonical_window_mixin_is_selected_before_shell_workspace() -> None:

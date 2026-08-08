@@ -2,14 +2,21 @@ from __future__ import annotations
 
 import os
 import threading
+import time
 from pathlib import Path
 from tkinter import Tk
 
+from .canonical_dashboard_detail_mixin import CanonicalDashboardDetailMixin
+from .project_home_dashboard import ProjectHomeDashboardMixin
+from .canonical_backup_mixin import CanonicalBackupMixin
 from .canonical_dashboard_mixin import CanonicalDashboardMixin
 from .canonical_debug_mixin import CanonicalDebugMixin
 from .canonical_help_status_mixin import CanonicalHelpStatusMixin
 from .canonical_kpi_compact_mixin import CanonicalKpiCompactMixin
 from .canonical_kpi_detail_mixin import CanonicalKpiDetailMixin
+from .canonical_queue_thumbnail_mixin import CanonicalQueueThumbnailMixin
+from .canonical_media_tags_mixin import CanonicalMediaTagsMixin
+from .canonical_preview_transport_mixin import CanonicalPreviewTransportMixin
 from .canonical_window_mixin import CanonicalWindowMixin
 from .canonical_shell_workspace import CanonicalShellWorkspaceMixin
 from .canonical_shell_chrome import CanonicalShellChromeMixin
@@ -21,11 +28,17 @@ from .ui_components import SolutionDialog
 
 
 class CanonicalVideoBatchFastUI(
+    ProjectHomeDashboardMixin,
     CanonicalDebugMixin,
     CanonicalKpiCompactMixin,
     CanonicalKpiDetailMixin,
     CanonicalWindowMixin,
     CanonicalShellWorkspaceMixin,
+    CanonicalQueueThumbnailMixin,
+    CanonicalMediaTagsMixin,
+    CanonicalPreviewTransportMixin,
+    CanonicalBackupMixin,
+    CanonicalDashboardDetailMixin,
     CanonicalDashboardMixin,
     CanonicalHelpStatusMixin,
     CanonicalShellChromeMixin,
@@ -89,6 +102,12 @@ def _install_thread_debug_hook() -> None:
 
 
 def run_app() -> None:
+    run_enter_ns = time.monotonic_ns()
+    launch_ns_raw = os.environ.get("VIDEOBATCH_LAUNCH_MONOTONIC_NS", "").strip()
+    try:
+        launch_ns = int(launch_ns_raw) if launch_ns_raw else run_enter_ns
+    except ValueError:
+        launch_ns = run_enter_ns
     clean_marker = os.environ.get("VIDEOBATCH_DEBUG_CLEAN_MARKER", "").strip()
     if clean_marker:
         RUNTIME.set_clean_shutdown_marker(Path(clean_marker).expanduser())
@@ -101,6 +120,7 @@ def run_app() -> None:
     root: Tk | None = None
     try:
         root = Tk()
+        tk_ready_ns = time.monotonic_ns()
         root.report_callback_exception = _tk_exception_handler(root)
         _install_thread_debug_hook()
         try:
@@ -120,12 +140,25 @@ def run_app() -> None:
             "CanonicalVideoBatchFastUI(root)",
             "Bei einem Konstruktionsfehler bleibt der vollständige Python-Ort im Absturzbericht erhalten.",
         )
+        ui_construct_started_ns = time.monotonic_ns()
         CanonicalVideoBatchFastUI(root)
-        root.update_idletasks()
-        signal_ui_ready()
+        ui_constructed_ns = time.monotonic_ns()
+        # Do not synchronously drain Tk's complete idle queue here. Large widget trees can
+        # legitimately enqueue follow-up geometry/configure work and make update_idletasks()
+        # non-terminating. Ready means construction succeeded and the mainloop can start.
+        ready_ns = time.monotonic_ns()
+        timing_ms = {
+            "launch_to_run_app": (run_enter_ns - launch_ns) / 1_000_000,
+            "tk_create": (tk_ready_ns - run_enter_ns) / 1_000_000,
+            "ui_construct": (ui_constructed_ns - ui_construct_started_ns) / 1_000_000,
+            "first_idle_flush": 0.0,
+            "launch_to_ready": (ready_ns - launch_ns) / 1_000_000,
+        }
+        signal_ui_ready(timing_ms=timing_ms)
         RUNTIME.verbose(
             "Die Oberfläche hat die Startbereitschaft bestätigt.",
-            "Tk konnte den vollständigen Aufbau abschließen und die UI-Ready-Markierung wurde geschrieben.",
+            "Tk konnte den vollständigen Aufbau abschließen und die UI-Ready-Markierung wurde geschrieben. "
+            f"Startzeiten: {timing_ms}.",
             "startup_handshake.signal_ui_ready",
             "VideoBatch kann jetzt normal bedient werden.",
             level="OK",

@@ -13,6 +13,7 @@ import tempfile
 
 from promote_stable_workspace import validate_promotion_source
 from validate_stable_acceptance import manifest_sha256, validate_evidence
+from release_identity import release_identity
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -33,7 +34,9 @@ def main() -> int:
     rc_version, stable_build = validate_promotion_source(ROOT)
     candidate = str(rc_version["build"])
     candidate_hash = manifest_sha256(ROOT / "RELEASE_MANIFEST.json")
-    validate_evidence(args.acceptance_evidence, candidate, candidate_hash)
+    candidate_identity = release_identity(ROOT)
+    candidate_source_hash = str(candidate_identity["source_sha256"])
+    validate_evidence(args.acceptance_evidence, candidate, candidate_hash, candidate_source_hash)
     env_python = Path(sys.executable).resolve()
     if not env_python.is_file():
         raise RuntimeError("Die verifizierte Qualitätsumgebung ist nicht verfügbar.")
@@ -64,6 +67,7 @@ def main() -> int:
             "VIDEOBATCH_ACCEPTANCE_EVIDENCE": str(args.acceptance_evidence.resolve()),
             "VIDEOBATCH_ACCEPTANCE_CANDIDATE": candidate,
             "VIDEOBATCH_ACCEPTANCE_MANIFEST_SHA256": candidate_hash,
+            "VIDEOBATCH_ACCEPTANCE_SOURCE_SHA256": candidate_source_hash,
         }
 
         rebuild = (

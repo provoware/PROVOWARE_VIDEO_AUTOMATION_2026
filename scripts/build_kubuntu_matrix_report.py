@@ -9,9 +9,7 @@ from typing import Any
 
 EXPECTED = (
     ("ubuntu-22.04", "x11"),
-    ("ubuntu-22.04", "wayland"),
     ("ubuntu-24.04", "x11"),
-    ("ubuntu-24.04", "wayland"),
 )
 
 

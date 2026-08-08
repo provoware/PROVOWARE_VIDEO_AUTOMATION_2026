@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "wave": 24,
+  "title": "Environment-Aware Forecast Profiles & Automatic Re-Baselining",
+  "scenarios": [
+    {"id": "ENV-001", "scenario": "Environment-Fingerprint", "expected": "FFmpeg/Thread/Zieländerungen verändern den Fingerprint", "status": "passed"},
+    {"id": "ENV-002", "scenario": "Software-Codecwechsel", "expected": "Kein falscher Environment-Wechsel bei gleichem Softwarepfad", "status": "passed"},
+    {"id": "ENV-003", "scenario": "Exakte Umgebung/Epoche", "expected": "Forecast verwendet ausschließlich passende Epoch-Samples", "status": "passed"},
+    {"id": "ENV-004", "scenario": "Frühere Epoche", "expected": "Fallback bleibt verfügbar, Confidence wird auf low begrenzt", "status": "passed"},
+    {"id": "ENV-005", "scenario": "Fremde Umgebung", "expected": "Ohne Legacybasis keine Vermischung fremder Performancewerte", "status": "passed"},
+    {"id": "ENV-006", "scenario": "Legacy-Historie", "expected": "Vor-Welle-24-Samples bleiben rückwärtskompatibel", "status": "passed"},
+    {"id": "ENV-007", "scenario": "Automatisches Re-Baselining", "expected": "Anhaltende >=35%-Verschiebung erzeugt neue aktive Epoche", "status": "passed"},
+    {"id": "ENV-008", "scenario": "Epochenarchiv", "expected": "Vorherige Epoche bleibt erhalten und wird inaktiv", "status": "passed"},
+    {"id": "ENV-009", "scenario": "Ursachenklassifizierung", "expected": "Environment-Wechsel und Same-Environment-Performance-Drift werden getrennt", "status": "passed"},
+    {"id": "ENV-010", "scenario": "Actual-vs-Predicted-Evidence", "expected": "Environment/Epoche und Sekunden pro Job werden persistiert", "status": "passed"},
+    {"id": "ENV-011", "scenario": "BatchJournal-Integration", "expected": "Reale Batches speichern datensparsames Environment ohne Hostname", "status": "passed"},
+    {"id": "ENV-012", "scenario": "Manueller Batch-Rebaseline", "expected": "Auch GUI-Batches können nichtkritisch Re-Baselining auslösen", "status": "passed"},
+    {"id": "ENV-013", "scenario": "Scheduler-Export", "expected": "Environment-Epochenarchiv liegt im Diagnoseexport vor", "status": "passed"},
+    {"id": "ENV-014", "scenario": "Dry-Run Side-Effect Guard", "expected": "Forecast/Simulation erzeugt keine State-Datei", "status": "passed"}
+  ]
+}

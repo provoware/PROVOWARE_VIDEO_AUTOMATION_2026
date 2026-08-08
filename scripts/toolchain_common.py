@@ -51,7 +51,7 @@ def read_exact_lock(path: Path) -> dict[str, str]:
 
 def load_contract(root: Path = ROOT) -> dict[str, Any]:
     data = json.loads((root / "TOOLCHAIN_CONTRACT.json").read_text(encoding="utf-8"))
-    if data.get("schema_version") != 1:
+    if data.get("schema_version") != 2:
         raise ValueError("Unbekannte Toolchain-Vertragsversion.")
     build = current_build(root)
     if data.get("release_target") != build or build not in str(data.get("contract_id", "")):
@@ -62,6 +62,8 @@ def load_contract(root: Path = ROOT) -> dict[str, Any]:
         "offline_installation_required", "wheel_hash_manifest_required",
         "sdists_forbidden", "online_download_requires_explicit_consent",
         "atomic_replacement_required", "automatic_repair_on_launcher_start",
+        "quality_evidence_source_bound", "stale_evidence_fail_closed",
+        "deterministic_evidence_bundle_required",
     )
     if not all(policy.get(key) is True for key in required):
         raise ValueError("Toolchain-Sicherheitsrichtlinie ist unvollständig.")
@@ -130,6 +132,7 @@ def runtime_identity() -> dict[str, str]:
 def toolchain_cache_key(root: Path = ROOT) -> str:
     digest = hashlib.sha256()
     digest.update((root / "requirements-toolchain.lock").read_bytes())
+    digest.update((root / "TOOLCHAIN_CONTRACT.json").read_bytes())
     digest.update(json.dumps(runtime_identity(), sort_keys=True).encode("utf-8"))
     return digest.hexdigest()[:20]
 
@@ -145,11 +148,17 @@ def build_manifest(wheelhouse: Path, *, root: Path = ROOT) -> dict[str, Any]:
             "size": path.stat().st_size,
             "sha256": sha256_file(path),
         })
+    lock_path = root / "requirements-toolchain.lock"
+    contract_path = root / "TOOLCHAIN_CONTRACT.json"
+    canonical_wheels = json.dumps(wheels, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return {
-        "schema_version": 1,
-        "contract_version": f"unified-toolchain-{current_build(root)}-v1",
+        "schema_version": 2,
+        "contract_version": f"unified-toolchain-{current_build(root)}-v2",
         "release_target": current_build(root),
         **runtime_identity(),
+        "requirements_toolchain_sha256": sha256_file(lock_path),
+        "toolchain_contract_sha256": sha256_file(contract_path),
+        "wheels_sha256": hashlib.sha256(canonical_wheels).hexdigest(),
         "wheel_count": len(wheels),
         "wheels": wheels,
     }
@@ -271,9 +280,12 @@ def _load_wheelhouse_manifest(wheelhouse: Path) -> tuple[dict[str, Any] | None, 
 def _verify_manifest_header(manifest: dict[str, Any], root: Path) -> list[str]:
     errors: list[str] = []
     expected_header = {
-        "contract_version": f"unified-toolchain-{current_build(root)}-v1",
+        "schema_version": 2,
+        "contract_version": f"unified-toolchain-{current_build(root)}-v2",
         "release_target": current_build(root),
         **runtime_identity(),
+        "requirements_toolchain_sha256": sha256_file(root / "requirements-toolchain.lock"),
+        "toolchain_contract_sha256": sha256_file(root / "TOOLCHAIN_CONTRACT.json"),
     }
     for key, expected in expected_header.items():
         if str(manifest.get(key, "")).lower() != str(expected).lower():
@@ -321,6 +333,9 @@ def _verify_wheel_items(
     items = manifest.get("wheels", [])
     if not isinstance(items, list) or manifest.get("wheel_count") != len(items):
         return set(), set(), ["Wheelanzahl im Manifest ist inkonsistent."]
+    canonical_wheels = json.dumps(items, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    if hashlib.sha256(canonical_wheels).hexdigest() != str(manifest.get("wheels_sha256", "")):
+        return set(), set(), ["Wheel-Liste stimmt nicht mit ihrem kanonischen Gesamt-Hash überein."]
     identities: set[tuple[str, str]] = set()
     declared: set[str] = set()
     errors: list[str] = []

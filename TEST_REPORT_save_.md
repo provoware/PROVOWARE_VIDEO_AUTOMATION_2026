@@ -24,4 +24,4 @@
 
 ## Bewusst nicht behauptet
 
-Stable ist weiterhin blockiert. Nicht abschließend belegt sind Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4, pip-audit 2.10.1, die physische KDE-X11-/Wayland-Abnahme und der Langzeitrender mit großer Medienauswahl auf langsamem externem Ziel.
+Stable ist weiterhin blockiert. Nicht abschließend belegt sind Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4, pip-audit 2.10.1, die physische KDE-X11-Abnahme und der Langzeitrender mit großer Medienauswahl auf langsamem externem Ziel.

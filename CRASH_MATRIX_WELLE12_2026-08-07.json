@@ -1,0 +1,47 @@
+{
+  "passed": true,
+  "results": [
+    {
+      "action": [
+        "REDO"
+      ],
+      "passed": true,
+      "scenario": "crash-after-wal"
+    },
+    {
+      "action": [
+        "REDO"
+      ],
+      "passed": true,
+      "scenario": "torn-cross-file"
+    },
+    {
+      "action": [
+        "QUARANTINE"
+      ],
+      "passed": true,
+      "scenario": "corrupt-wal"
+    },
+    {
+      "action": [
+        "REBUILD_REVISIONS"
+      ],
+      "passed": true,
+      "scenario": "orphan-revision-rebuild"
+    },
+    {
+      "action": [
+        "ROLLBACK"
+      ],
+      "passed": true,
+      "scenario": "retry-budget-rollback"
+    },
+    {
+      "action": "QUARANTINE",
+      "passed": true,
+      "scenario": "correlated-config-job-fault"
+    }
+  ],
+  "scenario_count": 6,
+  "schema_version": 1
+}

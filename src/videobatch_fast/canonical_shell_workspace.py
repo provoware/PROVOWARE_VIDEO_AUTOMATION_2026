@@ -14,23 +14,26 @@ class CanonicalShellWorkspaceMixin:
 
     def _build_ui(self) -> None:
         self.workflow_grids = {}
-        self._build_menu_bar()
+        # Die kanonische Shell verwendet keine helle native Menüleiste.
+        # Alle Nutzeraktionen bleiben über Sidebar, Topbar, Einstellungen und Shortcuts erreichbar.
         self._configure_shell_styles()
         shell = ttk.Frame(self.root, style="Shell.TFrame")
         shell.pack(fill="both", expand=True)
+        self._canonical_shell = shell
+        self._project_home_shell_host = shell
         shell.columnconfigure(1, weight=1)
         shell.rowconfigure(0, weight=1)
 
         sidebar = ttk.Frame(
             shell,
             style="ShellSidebar.TFrame",
-            padding=(13, 15),
+            padding=(11, 11),
             width=SIDEBAR_WIDTH,
         )
         sidebar.grid(row=0, column=0, sticky="nsew")
         sidebar.grid_propagate(False)
 
-        content = ttk.Frame(shell, style="Shell.TFrame", padding=(15, 11, 15, 7))
+        content = ttk.Frame(shell, style="Shell.TFrame", padding=(10, 8, 10, 6))
         content.grid(row=0, column=1, sticky="nsew")
         content.columnconfigure(0, weight=1)
         content.rowconfigure(3, weight=1)
@@ -98,9 +101,15 @@ class CanonicalShellWorkspaceMixin:
             self._main_tab_restore_in_progress = False
 
     def _select_shell_page(self, page_index: int | None) -> None:
-        if page_index is not None:
-            self.main_notebook.select(page_index)
-            self.main_notebook.focus_set()
+        if page_index is None:
+            return
+        if page_index == 0 and hasattr(self, "_show_project_home"):
+            self._show_project_home()
+            return
+        if hasattr(self, "_hide_project_home"):
+            self._hide_project_home()
+        self.main_notebook.select(page_index)
+        self.main_notebook.focus_set()
 
     def _on_shell_tab_changed(self, _event=None) -> None:
         if not self._shell_navigation_ready():

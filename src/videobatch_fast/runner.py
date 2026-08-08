@@ -17,6 +17,7 @@ from .job_journal import BatchJournal
 from .models import BatchOptions, JobResult, PairJob
 from .naming import OutputReservation, release_output_reservations, reserve_output_targets
 from .quick_modes import fallback_options, mode_spec
+from .render_coordination import RenderExecutionLease
 from .retry_queue import DEFAULT_MAX_ATTEMPTS, DEFAULT_MAX_ENTRIES, RetryQueueStore
 from .runner_events import (
     BatchFailedInternalPayload,
@@ -104,6 +105,7 @@ class BatchRunner:
         self.operation_id = ""
         self._journal: BatchJournal | None = None
         self._retry_queue: RetryQueueStore | None = None
+        self._render_lease = RenderExecutionLease()
 
     @property
     def running(self) -> bool:
@@ -116,6 +118,7 @@ class BatchRunner:
         self._callback_errors.clear()
         self.operation_id = uuid.uuid4().hex[:16]
         self._prepare_retry_queue()
+        self._render_lease.acquire()
         try:
             self._reservations = reserve_output_targets(job.output for job in jobs)
             self._journal = BatchJournal(self.operation_id, jobs, options)
@@ -123,6 +126,7 @@ class BatchRunner:
             release_output_reservations(self._reservations)
             self._reservations = []
             self._journal = None
+            self._render_lease.release()
             raise RuntimeError(f"Stapel konnte nicht sicher vorbereitet werden: {exc}") from exc
         self._thread = threading.Thread(
             target=self._run_batch,
@@ -136,6 +140,7 @@ class BatchRunner:
             release_output_reservations(self._reservations)
             self._reservations = []
             self._journal = None
+            self._render_lease.release()
             raise
 
     def cancel(self) -> None:
@@ -438,6 +443,7 @@ class BatchRunner:
             self._process = None
             release_output_reservations(self._reservations)
             self._reservations = []
+            self._render_lease.release()
             cancelled = self._cancel.is_set()
             if cancelled:
                 terminal_event = "batch_cancelled"

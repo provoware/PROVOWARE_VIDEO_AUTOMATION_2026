@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "wave": 20,
+  "date": "2026-08-08",
+  "scenarios": [
+    {"id":"SCH20-001","scenario":"begrenzte tägliche Serie","expected":"Intervall und maximale Vorkommen werden eingehalten","result":"passed"},
+    {"id":"SCH20-002","scenario":"wöchentliche Serie über DST-Grenze","expected":"lokale Wandzeit bleibt stabil","result":"passed"},
+    {"id":"SCH20-003","scenario":"nicht existente Frühlings-DST-Uhrzeit","expected":"Vorkommen wird sicher übersprungen","result":"passed"},
+    {"id":"SCH20-004","scenario":"doppelte Herbst-DST-Uhrzeit","expected":"späterer realer Zeitpunkt wird deterministisch gewählt","result":"passed"},
+    {"id":"SCH20-005","scenario":"Catch-up policy skip","expected":"verspätetes Vorkommen wird nicht überraschend ausgeführt","result":"passed"},
+    {"id":"SCH20-006","scenario":"Catch-up policy run_once","expected":"einmalige Nachholung nur innerhalb des Fensters","result":"passed"},
+    {"id":"SCH20-007","scenario":"mehrere Pläne desselben Projekts","expected":"Pläne bleiben getrennt und sortierbar","result":"passed"},
+    {"id":"SCH20-008","scenario":"Serienlauf abgeschlossen","expected":"Verlaufseintrag und nächster Termin werden atomar fortgeschrieben","result":"passed"},
+    {"id":"SCH20-009","scenario":"letztes Vorkommen abgeschlossen","expected":"Serie endet und systemd-Units werden entfernt","result":"passed"},
+    {"id":"SCH20-010","scenario":"paralleler Renderprozess","expected":"globale Render-Lease blockiert Doppelstart","result":"passed"},
+    {"id":"SCH20-011","scenario":"Renderkonflikt innerhalb Catch-up-Fenster","expected":"begrenzter neuer Versuch wird geplant","result":"passed"},
+    {"id":"SCH20-012","scenario":"Renderkonflikt außerhalb Catch-up-Fenster","expected":"kein unbegrenztes Wiederholen","result":"passed"},
+    {"id":"SCH20-013","scenario":"Schema-1-Zeitplan","expected":"explizite Migration zu einmaligem Schema 2","result":"passed"},
+    {"id":"SCH20-014","scenario":"Planabbruch","expected":"Cancellation wird im Scheduler-Verlauf bewahrt","result":"passed"},
+    {"id":"SCH20-015","scenario":"systemd-Auslöser bei DST","expected":"konkreter UTC-OnCalendar-Zeitpunkt vermeidet Mehrdeutigkeit","result":"passed"}
+  ]
+}

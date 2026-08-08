@@ -1,0 +1,34 @@
+PROVOWARE VIDEO AUTOMATION – FINALVALIDIERUNG FORTSETZUNGSWELLE 9
+Stand: 2026-08-07
+
+SCHWERPUNKT
+Fault Injection & Self-Recovery: ENOSPC, EACCES, Read-only, Prozess-Kill, verwaiste Tempdateien, parallele Speicherzugriffe, Restart-Recovery und reproduzierbare Crash-Matrix.
+
+IMPLEMENTIERT
+1. Prozessuebergreifende, zeitlich begrenzte Linux/POSIX-Dateisperre fuer Backup-Mutationen.
+2. PID-markierte atomare Tempdateien und sichere Bereinigung nachweislich toter Schreibprozesse.
+3. Legacy-Tempdateien werden nur nach Sicherheitsalter entfernt; Tempdateien lebender Prozesse bleiben unangetastet.
+4. Projektbackup-Erstellung, Rotation und History-Self-Healing gegen parallele Lost Updates serialisiert.
+5. Fault-Lab um ENOSPC beim fsync, EACCES, SIGKILL-Temp-Recovery, Lock-Recovery nach SIGKILL, zwei parallele Backupprozesse und History-Neuaufbau beim Restart erweitert.
+6. CRASH_MATRIX_WELLE9_2026-08-07.json und RECOVERY_AUDIT_WELLE9_2026-08-07.md angelegt.
+
+NACHWEISE
+- Fehlerlabor: 21/21 bestanden.
+- Gezielte Welle-9-/Backup-/Fault-Tests: 18/18 bestanden.
+- Vollsuite unter Xvfb: 508/508 bestanden.
+- Interne Codequalitaet: 286 Dateien, 2329 Funktionen, max. Komplexitaet 29, Befunde 0.
+- Architektur: 125 Module, 1228 Funktionen, 151 Klassen, Befunde 0.
+- Ereignisarchitektur: 0 Befunde.
+- Ereignisregister: 0 Befunde.
+- Designregelwerk: bestanden.
+- Textvertrag: bestanden.
+- Versionskonsistenz: bestanden.
+- Release-Literal-Hygiene: bestanden.
+- Registry-Pruefung: bestanden.
+- Isolierte Python-Kompilierung: bestanden.
+
+WICHTIGE ABGRENZUNG
+Der Xvfb-Pytest-Prozess gab nach der bereits ausgegebenen Abschlusszeile "508 passed" den Wrapper nicht rechtzeitig an die Ausfuehrungsumgebung zurueck. Der Testlauf selbst war vollstaendig abgeschlossen und ohne Testfehler. Dies wird nicht als Produktfehler klassifiziert.
+
+STABLE
+Stable bleibt weiterhin fuer die realen/externalen Nachweise VIS-001, VIS-002 und REL-001 gesperrt; SCHED-001 bleibt bis zum vorgesehenen Checkpoint-5-Systemvertrag gesperrt. Welle 9 behauptet keinen realen Stromausfall-, Hardwaredefekt- oder vollgelaufenes-Produktionsvolume-Nachweis.

@@ -1,0 +1,98 @@
+{
+  "method": "Python difflib.SequenceMatcher on intended iteration files; metric report itself and generated caches excluded",
+  "changed_files": 6,
+  "inserted_chars": 8944,
+  "deleted_chars": 70,
+  "replaced_old_chars": 1,
+  "replaced_new_chars": 1,
+  "net_chars": 8874,
+  "line_delta": 186,
+  "files": [
+    {
+      "path": "src/videobatch_fast/project_home_dashboard.py",
+      "inserted_chars": 2733,
+      "deleted_chars": 44,
+      "replaced_old_chars": 1,
+      "replaced_new_chars": 1,
+      "old_lines": 437,
+      "new_lines": 487,
+      "line_delta": 50
+    },
+    {
+      "path": "tests/test_project_home_sources_wave25_phase2.py",
+      "inserted_chars": 84,
+      "deleted_chars": 26,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "old_lines": 57,
+      "new_lines": 58,
+      "line_delta": 1
+    },
+    {
+      "path": "tests/test_project_home_workflow_wave25_phase3.py",
+      "inserted_chars": 2832,
+      "deleted_chars": 0,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "old_lines": 0,
+      "new_lines": 74,
+      "line_delta": 74
+    },
+    {
+      "path": "ITERATION_BASELINE_WELLE25_UI_PHASE3_2026-08-08.json",
+      "inserted_chars": 483,
+      "deleted_chars": 0,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "old_lines": 0,
+      "new_lines": 9,
+      "line_delta": 9
+    },
+    {
+      "path": "WELLE25_UI_PHASE3_WORKFLOW_MODULE_AUDIT_2026-08-08.md",
+      "inserted_chars": 1821,
+      "deleted_chars": 0,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "old_lines": 0,
+      "new_lines": 28,
+      "line_delta": 28
+    },
+    {
+      "path": "FINAL_VALIDIERUNG_WELLE25_UI_PHASE3_2026-08-08.txt",
+      "inserted_chars": 991,
+      "deleted_chars": 0,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "old_lines": 0,
+      "new_lines": 24,
+      "line_delta": 24
+    }
+  ],
+  "categories": {
+    "Produktcode": {
+      "files": 1,
+      "inserted_chars": 2733,
+      "deleted_chars": 44,
+      "replaced_old_chars": 1,
+      "replaced_new_chars": 1,
+      "line_delta": 50
+    },
+    "Tests": {
+      "files": 2,
+      "inserted_chars": 2916,
+      "deleted_chars": 26,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "line_delta": 75
+    },
+    "Dokumentation/Nachweise": {
+      "files": 3,
+      "inserted_chars": 3295,
+      "deleted_chars": 0,
+      "replaced_old_chars": 0,
+      "replaced_new_chars": 0,
+      "line_delta": 61
+    }
+  }
+}

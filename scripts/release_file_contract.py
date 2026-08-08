@@ -55,6 +55,10 @@ def included_release_file(root: Path, path: Path) -> bool:
     rel = path.relative_to(root)
     if path.name in EXCLUDE_FILES or path.name.startswith(".coverage."):
         return False
+    if path.suffix == ".json" and (
+        path.name == "coverage.json" or path.name.startswith("coverage_w")
+    ):
+        return False
     if path.suffix in EXCLUDE_SUFFIXES:
         return False
     if any(part in EXCLUDE_PARTS for part in rel.parts):

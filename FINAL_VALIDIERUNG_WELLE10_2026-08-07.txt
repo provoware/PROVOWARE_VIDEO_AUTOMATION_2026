@@ -1,0 +1,28 @@
+PROVOWARE VIDEO AUTOMATION – FINALVALIDIERUNG FORTSETZUNGSWELLE 10
+Stand: 2026-08-07
+
+SCHWERPUNKT
+State Consistency & Transaction Recovery: Write-Ahead-Journal, Cross-File-Commit, Revisionen, Optimistic Concurrency, REDO-Recovery, Lost-Update- und Torn-Transaction-Schutz.
+
+IMPLEMENTIERT
+1. Neue transaktionale JSON-Persistenzschicht mit durablem Pending-WAL.
+2. Monotone Zielrevisionen und optionale Expected-Revision-Konfliktprüfung.
+3. Deterministisches Roll-forward-Recovery nach Crash vor oder zwischen Dateischritten.
+4. Commit-Marker mit Transaction-ID und Zielrevisionen.
+5. Fail-closed Journalintegrität mit SHA-256, Root-Grenzen, Duplikat- und Größenprüfung.
+6. Produktive Cross-File-Integration für Backuphistorie + Integritätsmetadaten.
+7. Selbstheilung bei History/Meta-Abweichung aus unabhängig verifizierten Backup-Archiven.
+8. Reproduzierbare Crash-Matrix und Transaction-Recovery-Audit ergänzt.
+
+NACHWEISE
+- Neue Welle-10-Tests: 10/10 bestanden.
+- Kombinierte Welle-8/9/10-Integritäts-/Recoverytests: 22/22 bestanden.
+- Vollsuite in Testdatei-Batches unter Xvfb: 518/518 bestanden.
+- Interne Codequalität: 288 Dateien, 2358 Funktionen, max. Komplexität 29, Befunde 0.
+- Architektur: 126 Module, 1246 Funktionen, 154 Klassen, Befunde 0.
+- Ereignisarchitektur: 0 Befunde.
+- Ereignisregister: 0 Befunde.
+- Designregelwerk, Textvertrag, Versionskonsistenz, Release-Literal-Hygiene, Release-Dateistatus und isolierte Python-Kompilierung: bestanden.
+
+STABLE
+VIS-001, VIS-002, REL-001 und SCHED-001 bleiben unverändert offen. Welle 10 behauptet keine physische Stromausfall-/Hardware-/Dateisystem-Fault-Abnahme.

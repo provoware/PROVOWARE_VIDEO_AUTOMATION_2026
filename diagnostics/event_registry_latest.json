@@ -1,0 +1,226 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "source_root": "/mnt/data/pva_phase4_work/PROVOWARE_VIDEO_AUTOMATION_2026-main/src/videobatch_fast",
+  "contract_test": "/mnt/data/pva_phase4_work/PROVOWARE_VIDEO_AUTOMATION_2026-main/tests/test_event_registry.py",
+  "emissions": [
+    {
+      "name": "retry_queue_updated",
+      "mode": "mapping",
+      "payload_type": "",
+      "path": "runner.py",
+      "line": 215
+    },
+    {
+      "name": "job_started",
+      "mode": "typed",
+      "payload_type": "JobStartedPayload",
+      "path": "runner.py",
+      "line": 493
+    },
+    {
+      "name": "batch_started",
+      "mode": "typed",
+      "payload_type": "BatchStartedPayload",
+      "path": "runner.py",
+      "line": 335
+    },
+    {
+      "name": "batch_finished",
+      "mode": "typed",
+      "payload_type": "BatchFinishedPayload",
+      "path": "runner.py",
+      "line": 474
+    },
+    {
+      "name": "log",
+      "mode": "mapping",
+      "payload_type": "",
+      "path": "runner.py",
+      "line": 509
+    },
+    {
+      "name": "log",
+      "mode": "mapping",
+      "payload_type": "",
+      "path": "runner.py",
+      "line": 235
+    },
+    {
+      "name": "log",
+      "mode": "mapping",
+      "payload_type": "",
+      "path": "runner.py",
+      "line": 248
+    },
+    {
+      "name": "log",
+      "mode": "mapping",
+      "payload_type": "",
+      "path": "runner.py",
+      "line": 267
+    },
+    {
+      "name": "log",
+      "mode": "mapping",
+      "payload_type": "",
+      "path": "runner.py",
+      "line": 281
+    },
+    {
+      "name": "job_finished",
+      "mode": "typed",
+      "payload_type": "JobFinishedPayload",
+      "path": "runner.py",
+      "line": 419
+    },
+    {
+      "name": "batch_failed_internal",
+      "mode": "typed",
+      "payload_type": "BatchFailedInternalPayload",
+      "path": "runner.py",
+      "line": 428
+    },
+    {
+      "name": "log",
+      "mode": "mapping",
+      "payload_type": "",
+      "path": "runner.py",
+      "line": 528
+    },
+    {
+      "name": "job_failed_internal",
+      "mode": "mapping",
+      "payload_type": "",
+      "path": "runner.py",
+      "line": 355
+    },
+    {
+      "name": "job_finished",
+      "mode": "typed",
+      "payload_type": "JobFinishedPayload",
+      "path": "runner.py",
+      "line": 367
+    },
+    {
+      "name": "log",
+      "mode": "mapping",
+      "payload_type": "",
+      "path": "runner.py",
+      "line": 395
+    },
+    {
+      "name": "batch_failed_internal",
+      "mode": "typed",
+      "payload_type": "BatchFailedInternalPayload",
+      "path": "runner.py",
+      "line": 382
+    },
+    {
+      "name": "command",
+      "mode": "mapping",
+      "payload_type": "",
+      "path": "runner_process.py",
+      "line": 62
+    },
+    {
+      "name": "progress",
+      "mode": "mapping",
+      "payload_type": "",
+      "path": "runner_process.py",
+      "line": 252
+    },
+    {
+      "name": "progress",
+      "mode": "mapping",
+      "payload_type": "",
+      "path": "runner_process.py",
+      "line": 327
+    },
+    {
+      "name": "log",
+      "mode": "mapping",
+      "payload_type": "",
+      "path": "runner_process.py",
+      "line": 247
+    },
+    {
+      "name": "log",
+      "mode": "mapping",
+      "payload_type": "",
+      "path": "runner_process.py",
+      "line": 167
+    },
+    {
+      "name": "selection_preview_ready",
+      "mode": "typed",
+      "payload_type": "SelectionPreviewReadyPayload",
+      "path": "selection_preview_controller.py",
+      "line": 139
+    },
+    {
+      "name": "selection_preview_failed",
+      "mode": "typed",
+      "payload_type": "SelectionPreviewFailedPayload",
+      "path": "selection_preview_controller.py",
+      "line": 153
+    },
+    {
+      "name": "fault_lab_finished",
+      "mode": "legacy",
+      "payload_type": "",
+      "path": "ui_services_mixin.py",
+      "line": 109
+    },
+    {
+      "name": "archive_finished",
+      "mode": "legacy",
+      "payload_type": "",
+      "path": "ui_services_mixin.py",
+      "line": 148
+    },
+    {
+      "name": "update_finished",
+      "mode": "legacy",
+      "payload_type": "",
+      "path": "ui_services_mixin.py",
+      "line": 285
+    },
+    {
+      "name": "assurance_finished",
+      "mode": "legacy",
+      "payload_type": "",
+      "path": "ui_services_mixin.py",
+      "line": 294
+    },
+    {
+      "name": "log",
+      "mode": "legacy",
+      "payload_type": "",
+      "path": "ui_services_mixin.py",
+      "line": 127
+    },
+    {
+      "name": "log",
+      "mode": "legacy",
+      "payload_type": "",
+      "path": "ui_services_mixin.py",
+      "line": 283
+    },
+    {
+      "name": "waveform_ready",
+      "mode": "legacy",
+      "payload_type": "",
+      "path": "ui_slideshow_mixin.py",
+      "line": 259
+    },
+    {
+      "name": "waveform_failed",
+      "mode": "legacy",
+      "payload_type": "",
+      "path": "ui_slideshow_mixin.py",
+      "line": 261
+    }
+  ],
+  "findings": []
+}

@@ -5,6 +5,7 @@ import json
 import os
 import signal
 import subprocess
+import sys
 import tempfile
 import time
 from contextlib import contextmanager
@@ -17,7 +18,14 @@ from .job_journal import BatchJournal, recovery_input_paths
 from .models import BatchOptions, JobResult, MediaInfo, PairJob
 from .runner import terminate_process_group
 from .runner_process import ProcessExecution
-from .safe_io import atomic_write_json, atomic_write_text, quarantine_file
+from .safe_io import (
+    SafeIoError,
+    atomic_write_json,
+    atomic_write_text,
+    cleanup_atomic_tempfiles,
+    exclusive_file_lock,
+    quarantine_file,
+)
 from .validation import validate_output_dir
 
 
@@ -338,9 +346,184 @@ def _ui_event_handler_isolation(root: Path) -> FaultLabResult:
     )
 
 
+def _atomic_fsync_disk_full(root: Path) -> FaultLabResult:
+    from . import safe_io
+
+    started = time.monotonic()
+    target = root / "fsync-full.json"
+    target.write_text("old", encoding="utf-8")
+    original_fsync = safe_io.os.fsync
+    calls = 0
+
+    def fail_first_fsync(fd: int) -> None:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise OSError(errno.ENOSPC, "No space left on device")
+        original_fsync(fd)
+
+    safe_io.os.fsync = fail_first_fsync
+    caught = False
+    try:
+        atomic_write_text(target, "new")
+    except OSError as exc:
+        caught = exc.errno == errno.ENOSPC
+    finally:
+        safe_io.os.fsync = original_fsync
+    leftovers = list(root.glob(f".{target.name}.*.tmp"))
+    ok = caught and target.read_text(encoding="utf-8") == "old" and not leftovers
+    return _result("atomic_fsync_disk_full", started, ok, "ENOSPC beim Daten-fsync bewahrt die letzte gültige Datei.")
+
+
+def _atomic_permission_denied(root: Path) -> FaultLabResult:
+    from . import safe_io
+
+    started = time.monotonic()
+    target = root / "permission.json"
+    target.write_text("old", encoding="utf-8")
+    original = safe_io.tempfile.mkstemp
+
+    def denied(*_args, **_kwargs):
+        raise PermissionError(errno.EACCES, "Permission denied")
+
+    safe_io.tempfile.mkstemp = denied
+    caught = False
+    try:
+        atomic_write_text(target, "new")
+    except PermissionError as exc:
+        caught = exc.errno == errno.EACCES
+    finally:
+        safe_io.tempfile.mkstemp = original
+    ok = caught and target.read_text(encoding="utf-8") == "old"
+    return _result("atomic_permission_denied", started, ok, "EACCES verändert den letzten gültigen Zielzustand nicht.")
+
+
+def _crashed_temp_recovery(root: Path) -> FaultLabResult:
+    started = time.monotonic()
+    target = root / "restart.json"
+    target.write_text("old", encoding="utf-8")
+    child = subprocess.Popen(
+        [
+            sys.executable,
+            "-c",
+            (
+                "import os,sys,time; from pathlib import Path; "
+                "p=Path(sys.argv[1]); "
+                "t=p.parent / ('.'+p.name+'.'+str(os.getpid())+'.crash.tmp'); "
+                "t.write_text('partial', encoding='utf-8'); print(t, flush=True); time.sleep(30)"
+            ),
+            str(target),
+        ],
+        stdout=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        line = child.stdout.readline().strip() if child.stdout else ""
+        stale = Path(line)
+        os.kill(child.pid, signal.SIGKILL)
+        child.wait(timeout=3)
+        existed_after_kill = stale.exists()
+        atomic_write_text(target, "recovered")
+        ok = existed_after_kill and not stale.exists() and target.read_text(encoding="utf-8") == "recovered"
+    finally:
+        if child.poll() is None:
+            child.kill()
+            child.wait(timeout=3)
+    return _result("crashed_temp_recovery", started, ok, "SIGKILL-Reste eines toten Schreibers werden beim Wiederanlauf sicher entfernt.")
+
+
+def _lock_released_after_process_kill(root: Path) -> FaultLabResult:
+    started = time.monotonic()
+    lock = root / "writer.lock"
+    child_code = (
+        "import fcntl,os,sys,time; "
+        "fd=os.open(sys.argv[1], os.O_CREAT|os.O_RDWR, 0o600); "
+        "fcntl.flock(fd, fcntl.LOCK_EX); print('locked', flush=True); time.sleep(30)"
+    )
+    child = subprocess.Popen([sys.executable, "-c", child_code, str(lock)], stdout=subprocess.PIPE, text=True)
+    blocked = False
+    reacquired = False
+    try:
+        if child.stdout:
+            child.stdout.readline()
+        try:
+            with exclusive_file_lock(lock, timeout_seconds=0.15, poll_seconds=0.02):
+                pass
+        except SafeIoError:
+            blocked = True
+        os.kill(child.pid, signal.SIGKILL)
+        child.wait(timeout=3)
+        with exclusive_file_lock(lock, timeout_seconds=1.0):
+            reacquired = True
+    finally:
+        if child.poll() is None:
+            child.kill()
+            child.wait(timeout=3)
+    return _result("lock_released_after_process_kill", started, blocked and reacquired, "Kernel-Sperre wird nach Prozess-Kill freigegeben; Recovery blockiert nicht dauerhaft.")
+
+
+def _concurrent_project_backups_serialized(root: Path) -> FaultLabResult:
+    started = time.monotonic()
+    project = root / "parallel.vbfast.json"
+    project.write_text(json.dumps({"schema_version": 1, "jobs": []}), encoding="utf-8")
+    state = root / "state"
+    code = (
+        "from pathlib import Path; from videobatch_fast.project_backup import create_project_backup; "
+        "create_project_backup(Path(__import__('sys').argv[1]))"
+    )
+    env = dict(os.environ)
+    env["XDG_STATE_HOME"] = str(state)
+    root_repo = Path(__file__).resolve().parents[2]
+    current_pythonpath = env.get("PYTHONPATH", "")
+    env["PYTHONPATH"] = str(root_repo / "src") + (os.pathsep + current_pythonpath if current_pythonpath else "")
+    processes = [subprocess.Popen([sys.executable, "-c", code, str(project)], env=env) for _ in range(2)]
+    returncodes = [process.wait(timeout=15) for process in processes]
+    backup_dir = state / "VideoBatchFast" / "backups" / "projects"
+    archives = sorted(backup_dir.glob("*.vbfast-backup.zip"))
+    history_path = backup_dir / "history.json"
+    try:
+        history = json.loads(history_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        history = []
+    verified = 0
+    if archives:
+        from .project_backup import verify_project_backup
+        for archive in archives:
+            try:
+                verify_project_backup(archive)
+                verified += 1
+            except Exception:
+                pass
+    ok = returncodes == [0, 0] and len(archives) == 2 and verified == 2 and len(history) == 2
+    return _result("concurrent_project_backups_serialized", started, ok, "Parallele Sicherungsschreiber werden serialisiert; beide Archive und Historieneinträge bleiben erhalten.", str(backup_dir))
+
+
+def _corrupt_backup_history_restart_recovery(root: Path) -> FaultLabResult:
+    from .project_backup import create_project_backup, list_project_backups
+
+    started = time.monotonic()
+    project = root / "restart-project.vbfast.json"
+    project.write_text(json.dumps({"schema_version": 1, "jobs": []}), encoding="utf-8")
+    state = root / "state"
+    with _environment(XDG_STATE_HOME=str(state)):
+        created = create_project_backup(project)
+        history = created.path.parent / "history.json"
+        history.write_text("{broken", encoding="utf-8")
+        records = list_project_backups(limit=10)
+        healed = json.loads(history.read_text(encoding="utf-8"))
+    ok = len(records) == 1 and records[0].path == created.path and len(healed) == 1
+    return _result("corrupt_backup_history_restart_recovery", started, ok, "Beschädigte Backuphistorie wird aus verifizierten Archiven beim Wiederanlauf rekonstruiert.")
+
+
 SCENARIOS: tuple[Callable[[Path], FaultLabResult], ...] = (
     _atomic_write_disk_full,
     _atomic_write_interrupted,
+    _atomic_fsync_disk_full,
+    _atomic_permission_denied,
+    _crashed_temp_recovery,
+    _lock_released_after_process_kill,
+    _concurrent_project_backups_serialized,
+    _corrupt_backup_history_restart_recovery,
     _read_only_output,
     _removed_external_target,
     _ffmpeg_crash,

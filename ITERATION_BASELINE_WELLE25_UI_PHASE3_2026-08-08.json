@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "iteration": "Welle 25 UI Phase 3",
+  "source_artifact": "PROVOWARE_VIDEO_AUTOMATION_2026_WELLE25_UI_PHASE2_FINAL_GEFIXT(1).zip",
+  "source_sha256": "262f365fa221c0f77fbe7f8ac3c993def7f362fd5e011d6cb38f9c4630c39fdd",
+  "source_phase": "Welle 25 UI Phase 2",
+  "implementation_scope": "Workflow-Module card only",
+  "stable_evidence_policy": "External toolchain and physical Stable evidence remain unchanged and must not be inferred from this iteration."
+}

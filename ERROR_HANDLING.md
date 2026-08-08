@@ -4,7 +4,13 @@
 
 Diese Anleitung erklärt, wie Meldungen sicher eingeordnet, behoben und abschließend geprüft werden. Sie richtet sich ausdrücklich auch an Nutzer ohne Linux- oder Entwicklerkenntnisse.
 
-## Grundregel
+## Pflichtgrad
+
+Fehler werden fail-closed behandelt; Originaldaten bleiben vorrangig geschützt.
+
+## Voraussetzungen
+
+VideoBatch ist vollständig entpackt und der betroffene Fehler ist reproduzierbar oder protokolliert.
 
 Jeder VideoBatch-Fehler soll fünf Fragen beantworten:
 
@@ -40,7 +46,7 @@ Der betroffene Schritt wurde blockiert, damit keine unvollständige, unsichere o
 
 **Kann ignoriert werden?** Nein.
 
-## Schritt-für-Schritt-Fehlerbehebung
+## Schritt-für-Schritt-Anleitung
 
 ### Schritt 1: Meldung vollständig lesen
 

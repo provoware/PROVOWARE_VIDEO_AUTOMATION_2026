@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import _tkinter
 import tempfile
 import time
 from pathlib import Path
@@ -16,7 +17,7 @@ from videobatch_fast.preview_service import build_preview
 from videobatch_fast.media_import_dialog import MediaImportDialog
 from videobatch_fast.plugin_approval_manager import PluginApprovalManagerDialog
 from videobatch_fast.registry import PROJECT_ROOT, load_json
-from videobatch_fast.ui import VideoBatchFastUI
+from videobatch_fast.canonical_ui import CanonicalVideoBatchFastUI
 from videobatch_fast.ui_components import SolutionDialog
 from videobatch_fast.versioning import build_label
 from videobatch_fast.workflow_dialogs import (
@@ -40,6 +41,22 @@ FIXED_PROJECT = {
 }
 
 
+
+def _pump_tk_events(root: Tk, *, max_seconds: float = 0.35, max_events: int = 4000) -> int:
+    """Process a bounded number of pending Tk events without an unbounded update()/idle drain."""
+    deadline = time.monotonic() + max_seconds
+    processed = 0
+    while processed < max_events and time.monotonic() < deadline:
+        try:
+            handled = int(root.tk.dooneevent(_tkinter.DONT_WAIT))
+        except Exception:
+            break
+        if not handled:
+            break
+        processed += 1
+    return processed
+
+
 def _cancel_after_callbacks(root: Tk) -> None:
     try:
         callbacks = root.tk.call("after", "info")
@@ -49,6 +66,26 @@ def _cancel_after_callbacks(root: Tk) -> None:
             except Exception:
                 pass
     except Exception:
+        pass
+
+
+
+
+def _settle_tk(root: Tk, milliseconds: int = 350) -> None:
+    """Let Tk process normal geometry/idle events for a bounded wall-clock interval."""
+    try:
+        root.after(max(1, int(milliseconds)), root.quit)
+        root.mainloop()
+    except Exception:
+        return
+
+
+def _safe_destroy(root: Tk) -> None:
+    try:
+        root.destroy()
+    except Exception:
+        # Screenshot runner is already tearing down a disposable Tcl interpreter.
+        # A callback cancelled just before destruction may have deleted its Tcl command first.
         pass
 
 
@@ -118,7 +155,7 @@ def _clipped_widgets(root: Tk) -> list[str]:
 
 
 
-def _prepare_workspace(app: VideoBatchFastUI, state: str) -> None:
+def _prepare_workspace(app: CanonicalVideoBatchFastUI, state: str) -> None:
     media_root = PROJECT_ROOT / "tests" / "generated_media"
     audio = media_root / "audio_kurz.wav"
     image = media_root / "bild_querformat.png"
@@ -167,7 +204,7 @@ def _prepare_workspace(app: VideoBatchFastUI, state: str) -> None:
         app._event("VISUAL_MACHINE_EVENT", "Maschinenereignis erzeugt", "Strukturierter JSONL-Datensatz für die visuelle Prüfung.", solution="Maschinenprotokoll prüfen.")
 
 
-def _prepare_dialog(app: VideoBatchFastUI, state: str):
+def _prepare_dialog(app: CanonicalVideoBatchFastUI, state: str):
     if state == "update":
         return update_assistant_dialog(app.root, "2.7.1", 18, modal=False).window
     if state == "archive":
@@ -199,7 +236,7 @@ def _prepare_dialog(app: VideoBatchFastUI, state: str):
         dialog.window._videobatch_dialog_ref = dialog
         deadline = time.monotonic() + 3.0
         while not dialog._scan_complete and time.monotonic() < deadline:
-            app.root.update()
+            _pump_tk_events(app.root, max_seconds=0.03, max_events=300)
             time.sleep(0.01)
         dialog._set_view_mode("icons")
         image_records = [record for record in dialog._visible_records if record.path.suffix.lower() in {".png", ".jpg", ".jpeg"}]
@@ -210,7 +247,7 @@ def _prepare_dialog(app: VideoBatchFastUI, state: str):
             dialog._icon_selection_changed((selected,), selected)
             deadline = time.monotonic() + 2.0
             while dialog.preview_photo is None and time.monotonic() < deadline:
-                app.root.update()
+                _pump_tk_events(app.root, max_seconds=0.03, max_events=300)
                 time.sleep(0.01)
         return dialog.window
     if state == "solution":
@@ -241,13 +278,22 @@ def capture_scenario(scenario: dict, output_dir: Path) -> tuple[Path, list[str]]
     config.update({"window_geometry": f"{root_width}x{root_height}", "font_scale": font_scale})
     root = Tk()
     root.geometry(f"{root_width}x{root_height}+0+0")
-    root.update_idletasks()
+    _settle_tk(root, 90)
+    display_errors: list[str] = []
+    screen_width = int(root.winfo_screenwidth())
+    screen_height = int(root.winfo_screenheight())
+    if screen_width < root_width or screen_height < root_height:
+        display_errors.append(
+            "Testanzeige zu klein für einen belastbaren Screenshot: "
+            f"benötigt mindestens {root_width}x{root_height}, vorhanden {screen_width}x{screen_height}. "
+            "Bei Xvfb z. B. '-screen 0 2560x1440x24' verwenden."
+        )
     with tempfile.TemporaryDirectory() as tmp:
         project_path = Path(tmp) / "visual.vbfast.json"
         with patch("videobatch_fast.ui.load_config", return_value=config), patch(
             "videobatch_fast.ui.load_project_state", return_value=(project_path, dict(FIXED_PROJECT), False)
         ):
-            app = VideoBatchFastUI(root)
+            app = CanonicalVideoBatchFastUI(root)
         page = str(scenario.get("page", "dashboard"))
         capture_widget = root
         if page == "workspace":
@@ -258,15 +304,11 @@ def capture_scenario(scenario: dict, output_dir: Path) -> tuple[Path, list[str]]
         else:
             app.main_notebook.select(0)
         root.geometry(f"{root_width}x{root_height}+0+0")
-        root.update_idletasks()
-        root.update()
+        _settle_tk(root, 450)
         _cancel_after_callbacks(root)
         app.datetime_text.set("02.08.2026 · 01:48:00")
         app.status_text.set("Bereit · FFmpeg geprüft · Registries geprüft")
-        root.update_idletasks()
-        root.update()
-        capture_widget.update_idletasks()
-        capture_widget.update()
+        _settle_tk(root, 160)
         time.sleep(0.08)
         x = capture_widget.winfo_rootx()
         y = capture_widget.winfo_rooty()
@@ -278,7 +320,8 @@ def capture_scenario(scenario: dict, output_dir: Path) -> tuple[Path, list[str]]
         registry = load_json("registries/VISUAL_REGRESSION_REGISTRY.json")
         all_text = _widget_texts(capture_widget)
         required_texts = scenario.get("required_visible_texts", registry.get("policy", {}).get("required_visible_texts", []))
-        errors = [f"Pflichttext fehlt: {item}" for item in required_texts if item not in all_text]
+        errors = list(display_errors)
+        errors.extend(f"Pflichttext fehlt: {item}" for item in required_texts if item not in all_text)
         if abs(w - width) > 5 or abs(h - height) > 5:
             errors.append(f"Testanzeige zu klein: angefordert {width}x{height}, erhalten {w}x{h}")
         errors.extend(_clipped_widgets(capture_widget))
@@ -288,8 +331,8 @@ def capture_scenario(scenario: dict, output_dir: Path) -> tuple[Path, list[str]]
         dialog_ref = getattr(capture_widget, "_videobatch_dialog_ref", None)
         if dialog_ref is not None:
             dialog_ref._close()
-            root.update_idletasks()
-        root.destroy()
+            _pump_tk_events(root, max_seconds=0.15)
+        _safe_destroy(root)
         return target, errors
 
 

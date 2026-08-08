@@ -1,0 +1,29 @@
+VIDEOBATCH FAST · FINALE VALIDIERUNG · FORTSETZUNGSWELLE 6
+Datum: 2026-08-07
+
+ERGEBNIS
+- Pytest: 490 passed, 0 failed
+- Visuelle Regression: 22/22 bestanden
+- Codequalität: 283 Dateien, 2287 Funktionen, max. Komplexität 29, 0 Befunde
+- Architektur: 125 Module, 1208 Funktionen, 151 Klassen, 0 Befunde
+- Ereignisarchitektur: 0 Befunde
+- Designregelwerk: BESTANDEN
+- Release-Literal-Hygiene: BESTANDEN
+- Textvertrag: BESTANDEN
+- Versionskonsistenz: BESTANDEN
+- Dokumentationsvertrag: BESTANDEN
+- Release-Dateistatus: BESTANDEN (Stable-Nachweise absichtlich offen)
+- compileall: BESTANDEN
+- JSON: 65 Dateien erfolgreich gelesen
+- Shell-Syntax: BESTANDEN
+
+NEUE REGRESSIONSICHERUNGEN
+- doppelter Shutdown wird nicht doppelt ausgeführt
+- Autosave-/Settings-Fehler verhindern das Schließen nicht
+- FFplay wird nach SIGKILL begrenzt reap-ed
+- Backup akzeptiert nur JSON-Projektobjekte
+- Backup-Schemaversion wird verifiziert
+- ungewöhnlich große entpackte Projektarchive werden vor dem vollständigen Lesen abgewiesen
+
+STABLE-STATUS
+NICHT FREIGEGEBEN. Offen bleiben VIS-001, VIS-002 und REL-001. SCHED-001 bleibt hinter Checkpoint 5 gesperrt.

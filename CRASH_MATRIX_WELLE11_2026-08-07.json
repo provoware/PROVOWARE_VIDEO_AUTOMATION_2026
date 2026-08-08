@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "wave": 11,
+  "focus": "Transaction Observability & Corruption Recovery",
+  "scenarios": [
+    {"id":"TXO-001","fault":"corrupt pending journal","expected":"quarantine + fail closed","status":"pass"},
+    {"id":"TXO-002","fault":"crash after first cross-file write","expected":"explicit rollback restores byte-exact pre-state","status":"pass"},
+    {"id":"TXO-003","fault":"new target created before crash","expected":"rollback removes target that did not exist before","status":"pass"},
+    {"id":"TXO-004","fault":"corrupt commit marker","expected":"quarantine + degraded health status","status":"pass"},
+    {"id":"TXO-005","fault":"corrupt revision registry","expected":"quarantine without modifying user data","status":"pass"},
+    {"id":"TXO-006","fault":"orphan revision","expected":"detect + metadata-only prune","status":"pass"},
+    {"id":"TXO-007","fault":"valid pending WAL at startup","expected":"automatic REDO recovery","status":"pass"},
+    {"id":"TXO-008","fault":"malformed audit line","expected":"timeline remains readable","status":"pass"},
+    {"id":"TXO-009","fault":"simultaneous backup/project-state crash domains","expected":"backup remains reconstructable and project WAL independently recovers","status":"pass"}
+  ]
+}

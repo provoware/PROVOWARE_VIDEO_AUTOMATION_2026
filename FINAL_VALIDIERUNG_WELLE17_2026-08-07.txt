@@ -1,0 +1,40 @@
+PROVOWARE VIDEO AUTOMATION 2026 – FINALVALIDIERUNG WELLE 17
+Datum: 2026-08-07
+
+ERGEBNIS
+- 588/588 automatisierte Tests auf dem finalen Welle-17-Quellstand bestanden.
+- Acht vollständige Regression-/Coverage-Batches: 86 + 63 + 95 + 48 + 71 + 82 + 84 + 59.
+- Coveragevertrag bestanden: 81,93 % Lines / 66,43 % Branches / 78,78 % kombiniert; Mindestwerte 80/65.
+- Interne Codequalität: 0 Befunde; 305 Dateien, 2583 Funktionen, maximale Komplexität 29.
+- Architektur: 0 Befunde; 131 Module, 1355 Funktionen, 167 Klassen; größte Python-Datei ui.py mit 700 Zeilen.
+- Ereignisarchitektur: 0 Befunde; Ereignisregister: 0 Befunde / 18 Kennungen.
+- Registry-, Text-, Quick-Mode-, Plugin-, Assurance-, Design-, Versions-, Release-Literal-, Release-Dateistatus-, Dokumentations- und Compile-Verträge bestanden.
+- 22/22 automatisierte visuelle Szenarien bleiben grün; physische KDE-Abnahme wird dadurch ausdrücklich nicht ersetzt.
+
+WELLE-17-HÄRTUNGEN
+- Separate Candidate-Identität aus Kandidat, Manifest-SHA-256 und ausführungsrelevantem Source-SHA-256 eingeführt.
+- Quality-Evidence und physische Stable-Evidence an Manifest- und Source-Digest gebunden; stale Evidence fail-closed.
+- Deterministischer Evidence-Index und reproduzierbares Evidence-ZIP implementiert.
+- Wheelhouse-Manifest Schema 2 bindet Requirements-Lock, Toolchain-Vertrag und kanonische komplette Wheelliste.
+- Offline-Installation erzwingt --no-index, --only-binary=:all: und --require-hashes.
+- Physischer KDE-Harness mit 9 Größen-/Skalierungsprofilen und explizitem Physical-Acceptance-Modus vorbereitet.
+- Large-Media-/Slow-Target-Harness exportiert Stable-Evidence ausschließlich nach einem realen, nicht als Rehearsal markierten 96-Job-Lauf auf validiertem externem Ziel.
+- Importreihenfolge-Abhängigkeit in Evidence-Validatoren beseitigt.
+- Dokumentationsvalidator unterscheidet Produktversion und explizit freigegebene externe Toolversionen.
+
+KANDIDATENBINDUNG
+- Candidate-ID: 2.8.3-rc24.
+- Source-Fingerprint über 394 ausführungsrelevante Release-Dateien: 5337640c219975307425c3b77c80e1962faa3d8f00dfb6d2247d6b7ac022b4af.
+- Jeder spätere relevante Source-Drift sperrt vorhandene Welle-17-Evidence automatisch.
+
+BEWUSST OFFEN / NICHT SIMULIERT
+- Ruff 0.16.1 exakter Offline-Lauf.
+- MyPy 2.3.0 exakter Offline-Lauf.
+- Bandit 1.9.4 exakter Offline-Lauf.
+- pip-audit 2.10.1 exakter Offline-Lauf.
+- Physische KDE-Plasma-X11-Abnahme.
+- Physische KDE-Plasma-Wayland-Abnahme.
+- Realer 96-Job Large-Media-/Slow-Target-Langzeitrender.
+- Der Versuch, das exakte Wheelhouse auf diesem Host über öffentliche PyPI-Endpunkte neu aufzubauen, ist an fehlender DNS-Auflösung gescheitert; dieses Gate bleibt deshalb ehrlich offen.
+
+Stable bleibt korrekt gesperrt, bis alle sechs externen/physisch gebundenen Gate-Gruppen auf demselben unveränderten Kandidaten bestanden sind.

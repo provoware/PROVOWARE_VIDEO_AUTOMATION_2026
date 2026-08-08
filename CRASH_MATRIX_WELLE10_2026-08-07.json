@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "wave": 10,
+  "date": "2026-08-07",
+  "focus": "State Consistency & Transaction Recovery",
+  "scenarios": [
+    {
+      "id": "TXN-001",
+      "scenario": "Cross-file commit of two JSON targets",
+      "expected": "Both targets visible with the same transaction intent and revision generation",
+      "result": "passed"
+    },
+    {
+      "id": "TXN-002",
+      "scenario": "Crash after durable WAL before first data write",
+      "expected": "Restart REDO completes all targets",
+      "result": "passed"
+    },
+    {
+      "id": "TXN-003",
+      "scenario": "Crash after first of two related writes",
+      "expected": "Restart REDO eliminates torn transaction",
+      "result": "passed"
+    },
+    {
+      "id": "TXN-004",
+      "scenario": "Stale writer with old expected revision",
+      "expected": "Write rejected; latest committed state preserved",
+      "result": "passed"
+    },
+    {
+      "id": "TXN-005",
+      "scenario": "New writer arrives while pending WAL exists",
+      "expected": "Pending transaction recovered before newer transaction proceeds",
+      "result": "passed"
+    },
+    {
+      "id": "TXN-006",
+      "scenario": "Tampered WAL payload/hash",
+      "expected": "Fail closed without overwriting committed target",
+      "result": "passed"
+    },
+    {
+      "id": "TXN-007",
+      "scenario": "Transaction target escapes configured root",
+      "expected": "Rejected before durable commit intent",
+      "result": "passed"
+    },
+    {
+      "id": "TXN-008",
+      "scenario": "Backup history and integrity metadata update together",
+      "expected": "History/meta stay transactionally consistent and self-heal from verified archives",
+      "result": "passed"
+    }
+  ],
+  "automated_tests_total": 518,
+  "stable_gates_unchanged": [
+    "VIS-001",
+    "VIS-002",
+    "REL-001",
+    "SCHED-001"
+  ]
+}

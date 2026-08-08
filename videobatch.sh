@@ -29,6 +29,7 @@ VideoBatch Fast – automatischer zentraler Einstieg
   ./videobatch.sh retry-status    Wiederanlaufliste vollständig lesend anzeigen
   ./videobatch.sh recovery-check  Wiederanlauf und Journale vollständig lesend vergleichen
   ./videobatch.sh portable-build  portable Offline-Ausgabe erzeugen
+  ./videobatch.sh scheduler-run   eingefrorenen geplanten Renderlauf ausführen
   ./videobatch.sh logs            Bootstrap-, App-, Debug- und Toolchainprotokolle anzeigen
   ./videobatch.sh help            diese Hilfe anzeigen
 
@@ -191,6 +192,13 @@ case "$ACTION" in
   recovery-check|wiederanlauf-konsistenz)
     export PYTHONPATH="$ROOT_DIR/src${PYTHONPATH:+:$PYTHONPATH}"
     exec "$BOOTSTRAP_PYTHON" -m videobatch_fast.recovery_consistency "$@"
+    ;;
+  scheduler-run)
+    require_system
+    RUNTIME_PYTHON="$($BOOTSTRAP_PYTHON "$ROOT_DIR/scripts/toolchain.py" path --scope runtime --quiet 2>/dev/null || true)"
+    [[ -x "$RUNTIME_PYTHON" ]] || RUNTIME_PYTHON="$BOOTSTRAP_PYTHON"
+    export PYTHONPATH="$ROOT_DIR/src${PYTHONPATH:+:$PYTHONPATH}"
+    exec "$RUNTIME_PYTHON" -m videobatch_fast.scheduler_worker "$@"
     ;;
   portable-build)
     require_system

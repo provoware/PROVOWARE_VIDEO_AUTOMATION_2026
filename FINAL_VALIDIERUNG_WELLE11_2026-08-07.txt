@@ -1,0 +1,29 @@
+PROVOWARE VIDEO AUTOMATION – FINALVALIDIERUNG FORTSETZUNGSWELLE 11
+Stand: 2026-08-07
+
+SCHWERPUNKT
+Transaction Observability & Corruption Recovery: Quarantäne, Recovery-Status, Audit-Timeline, Startup-Konsistenzprüfung, verwaiste Revisionen, kontrollierter Rollback und kombinierte Chaos-Szenarien.
+
+IMPLEMENTIERT
+1. Atomare Journal-Quarantäne bei Integritäts-/Schemafehlern.
+2. Persistente begrenzte Transaction-Audit-Timeline.
+3. Automatische Startup-Konsistenzprüfung mit REDO für gültige Pending-WALs.
+4. Recovery-Gesundheitsstatus und Audit-Timeline im UI-Diagnosebereich.
+5. Beschädigte Commit-Marker und Revisionsregister werden quarantänisiert.
+6. Erkennung und metadata-only Bereinigung verwaister Revisionen.
+7. Bytegenaue Vorzustands-Snapshots und expliziter Cross-File-Rollback.
+8. Rollback unterstützt auch ursprünglich beschädigte JSON-Dateien ohne Self-Healing zu blockieren.
+9. Kombinierter Backup-/Projektzustands-Crash als getrennte Recovery-Domänen getestet.
+
+NACHWEISE
+- Neue Welle-11-Tests: 9/9 bestanden.
+- Welle-10 + Welle-11 Transaktionstests: 19/19 bestanden.
+- Vollsuite unter Xvfb: 527/527 bestanden.
+- Interne Codequalität: 289 Dateien, 2379 Funktionen, max. Komplexität 29, Befunde 0.
+- Architektur: 126 Module, 1256 Funktionen, 155 Klassen, Befunde 0.
+- Ereignisarchitektur: 0 Befunde.
+- Ereignisregister: 0 Befunde.
+- Registry, Design, Text, Version, Release-Literal, Release-Dateistatus und Compile: bestanden.
+
+STABLE
+VIS-001, VIS-002, REL-001 und SCHED-001 bleiben unverändert offen. Welle 11 behauptet keine physische Stromausfall-/Controller-/Kernel-/Dateisystem-Fault-Abnahme.

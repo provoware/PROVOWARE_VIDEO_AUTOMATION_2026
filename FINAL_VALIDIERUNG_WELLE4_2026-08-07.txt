@@ -1,0 +1,45 @@
+VIDEOBATCH FAST · FINALVALIDIERUNG FORTSETZUNGSWELLE 4
+Datum: 2026-08-07
+
+ERGEBNIS
+- Entwicklungs-/RC-Stand technisch validiert.
+- Stable-Freigabe bleibt bewusst gesperrt, bis die physischen P0-Nachweise abgeschlossen sind.
+
+AUTOMATISCHE REGRESSION
+- Pytest: 480 bestanden, 0 fehlgeschlagen.
+- Visuelle Regression: 22/22 Szenarien bestanden.
+- Zusätzliche Dashboardprofile: 1440x900 @ 90 %, 1500x920 @ 105 %, 1440x900 @ 125 %, 1920x1080 @ 125 %, 1920x1080 @ 140 %.
+- Keine visuellen Contract-Failures/Clippingbefunde in der finalen Matrix.
+
+QUALITÄTSGATES
+- Interne Codequalität: 277 Dateien, 2253 Funktionen, max. Komplexität 29, 0 Befunde.
+- Architekturprüfung: 123 Module, 1197 Funktionen, 149 Klassen, 0 Befunde.
+- Ereignisarchitektur: 0 Befunde.
+- Release-Literal-Hygiene: bestanden, 224 release-sensible Dateien geprüft.
+- Designregelwerk: bestanden.
+- Release-Dateistatus: technisch bestanden; 11 Nachweise fertig, 8 formale/physische Nachweise offen.
+- Python compileall: bestanden.
+- JSON: 65 Dateien lesbar/valide.
+- Shellsyntax: bestanden.
+
+WICHTIGE FIXES DIESER WELLE
+1. Topbar dynamisch relayoutfähig: spätere Badge-/Statusänderungen können Utilitybuttons nicht mehr aus dem Fenster drücken.
+2. Priorität bei Platzmangel: Suche + Hilfe/Einstellungen bleiben sichtbar; redundanter Status verschwindet zuerst.
+3. Visuelle Matrix auf 90/105/125/140-%-Profile erweitert.
+4. Screenshot-Runner erkennt eine zu kleine Xvfb-/Desktopfläche und verhindert Offscreen-Schwarzvergleiche.
+5. Persistentes Tagmodell und reale „Unbenutzt“-Filterung abgeschlossen.
+6. Releaseversion in operativen Langzeitrender-/Workflowpfaden aus VERSION.json/build_label statt hart codierter RC-Literale.
+
+EXTERNE QUALITÄTSWERKZEUGE
+- ruff, mypy, bandit und pip-audit sind in der aktuellen lokalen Ausführungsumgebung nicht installiert.
+- Deshalb wird für diese Werkzeuge ausdrücklich kein erfolgreicher Lauf behauptet.
+- Die internen Qualitäts-, Architektur-, Ereignis-, Design-, Syntax- und Testgates sind unabhängig davon grün.
+
+VERBLEIBENDE PFLICHTNACHWEISE
+- VIS-001: Original-SOLL-/IST-PNGs als Binärdateien numerisch vergleichen.
+- VIS-002: reale KDE-X11-/Wayland-Sichtabnahme.
+- REL-001: Langzeitrender auf echter Hardware.
+- SCHED-001: Scheduler erst nach Checkpoint 5 vollständig freigeben.
+
+FAZIT
+Die in dieser Umgebung reproduzierbaren Code-, UI-, Geometrie- und Regressionstests sind grün. Eine absolute Fehlerfreiheitsgarantie oder Stable-Freigabe wäre ohne die drei physischen P0-Nachweise sachlich nicht zulässig.

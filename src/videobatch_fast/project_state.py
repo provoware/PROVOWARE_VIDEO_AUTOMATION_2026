@@ -7,11 +7,13 @@ from pathlib import Path
 from typing import Any
 
 from .layout_profiles import normalize_layout_store
+from .media_tags import normalize_media_tags
 from .paths import ensure_app_dirs, state_dir
 from .safe_io import atomic_write_json, quarantine_file
 from .slideshow_sequence import ORDER_MANUAL, ORDER_MODES
 
 PROJECT_SCHEMA_VERSION = 3
+MAX_PROJECT_STATE_BYTES = 16 * 1024 * 1024
 
 DEFAULT_CALENDAR_COLORS = ["none", "success", "warning", "error", "info", "active"]
 CALENDAR_ENTRY_TYPES = ["note", "task", "reminder", "deadline"]
@@ -56,6 +58,7 @@ def _base_project_state(source: dict[str, Any], now: str) -> dict[str, Any]:
         "quick_note": str(source.get("quick_note", "") or "")[:2000],
         "audio_paths": _normalize_paths(source.get("audio_paths")),
         "media_paths": _normalize_paths(source.get("media_paths")),
+        "media_tags": normalize_media_tags(source.get("media_tags", {})),
         "playlist_paths": _normalize_paths(source.get("playlist_paths")),
         "output_dir": str(source.get("output_dir", "") or ""),
         "quick_mode": str(source.get("quick_mode", "smart_auto") or "smart_auto"),
@@ -148,10 +151,22 @@ def load_project_state(path: Path | str | None = None) -> tuple[Path, dict[str, 
         save_project_state(project_path, state)
         return project_path, state, False
     try:
-        state = normalize_project_state(json.loads(project_path.read_text(encoding="utf-8")))
+        raw_bytes = project_path.read_bytes()
+        if len(raw_bytes) > MAX_PROJECT_STATE_BYTES:
+            raise ValueError("Projektdatei überschreitet das sichere Größenlimit.")
+        payload = json.loads(raw_bytes.decode("utf-8"))
+        if not isinstance(payload, dict):
+            raise ValueError("Projektdatei enthält kein JSON-Objekt.")
+        raw_schema = payload.get("schema_version", PROJECT_SCHEMA_VERSION)
+        try:
+            schema = int(raw_schema or PROJECT_SCHEMA_VERSION)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise ValueError("Projektdatei enthält keine gültige Schemaversion.") from exc
+        if schema < 1 or schema > PROJECT_SCHEMA_VERSION:
+            raise ValueError(f"Nicht unterstützte Projekt-Schemaversion: {schema}")
+        state = normalize_project_state(payload)
         return project_path, state, False
     except (OSError, UnicodeError, json.JSONDecodeError, ValueError, TypeError):
-
         try:
             quarantine_file(project_path, label="corrupt")
         except OSError:

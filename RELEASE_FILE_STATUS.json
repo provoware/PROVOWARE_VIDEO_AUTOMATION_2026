@@ -7,95 +7,100 @@
   "policy": "Only standalone user and release deliverables receive _save_. Source modules, CI workflows, canonical manifests, entrypoints and README retain stable technical names.",
   "ready": [
     {
-      "path": "START_HIER_save_.md",
+      "evidence": "Geprüfter Nutzerstart und sichere erste Schritte",
       "label": "Schnellstart",
-      "evidence": "Geprüfter Nutzerstart und sichere erste Schritte"
+      "path": "START_HIER_save_.md"
     },
     {
-      "path": "AUTOINSTALLATION_save_.md",
+      "evidence": "Benutzerpfade, A/B-Slots und Berechtigungsschutz dokumentiert",
       "label": "Installationsanleitung",
-      "evidence": "Benutzerpfade, A/B-Slots und Berechtigungsschutz dokumentiert"
+      "path": "AUTOINSTALLATION_save_.md"
     },
     {
-      "path": "PROJEKTORDNERSTRUKTUR_save_.md",
+      "evidence": "Ordner, Start, Sicherheit und Funktionen beschrieben",
       "label": "Projektübersicht",
-      "evidence": "Ordner, Start, Sicherheit und Funktionen beschrieben"
+      "path": "PROJEKTORDNERSTRUKTUR_save_.md"
     },
     {
-      "path": "RELEASE_NOTES_save_.md",
+      "evidence": "Aktueller RC24-Funktionsstand dokumentiert",
       "label": "Releasehinweise",
-      "evidence": "Aktueller RC24-Funktionsstand dokumentiert"
+      "path": "RELEASE_NOTES_save_.md"
     },
     {
-      "path": "TEST_REPORT_save_.md",
+      "evidence": "Automatisierte und offene Prüfungen getrennt ausgewiesen",
       "label": "Testbericht",
-      "evidence": "Automatisierte und offene Prüfungen getrennt ausgewiesen"
+      "path": "TEST_REPORT_save_.md"
     },
     {
-      "path": "FRESH_PACKAGE_REPORT_save_.md",
+      "evidence": "Saubere Paketprüfung für RC24 dokumentiert",
       "label": "Paketbericht",
-      "evidence": "Saubere Paketprüfung für RC24 dokumentiert"
+      "path": "FRESH_PACKAGE_REPORT_save_.md"
     },
     {
-      "path": "CODE_QUALITY_REPORT_2.8.3-rc24_save_.md",
+      "evidence": "Interne Qualitätsprüfung ohne Befund",
       "label": "Codequalitätsbericht",
-      "evidence": "Interne Qualitätsprüfung ohne Befund"
+      "path": "CODE_QUALITY_REPORT_2.8.3-rc24_save_.md"
     },
     {
-      "path": "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md",
+      "evidence": "Offline-Qualitätsstatus und Grenzen dokumentiert",
+      "label": "Exakter Offline-Qualitätsbericht",
+      "path": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md"
+    },
+    {
+      "evidence": "Umgesetzte Funktions- und Sicherheitsverträge dokumentiert",
       "label": "Implementierungsbericht",
-      "evidence": "Umgesetzte Funktions- und Sicherheitsverträge dokumentiert"
+      "path": "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md"
     },
     {
-      "path": "FINAL_AUDIT_2.8.3-rc24_save_.md",
+      "evidence": "RC-Gates und offene Stable-Gates ehrlich getrennt",
       "label": "RC-Abschlussaudit",
-      "evidence": "RC-Gates und offene Stable-Gates ehrlich getrennt"
+      "path": "FINAL_AUDIT_2.8.3-rc24_save_.md"
     },
     {
-      "path": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
+      "evidence": "Aus der kanonischen RELEASE_EVIDENCE.json erzeugt",
       "label": "Maschinenlesbarer Buildbericht",
-      "evidence": "Aus der kanonischen RELEASE_EVIDENCE.json erzeugt"
+      "path": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json"
     }
   ],
   "unfinished": [
     {
-      "path": "TODO.md",
       "label": "Offene Arbeitsliste",
+      "path": "TODO.md",
       "reason": "Enthält bewusst die verbleibenden Stable-Gates"
     },
     {
-      "path": "QUALITY_GATE_ATTEMPT_2.8.3-rc24.md",
       "label": "Externe Qualitätswerkzeuge",
+      "path": "QUALITY_GATE_ATTEMPT_2.8.3-rc24.md",
       "reason": "Ruff, MyPy, Bandit und pip-audit sind noch nicht abschließend ausgeführt"
     },
     {
-      "path": "STABLE_GATE_ITERATION_2.8.3-rc24_2026-08-04.md",
       "label": "Stable-Freigabeiteration",
+      "path": "STABLE_GATE_ITERATION_2.8.3-rc24_2026-08-04.md",
       "reason": "Stable-Freigabe ist ausdrücklich noch blockiert"
     },
     {
-      "path": "docs/LONG_RENDER_2.8.3-rc24.md",
       "label": "Langzeitrender",
+      "path": "docs/LONG_RENDER_2.8.3-rc24.md",
       "reason": "Realer Langzeitrender mit großer Auswahl und langsamem Ziel fehlt"
     },
     {
-      "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
       "label": "Stable-Abnahmenachweis",
-      "reason": "Physische Desktop- und Langzeitnachweise fehlen"
+      "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
+      "reason": "Physische KDE-X11- und Langzeitnachweise fehlen"
     },
     {
-      "path": "VISUAL_DESKTOP_APPROVAL.md",
       "label": "Desktop-Sichtprüfung",
-      "reason": "Physische KDE-X11-/Wayland-Abnahme bleibt offen"
+      "path": "VISUAL_DESKTOP_APPROVAL.md",
+      "reason": "Physische KDE-X11-Abnahme bleibt offen"
     },
     {
-      "path": "QUALITY_ENVIRONMENT_STATUS.json",
       "label": "Qualitätsumgebung",
+      "path": "QUALITY_ENVIRONMENT_STATUS.json",
       "reason": "Exakte Offline-Werkzeugumgebung ist nicht vollständig freigegeben"
     },
     {
-      "path": "VISUAL_INSPECTION_MANIFEST.json",
       "label": "Visuelles Prüfmanifest",
+      "path": "VISUAL_INSPECTION_MANIFEST.json",
       "reason": "Aktueller physischer Lauf ist nicht vollständig bestätigt"
     }
   ]

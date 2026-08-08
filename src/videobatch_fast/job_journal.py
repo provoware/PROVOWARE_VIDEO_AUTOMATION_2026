@@ -8,6 +8,7 @@ from typing import Any, Iterable
 from .models import BatchOptions, JobResult, PairJob
 from .paths import state_dir
 from .safe_io import atomic_write_json, fsync_directory, read_json
+from .scheduler_environment import maybe_rebaseline_from_job_history, safe_capture_render_environment
 
 SCHEMA_VERSION = 2
 
@@ -71,6 +72,7 @@ class BatchJournal:
             "updated_at": _now(),
             "jobs": [_job_payload(job) for job in jobs],
             "options": _options_payload(options) if options is not None else {},
+            "render_environment": safe_capture_render_environment(options, persist_epoch=True) if options is not None else {},
             "terminal_event": "",
         }
         self._write()
@@ -114,6 +116,12 @@ class BatchJournal:
         fsync_directory(self.active_dir)
         fsync_directory(self.history_dir)
         self.path = destination
+        environment = self.data.get("render_environment") if isinstance(self.data.get("render_environment"), dict) else {}
+        if self.data.get("state") == "completed" and environment.get("fingerprint_sha256") and environment.get("epoch_id"):
+            try:
+                maybe_rebaseline_from_job_history(environment, self.history_dir)
+            except (OSError, ValueError, RuntimeError):
+                pass
         return destination
 
     def _item(self, index: int) -> dict[str, Any]:

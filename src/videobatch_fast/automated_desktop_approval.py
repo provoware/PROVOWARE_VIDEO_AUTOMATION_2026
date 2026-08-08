@@ -37,7 +37,7 @@ def verify_automated_desktop_approval(project_root: Path) -> AutomatedDesktopApp
         data: dict[str, Any] = json.loads(report_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         return AutomatedDesktopApprovalCheck(False, "invalid", f"Desktopbericht ist unlesbar: {exc}")
-    if data.get("schema_version") != 1 or data.get("status") != "passed":
+    if data.get("schema_version") not in {1, 2} or data.get("status") != "passed":
         return AutomatedDesktopApprovalCheck(False, "invalid", "Desktopbericht meldet keinen bestandenen Zustand.")
     if str(data.get("build", "")) != build_label():
         return AutomatedDesktopApprovalCheck(False, "expired", "Desktopbericht gehört zu einem anderen Build.")

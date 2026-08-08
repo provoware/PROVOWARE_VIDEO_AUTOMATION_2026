@@ -21,6 +21,45 @@ def _object(path: Path) -> dict[str, Any]:
 
 
 def _sources(root: Path) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
+    evidence_path = root / "diagnostics" / "release_readiness" / "RELEASE_EVIDENCE.json"
+    if evidence_path.is_file():
+        evidence = _object(evidence_path)
+        product = evidence.get("product")
+        tests = evidence.get("tests")
+        release_files = evidence.get("release_files")
+        stable_gates = evidence.get("stable_gates")
+        if not all(isinstance(item, dict) for item in (product, tests, release_files)):
+            raise ValueError("RELEASE_EVIDENCE.json enthält unvollständige kanonische Abschnitte")
+        if not isinstance(stable_gates, list):
+            raise ValueError("RELEASE_EVIDENCE.json enthält keine gültigen Stable-Gates")
+        blockers: list[str] = []
+        for gate in stable_gates:
+            if not isinstance(gate, dict):
+                raise ValueError("RELEASE_EVIDENCE.json enthält ein ungültiges Stable-Gate")
+            if str(gate.get("status") or "").lower() != "passed":
+                blockers.append(f"{gate.get('label', '')}: {gate.get('reason', '')}")
+        version = {
+            "name": str(product.get("name") or ""),
+            "build": str(product.get("version") or ""),
+            "channel": str(product.get("channel") or ""),
+        }
+        status = {
+            "version": version["build"],
+            "approved_quality_report": str(evidence.get("approved_quality_report") or ""),
+            "stable_blockers": blockers,
+        }
+        report = {
+            "name": version["name"],
+            "version": version["build"],
+            "status": "passed",
+            "tests": dict(tests),
+        }
+        files = {
+            "ready": list(release_files.get("ready", [])),
+            "unfinished": list(release_files.get("unfinished", [])),
+        }
+        return version, status, report, files
+
     version = _object(root / "VERSION.json")
     status = _object(root / "DEVELOPMENT_STATUS.json")
     report_name = str(status.get("approved_quality_report", ""))
@@ -40,8 +79,11 @@ def _release_block(version: dict[str, Any], status: dict[str, Any], report: dict
     gate_lines = "\n".join(f"- {item}" for item in blockers) or "- keine"
     line_coverage = f"{tests['line_coverage_percent']:.2f}".replace(".", ",")
     branch_coverage = f"{tests['branch_coverage_percent']:.2f}".replace(".", ",")
+    combined = tests.get("combined_coverage_percent")
+    combined_line = "" if combined is None else f"- {float(combined):.2f} % kombinierte Coverage\n".replace(".", ",")
+    display_name = str(report.get("name") or version["name"])
     return f"""{README_START}
-# {version['name']} · {version['build']}
+# {display_name} · {version['build']}
 
 **Kanal:** {version['channel']}
 **Freigegebener Qualitätsbericht:** `{status['approved_quality_report']}`
@@ -49,7 +91,7 @@ def _release_block(version: dict[str, Any], status: dict[str, Any], report: dict
 - {tests['passed']}/{tests['passed']} automatisierte Tests bestanden
 - {line_coverage} % Zeilenabdeckung
 - {branch_coverage} % Zweigabdeckung
-- {tests['visual_scenarios']} visuelle Szenarien bestanden
+{combined_line}- {tests['visual_scenarios']} visuelle Szenarien bestanden
 
 ### Offene Stable-Gates
 

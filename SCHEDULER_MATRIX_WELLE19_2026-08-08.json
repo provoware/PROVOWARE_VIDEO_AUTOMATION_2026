@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "wave": 19,
+  "date": "2026-08-08",
+  "feature": "Scheduler & Energy-Aware Automation",
+  "scenarios": [
+    {
+      "id": "SCH-001",
+      "scenario": "immutable schedule fingerprint",
+      "result": "passed"
+    },
+    {
+      "id": "SCH-002",
+      "scenario": "volatile project metadata does not stale render plan",
+      "result": "passed"
+    },
+    {
+      "id": "SCH-003",
+      "scenario": "render-relevant project/source drift blocks start",
+      "result": "passed"
+    },
+    {
+      "id": "SCH-004",
+      "scenario": "symlink and non-executable launcher rejection",
+      "result": "passed"
+    },
+    {
+      "id": "SCH-005",
+      "scenario": "persistent systemd user timer contract",
+      "result": "passed"
+    },
+    {
+      "id": "SCH-006",
+      "scenario": "atomic register/cancel of user timer units",
+      "result": "passed"
+    },
+    {
+      "id": "SCH-007",
+      "scenario": "headless worker success path",
+      "result": "passed"
+    },
+    {
+      "id": "SCH-008",
+      "scenario": "stale schedule blocked before runner",
+      "result": "passed"
+    },
+    {
+      "id": "SCH-009",
+      "scenario": "lateness window produces missed state",
+      "result": "passed"
+    },
+    {
+      "id": "SCH-010",
+      "scenario": "optional energy-action failure remains separate from render success",
+      "result": "passed"
+    }
+  ],
+  "full_regression": "609/609",
+  "coverage": {
+    "lines": 80.96,
+    "branches": 65.49,
+    "combined": 77.8
+  },
+  "external_stable_evidence": "open/skipped by user; not simulated"
+}
