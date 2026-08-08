@@ -136,7 +136,7 @@ class CanonicalStartCheckMixin:
 
     def _layout_shell_start_check(self, event=None) -> None:
         width = max(1, int(getattr(event, "width", self._shell_start_check.winfo_width())))
-        columns = 6 if width >= 1220 else 3 if width >= 720 else 2 if width >= 480 else 1
+        columns = 6 if width >= 720 else 3 if width >= 480 else 1
         for column in range(6):
             self._start_steps_host.columnconfigure(
                 column, weight=1 if column < columns else 0, uniform="startcheck"
