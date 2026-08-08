@@ -1,0 +1,47 @@
+{
+  "iteration": "R7/Q1.16 HARDENED",
+  "source": "R7_Q1_16_CHANGED_FILES_2026-08-07.txt",
+  "expected_archive_sha256": "ae33da8a0130ea0b3d22799c3d7977a16bac98c36f4bcedfdafc4b82d19a217b",
+  "added": [
+    "OFFENE_PUNKTE_UND_VERBESSERUNGEN_R7_Q1_16_2026-08-07.txt",
+    "OUTPUT_LEASE_CONTRACT.json",
+    "PRAEVENTIVE_FEHLERVERMEIDUNG_R7_Q1_16_2026-08-07.txt",
+    "Q1_16_SELBSTPRUEFUNG.sh",
+    "R7_Q1_16_CHANGED_FILES_2026-08-07.txt",
+    "R7_Q1_16_OUTPUT_LEASE_UMSETZUNGSBERICHT_2026-08-07.txt",
+    "R7_Q1_16_PACKAGE_VERIFICATION_2026-08-07.txt",
+    "SCHWACHSTELLENBERICHT_R7_Q1_16_2026-08-07.txt",
+    "diagnostics/q1_16_failure_lifecycle_gate.json",
+    "diagnostics/q1_16_failure_lifecycle_gate.txt",
+    "diagnostics/q1_16_output_fault_matrix.json",
+    "diagnostics/q1_16_output_fault_matrix.txt",
+    "docs/LAIENANLEITUNG_R7_Q1_16.md",
+    "docs/OUTPUT_LEASE_SAFETY_R7_Q1_16.md",
+    "scripts/check_output_lease_architecture.py",
+    "scripts/check_output_lease_fault_matrix.py",
+    "src/videobatch_fast/output_fault_matrix.py",
+    "src/videobatch_fast/output_filesystem.py",
+    "tests/test_output_lease_fault_matrix_r7_q1_16.py"
+  ],
+  "modified": [
+    "CHANGELOG.md",
+    "README.md",
+    "STATUS.md",
+    "TODO.md",
+    "diagnostics/architecture_audit_latest.json",
+    "diagnostics/event_architecture_latest.json",
+    "diagnostics/event_registry_latest.json",
+    "diagnostics/internal_quality_latest.json",
+    "diagnostics/treeview_safety_latest.json",
+    "docs/DOCUMENTATION_CLASSIFICATION.json",
+    "scripts/check_batch_operation_architecture.py",
+    "src/videobatch_fast/output_safety.py"
+  ],
+  "policy": {
+    "mode": "plan-only",
+    "automatic_overwrite": false,
+    "modified_files_require_three_way_review": true,
+    "preserve_pr74_changes": true,
+    "allow_deletions": false
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "project": "VideoBatch Fast",
+  "product_version": "2.8.3-rc24",
+  "iteration": "R7/Q1.17-preflight",
+  "purpose": "Prevent development on a source tree that does not yet contain the verified R7/Q1.16 OutputLease baseline.",
+  "github_baseline": {
+    "repository": "provoware/PROVOWARE_VIDEO_AUTOMATION_2026",
+    "base_branch": "main",
+    "main_commit": "bf1a13dd92349910e31b5cb69ab9c3e2793cd8e6",
+    "startup_safe_mode_pr": 74,
+    "startup_safe_mode_head": "0af1eac84fc6715b96bfed7dd69d61622efd6176"
+  },
+  "required_q1_16_source": {
+    "archive_name": "PROVOWARE_VIDEO_AUTOMATION_2026_VIDEOBATCH_R7_Q1_16_OUTPUT_LEASE_HARDENED_2026-08-08.zip",
+    "archive_sha256": "ae33da8a0130ea0b3d22799c3d7977a16bac98c36f4bcedfdafc4b82d19a217b",
+    "required_file": "src/videobatch_fast/output_safety.py",
+    "required_symbols": [
+      "OutputLeaseTransaction",
+      "AtomicOutputTransaction",
+      "OutputLeaseTransitionError",
+      "estimate_encoded_output_bytes",
+      "calculate_output_space_budget"
+    ],
+    "required_stages": [
+      "RESERVED",
+      "PREFLIGHTED",
+      "TEMP_CREATED",
+      "WRITTEN",
+      "FILE_SYNCED",
+      "DEVICE_RECHECKED",
+      "REPLACED",
+      "DIRECTORY_SYNCED",
+      "RELEASED"
+    ],
+    "verification_baseline": {
+      "specialized_output_lease_tests_passed": 19,
+      "fault_scenarios_passed": 63,
+      "suite_passed": 611,
+      "suite_skipped": 1
+    }
+  },
+  "preserve_from_pr74": [
+    "startup readiness traffic lights",
+    "project path fallback",
+    "PreparationCheck contract",
+    "Safe Mode",
+    "read-only support bundle",
+    "SHA-256 support-bundle manifest",
+    "canonical KPI contracts",
+    "Ubuntu 22.04/24.04 X11/Wayland shell matrix"
+  ],
+  "policy": {
+    "fail_closed": true,
+    "q1_17_allowed_only_when_reconciled": true,
+    "runner_integration_allowed": false,
+    "q2_allowed": false,
+    "no_silent_fallback": true
+  }
+}
