@@ -10,6 +10,7 @@ from .canonical_debug_mixin import CanonicalDebugMixin
 from .canonical_help_status_mixin import CanonicalHelpStatusMixin
 from .canonical_kpi_compact_mixin import CanonicalKpiCompactMixin
 from .canonical_kpi_detail_mixin import CanonicalKpiDetailMixin
+from .canonical_start_check_mixin import CanonicalStartCheckMixin
 from .canonical_window_mixin import CanonicalWindowMixin
 from .canonical_shell_workspace import CanonicalShellWorkspaceMixin
 from .canonical_shell_chrome import CanonicalShellChromeMixin
@@ -26,6 +27,7 @@ class CanonicalVideoBatchFastUI(
     CanonicalKpiDetailMixin,
     CanonicalWindowMixin,
     CanonicalShellWorkspaceMixin,
+    CanonicalStartCheckMixin,
     CanonicalDashboardMixin,
     CanonicalHelpStatusMixin,
     CanonicalShellChromeMixin,
