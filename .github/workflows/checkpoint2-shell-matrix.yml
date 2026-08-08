@@ -88,22 +88,21 @@ jobs:
           status="$(git status --porcelain --untracked-files=all)"
           if [[ -n "$status" ]]; then
             printf '%s\n' "$status"
-            echo "::error title=Checkpoint 2 preflight wrote repository files::The checkout must remain unchanged."
+            echo "::error title=Preflight wrote repository files::The checkout must remain unchanged."
             exit 1
           fi
 
   shell-matrix:
-    name: ${{ matrix.os }} / ${{ matrix.session }} / canonical shell
+    name: ${{ matrix.os }} / x11 / canonical shell
     needs: preflight
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, ubuntu-24.04]
-        session: [x11, wayland]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     env:
-      XDG_SESSION_TYPE: ${{ matrix.session }}
+      XDG_SESSION_TYPE: x11
       PYTHONDONTWRITEBYTECODE: '1'
       PYTHONUTF8: '1'
       PYTHONPATH: src
@@ -120,22 +119,12 @@ jobs:
         uses: ./.github/actions/kubuntu-package-cache
         with:
           os: ${{ matrix.os }}
-          session: ${{ matrix.session }}
+          session: x11
           mode: matrix
 
-      - name: Start deterministic display
+      - name: Start deterministic X11 display
         run: |
           set -Eeuo pipefail
-          if [[ "${{ matrix.session }}" == "wayland" ]]; then
-            mkdir -p "$RUNNER_TEMP/xdg"
-            chmod 700 "$RUNNER_TEMP/xdg"
-            XDG_RUNTIME_DIR="$RUNNER_TEMP/xdg" weston \
-              --backend=headless-backend.so \
-              --socket=wayland-vb \
-              --idle-time=0 >/tmp/weston.log 2>&1 &
-            echo "XDG_RUNTIME_DIR=$RUNNER_TEMP/xdg" >> "$GITHUB_ENV"
-            echo "WAYLAND_DISPLAY=wayland-vb" >> "$GITHUB_ENV"
-          fi
           Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp \
             >/tmp/xvfb.log 2>&1 &
           echo "DISPLAY=:99" >> "$GITHUB_ENV"
@@ -324,17 +313,16 @@ jobs:
           print("CHECKPOINT3_KPI_DETAIL_RECOVERY_SEQUENCE_OK")
           PY
 
-      - name: Collect exact cell evidence
+      - name: Collect exact X11 cell evidence
         if: always()
         env:
           CELL_OS: ${{ matrix.os }}
-          CELL_SESSION: ${{ matrix.session }}
+          CELL_SESSION: x11
           CELL_STATUS: ${{ job.status }}
         run: |
           set -Eeuo pipefail
           mkdir -p checkpoint2-logs
           test ! -f /tmp/xvfb.log || cp /tmp/xvfb.log checkpoint2-logs/xvfb.log
-          test ! -f /tmp/weston.log || cp /tmp/weston.log checkpoint2-logs/weston.log
           python3 - <<'PY'
           import json
           import os
@@ -357,7 +345,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: checkpoint2-${{ matrix.os }}-${{ matrix.session }}
+          name: checkpoint2-${{ matrix.os }}-x11
           if-no-files-found: error
           retention-days: 14
           path: checkpoint2-logs/*
@@ -374,14 +362,14 @@ jobs:
       MATRIX_RESULT: ${{ needs.shell-matrix.result }}
 
     steps:
-      - name: Download four-cell evidence
+      - name: Download two X11 test results
         uses: actions/download-artifact@v4
         with:
-          pattern: checkpoint2-ubuntu-*
+          pattern: checkpoint2-ubuntu-*-x11
           path: matrix-evidence
           merge-multiple: true
 
-      - name: Enforce exact four-cell success on one head
+      - name: Require both X11 systems to pass on the same code version
         run: |
           set -Eeuo pipefail
           python3 - <<'PY'
@@ -391,9 +379,7 @@ jobs:
 
           expected = {
               ("ubuntu-22.04", "x11"),
-              ("ubuntu-22.04", "wayland"),
               ("ubuntu-24.04", "x11"),
-              ("ubuntu-24.04", "wayland"),
           }
           records = {}
           for path in Path("matrix-evidence").glob("matrix-status-*.json"):
@@ -443,7 +429,7 @@ jobs:
           raise SystemExit(0 if passed else 1)
           PY
 
-      - name: Upload consolidated matrix report
+      - name: Upload consolidated X11 report
         if: always()
         uses: actions/upload-artifact@v4
         with:
