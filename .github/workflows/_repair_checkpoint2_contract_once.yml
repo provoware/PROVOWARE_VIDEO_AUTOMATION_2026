@@ -1,0 +1,76 @@
+name: One-shot Checkpoint 2 contract repair
+
+on:
+  push:
+    branches:
+      - fix/start-readiness-traffic-lights-20260808
+
+permissions:
+  contents: write
+
+concurrency:
+  group: one-shot-checkpoint2-contract-repair
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      PYTHONPATH: src
+    steps:
+      - name: Check out exact branch head
+        uses: actions/checkout@v4
+        with:
+          ref: fix/start-readiness-traffic-lights-20260808
+          fetch-depth: 0
+
+      - name: Repair stale matrix expectation, prove semantics and refresh manifest
+        run: |
+          set -Eeuo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          workflow = Path('.github/workflows/checkpoint2-shell-matrix.yml')
+          text = workflow.read_text(encoding='utf-8')
+          old = 'for key, page_index in (("media", 1), ("queue", 4), ("effects", 3)):'
+          new = 'for key, page_index in (("media", 1), ("queue", 1), ("effects", 3)):'
+          if text.count(old) != 1:
+              raise SystemExit('Checkpoint-2 routing contract was not found exactly once')
+          workflow.write_text(text.replace(old, new), encoding='utf-8')
+
+          test = Path('tests/test_canonical_kpi_contract.py')
+          source = test.read_text(encoding='utf-8')
+          needle = '    assert _snapshots(job_count=2)["queue"].state == "ready"\n'
+          addition = (
+              '    empty = _snapshots()["queue"]\n'
+              '    assert empty.action_label == "Zuordnung öffnen"\n'
+              '    assert empty.recovery_action == "open_media"\n'
+          )
+          if needle not in source:
+              raise SystemExit('Queue KPI contract insertion point missing')
+          if 'assert empty.recovery_action == "open_media"' not in source:
+              source = source.replace(needle, addition + needle, 1)
+              test.write_text(source, encoding='utf-8')
+          PY
+
+          rm -f .github/workflows/_repair_checkpoint2_contract_once.yml
+          python3 -m py_compile tests/test_canonical_kpi_contract.py
+          python3 -m pytest -q tests/test_canonical_kpi_contract.py
+          python3 scripts/build_release_manifest.py
+          python3 scripts/validate_release_manifest.py
+          python3 scripts/build_release_manifest.py --check --json
+          git diff --check
+          git status --short
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/checkpoint2-shell-matrix.yml tests/test_canonical_kpi_contract.py RELEASE_MANIFEST.json .github/workflows/_repair_checkpoint2_contract_once.yml
+          git diff --cached --exit-code >/dev/null && {
+            echo '::error::Expected repair produced no staged change.'
+            exit 1
+          }
+          git commit -m 'test: align checkpoint 2 with empty queue routing'
+          git push origin HEAD:fix/start-readiness-traffic-lights-20260808
