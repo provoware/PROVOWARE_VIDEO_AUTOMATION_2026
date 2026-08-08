@@ -14,6 +14,7 @@ from .canonical_debug_mixin import CanonicalDebugMixin
 from .canonical_help_status_mixin import CanonicalHelpStatusMixin
 from .canonical_kpi_compact_mixin import CanonicalKpiCompactMixin
 from .canonical_kpi_detail_mixin import CanonicalKpiDetailMixin
+from .canonical_visual_polish_mixin import CanonicalVisualPolishMixin
 from .canonical_queue_thumbnail_mixin import CanonicalQueueThumbnailMixin
 from .canonical_media_tags_mixin import CanonicalMediaTagsMixin
 from .canonical_preview_transport_mixin import CanonicalPreviewTransportMixin
@@ -32,6 +33,7 @@ class CanonicalVideoBatchFastUI(
     CanonicalDebugMixin,
     CanonicalKpiCompactMixin,
     CanonicalKpiDetailMixin,
+    CanonicalVisualPolishMixin,
     CanonicalWindowMixin,
     CanonicalShellWorkspaceMixin,
     CanonicalQueueThumbnailMixin,
