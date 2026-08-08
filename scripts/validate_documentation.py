@@ -13,10 +13,12 @@ from urllib.parse import unquote
 ROOT = Path(__file__).resolve().parents[1]
 CLASSIFICATION = ROOT / "docs" / "DOCUMENTATION_CLASSIFICATION.json"
 MANIFEST = ROOT / "RELEASE_MANIFEST.json"
+TOOLCHAIN_CONTRACT = ROOT / "TOOLCHAIN_CONTRACT.json"
 
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")
 LINK_RE = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 VERSION_RE = re.compile(r"(?<![\w.-])(\d+\.\d+\.\d+(?:-rc\d+)?)(?![\w.-])")
+NUMBERED_HEADING_RE = re.compile(r"^\d+(?:\.\d+)*[.)]?\s+")
 ALLOWED_CATEGORIES = frozenset({"active", "technical", "historical", "internal"})
 STRICT_CATEGORIES = frozenset({"active", "technical"})
 
@@ -52,6 +54,21 @@ def current_version() -> str:
     if not version:
         raise ValueError("RELEASE_MANIFEST.json enthält keine Build- oder Versionsangabe")
     return version
+
+
+def allowed_non_product_versions() -> frozenset[str]:
+    if not TOOLCHAIN_CONTRACT.is_file():
+        return frozenset()
+    contract = load_json(TOOLCHAIN_CONTRACT)
+    packages = contract.get("packages")
+    if not isinstance(packages, dict):
+        return frozenset()
+    versions: set[str] = set()
+    for group in packages.values():
+        if not isinstance(group, dict):
+            continue
+        versions.update(str(value).strip() for value in group.values() if str(value).strip())
+    return frozenset(versions)
 
 
 def release_markdown_files() -> set[str]:
@@ -92,6 +109,22 @@ def plain_heading(value: str) -> str:
     value = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", value)
     value = re.sub(r"[*_~]", "", value)
     return " ".join(value.split()).strip()
+
+
+def contract_heading(value: str) -> str:
+    title = NUMBERED_HEADING_RE.sub("", plain_heading(value)).strip().casefold()
+    return re.sub(r"\s+", " ", title)
+
+
+def required_section_present(titles: Iterable[str], required: str) -> bool:
+    expected = contract_heading(required)
+    for title in titles:
+        actual = contract_heading(title)
+        if actual == expected:
+            return True
+        if actual.startswith(expected + " ") or actual.startswith(expected + " –"):
+            return True
+    return False
 
 
 def github_slug(value: str) -> str:
@@ -156,6 +189,49 @@ def validate_link(
     return None
 
 
+def _validate_required_sections(
+    findings: list[Finding], rel_path: str, entry: Mapping[str, Any], titles: Iterable[str]
+) -> None:
+    required = entry.get("required_sections", [])
+    if not isinstance(required, list) or not required:
+        findings.append(
+            Finding(
+                "DOC_REQUIRED_SECTIONS_MISSING",
+                rel_path,
+                "Aktive Anleitung besitzt keine Pflichtabschnittsliste",
+            )
+        )
+        return
+    for section in required:
+        if not required_section_present(titles, str(section)):
+            findings.append(
+                Finding(
+                    "DOC_REQUIRED_SECTION",
+                    rel_path,
+                    f"Pflichtabschnitt fehlt: {section}",
+                )
+            )
+
+
+def _validate_active_versions(
+    findings: list[Finding], rel_path: str, text: str, product_version: str,
+    allowed_versions: frozenset[str]
+) -> None:
+    for match in VERSION_RE.finditer(text):
+        found = match.group(1)
+        if found == product_version or found in allowed_versions:
+            continue
+        line = text.count("\n", 0, match.start()) + 1
+        findings.append(
+            Finding(
+                "DOC_STALE_VERSION",
+                rel_path,
+                f"Veraltete Versionsangabe {found}; aktuell ist {product_version}",
+                line,
+            )
+        )
+
+
 def validate() -> dict[str, Any]:
     findings: list[Finding] = []
     config = load_json(CLASSIFICATION)
@@ -183,6 +259,7 @@ def validate() -> dict[str, Any]:
         )
 
     version = current_version()
+    allowed_versions = allowed_non_product_versions()
     heading_cache: dict[Path, set[str]] = {}
     checked_links = 0
     strictly_checked = 0
@@ -210,9 +287,6 @@ def validate() -> dict[str, Any]:
             )
             continue
 
-        # Historische Nachweise und interne Notizen werden nur auf Existenz und
-        # Klassifikation geprüft. Ihre alten Überschriften, Links und Versionen
-        # bleiben unverändert, damit der damalige Beweisstand nicht umgedeutet wird.
         if category not in STRICT_CATEGORIES:
             continue
 
@@ -220,7 +294,7 @@ def validate() -> dict[str, Any]:
         path = ROOT / rel_path
         text = path.read_text(encoding="utf-8")
         doc_headings = headings(path)
-        titles = {title.casefold() for _, title, _ in doc_headings}
+        titles = [title for _, title, _ in doc_headings]
         slugs: dict[str, int] = {}
 
         for line, title, slug in doc_headings:
@@ -246,38 +320,10 @@ def validate() -> dict[str, Any]:
                 slugs[slug] = line
 
         if category == "active":
-            required = entry.get("required_sections", [])
-            if not isinstance(required, list) or not required:
-                findings.append(
-                    Finding(
-                        "DOC_REQUIRED_SECTIONS_MISSING",
-                        rel_path,
-                        "Aktive Anleitung besitzt keine Pflichtabschnittsliste",
-                    )
-                )
-            else:
-                for section in required:
-                    if str(section).casefold() not in titles:
-                        findings.append(
-                            Finding(
-                                "DOC_REQUIRED_SECTION",
-                                rel_path,
-                                f"Pflichtabschnitt fehlt: {section}",
-                            )
-                        )
-
-            for match in VERSION_RE.finditer(text):
-                found = match.group(1)
-                if found != version:
-                    line = text.count("\n", 0, match.start()) + 1
-                    findings.append(
-                        Finding(
-                            "DOC_STALE_VERSION",
-                            rel_path,
-                            f"Veraltete Versionsangabe {found}; aktuell ist {version}",
-                            line,
-                        )
-                    )
+            _validate_required_sections(findings, rel_path, entry, titles)
+            _validate_active_versions(
+                findings, rel_path, text, version, allowed_versions
+            )
 
         cleaned = "\n".join(strip_code_fences(text.splitlines()))
         for match in LINK_RE.finditer(cleaned):
@@ -346,9 +392,7 @@ def main(argv: Iterable[str] | None = None) -> int:
             location = finding.get("path", "")
             if finding.get("line"):
                 location += f":{finding['line']}"
-            print(
-                f"✕ {finding['code']} · {location} · {finding['message']}"
-            )
+            print(f"✕ {finding['code']} · {location} · {finding['message']}")
     return 0 if report["status"] == "passed" else 1
 
 
