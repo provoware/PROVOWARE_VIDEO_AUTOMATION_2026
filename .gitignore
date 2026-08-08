@@ -29,10 +29,7 @@ dist/
 /release-audit/
 /dist-matrix-*/
 
-# Runtime and local editor residue are never release inputs.
-/debugging/*
-!/debugging/.gitignore
-!/debugging/README.md
+# Runtime/editor residue not covered by directory-local ignore contracts.
 /diagnostics/**/*.log
 *.tmp
 *.bak
