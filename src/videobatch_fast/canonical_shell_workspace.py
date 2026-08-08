@@ -33,12 +33,13 @@ class CanonicalShellWorkspaceMixin:
         content = ttk.Frame(shell, style="Shell.TFrame", padding=(15, 11, 15, 7))
         content.grid(row=0, column=1, sticky="nsew")
         content.columnconfigure(0, weight=1)
-        content.rowconfigure(3, weight=1)
+        content.rowconfigure(4, weight=1)
 
         self._build_shell_sidebar(sidebar)
         self._build_shell_header(content)
         self._build_shell_kpis(content)
         self._build_shell_actions(content)
+        self._build_shell_start_check(content)
         self._build_shell_workspace(content)
 
         footer_host = ttk.Frame(shell, style="Shell.TFrame")
@@ -48,7 +49,7 @@ class CanonicalShellWorkspaceMixin:
 
     def _build_shell_workspace(self, parent) -> None:
         workspace = ttk.Frame(parent, style="Shell.TFrame")
-        workspace.grid(row=3, column=0, sticky="nsew")
+        workspace.grid(row=4, column=0, sticky="nsew")
         workspace.rowconfigure(0, weight=1)
         workspace.columnconfigure(0, weight=1)
 
@@ -187,6 +188,8 @@ class CanonicalShellWorkspaceMixin:
             return
         self._refresh_kpi_cards()
         self._refresh_canonical_dashboard()
+        if hasattr(self, "_refresh_shell_start_check"):
+            self._refresh_shell_start_check()
         if hasattr(self, "shell_theme_combo"):
             self.shell_theme_combo.set(
                 CANONICAL_THEME_LABELS.get(self.theme_name.get(), "Midnight Blue")
