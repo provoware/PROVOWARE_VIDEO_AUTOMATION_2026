@@ -1404,7 +1404,7 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/canonical_kpi.py",
-      "sha256": "c2d9669cde9c2030be8e8b0f1b1791ee8e63229cc65112ab9ad8ceeb6ea8d14f",
+      "sha256": "c5f1e36e5840491c5995011e96df33e139a280b95d01279ae10f19fb2e47eca9",
       "size": 9012
     },
     {
@@ -2220,8 +2220,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_canonical_kpi_contract.py",
-      "sha256": "570cc4f688fac00817546b6b7b07d1489547d35e20040ee0a5211b3fe5648074",
-      "size": 5442
+      "sha256": "999073262eb297d59eaaa95e420d66f1dc2777327876404d222df15df97ff2f6",
+      "size": 5578
     },
     {
       "mode": "0o644",
