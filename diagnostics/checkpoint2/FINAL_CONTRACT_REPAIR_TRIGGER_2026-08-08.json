@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "purpose": "Trigger the one-shot Checkpoint 2 routing-contract repair on the PR branch.",
+  "target_pr": 74,
+  "expected_empty_queue_route": "media",
+  "created_at": "2026-08-08"
+}
