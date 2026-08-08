@@ -13,6 +13,11 @@ class CanonicalStartCheckMixin:
 
     def _configure_start_check_styles(self) -> None:
         style = ttk.Style(self.root)
+        scale = int(self.global_font_scale.get()) if hasattr(self, "global_font_scale") else 105
+        factor = max(0.85, min(1.35, scale / 105.0))
+        title_font = max(11, round(12 * factor))
+        status_font = max(9, round(10 * factor))
+        action_font = max(10, round(11 * factor))
         panel = COLORS["panel"]
         panel2 = COLORS["panel2"]
         style.configure(
@@ -26,7 +31,7 @@ class CanonicalStartCheckMixin:
             "StartCheckTitle.TLabel",
             background=panel,
             foreground=safe_text_color(panel, COLORS["text"]),
-            font=("DejaVu Sans", 12, "bold"),
+            font=("DejaVu Sans", title_font, "bold"),
         )
         for name, color in (
             ("Ok", COLORS["success"]),
@@ -45,14 +50,14 @@ class CanonicalStartCheckMixin:
                 f"Start{name}.TLabel",
                 background=panel2,
                 foreground=safe_text_color(panel2, color),
-                font=("DejaVu Sans", 10, "bold"),
+                font=("DejaVu Sans", status_font, "bold"),
             )
             style.configure(
                 f"Start{name}Pill.TLabel",
                 background=color,
                 foreground=best_text_color(color),
                 padding=(8, 4),
-                font=("DejaVu Sans", 10, "bold"),
+                font=("DejaVu Sans", status_font, "bold"),
             )
         action = COLORS["attention"]
         style.configure(
@@ -60,7 +65,7 @@ class CanonicalStartCheckMixin:
             background=action,
             foreground=best_text_color(action),
             padding=(14, 8),
-            font=("DejaVu Sans", 11, "bold"),
+            font=("DejaVu Sans", action_font, "bold"),
             borderwidth=1,
         )
 
@@ -228,3 +233,9 @@ class CanonicalStartCheckMixin:
             self._start_check_poll_id = self.root.after(1000, self._poll_shell_start_check)
         except TclError:
             return
+
+    def _refresh_theme_widgets(self) -> None:
+        super()._refresh_theme_widgets()
+        self._configure_start_check_styles()
+        if hasattr(self, "_start_step_widgets"):
+            self._refresh_shell_start_check()
