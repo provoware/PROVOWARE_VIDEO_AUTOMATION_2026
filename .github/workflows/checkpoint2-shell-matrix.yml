@@ -47,6 +47,12 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
 
+      - name: Install exact test runner
+        run: |
+          set -Eeuo pipefail
+          python3 -m pip install pytest==9.0.2
+          test "$(python3 -m pytest --version)" = "pytest 9.0.2"
+
       - name: Compile and validate contracts
         run: |
           set -Eeuo pipefail
@@ -87,7 +93,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, ubuntu-24.04]
-        session: [x11]
+        session: [x11, wayland]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     env:
