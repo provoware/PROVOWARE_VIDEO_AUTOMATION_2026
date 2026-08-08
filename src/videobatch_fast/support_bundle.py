@@ -128,14 +128,47 @@ def _runtime_version_payload() -> dict[str, Any]:
     }
 
 
-def _safe_mode_payload(context: dict[str, Any] | None) -> dict[str, Any]:
+def _bootstrap_text(data: bytes | None) -> str:
+    return data.decode("utf-8", errors="replace") if data is not None else ""
+
+
+def _derive_safe_mode_reason(bootstrap_text: str) -> tuple[str, str]:
+    explicit_reason = os.environ.get("VIDEOBATCH_SAFE_MODE_REASON", "").strip()
+    explicit_code = os.environ.get("VIDEOBATCH_SAFE_MODE_REASON_CODE", "").strip()
+    if explicit_reason:
+        return explicit_code or "explicit", explicit_reason
+
+    for line in reversed(bootstrap_text.splitlines()):
+        if line.startswith("NORMAL START FAILED:"):
+            return "normal_start_failed", line.partition(":")[2].strip()
+    if "SYSTEM RUNTIME FALLBACK VERIFIED" in bootstrap_text:
+        return (
+            "runtime_fallback",
+            "Die normale vorbereitete Laufzeit konnte nicht vollstaendig verifiziert werden; "
+            "der gepruefte System-Runtime-Fallback wurde verwendet.",
+        )
+    return (
+        "unknown",
+        "Safe Mode ist aktiv, aber der Starter hat im verfuegbaren Bootstrap-Log keine eindeutige Ursache hinterlassen.",
+    )
+
+
+def _application_log_from_bootstrap(bootstrap_text: str) -> Path | None:
+    for line in reversed(bootstrap_text.splitlines()):
+        if line.startswith("APPLICATION ATTEMPT safe_mode=True") and " log=" in line:
+            value = line.partition(" log=")[2].strip()
+            return Path(value).expanduser() if value else None
+    return None
+
+
+def _safe_mode_payload(
+    context: dict[str, Any] | None, bootstrap_text: str
+) -> dict[str, Any]:
+    reason_code, reason = _derive_safe_mode_reason(bootstrap_text)
     return {
         "active": True,
-        "reason_code": os.environ.get("VIDEOBATCH_SAFE_MODE_REASON_CODE", "unknown"),
-        "reason": os.environ.get(
-            "VIDEOBATCH_SAFE_MODE_REASON",
-            "Safe Mode wurde aktiviert; der genaue Ausloeser wurde vom Starter nicht uebergeben.",
-        ),
+        "reason_code": reason_code,
+        "reason": reason,
         "startup_status": os.environ.get("VIDEOBATCH_STARTUP_STATUS", ""),
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "context": context or {},
@@ -145,6 +178,10 @@ def _safe_mode_payload(context: dict[str, Any] | None) -> dict[str, Any]:
 def _collect_entries(
     *, checks: Iterable[PreparationCheck], context: dict[str, Any] | None
 ) -> dict[str, bytes]:
+    bootstrap_path = _env_file("VIDEOBATCH_BOOTSTRAP_LOG")
+    bootstrap_data = _read_limited(bootstrap_path) if bootstrap_path is not None else None
+    bootstrap_text = _bootstrap_text(bootstrap_data)
+
     entries: dict[str, bytes] = {
         "README.txt": (
             "VideoBatch Fast · Safe-Mode-Diagnosepaket\n"
@@ -153,7 +190,7 @@ def _collect_entries(
             "Das ZIP und seine enthaltenen Dateien werden als read-only markiert.\n"
             "Hinweis: Diagnoseprotokolle koennen lokale Datei- und Ordnerpfade enthalten.\n"
         ).encode("utf-8"),
-        "safe_mode/cause.json": _json_bytes(_safe_mode_payload(context)),
+        "safe_mode/cause.json": _json_bytes(_safe_mode_payload(context, bootstrap_text)),
         "startup/live_preparation_checks.json": _json_bytes(_live_checks(checks)),
         "version/runtime.json": _json_bytes(_runtime_version_payload()),
     }
@@ -168,23 +205,26 @@ def _collect_entries(
     if manifest_data is not None:
         entries["version/RELEASE_MANIFEST.json"] = manifest_data
 
-    for env_name, archive_name in (
-        ("VIDEOBATCH_STARTUP_REPORT", "startup/latest.json"),
-        ("VIDEOBATCH_BOOTSTRAP_LOG", "logs/bootstrap.log"),
-        ("VIDEOBATCH_APPLICATION_LOG", "logs/application.log"),
-    ):
-        path = _env_file(env_name)
-        data = _read_limited(path) if path is not None else None
-        if data is not None:
-            entries[archive_name] = data
+    startup_path = _env_file("VIDEOBATCH_STARTUP_REPORT")
+    startup_data = _read_limited(startup_path) if startup_path is not None else None
+    if startup_data is not None:
+        entries["startup/latest.json"] = startup_data
+    if bootstrap_data is not None:
+        entries["logs/bootstrap.log"] = bootstrap_data
+
+    application_path = _env_file("VIDEOBATCH_APPLICATION_LOG")
+    if application_path is None:
+        application_path = _application_log_from_bootstrap(bootstrap_text)
+    application_data = _read_limited(application_path) if application_path is not None else None
+    if application_data is not None:
+        entries["logs/application.log"] = application_data
 
     used_names: set[str] = set()
     for index, path in enumerate(_latest_debug_reports(), start=1):
         data = _read_limited(path)
         if data is None:
             continue
-        base = path.name
-        archive_name = f"logs/debug/{index:02d}_{base}"
+        archive_name = f"logs/debug/{index:02d}_{path.name}"
         while archive_name in used_names:
             archive_name = f"logs/debug/{index:02d}_{path.stem}_{len(used_names)}{path.suffix}"
         used_names.add(archive_name)
@@ -239,8 +279,6 @@ def export_safe_mode_support_bundle(
         with zipfile.ZipFile(temporary, "w") as archive:
             for name, data in sorted(entries.items()):
                 _write_member(archive, name, data)
-        with temporary.open("rb") as handle:
-            os.fsync(handle.fileno())
         os.replace(temporary, destination)
         try:
             destination.chmod(0o444)
