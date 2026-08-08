@@ -28,6 +28,25 @@ def test_github_slug_is_deterministic() -> None:
     assert module.github_slug("„Ich möchte …“") == "ich-möchte"
 
 
+def test_contract_headings_accept_numbered_sections_and_descriptive_suffixes() -> None:
+    module = load_validator()
+    assert module.contract_heading("12. Abschlussprüfung vor Veröffentlichung") == (
+        "abschlussprüfung vor veröffentlichung"
+    )
+    assert module.required_section_present(
+        ["12. Abschlussprüfung vor Veröffentlichung"], "Abschlussprüfung"
+    )
+    assert not module.required_section_present(["12. Ergebnis"], "Abschlussprüfung")
+
+
+def test_toolchain_versions_are_not_product_version_findings() -> None:
+    module = load_validator()
+    versions = module.allowed_non_product_versions()
+    assert "9.0.2" in versions
+    assert "0.16.1" in versions
+    assert "2.3.0" in versions
+
+
 def test_duplicate_heading_detection_uses_anchor_collisions() -> None:
     module = load_validator()
     with tempfile.TemporaryDirectory(prefix="videobatch-doc-heading-") as directory:
