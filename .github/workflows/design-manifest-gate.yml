@@ -46,7 +46,9 @@ jobs:
           python3 -m py_compile \
             scripts/validate_documentation.py \
             src/videobatch_fast/canonical_shell_workspace.py \
-            tests/test_documentation_contract.py
+            src/videobatch_fast/support_bundle.py \
+            tests/test_documentation_contract.py \
+            tests/test_safe_mode_support_bundle.py
 
       - name: Run documentation contract
         env:
@@ -65,10 +67,65 @@ jobs:
           fi
           python3 scripts/validate_documentation.py --json
 
-      - name: Verify release manifest
+      - name: Run Safe-Mode support bundle contract
         run: |
           set -Eeuo pipefail
-          python3 scripts/build_release_manifest.py --check --json
+          python3 -m pytest -q tests/test_safe_mode_support_bundle.py
+
+      - name: Verify release manifest
+        id: release_manifest
+        continue-on-error: true
+        run: |
+          set -Eeuo pipefail
+          python3 scripts/build_release_manifest.py --check --json \
+            | tee "$RUNNER_TEMP/release-manifest-check.json"
+
+      - name: Build expected manifest candidate on drift
+        if: steps.release_manifest.outcome == 'failure'
+        run: |
+          set -Eeuo pipefail
+          candidate="$RUNNER_TEMP/release-manifest-candidate"
+          mkdir -p "$candidate"
+          git archive HEAD | tar -x -C "$candidate"
+          (
+            cd "$candidate"
+            PYTHONPATH=src python3 scripts/build_release_manifest.py
+          )
+          cp "$candidate/RELEASE_MANIFEST.json" "$RUNNER_TEMP/RELEASE_MANIFEST.candidate.json"
+
+      - name: Upload expected manifest candidate
+        if: steps.release_manifest.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-manifest-candidate-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/RELEASE_MANIFEST.candidate.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Enforce release manifest
+        if: steps.release_manifest.outcome == 'failure'
+        run: |
+          echo '::error title=Release manifest drift::Use the generated candidate only after reviewing the final source tree.'
+          exit 1
+
+      - name: Package exact project snapshot
+        if: steps.release_manifest.outcome == 'success'
+        run: |
+          set -Eeuo pipefail
+          git archive \
+            --format=zip \
+            --prefix=PROVOWARE_VIDEO_AUTOMATION_2026/ \
+            --output="$RUNNER_TEMP/PROVOWARE_VIDEO_AUTOMATION_2026-${{ github.event.pull_request.head.sha || github.sha }}.zip" \
+            HEAD
+
+      - name: Upload exact project snapshot
+        if: steps.release_manifest.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-source-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/PROVOWARE_VIDEO_AUTOMATION_2026-${{ github.event.pull_request.head.sha || github.sha }}.zip
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Prove preflight remained read-only
         if: always()
