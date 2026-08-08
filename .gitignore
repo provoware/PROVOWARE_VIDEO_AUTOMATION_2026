@@ -28,3 +28,12 @@ dist/
 /warmup-metrics/
 /release-audit/
 /dist-matrix-*/
+
+# Runtime and local editor residue are never release inputs.
+/debugging/*
+!/debugging/.gitignore
+!/debugging/README.md
+/diagnostics/**/*.log
+*.tmp
+*.bak
+*~
