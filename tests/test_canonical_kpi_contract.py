@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from videobatch_fast.canonical_kpi import build_kpi_snapshots
-from videobatch_fast.canonical_kpi_detail_mixin import CanonicalKpiDetailMixin
 from videobatch_fast.canonical_kpi_state import merge_kpi_history, normalize_kpi_history
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _snapshots(**overrides):
@@ -132,6 +135,15 @@ def test_rapid_import_loss_queue_error_and_effect_changes_remain_deterministic()
     assert observed[1][0] == "error"
     assert observed[2][1] == "error"
     assert observed[3][2] == "error"
-    assert hasattr(CanonicalKpiDetailMixin, "_kpi_remove_missing_sources")
-    assert hasattr(CanonicalKpiDetailMixin, "_kpi_load_retry_queue")
-    assert hasattr(CanonicalKpiDetailMixin, "_kpi_reset_effects")
+
+
+def test_kpi_recovery_methods_remain_present_without_importing_tk() -> None:
+    source = (ROOT / "src/videobatch_fast/canonical_kpi_detail_mixin.py").read_text(
+        encoding="utf-8"
+    )
+    for method in (
+        "def _kpi_remove_missing_sources",
+        "def _kpi_load_retry_queue",
+        "def _kpi_reset_effects",
+    ):
+        assert method in source
