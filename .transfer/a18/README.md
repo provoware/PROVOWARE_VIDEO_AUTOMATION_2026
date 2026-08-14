@@ -5,9 +5,9 @@ Dieser Transferzweig ist ausschließlich der kontrollierte Transportweg für die
 - Quelle: `I009/A18`
 - Git-Quellvertrag: V2
 - Scope: `772` Dateien
-- Scope-SHA-256: `ba62a986d88405d21264d05853ee0086df876c012b0dc6a9c55e9b37ecaff591`
+- Scope-SHA-256: `a67355cec422be9affb95618ebfd6e761c801db7822a2516ad0b8739a7c8e435`
 - Transport: `tar.zst`, Zstandard -19
-- Transport-SHA-256: `3c0051bca07deff0243dd42fb59f37f33a1d1e958c320268a890e4c79fd96df4`
+- Transport-SHA-256: `8b15c4bff6a141f5afa94bdbe3ca85fd472d2f4064cedd2a9ea6698e6b312a40`
 - Transferteile: `6`
 - Staging: `staging/i009-a18-github-bindung-20260814`
 - Ziel: `i009-pagination-adaptive-rail-20260813`
