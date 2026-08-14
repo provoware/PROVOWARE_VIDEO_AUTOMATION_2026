@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Iterable
 
 from .incremental_directory import DirectoryRecord
+from .probe import AUDIO_EXTENSIONS, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS
 
 
 def safe_media_directory(path: Path) -> Path:
@@ -21,6 +22,18 @@ def safe_media_directory(path: Path) -> Path:
     except OSError:
         pass
     return Path.home()
+
+
+def media_filter_matches(record: DirectoryRecord, category: str) -> bool:
+    """Keep navigation folders visible while filtering media by its real type."""
+    if record.is_dir or category == "Alle Dateien":
+        return True
+    suffix = record.path.suffix.lower()
+    if category == "Bilder":
+        return suffix in IMAGE_EXTENSIONS
+    if category == "Videos":
+        return suffix in VIDEO_EXTENSIONS
+    return category == "Audio" and suffix in AUDIO_EXTENSIONS
 
 
 def sort_directory_records(

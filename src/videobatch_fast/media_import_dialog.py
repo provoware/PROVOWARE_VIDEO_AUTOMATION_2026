@@ -10,7 +10,7 @@ from tkinter import END, PhotoImage, StringVar, TclError, Toplevel, ttk
 from .incremental_directory import DirectoryRecord, scan_directory_batches
 from .media_dialog_layout import build_media_actions
 from .media_dialog_runtime import MediaDialogRuntimeMixin
-from .media_dialog_support import human_size, safe_media_directory, sort_directory_records
+from .media_dialog_support import human_size, media_filter_matches, safe_media_directory, sort_directory_records
 from .preview_service import build_preview
 from .probe import AUDIO_EXTENSIONS, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, probe_media
 from .thumbnail_grid import VirtualThumbnailGrid
@@ -67,6 +67,7 @@ class MediaImportDialog(MediaDialogRuntimeMixin):
 
         self.path_value = StringVar(window, value=str(self.current_dir))
         self.filter_value = StringVar(window, value="")
+        self.type_filter_value = StringVar(window, value="Alle Dateien")
         self.status_value = StringVar(window, value="Ordner wird geladen …")
         self.collection_value = StringVar(window, value="Noch keine Dateien übernommen")
         self.preview_value = StringVar(window, value="Datei auswählen")
@@ -83,6 +84,7 @@ class MediaImportDialog(MediaDialogRuntimeMixin):
         self._build_content(outer)
         build_media_actions(self, outer)
         self.filter_value.trace_add("write", lambda *_args: self._schedule_render())
+        self.type_filter_value.trace_add("write", lambda *_args: self._schedule_render())
         self._start_event_pump()
         self._load_directory()
         if modal:
@@ -119,28 +121,24 @@ class MediaImportDialog(MediaDialogRuntimeMixin):
         entry.pack(side="left", fill="x", expand=True, padx=9)
         entry.bind("<Return>", lambda _event: self._navigate(Path(self.path_value.get())))
         ttk.Button(row, text="Ordner laden", style="Accent.TButton", command=lambda: self._navigate(Path(self.path_value.get()))).pack(side="right")
-
         tools = ttk.Frame(shell, style="Toolbar.TFrame")
         tools.pack(fill="x")
-        ttk.Label(tools, text="Filter", style="HeaderHint.TLabel").pack(side="left")
+        self.scan_stop_button = ttk.Button(tools, text="Stoppen", width=8, command=self._stop_scan)
+        self.scan_stop_button.pack(side="right")
+        ttk.Label(tools, text="Dateien finden", style="HeaderHint.TLabel").pack(side="left")
         ttk.Entry(tools, textvariable=self.filter_value).pack(side="left", fill="x", expand=True, padx=(7, 9))
+        categories = ("Alle Dateien", "Audio") if self.audio else ("Alle Dateien", "Bilder", "Videos")
+        type_combo = ttk.Combobox(tools, textvariable=self.type_filter_value, values=categories, state="readonly", width=12)
+        type_combo.pack(side="left", padx=(0, 9))
         ttk.Label(tools, text="Sortieren", style="HeaderHint.TLabel").pack(side="left", padx=(0, 6))
-        sort_combo = ttk.Combobox(
-            tools,
-            textvariable=self.sort_value,
-            values=("Name", "Größe", "Geändert", "Art"),
-            state="readonly",
-            width=11,
-        )
+        sort_combo = ttk.Combobox(tools, textvariable=self.sort_value, values=("Name", "Größe", "Geändert", "Art"), state="readonly", width=11)
         sort_combo.pack(side="left", padx=(0, 5))
         sort_combo.bind("<<ComboboxSelected>>", self._sort_from_combo)
         self.sort_direction_button = ttk.Button(tools, text="↑", width=3, command=self._toggle_sort_direction)
         self.sort_direction_button.pack(side="left", padx=(0, 8))
-        self.scan_progress = ttk.Progressbar(tools, mode="indeterminate", length=120)
+        self.scan_progress = ttk.Progressbar(tools, mode="indeterminate", length=52)
         self.scan_progress.pack(side="left", padx=(0, 8))
         ttk.Label(tools, textvariable=self.scan_value, style="HeaderHint.TLabel").pack(side="left")
-        self.scan_stop_button = ttk.Button(tools, text="Scan stoppen", command=self._stop_scan)
-        self.scan_stop_button.pack(side="right")
 
     def _build_content(self, parent) -> None:
         panes = ttk.Panedwindow(parent, orient="horizontal")
@@ -148,8 +146,8 @@ class MediaImportDialog(MediaDialogRuntimeMixin):
 
         left = ttk.Frame(panes, padding=10, style="MediaCard.TFrame")
         right = ttk.Frame(panes, padding=12, style="MediaPreview.TFrame")
-        panes.add(left, weight=3)
-        panes.add(right, weight=2)
+        panes.add(left, weight=7)
+        panes.add(right, weight=3)
 
         self.view_stack = ttk.Frame(left, style="MediaCard.TFrame")
         self.view_stack.pack(fill="both", expand=True)
@@ -206,14 +204,10 @@ class MediaImportDialog(MediaDialogRuntimeMixin):
         ttk.Label(left, textvariable=self.collection_value, style="Success.TLabel").pack(fill="x", pady=(3, 0))
 
         ttk.Label(right, text="Live-Vorschau", style="MediaPreview.TLabel").pack(anchor="w")
-        ttk.Label(
-            right,
-            text="Die Vorschau folgt immer dem zuletzt angeklickten Eintrag.",
-            style="MediaPreview.TLabel",
-        ).pack(anchor="w", pady=(2, 8))
         self.preview = ttk.Label(
             right,
             textvariable=self.preview_value,
+            width=28,
             anchor="center",
             justify="center",
             style="MediaPreview.TLabel",
@@ -330,7 +324,7 @@ class MediaImportDialog(MediaDialogRuntimeMixin):
         elif self._scan_cancel.is_set():
             self.scan_value.set(f"angehalten · {len(self._records)} gefunden")
         else:
-            self.scan_value.set(f"fertig · {len(self._records)} gefunden")
+            self.scan_value.set(f"{len(self._records)} gefunden")
 
     def _sorted_records(self) -> list[DirectoryRecord]:
         return sort_directory_records(self._records, self.sort_key, self.sort_reverse)
@@ -358,6 +352,8 @@ class MediaImportDialog(MediaDialogRuntimeMixin):
         visible: list[DirectoryRecord] = []
         for record in self._sorted_records():
             if filter_text and filter_text not in record.path.name.casefold() and not record.is_dir:
+                continue
+            if not media_filter_matches(record, self.type_filter_value.get()):
                 continue
             visible.append(record)
             self._insert_record(record)

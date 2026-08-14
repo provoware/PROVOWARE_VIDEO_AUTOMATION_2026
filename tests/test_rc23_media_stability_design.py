@@ -72,6 +72,8 @@ def test_media_dialog_rapid_selection_is_thread_safe_and_icon_view_works(tmp_pat
         time.sleep(0.01)
     assert len(dialog._records) == 7
     assert dialog.view_mode.get() == "icons"
+    assert dialog.icon_frame.winfo_width() >= 2 * dialog.preview.master.winfo_width()
+    assert dialog.preview.master.winfo_width() >= dialog.preview.winfo_reqwidth()
 
     dialog._set_view_mode("list")
     children = dialog.tree.get_children()
@@ -126,6 +128,13 @@ def test_media_dialog_support_sorting_and_safe_fallback(tmp_path: Path, monkeypa
     assert [item.path.name for item in support.sort_directory_records(records, "size", False)] == ["folder", "a.jpg", "b.png"]
     assert [item.path.name for item in support.sort_directory_records(records, "modified", True)][0] == "folder"
     assert len(support.sort_directory_records(records, "kind", False)) == 3
+    assert all(support.media_filter_matches(record, "Alle Dateien") for record in records)
+    assert support.media_filter_matches(records[2], "Bilder")
+    assert support.media_filter_matches(records[2], "Videos")
+    assert support.media_filter_matches(records[1], "Bilder")
+    assert not support.media_filter_matches(records[1], "Videos")
+    audio = DirectoryRecord(tmp_path / "sound.wav", False, 30, 4.0)
+    assert support.media_filter_matches(audio, "Audio")
 
 
 def test_virtual_thumbnail_grid_interactions_cover_multiselect_and_navigation(tmp_path: Path) -> None:
@@ -133,7 +142,7 @@ def test_virtual_thumbnail_grid_interactions_cover_multiselect_and_navigation(tm
 
     from videobatch_fast.incremental_directory import DirectoryRecord
     from videobatch_fast.theme import apply_theme
-    from videobatch_fast.thumbnail_grid import VirtualThumbnailGrid
+    from videobatch_fast.thumbnail_grid import VirtualThumbnailGrid, compact_filename
 
     paths = [tmp_path / "folder", tmp_path / "one.png", tmp_path / "two.mp4", tmp_path / "sound.wav"]
     paths[0].mkdir()
@@ -146,6 +155,9 @@ def test_virtual_thumbnail_grid_interactions_cover_multiselect_and_navigation(tm
         DirectoryRecord(paths[2], False, 5, 3.0),
         DirectoryRecord(paths[3], False, 5, 4.0),
     ]
+    assert compact_filename("kurz.png") == ("kurz.png", False)
+    compact, truncated = compact_filename("sehr_langer_dateiname_fuer_vorschau.mp4")
+    assert truncated and compact.endswith("….mp4") and len(compact) <= 18
     selections: list[tuple[tuple[Path, ...], Path | None]] = []
     activated: list[Path] = []
     requested: list[Path] = []
@@ -172,6 +184,20 @@ def test_virtual_thumbnail_grid_interactions_cover_multiselect_and_navigation(tm
     event = SimpleNamespace(x=20, y=20, state=0)
     assert grid._click(event) == "break"
     assert grid.focus_path == paths[0]
+    long_path = tmp_path / "sehr_langer_dateiname_fuer_vorschau.mp4"
+    grid.set_records([*records, DirectoryRecord(long_path, False, 5, 5.0)])
+    grid._hover(SimpleNamespace(x=20, y=196))
+    assert grid.name_tooltip.message == long_path.name
+    deadline = time.monotonic() + 0.6
+    while grid.name_tooltip.window is None and time.monotonic() < deadline:
+        root.update()
+        time.sleep(0.01)
+    assert grid.name_tooltip.window.winfo_children()[0].cget("text") == long_path.name
+    grid._leave()
+    grid.focus_path = long_path
+    grid.canvas.event_generate("<FocusIn>")
+    assert grid.name_tooltip.message == long_path.name
+    grid.name_tooltip.update_message("")
     event = SimpleNamespace(x=190, y=20, state=0x4)
     grid._click(event)
     assert set(grid.selected_paths()) == {paths[0], paths[1]}

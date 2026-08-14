@@ -8,10 +8,21 @@ from typing import Callable, Iterable
 from .incremental_directory import DirectoryRecord
 from .probe import IMAGE_EXTENSIONS, VIDEO_EXTENSIONS
 from .theme import COLORS, best_text_color
+from .ui_components import Tooltip
 
 SelectionCallback = Callable[[tuple[Path, ...], Path | None], None]
 ActivateCallback = Callable[[Path], None]
 ThumbnailRequest = Callable[[Path], None]
+
+
+def compact_filename(name: str, limit: int = 18) -> tuple[str, bool]:
+    """Shorten long names without hiding a useful file extension."""
+    if len(name) <= limit:
+        return name, False
+    suffix = Path(name).suffix
+    stem_limit = limit - len(suffix) - 1
+    compact = f"{Path(name).stem[:stem_limit]}…{suffix}" if stem_limit > 2 else f"{name[: limit - 1]}…"
+    return compact, True
 
 
 class VirtualThumbnailGrid:
@@ -65,6 +76,8 @@ class VirtualThumbnailGrid:
         self.padding = 10
         self.columns = 1
         self._redraw_job: str | None = None
+        self._hover_path: Path | None = None
+        self.name_tooltip = Tooltip(self.canvas, "")
 
         self.canvas.bind("<Configure>", self._schedule_redraw)
         self.canvas.bind("<Button-1>", self._click)
@@ -72,6 +85,9 @@ class VirtualThumbnailGrid:
         self.canvas.bind("<MouseWheel>", self._wheel)
         self.canvas.bind("<Button-4>", self._wheel)
         self.canvas.bind("<Button-5>", self._wheel)
+        self.canvas.bind("<Motion>", self._hover)
+        self.canvas.bind("<Leave>", self._leave, add=True)
+        self.canvas.bind("<FocusIn>", self._focus_tooltip, add=True)
         self.canvas.bind("<KeyPress-space>", self._toggle_focus)
         self.canvas.bind("<KeyPress-Return>", self._activate_focus)
 
@@ -227,9 +243,7 @@ class VirtualThumbnailGrid:
                 self.pending.add(path)
                 self.request_thumbnail(path)
 
-        name = path.name
-        if len(name) > 24:
-            name = name[:21] + "…"
+        name, _truncated = compact_filename(path.name)
         self.canvas.create_text(
             (x1 + x2) / 2,
             y1 + 116,
@@ -302,6 +316,27 @@ class VirtualThumbnailGrid:
         self._schedule_redraw()
         self.on_selection(self.selected_paths(), self.focus_path)
         return "break"
+
+    def _hover(self, event) -> None:
+        index = self._index_at(event)
+        path = self.records[index].path if index is not None else None
+        name, truncated = compact_filename(path.name) if path else ("", False)
+        hover_path = path if truncated else None
+        if hover_path == self._hover_path:
+            return
+        self._hover_path = hover_path
+        self.name_tooltip.update_message(path.name if hover_path else "")
+
+    def _focus_tooltip(self, _event=None) -> None:
+        if self._hover_path is not None:
+            return
+        path = self.focus_path
+        _name, truncated = compact_filename(path.name) if path else ("", False)
+        self.name_tooltip.update_message(path.name if path and truncated else "")
+
+    def _leave(self, _event=None) -> None:
+        self._hover_path = None
+        self.name_tooltip.update_message("")
 
     def _double_click(self, event) -> str:
         index = self._index_at(event)

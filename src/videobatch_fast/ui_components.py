@@ -10,18 +10,10 @@ from .text_resources import text
 class Tooltip:
     """Accessible delayed tooltip that never blocks or escapes the visible screen."""
 
-    def __init__(
-        self,
-        widget,
-        message: str,
-        *,
-        delay_ms: int = 350,
-        wraplength: int = 420,
-    ) -> None:
+    def __init__(self, widget, message: str, *, delay_ms: int = 350, wraplength: int = 420) -> None:
         self.widget = widget
         self.message = message.strip()
-        self.delay_ms = max(0, int(delay_ms))
-        self.wraplength = max(180, int(wraplength))
+        self.delay_ms, self.wraplength = max(0, int(delay_ms)), max(180, int(wraplength))
         self.window = None
         self._after_id = None
         widget.bind("<Enter>", self._schedule, add=True)
@@ -29,6 +21,14 @@ class Tooltip:
         widget.bind("<FocusIn>", self._schedule, add=True)
         widget.bind("<FocusOut>", self._hide, add=True)
         widget.bind("<Destroy>", self._hide, add=True)
+
+    def update_message(self, message: str) -> None:
+        if (message := message.strip()) == self.message:
+            return
+        self._hide()
+        self.message = message
+        if self.message:
+            self._schedule()
 
     def _schedule(self, _event=None) -> None:
         if self.window or self._after_id is not None or not self.message:
