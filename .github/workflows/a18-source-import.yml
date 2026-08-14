@@ -31,7 +31,7 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/a18src
           cat .transfer/a18/part*.b64 | base64 -d > /tmp/a18-source.tar.zst
-          echo "3c0051bca07deff0243dd42fb59f37f33a1d1e958c320268a890e4c79fd96df4  /tmp/a18-source.tar.zst" | sha256sum -c -
+          echo "8b15c4bff6a141f5afa94bdbe3ca85fd472d2f4064cedd2a9ea6698e6b312a40  /tmp/a18-source.tar.zst" | sha256sum -c -
           zstd -d -q /tmp/a18-source.tar.zst -o /tmp/a18-source.tar
           tar -xf /tmp/a18-source.tar -C /tmp/a18src
           test -f /tmp/a18src/scripts/github_baseline_importer.py
@@ -59,7 +59,7 @@ jobs:
           m=json.loads(Path('GITHUB_BASELINE_MANIFEST.json').read_text())
           assert m['revision']=='A18', m['revision']
           assert m['umfang']['dateien']==772, m['umfang']['dateien']
-          assert m['umfang']['sha256']=='ba62a986d88405d21264d05853ee0086df876c012b0dc6a9c55e9b37ecaff591', m['umfang']['sha256']
+          assert m['umfang']['sha256']=='a67355cec422be9affb95618ebfd6e761c801db7822a2516ad0b8739a7c8e435', m['umfang']['sha256']
           print('A18_LOCAL_SCOPE=PASS')
           PY
 
