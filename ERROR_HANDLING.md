@@ -4,6 +4,18 @@
 
 Diese Anleitung erklärt, wie Meldungen sicher eingeordnet, behoben und abschließend geprüft werden. Sie richtet sich ausdrücklich auch an Nutzer ohne Linux- oder Entwicklerkenntnisse.
 
+## Pflichtgrad
+
+Bei einer Warnung oder einem gestoppten Vorgang die passenden Schritte dieser
+Anleitung ausführen. Reine Hinweise benötigen nur dann eine Handlung, wenn die
+Meldung sie ausdrücklich verlangt.
+
+## Voraussetzungen
+
+- VideoBatch geöffnet lassen, wenn die Meldung noch sichtbar ist.
+- Den Wortlaut der Meldung und den zuletzt ausgeführten Schritt bereithalten.
+- Originalmedien und Projektdateien bis zum Abschluss der Prüfung nicht verändern.
+
 ## Grundregel
 
 Jeder VideoBatch-Fehler soll fünf Fragen beantworten:
@@ -40,7 +52,7 @@ Der betroffene Schritt wurde blockiert, damit keine unvollständige, unsichere o
 
 **Kann ignoriert werden?** Nein.
 
-## Schritt-für-Schritt-Fehlerbehebung
+## Schritt-für-Schritt-Anleitung
 
 ### Schritt 1: Meldung vollständig lesen
 
@@ -185,9 +197,13 @@ Automatische Selbstheilung darf niemals:
 
 1. Hilfe- oder Diagnosebereich öffnen.
 2. Systemstatus anzeigen.
-3. Protokollpfad öffnen oder Bericht exportieren.
-4. Fehlerzeitpunkt, betroffenen Auftrag und letzte Handlung notieren.
-5. Geheimnisse, private Pfade oder persönliche Mediennamen vor Weitergabe prüfen.
+3. Protokollpfad öffnen oder Bericht exportieren. Die Berichte liegen normalerweise
+   im Ordner `debugging` des VideoBatch-Ordners. Falls dieser Ordner nicht
+   beschreibbar ist, liegen sie unter `~/.local/state/VideoBatchFast/debugging`.
+4. Bei mehreren Dateien die neueste Datei wählen, deren Zeitpunkt zum Fehler passt.
+5. Fehlerzeitpunkt, betroffenen Auftrag und die letzte Handlung notieren.
+6. Bericht vor einer Weitergabe öffnen und private Pfade oder Mediennamen unkenntlich
+   machen. VideoBatch versendet Berichte nicht automatisch.
 
 ## Abschlussprüfung
 
