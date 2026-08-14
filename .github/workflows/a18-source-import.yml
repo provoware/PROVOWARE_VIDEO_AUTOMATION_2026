@@ -30,9 +30,10 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/a18src
-          cat .transfer/a18/part*.b64 | base64 -d > /tmp/a18-source.zip
-          echo "90e4a095c34410e50a100fc7be7a41ca3f763b094a43a7e104a1e40b5eff850a  /tmp/a18-source.zip" | sha256sum -c -
-          unzip -q /tmp/a18-source.zip -d /tmp/a18src
+          cat .transfer/a18/part*.b64 | base64 -d > /tmp/a18-source.tar.zst
+          echo "3c0051bca07deff0243dd42fb59f37f33a1d1e958c320268a890e4c79fd96df4  /tmp/a18-source.tar.zst" | sha256sum -c -
+          zstd -d -q /tmp/a18-source.tar.zst -o /tmp/a18-source.tar
+          tar -xf /tmp/a18-source.tar -C /tmp/a18src
           test -f /tmp/a18src/scripts/github_baseline_importer.py
           test -f /tmp/a18src/PROJEKTSTATUS.json
 
