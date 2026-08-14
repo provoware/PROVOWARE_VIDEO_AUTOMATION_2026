@@ -1,0 +1,86 @@
+name: A18 Source Import
+
+on:
+  push:
+    branches:
+      - transfer/i009-a18-source-import-20260814
+    paths:
+      - .transfer/a18/TRANSFER_READY
+
+permissions:
+  contents: write
+
+concurrency:
+  group: a18-source-import
+  cancel-in-progress: false
+
+jobs:
+  import-a18:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout transfer branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Reconstruct and verify source package
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/a18src
+          cat .transfer/a18/part*.b64 | base64 -d > /tmp/a18-source.zip
+          echo "90e4a095c34410e50a100fc7be7a41ca3f763b094a43a7e104a1e40b5eff850a  /tmp/a18-source.zip" | sha256sum -c -
+          unzip -q /tmp/a18-source.zip -d /tmp/a18src
+          test -f /tmp/a18src/scripts/github_baseline_importer.py
+          test -f /tmp/a18src/PROJEKTSTATUS.json
+
+      - name: Prepare authenticated Git transport
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config --global user.name "PROVOWARE GitHub Import"
+          git config --global user.email "actions@users.noreply.github.com"
+          git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
+
+      - name: Verify A18 source contract before import
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/a18src
+          python3 scripts/github_baseline_importer.py manifest
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path('GITHUB_BASELINE_MANIFEST.json').read_text())
+          assert m['revision']=='A18', m['revision']
+          assert m['umfang']['dateien']==772, m['umfang']['dateien']
+          assert m['umfang']['sha256']=='ba62a986d88405d21264d05853ee0086df876c012b0dc6a9c55e9b37ecaff591', m['umfang']['sha256']
+          print('A18_LOCAL_SCOPE=PASS')
+          PY
+
+      - name: Atomically import through verified staging
+        shell: bash
+        env:
+          GIT_TERMINAL_PROMPT: "0"
+        run: |
+          set -euo pipefail
+          cd /tmp/a18src
+          python3 scripts/github_baseline_importer.py importieren \
+            --branch i009-pagination-adaptive-rail-20260813 \
+            --staging-branch staging/i009-a18-github-bindung-20260814
+
+      - name: Verify remote binding and I010 gate
+        shell: bash
+        env:
+          GIT_TERMINAL_PROMPT: "0"
+        run: |
+          set -euo pipefail
+          cd /tmp/a18src
+          python3 scripts/github_baseline_importer.py pruefen --gebunden-erforderlich --remote
+          python3 scripts/github_baseline_importer.py iterationsgate I010 --remote
+          echo "A18_GITHUB_BINDING=PASS"
+          echo "I010_GATE=FREIGEGEBEN"
