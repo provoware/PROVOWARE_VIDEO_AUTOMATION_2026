@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import importlib.util
 import json
 import sys
@@ -20,6 +21,19 @@ def load_validator() -> ModuleType:
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
+
+
+def function_source(path: Path, function_name: str) -> str:
+    """Return one method/function body without relying on neighbouring definitions."""
+    source = path.read_text(encoding="utf-8")
+    tree = ast.parse(source, filename=str(path))
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == function_name:
+            if node.end_lineno is None:
+                raise AssertionError(f"Quellende für {function_name} fehlt: {path}")
+            lines = source.splitlines(keepends=True)
+            return "".join(lines[node.lineno - 1 : node.end_lineno])
+    raise AssertionError(f"Funktion {function_name} fehlt: {path}")
 
 
 def test_github_slug_is_deterministic() -> None:
@@ -74,9 +88,8 @@ def test_classification_schema_is_complete_and_unique() -> None:
 
 
 def test_intent_help_is_safe_and_complete() -> None:
-    source = (
-        ROOT / "src" / "videobatch_fast" / "canonical_shell_workspace.py"
-    ).read_text(encoding="utf-8")
+    path = ROOT / "src" / "videobatch_fast" / "canonical_help_status_mixin.py"
+    help_source = function_source(path, "_build_canonical_help_page")
     for label in (
         "Ich möchte …",
         "Erstes Video erstellen",
@@ -85,11 +98,9 @@ def test_intent_help_is_safe_and_complete() -> None:
         "Cache leeren",
         "Update rückgängig machen",
     ):
-        assert label in source
-    assert "keine Produktion, Löschung oder Aktualisierung automatisch gestartet" in source
-    help_start = source.index("def _build_canonical_help_page")
-    help_end = source.index("def _restore_shell_selection")
-    assert "self._start(" not in source[help_start:help_end]
+        assert label in help_source
+    assert "keine Produktion, Löschung oder Aktualisierung automatisch gestartet" in help_source
+    assert "self._start(" not in help_source
 
 
 def contract_tests() -> tuple[tuple[str, Callable[[], None]], ...]:
