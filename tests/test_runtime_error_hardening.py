@@ -5,6 +5,7 @@ from dataclasses import FrozenInstanceError
 from pathlib import Path
 from types import SimpleNamespace
 
+from videobatch_fast.debug_runtime import DebugIncident
 from videobatch_fast.error_handling import error_definition
 from videobatch_fast.runtime_error_guidance import (
     classify_runtime_exception,
@@ -138,6 +139,45 @@ def test_capture_adds_code_location_and_falls_back_without_report(monkeypatch) -
     assert len(str(context["Fehler-Fingerprint"])) == 16
     assert "test_runtime_error_hardening.py" in str(captured["where"])
     assert not runtime_error_hooks._recent_fingerprints
+
+
+def test_successful_incident_dialog_includes_code_and_fingerprint(monkeypatch, tmp_path: Path) -> None:
+    runtime_error_hooks._recent_fingerprints.clear()
+    incident = DebugIncident(
+        tmp_path / "report.txt",
+        "report",
+        "what",
+        "how",
+        "where",
+        ("fix",),
+        False,
+    )
+    shown: dict[str, DebugIncident] = {}
+    monkeypatch.setattr(
+        runtime_error_hooks.RUNTIME,
+        "capture_exception",
+        lambda *args, **kwargs: incident,
+    )
+    monkeypatch.setattr(
+        runtime_error_hooks,
+        "show_incident_dialog",
+        lambda value, **kwargs: shown.setdefault("incident", value),
+    )
+    exc = PermissionError("denied")
+    handled = runtime_error_hooks.capture_runtime_exception(
+        type(exc),
+        exc,
+        None,
+        scope="runtime",
+        fatal=False,
+        where="test",
+        root=object(),
+        auto_open=False,
+    )
+    assert handled is True
+    visible = shown["incident"].how
+    assert "Fehlercode: RUNTIME_PERMISSION_DENIED" in visible
+    assert "Fehler-Fingerprint:" in visible
 
 
 def test_thread_hook_calls_previous_hook_when_central_report_is_unavailable(monkeypatch) -> None:

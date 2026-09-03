@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 import threading
 import time
+from dataclasses import replace
 from typing import Any
 
 from .debug_runtime import RUNTIME, show_incident_dialog
@@ -100,7 +101,15 @@ def capture_runtime_exception(
     if root is not None:
         if incident is not None:
             try:
-                show_incident_dialog(incident, root=root)
+                dialog_incident = replace(
+                    incident,
+                    how=(
+                        f"{incident.how}\n"
+                        f"Fehlercode: {guidance.code}\n"
+                        f"Fehler-Fingerprint: {fingerprint}"
+                    ),
+                )
+                show_incident_dialog(dialog_incident, root=root)
                 return True
             except Exception as dialog_exc:
                 print(
