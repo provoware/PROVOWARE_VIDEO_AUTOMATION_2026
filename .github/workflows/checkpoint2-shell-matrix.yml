@@ -189,7 +189,15 @@ jobs:
       - name: Exercise canonical shell and recovery sequence
         run: |
           set -Eeuo pipefail
-          python3 scripts/checkpoint2_shell_smoke.py
+          mkdir -p checkpoint2-logs
+          smoke_log="checkpoint2-logs/smoke-${{ matrix.os }}-${{ matrix.session }}.log"
+          smoke_exit="checkpoint2-logs/smoke-${{ matrix.os }}-${{ matrix.session }}.exit-code.txt"
+          set +e
+          python3 -u scripts/checkpoint2_shell_smoke.py 2>&1 | tee "$smoke_log"
+          smoke_status=${PIPESTATUS[0]}
+          set -e
+          printf '%s\n' "$smoke_status" > "$smoke_exit"
+          exit "$smoke_status"
 
       - name: Collect exact cell evidence
         if: always()
