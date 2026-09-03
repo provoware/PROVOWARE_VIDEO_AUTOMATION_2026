@@ -1,0 +1,72 @@
+name: P0 canonical manifest regenerate for PR84
+
+on:
+  push:
+    branches:
+      - diagnose/p0-smoke-6920f5ff-evidence
+    paths:
+      - .github/workflows/p0-canonical-manifest-regenerate.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: p0-pr84-canonical-manifest-regenerate
+  cancel-in-progress: false
+
+jobs:
+  regenerate:
+    name: Regenerate manifest on exact PR84 head
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      TARGET_BRANCH: codex/a32-2-current-state-error-hardening
+      EXPECTED_HEAD_SHA: f82626e890679513147bc70d2a7d7f214323ef80
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+
+    steps:
+      - name: Check out target branch with write credentials
+        uses: actions/checkout@v5
+        with:
+          ref: codex/a32-2-current-state-error-hardening
+          fetch-depth: 1
+
+      - name: Prove exact target head
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          actual="$(git rev-parse HEAD)"
+          echo "target_head=$actual"
+          test "$actual" = "$EXPECTED_HEAD_SHA"
+
+      - name: Prepare pinned Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Regenerate canonical manifest
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          python scripts/build_release_manifest.py
+          python scripts/build_release_manifest.py --check --json
+
+      - name: Prove only manifest changed
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          changed="$(git status --porcelain --untracked-files=all)"
+          printf '%s\n' "$changed"
+          test "$changed" = ' M RELEASE_MANIFEST.json'
+
+      - name: Commit exact generated manifest
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add RELEASE_MANIFEST.json
+          git commit -m 'build: regenerate canonical release manifest'
+          git push origin "HEAD:$TARGET_BRANCH"
