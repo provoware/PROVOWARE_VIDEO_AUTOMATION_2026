@@ -1,4 +1,4 @@
-name: P1-001 targeted P0 baseline classifier
+name: P1-001 exact full P0 control
 
 on:
   push:
@@ -12,19 +12,20 @@ permissions:
   contents: read
 
 concurrency:
-  group: p1-001-targeted-p0-baseline-classifier
+  group: p1-001-exact-full-p0-control
   cancel-in-progress: true
 
 jobs:
-  classify:
-    name: Reproduce P1 census failures on final P0 head
+  control:
+    name: Exact full-suite control on final P0 head
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 45
     env:
       EXPECTED_HEAD_SHA: 12b5a9daecdd4fdf2d8c5756c19c2705908681d4
       PYTHONDONTWRITEBYTECODE: '1'
       PYTHONUTF8: '1'
       PYTHONPATH: src
+      XDG_SESSION_TYPE: x11
 
     steps:
       - name: Check out exact final P0 head
@@ -39,51 +40,59 @@ jobs:
           set -Eeuo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD_SHA"
           test -z "$(git status --porcelain --untracked-files=all)"
-          mkdir -p "$RUNNER_TEMP/p0-baseline"
-          printf '%s\n' "$EXPECTED_HEAD_SHA" > "$RUNNER_TEMP/p0-baseline/head-sha.txt"
+          mkdir -p "$RUNNER_TEMP/p0-control"
+          printf '%s\n' "$EXPECTED_HEAD_SHA" > "$RUNNER_TEMP/p0-control/head-sha.txt"
 
-      - name: Prepare minimal pinned Python
-        uses: actions/setup-python@v6
+      - name: Prepare identical cached Kubuntu dependencies
+        uses: ./.github/actions/kubuntu-package-cache
         with:
-          python-version: '3.12'
-          cache: pip
+          os: ubuntu-24.04
+          session: x11
+          mode: matrix
 
-      - name: Install exact runtime minimum and pytest
+      - name: Preserve dependency diagnostics outside repository
         shell: bash
         run: |
           set -Eeuo pipefail
-          python -m pip install --disable-pip-version-check \
-            'cffi==2.0.0' \
-            'cryptography==50.0.0' \
-            'Pillow==12.3.0' \
-            'pycparser==3.0' \
-            'pytest==9.0.2'
+          test -d matrix-logs
+          test -f CI_PACKAGE_METRICS.json
+          cp -R matrix-logs "$RUNNER_TEMP/p0-control/dependency-matrix-logs"
+          cp CI_PACKAGE_METRICS.json "$RUNNER_TEMP/p0-control/CI_PACKAGE_METRICS.json"
+          rm -rf matrix-logs CI_PACKAGE_METRICS.json
+          test -z "$(git status --porcelain --untracked-files=all)"
 
-      - name: Run only the eight-failure test files
+      - name: Start identical deterministic X11 display
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
+          echo 'DISPLAY=:99' >> "$GITHUB_ENV"
+          sleep 2
+
+      - name: Run exact complete pytest control
         shell: bash
         run: |
           set -Eeuo pipefail
           set +e
-          python -m pytest -q -p no:cacheprovider \
-            tests/test_autonomous_bootstrap_2_8_3_rc8.py \
-            tests/test_debug_runtime_contract.py \
-            tests/test_kubuntu_main_comment_dispatch.py \
-            tests/test_predictive_bootstrap_2_8_3_rc10.py \
-            tests/test_runtime_error_hardening.py \
-            tests/test_unified_toolchain_2_8_3_rc7.py \
-            2>&1 | tee "$RUNNER_TEMP/p0-baseline/pytest.log"
+          python3 -m pytest -q -p no:cacheprovider 2>&1 | tee "$RUNNER_TEMP/p0-control/pytest.log"
           code=${PIPESTATUS[0]}
           set -e
-          printf '%s\n' "$code" > "$RUNNER_TEMP/p0-baseline/pytest.exit-code.txt"
-          git status --porcelain --untracked-files=all > "$RUNNER_TEMP/p0-baseline/git-status-after.txt"
-          test ! -s "$RUNNER_TEMP/p0-baseline/git-status-after.txt"
+          printf '%s\n' "$code" > "$RUNNER_TEMP/p0-control/pytest.exit-code.txt"
+          git status --porcelain --untracked-files=all > "$RUNNER_TEMP/p0-control/git-status-after-pytest.txt"
+          test ! -s "$RUNNER_TEMP/p0-control/git-status-after-pytest.txt"
           exit "$code"
 
-      - name: Upload targeted P0 baseline evidence
+      - name: Collect display evidence
+        if: always()
+        shell: bash
+        run: |
+          cp /tmp/xvfb.log "$RUNNER_TEMP/p0-control/xvfb.log" 2>/dev/null || true
+
+      - name: Upload exact P0 control evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: p1-targeted-p0-baseline-${{ env.EXPECTED_HEAD_SHA }}
-          path: ${{ runner.temp }}/p0-baseline/**
+          name: p1-exact-full-p0-control-${{ env.EXPECTED_HEAD_SHA }}
+          path: ${{ runner.temp }}/p0-control/**
           if-no-files-found: error
           retention-days: 30
