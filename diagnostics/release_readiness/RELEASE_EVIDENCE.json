@@ -15,8 +15,8 @@
     "matrix_workflow_run_id": 30966067548,
     "evidence_regression_base_head": "f05bafb53938b7a2e99095d525830c737c0f89de",
     "evidence_regression_method": "four deterministic pytest partitions; 325/325 passed",
-    "canonical_p0_head": "12b5a9daecdd4fdf2d8c5756c19c2705908681d4",
-    "canonical_p0_checkpoint2_run_id": 33770879108,
+    "canonical_p0_head": "9823e790f8e67a6e0f406b132c37569e3b95d977",
+    "canonical_p0_checkpoint2_run_id": 33791408050,
     "offline_quality_report": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md",
     "offline_quality_run_id": 30972392104,
     "offline_quality_verified_commit": "2e33a2c00a0b2e7aa44f3db38a0a60a2d6998710"
@@ -51,8 +51,8 @@
     "status": "passed",
     "passed_targets": 4,
     "total_targets": 4,
-    "workflow_run_id": 33770879108,
-    "verified_commit": "12b5a9daecdd4fdf2d8c5756c19c2705908681d4",
+    "workflow_run_id": 33791408050,
+    "verified_commit": "9823e790f8e67a6e0f406b132c37569e3b95d977",
     "targets": [
       {
         "os": "ubuntu-22.04",

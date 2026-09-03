@@ -53,8 +53,8 @@
     "status": "passed",
     "passed_targets": 4,
     "total_targets": 4,
-    "workflow_run_id": 33770879108,
-    "verified_commit": "12b5a9daecdd4fdf2d8c5756c19c2705908681d4",
+    "workflow_run_id": 33791408050,
+    "verified_commit": "9823e790f8e67a6e0f406b132c37569e3b95d977",
     "scope_note": "Canonical P0 head; deterministic headless CI matrix, not a substitute for physical KDE acceptance."
   },
   "stable_blockers": [
