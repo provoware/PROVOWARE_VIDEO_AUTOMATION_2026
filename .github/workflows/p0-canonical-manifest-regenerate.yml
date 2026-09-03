@@ -19,7 +19,7 @@ jobs:
   regenerate:
     name: Regenerate manifest on exact PR84 head
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 12
     env:
       TARGET_BRANCH: codex/a32-2-current-state-error-hardening
       EXPECTED_HEAD_SHA: f82626e890679513147bc70d2a7d7f214323ef80
@@ -42,10 +42,18 @@ jobs:
           echo "target_head=$actual"
           test "$actual" = "$EXPECTED_HEAD_SHA"
 
-      - name: Prepare pinned Python
+      - name: Prepare pinned Python toolchain
         uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-toolchain.lock
+
+      - name: Install repository-locked dependencies
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          python -m pip install --disable-pip-version-check --requirement requirements-toolchain.lock
 
       - name: Regenerate canonical manifest
         shell: bash
