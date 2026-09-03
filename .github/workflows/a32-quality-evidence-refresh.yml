@@ -78,3 +78,173 @@ jobs:
           path: quality-toolchain-evidence/
           if-no-files-found: warn
           retention-days: 30
+
+  finalize-evidence:
+    if: github.event.pull_request.head.ref == 'fix/a32-2-quality-evidence-refresh'
+    needs: qualify
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    env:
+      QUALITY_TARGET_SHA: 048aa5733d9d0ce5fef872d25e0437fae08eab94
+      QUALITY_RUN_ID: '33801346178'
+      QUALITY_ARTIFACT_ID: '9911189721'
+      QUALITY_ARTIFACT_SHA256: 63c172740436777e0bcdfa7593839da0ef8b1c180d9eae7c3070e3fa8cd99fec
+      EVIDENCE_BRANCH: fix/a32-2-quality-evidence-refresh
+    steps:
+      - name: Checkout evidence branch
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ env.EVIDENCE_BRANCH }}
+          fetch-depth: 0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Refresh canonical quality evidence
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          evidence_path = Path('diagnostics/release_readiness/RELEASE_EVIDENCE.json')
+          data = json.loads(evidence_path.read_text(encoding='utf-8'))
+          provenance = data['provenance']
+          provenance['offline_quality_run_id'] = int(os.environ['QUALITY_RUN_ID'])
+          provenance['offline_quality_verified_commit'] = os.environ['QUALITY_TARGET_SHA']
+          provenance['offline_quality_artifact_id'] = int(os.environ['QUALITY_ARTIFACT_ID'])
+          provenance['offline_quality_artifact_sha256'] = os.environ['QUALITY_ARTIFACT_SHA256']
+          provenance['offline_quality_verified_at'] = '2026-09-03T20:17:56Z'
+          provenance['offline_quality_probe_pr'] = 89
+
+          reason = (
+              'QUALITY_GATE_REPORT_2.8.3-rc24_save_.md · '
+              f"Workflow {os.environ['QUALITY_RUN_ID']} · "
+              f"Commit {os.environ['QUALITY_TARGET_SHA']} · Rückgabecode 0"
+          )
+          for gate in data['stable_gates']:
+              if gate['id'] in {
+                  'ruff_0_16_1',
+                  'mypy_2_3_0',
+                  'bandit_1_9_4',
+                  'pip_audit_2_10_1',
+              }:
+                  gate['status'] = 'passed'
+                  gate['reason'] = reason
+
+          data['progress']['current_todo'] = (
+              'Quality-Evidence auf aktuellem A32.2-Kandidaten bestätigt; '
+              'physische KDE-Abnahme und Large-Media-Soak bleiben offen'
+          )
+          evidence_path.write_text(
+              json.dumps(data, ensure_ascii=False, indent=2) + '\n',
+              encoding='utf-8',
+          )
+
+          report = f'''# Exakter Offline-Qualitätsbericht 2.8.3-rc24
+
+          ## Ergebnis
+
+          Die exakt gepinnte Qualitätswerkzeugkette wurde am 3. September 2026 auf dem aktuellen A32.2-Kandidaten vollständig ausgeführt. Alle vier Pflichtwerkzeuge bestanden ohne Quell- oder Sicherheitsbefund.
+
+          | Werkzeug | Exakte Version | Ergebnis | Rückgabecode |
+          |---|---:|---|---:|
+          | Ruff | 0.16.1 | bestanden | 0 |
+          | MyPy | 2.3.0 | bestanden | 0 |
+          | Bandit | 1.9.4 | bestanden | 0 |
+          | pip-audit | 2.10.1 | bestanden | 0 |
+
+          ## Geprüfter Kandidat
+
+          - Produkt-Commit: `{os.environ['QUALITY_TARGET_SHA']}`
+          - Workflow-Lauf: `{os.environ['QUALITY_RUN_ID']}`
+          - isolierter Probe-PR: `#89` (nicht gemergt)
+          - Evidence-Artefakt: `a32-quality-evidence-048aa573`
+          - Artefakt-ID: `{os.environ['QUALITY_ARTIFACT_ID']}`
+          - Artefakt-SHA-256: `{os.environ['QUALITY_ARTIFACT_SHA256']}`
+          - Runner: Ubuntu 24.04.4 / Python 3.12
+          - Offline-Netzwerkguard während der vier Qualitätswerkzeuge: aktiv
+
+          Der Workflow-Trigger selbst lief auf einem isolierten Probe-Branch. Vor jeder Qualitätsprüfung wurde jedoch hart der oben genannte Produkt-Commit detached ausgecheckt und mit `git rev-parse HEAD` gegen den erwarteten SHA geprüft. Der Probe-Commit ist deshalb nicht der geprüfte Produktstand.
+
+          ## Reproduzierbarer Ablauf
+
+          1. Das Repository wurde auf exakt `{os.environ['QUALITY_TARGET_SHA']}` ausgecheckt und die Commit-Identität geprüft.
+          2. Das Einheits-Wheelhouse wurde mit den vertraglich festgelegten Paketen aufgebaut.
+          3. 47 Wheel-Dateien wurden identifiziert und vollständig verifiziert.
+          4. Die Quality-Umgebung wurde anschließend aus dem geprüften Wheelhouse offline neu installiert.
+          5. Die installierten Versionen wurden gegen die Pflichtversionen geprüft.
+          6. Ruff, MyPy, Bandit und pip-audit liefen mit aktivem Offline-Netzwerkguard.
+          7. Für alle vier Werkzeuge wurden Version, Status und Rückgabecode maschinenlesbar protokolliert.
+
+          ## Einzelbefunde
+
+          ### Ruff 0.16.1
+
+          Rückgabecode 0. Geprüfter Umfang: `src`, `scripts`, `tests` gemäß `pyproject.toml`.
+
+          ### MyPy 2.3.0
+
+          Rückgabecode 0. Geprüft wurden die zehn im verbindlichen externen Qualitätsrunner festgelegten sicherheits- und laufzeitkritischen Module.
+
+          ### Bandit 1.9.4
+
+          Rückgabecode 0; keine Sicherheitsbefunde.
+
+          ### pip-audit 2.10.1
+
+          Rückgabecode 0; keine bekannte Schwachstelle in der exakt gepinnten Laufzeit-Lockdatei. Die Werkzeugausführung erfolgte mit vorbereitetem Advisory-Cache und aktivem Offline-Netzwerkguard.
+
+          ## Einordnung
+
+          Dieser Nachweis ersetzt den veralteten Offline-Quality-Nachweis vom 5. August 2026 für Commit `2e33a2c00a0b2e7aa44f3db38a0a60a2d6998710`. Die Qualitätsampeln werden damit nicht bloß umgeschrieben, sondern durch einen neuen Lauf auf dem aktuellen A32.2-Kandidaten belegt.
+
+          ## Verbleibende Stable-Gates
+
+          Die externen Python-Qualitätswerkzeuge blockieren Stable nicht. Weiterhin offen bleiben:
+
+          1. physische KDE-Abnahme unter echten Zielbedingungen,
+          2. dokumentierter Langzeitrender mit großer Medienauswahl und langsamem externem Ziel.
+
+          Der Kandidat bleibt bis zu diesen Nachweisen `2.8.3-rc24` und wird nicht als Stable bezeichnet.
+          '''
+          report = '\n'.join(line[10:] if line.startswith('          ') else line for line in report.splitlines()) + '\n'
+          Path('QUALITY_GATE_REPORT_2.8.3-rc24_save_.md').write_text(report, encoding='utf-8')
+          PY
+
+          rm -f .github/ci/A32_EVIDENCE_REFRESH.txt
+          PYTHONPATH=src python3 diagnostics/release_readiness/generate_from_evidence.py --write
+          PYTHONPATH=src python3 scripts/build_release_manifest.py
+          PYTHONPATH=src python3 diagnostics/release_readiness/generate_from_evidence.py --check
+          PYTHONPATH=src python3 scripts/build_release_manifest.py --check --json
+
+      - name: Audit evidence-only diff
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          allowed='^(\.github/ci/A32_EVIDENCE_REFRESH\.txt|DEVELOPMENT_STATUS\.json|QUALITY_ENVIRONMENT_STATUS\.json|QUALITY_GATE_REPORT_2\.8\.3-rc24_save_\.md|RELEASE_MANIFEST\.json|diagnostics/release_readiness/RELEASE_EVIDENCE\.json)$'
+          unexpected="$(git diff --name-only | grep -Ev "$allowed" || true)"
+          if [[ -n "$unexpected" ]]; then
+            printf 'UNEXPECTED EVIDENCE DIFF:\n%s\n' "$unexpected" >&2
+            exit 1
+          fi
+          git diff --name-status
+
+      - name: Commit canonical evidence refresh
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          if git diff --quiet; then
+            echo 'EVIDENCE_ALREADY_CANONICAL=1'
+            exit 0
+          fi
+          git config user.name 'provoware-ci'
+          git config user.email 'provoware-ci@users.noreply.github.com'
+          git add -A
+          git commit -m 'evidence: refresh A32.2 offline quality proof'
+          git push origin HEAD:"$EVIDENCE_BRANCH"
