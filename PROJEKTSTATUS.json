@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "projektname": "PROVOWARE VideoBatch Fast",
+  "aliasnamen": ["VideoBatch Fast", "PROVOWARE Video Automation 2026"],
+  "programmversion": "2.8.3-rc24",
+  "entwicklungsiteration": "A33",
+  "repository": "provoware/PROVOWARE_VIDEO_AUTOMATION_2026",
+  "hauptdatei": "src/videobatch_fast/app.py",
+  "startdatei": "start.sh",
+  "status": "A33 Konsolidierung in Validierung",
+  "basis_sha": "8c6691cfaffd371d39fa5696c78f67114f83a7aa",
+  "letztes_validiertes_release": "2.8.3-rc24",
+  "stable_freigabe": false,
+  "offene_stable_gates": [
+    "physische KDE-X11-/Wayland-Abnahme",
+    "realer Langzeitrender mit großer Medienauswahl und langsamem Ziel",
+    "Coverage-Grenzwerte"
+  ]
+}
