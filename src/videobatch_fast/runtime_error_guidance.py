@@ -35,7 +35,7 @@ def classify_runtime_exception(
         code = "RUNTIME_FILE_OR_TOOL_MISSING"
     elif issubclass(exc_type, MemoryError):
         code = "RUNTIME_MEMORY_LIMIT_REACHED"
-    elif issubclass(exc_type, subprocess.CalledProcessError):
+    elif issubclass(exc_type, (subprocess.CalledProcessError, subprocess.TimeoutExpired)):
         code = "RUNTIME_SUBPROCESS_FAILED"
     elif issubclass(exc_type, (ValueError, TypeError)):
         code = "RUNTIME_INVALID_STATE"
@@ -62,6 +62,15 @@ def classify_runtime_exception(
     )
 
 
+def exception_location(tb: TracebackType | None) -> str:
+    """Return the deepest Python traceback location in a compact human-readable form."""
+    frames = traceback.extract_tb(tb) if tb is not None else []
+    if not frames:
+        return ""
+    frame = frames[-1]
+    return f"{frame.filename}:{frame.lineno} · {frame.name}()"
+
+
 def exception_fingerprint(
     exc_type: type[BaseException],
     exc: BaseException,
@@ -69,10 +78,9 @@ def exception_fingerprint(
     *,
     scope: str = "runtime",
 ) -> str:
-    frames = traceback.extract_tb(tb) if tb is not None else []
-    location = ""
-    if frames:
-        frame = frames[-1]
-        location = f"{Path(frame.filename).name}:{frame.lineno}:{frame.name}"
+    location = exception_location(tb)
+    if location:
+        path_part, _, remainder = location.partition(":")
+        location = f"{Path(path_part).name}:{remainder}"
     payload = "|".join((scope, exc_type.__name__, str(exc)[:500], location))
     return hashlib.sha256(payload.encode("utf-8", errors="replace")).hexdigest()[:16].upper()
