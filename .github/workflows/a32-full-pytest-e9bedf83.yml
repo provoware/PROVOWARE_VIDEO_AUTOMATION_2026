@@ -1,0 +1,79 @@
+name: A32 full pytest e9bedf83
+
+on:
+  push:
+    branches:
+      - ci/a32-2-full-pytest-e9bedf83
+
+permissions:
+  contents: read
+
+jobs:
+  full-pytest:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: e9bedf83aa948080ca0cf9329080c315dfd2a5cf
+          fetch-depth: 1
+      - name: Assert exact product candidate and clean tree
+        run: |
+          test "$(git rev-parse HEAD)" = "e9bedf83aa948080ca0cf9329080c315dfd2a5cf"
+          test -z "$(git status --porcelain)"
+      - name: Prepare Python and desktop/media prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-tk xvfb ffmpeg
+          python3 -m pip install --disable-pip-version-check -r requirements-toolchain.lock
+      - name: Collect exact full test inventory
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
+        run: |
+          python3 -m pytest --collect-only -q tests | tee "$RUNNER_TEMP/pytest-collect.txt"
+          test -z "$(git status --porcelain)"
+      - name: Run all tests with repository coverage policy
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
+          PYTHONDONTWRITEBYTECODE: "1"
+          PYTHONUTF8: "1"
+          COVERAGE_FILE: ${{ runner.temp }}/.coverage
+          XDG_CONFIG_HOME: ${{ runner.temp }}/config
+          XDG_STATE_HOME: ${{ runner.temp }}/state
+          XDG_CACHE_HOME: ${{ runner.temp }}/cache
+          VIDEOBATCH_DIAGNOSTICS_DIR: ${{ runner.temp }}/diagnostics
+        run: |
+          python3 -m pytest -q -p no:cacheprovider \
+            --cov=videobatch_fast \
+            --cov-config=pyproject.toml \
+            --cov-report=term-missing:skip-covered \
+            --cov-report=json:"$RUNNER_TEMP/coverage.json" \
+            --cov-fail-under=0 \
+            tests 2>&1 | tee "$RUNNER_TEMP/full-pytest.log"
+          python3 scripts/coverage_policy.py "$RUNNER_TEMP/coverage.json" 80 65
+          test -z "$(git status --porcelain)"
+      - name: Run GUI roundtrip on same candidate
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
+          XDG_CONFIG_HOME: ${{ runner.temp }}/config-gui
+          XDG_STATE_HOME: ${{ runner.temp }}/state-gui
+          XDG_CACHE_HOME: ${{ runner.temp }}/cache-gui
+        run: |
+          xvfb-run -a -s '-screen 0 1920x1080x24' python3 scripts/test_workspace_layout_profiles_gui.py 2>&1 | tee "$RUNNER_TEMP/gui-roundtrip.log"
+          test -z "$(git status --porcelain)"
+      - name: Record exact evidence
+        if: always()
+        run: |
+          mkdir -p "$RUNNER_TEMP/evidence"
+          cp "$RUNNER_TEMP/pytest-collect.txt" "$RUNNER_TEMP/evidence/" 2>/dev/null || true
+          cp "$RUNNER_TEMP/full-pytest.log" "$RUNNER_TEMP/evidence/" 2>/dev/null || true
+          cp "$RUNNER_TEMP/gui-roundtrip.log" "$RUNNER_TEMP/evidence/" 2>/dev/null || true
+          cp "$RUNNER_TEMP/coverage.json" "$RUNNER_TEMP/evidence/" 2>/dev/null || true
+          echo e9bedf83aa948080ca0cf9329080c315dfd2a5cf > "$RUNNER_TEMP/evidence/verified-candidate-sha.txt"
+          echo "$GITHUB_RUN_ID" > "$RUNNER_TEMP/evidence/workflow-run-id.txt"
+      - name: Upload complete regression evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a32-full-pytest-e9bedf83
+          path: ${{ runner.temp }}/evidence
+          retention-days: 30
