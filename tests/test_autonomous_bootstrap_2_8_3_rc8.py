@@ -82,8 +82,10 @@ def test_previous_version_wheels_are_imported_automatically(tmp_path: Path, monk
 
 def test_launcher_is_noninteractive_and_visible() -> None:
     text = (ROOT / "videobatch.sh").read_text(encoding="utf-8")
+    debug_launcher = (ROOT / "scripts" / "debug_launcher.py").read_text(encoding="utf-8")
     assert "--auto-repair" in text
-    assert "scripts/bootstrap.py" in text
+    assert "scripts/debug_launcher.py" in text
+    assert "scripts/bootstrap.py" in debug_launcher
     assert "read -" not in text
     assert "input(" not in (ROOT / "scripts" / "toolchain.py").read_text(encoding="utf-8")
     assert "doctor" in text
