@@ -1,0 +1,104 @@
+name: A32.2 final review blockers
+
+on:
+  pull_request:
+    branches:
+      - ci/a32-2-quality-evidence-refresh
+
+jobs:
+  qualify-and-canonicalize:
+    if: github.event.pull_request.head.ref == 'fix/a32-2-final-review-blockers'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout exact fix head
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Prove exact fix head
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -Eeuo pipefail
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$EXPECTED_SHA"
+          printf 'FIX_HEAD_SHA=%s\n' "$actual"
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: |
+            requirements-toolchain.lock
+            requirements.lock
+
+      - name: Install locked test and runtime dependencies
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          python3 -m pip install -r requirements-toolchain.lock
+          python3 -m pip install -r requirements.lock
+
+      - name: Run focused runtime and startup regression contracts
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          PYTHONPATH=src python3 -m pytest -q \
+            tests/test_runtime_error_hardening.py \
+            tests/test_debug_runtime_contract.py \
+            tests/test_ui_ready_handshake_contract.py
+
+      - name: Validate documentation contracts
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          PYTHONPATH=src python3 tests/test_documentation_contract.py
+          PYTHONPATH=src python3 scripts/validate_documentation.py
+
+      - name: Compile changed runtime modules
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          python3 -m py_compile \
+            src/videobatch_fast/runtime_error_hooks.py \
+            tests/test_runtime_error_hardening.py
+
+      - name: Regenerate and verify canonical release manifest
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          PYTHONPATH=src python3 scripts/build_release_manifest.py
+          PYTHONPATH=src python3 scripts/build_release_manifest.py --check --json
+
+      - name: Prove manifest is the only generated diff
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          unexpected="$(git diff --name-only | grep -v '^RELEASE_MANIFEST.json$' || true)"
+          if [[ -n "$unexpected" ]]; then
+            printf 'UNEXPECTED GENERATED DIFF:\n%s\n' "$unexpected" >&2
+            exit 1
+          fi
+          git diff --name-status
+
+      - name: Commit canonical manifest if needed
+        shell: bash
+        env:
+          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -Eeuo pipefail
+          if git diff --quiet -- RELEASE_MANIFEST.json; then
+            echo 'MANIFEST_ALREADY_CANONICAL=1'
+            exit 0
+          fi
+          git config user.name 'provoware-ci'
+          git config user.email 'provoware-ci@users.noreply.github.com'
+          git add RELEASE_MANIFEST.json
+          git commit -m 'manifest: canonicalize final A32.2 review fixes'
+          git push origin HEAD:"$HEAD_BRANCH"
