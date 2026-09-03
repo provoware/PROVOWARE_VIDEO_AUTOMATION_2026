@@ -38,8 +38,8 @@ Alle Punkte wurden korrigiert und mit Regressionen abgesichert.
 - 0 interne Qualitätsbefunde
 - maximale Komplexität 29
 - reale Klick-Stressprüfung mit 120 Auswahlwechseln bestanden
-- exakter Offline-Qualitätslauf: Ruff, MyPy, Bandit und pip-audit jeweils bestanden
-- P0-Kubuntu-Matrix auf `12b5a9daecdd4fdf2d8c5756c19c2705908681d4`: 4/4 bestanden
+- exakter Offline-Qualitätslauf `33801346178` auf `048aa5733d9d0ce5fef872d25e0437fae08eab94`: Ruff, MyPy, Bandit und pip-audit jeweils bestanden
+- P0-Kubuntu-Matrix, kanonischer Evidence-Lauf `33791408050` auf `9823e790f8e67a6e0f406b132c37569e3b95d977`: 4/4 bestanden
 
 ## Freigabegrenze
 

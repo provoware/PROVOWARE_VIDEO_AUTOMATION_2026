@@ -180,8 +180,8 @@
     {
       "mode": "0o644",
       "path": "FINAL_AUDIT_2.8.3-rc24_save_.md",
-      "sha256": "c2c413d9607c583cc464587d9e76f5f598147193ace234dfcd1ebddf8cd8f450",
-      "size": 2780
+      "sha256": "606f716771e2a9e1e8a42428480569eeafd6790d46654f7d3d5602812858b2f0",
+      "size": 2882
     },
     {
       "mode": "0o644",
@@ -318,8 +318,8 @@
     {
       "mode": "0o644",
       "path": "TEST_REPORT_save_.md",
-      "sha256": "47482d59533fbb7484dc935b3b5e989b41f804a9ae6b34ffce28c7a114024513",
-      "size": 1869
+      "sha256": "a0a486c9940324f2f0bee02c3f7cd9372302bc02d7ae48dbbeb24603e5d37a10",
+      "size": 1972
     },
     {
       "mode": "0o644",
@@ -1794,8 +1794,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/runtime_error_hooks.py",
-      "sha256": "24c03ef1d4ba099fca18cc0dd6036f914dc92b58ddde1c7fb154076d2e56d439",
-      "size": 6138
+      "sha256": "3a31990ae614ac468d21881fc8da01ffd7dc6c6fbc8bdf26799b2be3a8549156",
+      "size": 6246
     },
     {
       "mode": "0o644",
@@ -2556,8 +2556,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_runtime_error_hardening.py",
-      "sha256": "d16924e79a51f00b002c9d4b3ee1125e079b9746f4d36543dba107a9d4d14b75",
-      "size": 9223
+      "sha256": "6b309ccd062c9b6828b5bb9ff23bc52737c447805c7bb1755cb423064bf3b890",
+      "size": 9835
     },
     {
       "mode": "0o644",
