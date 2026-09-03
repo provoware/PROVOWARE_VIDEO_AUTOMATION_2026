@@ -10,11 +10,6 @@ from typing import Any, Mapping, Sequence
 
 ROOT = Path(__file__).resolve().parents[2]
 EVIDENCE_PATH = Path(__file__).with_name("RELEASE_EVIDENCE.json")
-README_PATH = ROOT / "README.md"
-STATUS_BEGIN = "<!-- release-status:start -->"
-STATUS_END = "<!-- release-status:end -->"
-FILES_BEGIN = "<!-- release-files:start -->"
-FILES_END = "<!-- release-files:end -->"
 
 
 class EvidenceContractError(RuntimeError):
@@ -136,6 +131,7 @@ def render_quality(value: Mapping[str, Any]) -> dict[str, Any]:
     product = value["product"]
     tests = value["tests"]
     matrix = value["matrix"]
+    blockers = stable_blockers(value)
     external = {
         str(gate["id"]): (
             "passed" if str(gate["status"]) == "passed" else str(gate["reason"])
@@ -175,9 +171,7 @@ def render_quality(value: Mapping[str, Any]) -> dict[str, Any]:
         },
         "external_gates": external,
         "stable_ready": bool(value["stable_ready"]),
-        "stable_block_reason": (
-            "External quality tools, physical KDE session acceptance and large-media soak remain required."
-        ),
+        "stable_block_reason": "; ".join(blockers),
     }
 
 
@@ -241,72 +235,6 @@ def render_release_files(value: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-def release_status_block(value: Mapping[str, Any]) -> str:
-    product = value["product"]
-    tests = value["tests"]
-    matrix = value["matrix"]
-    blockers = stable_blockers(value)
-    lines = [
-        STATUS_BEGIN,
-        f"# provoware - videoautomation - 2026 · {product['version']}",
-        "",
-        f"**Kanal:** {product['channel']}",
-        f"**Kanonische Quelle:** `{EVIDENCE_PATH.relative_to(ROOT)}`",
-        f"**Freigegebener Qualitätsbericht:** `{value['approved_quality_report']}`",
-        "",
-        f"- {tests['passed']}/{tests['passed']} automatisierte Tests bestanden",
-        f"- {tests['line_coverage_percent']:.2f} % Zeilenabdeckung",
-        f"- {tests['branch_coverage_percent']:.2f} % Zweigabdeckung",
-        f"- {tests['visual_scenarios']} visuelle Szenarien bestanden",
-        f"- Release-Manifest: {value['manifest']['file_count']} Dateien",
-        f"- Kubuntu-CI-Matrix: {matrix['passed_targets']}/{matrix['total_targets']} Kombinationen bestanden",
-        "",
-        "### Offene Stable-Gates",
-        "",
-    ]
-    lines.extend(f"- {item}" for item in blockers)
-    lines.append(STATUS_END)
-    return "\n".join(lines)
-
-
-def release_files_block(value: Mapping[str, Any]) -> str:
-    files = value["release_files"]
-    ready = list(files["ready"])
-    unfinished = list(files["unfinished"])
-    rows = max(len(ready), len(unfinished))
-    lines = [
-        FILES_BEGIN,
-        "## Release-Dateistatus",
-        "",
-        str(files["policy"]),
-        "",
-        "| Releasefertig (`_save_`) | Noch nicht releasefertig |",
-        "|---|---|",
-    ]
-    for index in range(rows):
-        left = ready[index] if index < len(ready) else None
-        right = unfinished[index] if index < len(unfinished) else None
-        left_text = "—" if left is None else f"`{left['path']}`<br>{left['label']}: {left['evidence']}"
-        right_text = "—" if right is None else f"`{right['path']}`<br>{right['label']}: {right['reason']}"
-        lines.append(f"| {left_text} | {right_text} |")
-    lines.append(FILES_END)
-    return "\n".join(lines)
-
-
-def replace_block(content: str, begin: str, end: str, replacement: str) -> str:
-    start = content.find(begin)
-    finish = content.find(end)
-    if start < 0 or finish < 0 or finish < start:
-        raise EvidenceContractError(f"README-Markierung fehlt oder ist ungültig: {begin} / {end}")
-    finish += len(end)
-    return content[:start] + replacement + content[finish:]
-
-
-def render_readme(value: Mapping[str, Any], current: str) -> str:
-    current = replace_block(current, STATUS_BEGIN, STATUS_END, release_status_block(value))
-    return replace_block(current, FILES_BEGIN, FILES_END, release_files_block(value))
-
-
 def json_text(value: Mapping[str, Any]) -> str:
     return json.dumps(value, indent=2, ensure_ascii=False, sort_keys=False) + "\n"
 
@@ -318,7 +246,6 @@ def expected_outputs(value: Mapping[str, Any]) -> dict[Path, str]:
         ROOT / "QUALITY_ENVIRONMENT_STATUS.json": json_text(render_quality(value)),
         ROOT / "RELEASE_FILE_STATUS.json": json_text(render_release_files(value)),
         report_path: json_text(render_build(value)),
-        README_PATH: render_readme(value, README_PATH.read_text(encoding="utf-8")),
     }
 
 
@@ -330,6 +257,7 @@ def atomic_write(path: Path, content: str) -> None:
             handle.write(content)
             handle.flush()
             os.fsync(handle.fileno())
+        os.chmod(temporary, 0o644)
         os.replace(temporary, path)
     except BaseException:
         try:
@@ -368,7 +296,7 @@ def run(check: bool) -> int:
 
 def parser() -> argparse.ArgumentParser:
     result = argparse.ArgumentParser(
-        description="Erzeugt oder prüft alle abgeleiteten Release-Nachweise aus RELEASE_EVIDENCE.json."
+        description="Erzeugt oder prüft die maschinenlesbaren Release-Nachweise aus RELEASE_EVIDENCE.json."
     )
     mode = result.add_mutually_exclusive_group(required=True)
     mode.add_argument("--write", action="store_true")

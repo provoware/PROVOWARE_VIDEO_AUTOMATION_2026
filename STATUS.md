@@ -1,22 +1,20 @@
 <!-- release-status:start -->
 # provoware - videoautomation - 2026 · 2.8.3-rc24
 
-**Kanal:** rc
+**Kanal:** RC – noch keine Stable-Freigabe  
+**Kanonische Quelle:** `diagnostics/release_readiness/RELEASE_EVIDENCE.json`  
 **Freigegebener Qualitätsbericht:** `VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json`
 
-- 323/323 automatisierte Tests bestanden
+- 325/325 automatisierte Tests bestanden
 - 82,43 % Zeilenabdeckung
 - 67,21 % Zweigabdeckung
 - 18/18 visuelle Szenarien bestanden
+- Kubuntu-CI-Matrix: 4/4 Kombinationen bestanden
 
 ### Offene Stable-Gates
 
-- Ruff 0.16.1
-- MyPy 2.3.0
-- Bandit 1.9.4
-- pip-audit 2.10.1
-- physische KDE-X11-/Wayland-Abnahme
-- Langzeitrender mit großer Medienauswahl und langsamem externem Ziel
+- Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless
+- Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt
 <!-- release-status:end -->
 
 <!-- release-files:start -->
@@ -33,7 +31,7 @@ Der Zusatz `_save_` kennzeichnet ausschließlich eigenständige, freigabefähige
 | `TEST_REPORT_save_.md`<br>Testbericht | `VISUAL_DESKTOP_APPROVAL.md`<br>Desktop-Sichtprüfung: Physische KDE-X11-/Wayland-Abnahme bleibt offen |
 | `FRESH_PACKAGE_REPORT_save_.md`<br>Paketbericht | `VISUAL_INSPECTION_MANIFEST.json`<br>Visuelles Prüfmanifest: Aktueller physischer Lauf ist nicht vollständig bestätigt |
 | `CODE_QUALITY_REPORT_2.8.3-rc24_save_.md`<br>Codequalitätsbericht | — |
-| `QUALITY_GATE_REPORT_2.8.3-rc24_save_.md`<br>Exakter Offline-Qualitätsbericht | — |
+| `QUALITY_GATE_REPORT_2.8.3-rc24_save_.md`<br>Offline-Qualitätsbericht | — |
 | `IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md`<br>Implementierungsbericht | — |
 | `FINAL_AUDIT_2.8.3-rc24_save_.md`<br>RC-Abschlussaudit | — |
 | `VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json`<br>Maschinenlesbarer Buildbericht | — |

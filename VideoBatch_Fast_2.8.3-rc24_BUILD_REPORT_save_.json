@@ -43,25 +43,21 @@
   "release_cleanup": {
     "historical_reports_archived": 56,
     "obsolete_visual_baselines_removed": 16,
-    "ready_deliverables": 10,
-    "unfinished_gate_files": 8,
+    "ready_deliverables": 11,
+    "unfinished_gate_files": 6,
     "release_archive_excluded": true,
     "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe"
   },
-  "release_manifest_files": 398,
+  "release_manifest_files": 443,
   "matrix": {
     "status": "passed",
     "passed_targets": 4,
     "total_targets": 4,
-    "workflow_run_id": 30966067548,
-    "verified_commit": "ef003d2c01fa94b899d0ebac9947f1795dd23e8f",
-    "scope_note": "Headless deterministic CI matrix; not a substitute for physical KDE acceptance."
+    "workflow_run_id": 33770879108,
+    "verified_commit": "12b5a9daecdd4fdf2d8c5756c19c2705908681d4",
+    "scope_note": "Canonical P0 head; deterministic headless CI matrix, not a substitute for physical KDE acceptance."
   },
   "stable_blockers": [
-    "Ruff 0.16.1: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
-    "MyPy 2.3.0: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
-    "Bandit 1.9.4: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
-    "pip-audit 2.10.1: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
     "Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless",
     "Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt"
   ],

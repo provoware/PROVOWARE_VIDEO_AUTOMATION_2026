@@ -2,8 +2,8 @@
 
 ## Vollständige Abschlussprüfung
 
-- **323/323 automatisierte Tests bestanden** unter realem Xvfb
-- 0 übersprungene Tests im finalen Lauf
+- **325/325 automatisierte Tests bestanden** im kanonischen Vollregressionsnachweis
+- 0 übersprungene Tests im belegten Vollregressionslauf
 - 82,43 % Statement-/Zeilenabdeckung
 - 67,21 % Branch-Abdeckung
 - 79,46 % kombinierte Coverage
@@ -13,6 +13,18 @@
 - 27/27 fokussierte Release-, Cache-, Tooltip- und Vorschauregessionen bestanden
 - reale GUI-Stressprüfung mit 120 schnellen Medienklicks bestanden
 - Version, Textkatalog, Release-Dateistatus, Dokumentrendering und interne Qualität bestanden
+- P0-Kubuntu-CI-Matrix auf `12b5a9daecdd4fdf2d8c5756c19c2705908681d4`: 4/4 Kombinationen bestanden
+
+## Externe Qualitätswerkzeuge
+
+Der exakte Offline-Qualitätslauf `30972392104` ist abgeschlossen:
+
+- Ruff 0.16.1: bestanden
+- MyPy 2.3.0: bestanden
+- Bandit 1.9.4: bestanden
+- pip-audit 2.10.1: bestanden
+
+Der vollständige Nachweis steht in `QUALITY_GATE_REPORT_2.8.3-rc24_save_.md`.
 
 ## Neu geprüfte Fehlerpfade
 
@@ -24,4 +36,4 @@
 
 ## Bewusst nicht behauptet
 
-Stable ist weiterhin blockiert. Nicht abschließend belegt sind Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4, pip-audit 2.10.1, die physische KDE-X11-/Wayland-Abnahme und der Langzeitrender mit großer Medienauswahl auf langsamem externem Ziel.
+Stable ist weiterhin blockiert. Noch nicht abschließend belegt sind ausschließlich die physische KDE-X11-/Wayland-Abnahme und der Langzeitrender mit großer Medienauswahl auf langsamem externem Ziel.
