@@ -14,6 +14,7 @@ from .canonical_window_mixin import CanonicalWindowMixin
 from .canonical_shell_workspace import CanonicalShellWorkspaceMixin
 from .canonical_shell_chrome import CanonicalShellChromeMixin
 from .debug_runtime import RUNTIME, show_incident_dialog
+from .dpi_scaling import apply_tk_scaling
 from .error_handling import error_definition
 from .startup_handshake import signal_ui_ready
 from .ui import VideoBatchFastUI
@@ -103,16 +104,17 @@ def run_app() -> None:
         root = Tk()
         root.report_callback_exception = _tk_exception_handler(root)
         _install_thread_debug_hook()
-        try:
-            root.tk.call("tk", "scaling", max(1.0, root.winfo_fpixels("1i") / 72.0))
-        except Exception as exc:
-            RUNTIME.verbose(
-                "Die automatische DPI-Skalierung konnte nicht vollständig gesetzt werden.",
-                f"Tk meldete {type(exc).__name__}: {exc}. VideoBatch verwendet die vorhandene Skalierung.",
-                "Tk scaling",
-                "Keine Aktion nötig, solange Schrift und Elemente lesbar bleiben.",
-                level="WARNUNG",
-            )
+        scaling = apply_tk_scaling(root)
+        RUNTIME.verbose(
+            "Die Desktop-Skalierung wurde übernommen.",
+            (
+                f"Tk-Skalierung {scaling.effective:.3f}; Quelle: {scaling.source}. "
+                "VideoBatch berechnet aus der Bildschirm-DPI keinen zweiten Skalierungsfaktor mehr."
+            ),
+            "dpi_scaling.apply_tk_scaling",
+            "Für einen ausdrücklich gewünschten Testwert kann VIDEOBATCH_TK_SCALING numerisch gesetzt werden.",
+            level="OK" if scaling.source != "override-failed" else "WARNUNG",
+        )
 
         RUNTIME.verbose(
             "Die VideoBatch-Oberfläche wird jetzt konstruiert.",
