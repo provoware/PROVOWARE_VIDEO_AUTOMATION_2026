@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+import os
+import stat
 from pathlib import Path
 
-from diagnostics.release_readiness.generate_from_evidence import evidence, expected_outputs
+from diagnostics.release_readiness.generate_from_evidence import atomic_write, evidence, expected_outputs
 from scripts.render_release_docs import FILES_END, FILES_START, README_END, README_START, render
 
 
@@ -34,3 +36,16 @@ def test_release_evidence_generator_owns_machine_outputs_only() -> None:
     }
     assert "README.md" not in outputs
     assert "STATUS.md" not in outputs
+
+
+def test_release_evidence_atomic_write_normalizes_file_mode(tmp_path: Path) -> None:
+    target = tmp_path / "status.json"
+    target.write_text("old\n", encoding="utf-8")
+    if os.name != "nt":
+        target.chmod(0o600)
+
+    atomic_write(target, "new\n")
+
+    assert target.read_text(encoding="utf-8") == "new\n"
+    if os.name != "nt":
+        assert stat.S_IMODE(target.stat().st_mode) == 0o644

@@ -257,6 +257,7 @@ def atomic_write(path: Path, content: str) -> None:
             handle.write(content)
             handle.flush()
             os.fsync(handle.fileno())
+        os.chmod(temporary, 0o644)
         os.replace(temporary, path)
     except BaseException:
         try:
