@@ -1,0 +1,44 @@
+name: A32 canonical test evidence finalizer
+
+on:
+  push:
+    branches:
+      - fix/a32-2-refresh-stale-contract-tests
+    paths:
+      - .github/workflows/a32-finalize-test-evidence.yml
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/a32-2-refresh-stale-contract-tests
+          fetch-depth: 1
+
+      - name: Remove temporary evidence helpers
+        run: |
+          set -Eeuo pipefail
+          rm -f .github/workflows/a32-full-suite-after-contract-refresh.yml
+          rm -f .github/workflows/a32-finalize-test-evidence.yml
+
+      - name: Rebuild canonical release manifest
+        run: |
+          set -Eeuo pipefail
+          export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
+          python3 scripts/build_release_manifest.py
+          python3 scripts/build_release_manifest.py --check
+          python3 scripts/validate_release_manifest.py
+
+      - name: Commit final evidence tree
+        run: |
+          set -Eeuo pipefail
+          git config user.name "provoware"
+          git config user.email "provoware.one@gmail.com"
+          git add -A
+          test -n "$(git status --porcelain)"
+          git commit -m "evidence: canonicalize full regression report and manifest"
+          git push origin HEAD:fix/a32-2-refresh-stale-contract-tests
