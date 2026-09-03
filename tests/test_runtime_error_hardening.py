@@ -11,7 +11,7 @@ from videobatch_fast.runtime_error_guidance import (
     exception_fingerprint,
     exception_location,
 )
-from videobatch_fast import runtime_error_hooks
+from videobatch_fast import registry, runtime_error_hooks
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -43,6 +43,10 @@ def test_runtime_registry_definitions_are_resolved() -> None:
     assert definition.title == "Ein interner Zustand war schreibgeschützt"
     assert definition.severity == "blocking"
     assert "open_logs" in definition.actions
+
+
+def test_runtime_registry_is_part_of_central_registry_validation() -> None:
+    assert "registries/RUNTIME_ERROR_REGISTRY.json" in registry.REQUIRED_REGISTRIES
 
 
 def test_exception_fingerprint_is_stable_for_same_incident() -> None:
