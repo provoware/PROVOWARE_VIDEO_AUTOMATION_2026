@@ -49,7 +49,7 @@ jobs:
 
       - name: A33 Fokusregression
         run: |
-          xvfb-run -a env PYTHONPATH=src pytest -q \
+          xvfb-run -a env PYTHONPATH=src:. pytest -q \
             tests/test_a33_consolidation.py \
             tests/test_canonical_application_shell_contract.py \
             tests/test_canonical_layout_resilience.py \
@@ -59,13 +59,13 @@ jobs:
             tests/test_rc24_selected_media_crash.py
 
       - name: Vollregression
-        run: xvfb-run -a env PYTHONPATH=src pytest -q
+        run: xvfb-run -a env PYTHONPATH=src:. pytest -q
 
       - name: Architektur-Audit
-        run: PYTHONPATH=src python scripts/architecture_audit.py
+        run: PYTHONPATH=src:. python scripts/architecture_audit.py
 
       - name: Manifest aktualisieren
-        run: python scripts/build_release_manifest.py
+        run: PYTHONPATH=src:. python scripts/build_release_manifest.py
 
       - name: Prüfbericht erzeugen
         run: |
