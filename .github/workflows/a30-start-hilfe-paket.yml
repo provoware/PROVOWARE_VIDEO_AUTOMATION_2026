@@ -25,7 +25,7 @@ jobs:
 
       - name: Hilfevertrag prüfen
         run: |
-          ./start.sh --help > /tmp/videobatch-hilfe.txt
+          bash start.sh --help > /tmp/videobatch-hilfe.txt
           grep -F 'PROVOWARE VideoBatch Fast' /tmp/videobatch-hilfe.txt
           grep -F -- '--doctor' /tmp/videobatch-hilfe.txt
           grep -F -- '--status' /tmp/videobatch-hilfe.txt
@@ -33,7 +33,7 @@ jobs:
       - name: Python-Fehlerpfad prüfen
         run: |
           set +e
-          VIDEOBATCH_BOOTSTRAP_PYTHON=python3-gibt-es-nicht ./STARTEN.sh >/tmp/a30-out.txt 2>/tmp/a30-err.txt
+          VIDEOBATCH_BOOTSTRAP_PYTHON=python3-gibt-es-nicht bash STARTEN.sh >/tmp/a30-out.txt 2>/tmp/a30-err.txt
           rc=$?
           set -e
           test "$rc" -eq 127
