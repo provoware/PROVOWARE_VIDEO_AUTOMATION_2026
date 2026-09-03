@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: p1-001-full-regression-census
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   census:
@@ -53,7 +53,7 @@ jobs:
           session: x11
           mode: matrix
 
-      - name: Capture repository status after dependency preparation
+      - name: Capture and remove known dependency diagnostics
         shell: bash
         run: |
           set -Eeuo pipefail
@@ -61,6 +61,13 @@ jobs:
           git status --porcelain --untracked-files=all -- . ':(exclude)p1-census' > p1-census/git-status-after-deps.txt
           git diff --name-status -- . ':(exclude)p1-census' > p1-census/git-diff-after-deps.txt
           git diff -- . ':(exclude)p1-census' > p1-census/git-diff-after-deps.patch
+          test -d matrix-logs
+          test -f CI_PACKAGE_METRICS.json
+          cp -R matrix-logs p1-census/dependency-matrix-logs
+          cp CI_PACKAGE_METRICS.json p1-census/CI_PACKAGE_METRICS.json
+          rm -rf matrix-logs CI_PACKAGE_METRICS.json
+          git status --porcelain --untracked-files=all -- . ':(exclude)p1-census' > p1-census/git-status-after-known-diagnostics-cleanup.txt
+          test ! -s p1-census/git-status-after-known-diagnostics-cleanup.txt
 
       - name: Start deterministic X11 display
         shell: bash
@@ -108,7 +115,7 @@ jobs:
             printf '%s: %s\n' "$file" "$(cat "$file")"
             test "$(cat "$file")" = '0'
           done
-          test ! -s p1-census/git-status-after-deps.txt
+          test ! -s p1-census/git-status-after-known-diagnostics-cleanup.txt
           test ! -s p1-census/git-status-after-rechecks.txt
 
       - name: Run complete pytest census
@@ -137,6 +144,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: p1-full-regression-census-${{ env.EXPECTED_HEAD_SHA }}
-          path: p1-census/*
+          path: p1-census/**
           if-no-files-found: error
           retention-days: 30
