@@ -1794,8 +1794,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/runtime_error_hooks.py",
-      "sha256": "a577a8cd8b007490d6692c2c6047096b6b17fdafb8cb55389050301254439208",
-      "size": 5797
+      "sha256": "24c03ef1d4ba099fca18cc0dd6036f914dc92b58ddde1c7fb154076d2e56d439",
+      "size": 6138
     },
     {
       "mode": "0o644",
@@ -2556,8 +2556,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_runtime_error_hardening.py",
-      "sha256": "6969ba791886052be2e831140d1341f839b1fc39f1c4ffb3cdb9659672e85143",
-      "size": 7451
+      "sha256": "e72a10c3b2991bfb51f356888c381289851947627c6617c1670dbf28a02425a5",
+      "size": 8609
     },
     {
       "mode": "0o644",
