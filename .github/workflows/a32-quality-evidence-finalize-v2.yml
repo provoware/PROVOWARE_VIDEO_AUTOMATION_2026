@@ -1,0 +1,36 @@
+name: A32 quality evidence finalize v2
+
+on:
+  push:
+    branches:
+      - fix/a32-2-refresh-quality-evidence
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/a32-2-refresh-quality-evidence
+          fetch-depth: 0
+      - name: Verify candidate ancestry
+        run: git merge-base --is-ancestor 048aa5733d9d0ce5fef872d25e0437fae08eab94 HEAD
+      - name: Write measured evidence
+        run: python3 scripts/a32_quality_evidence_finalize_tmp.py
+      - name: Remove temporary helpers
+        run: rm -f .github/workflows/a32-quality-evidence-finalize.yml .github/workflows/a32-quality-evidence-finalize-v2.yml scripts/a32_quality_evidence_finalize_tmp.py
+      - name: Rebuild manifest
+        run: |
+          python3 scripts/build_release_manifest.py
+          python3 scripts/build_release_manifest.py --check
+          python3 scripts/validate_release_manifest.py
+      - name: Commit canonical evidence
+        run: |
+          git config user.name provoware
+          git config user.email provoware.one@gmail.com
+          git add -A
+          git commit -m "evidence: refresh A32 offline quality proof"
+          git push origin HEAD:fix/a32-2-refresh-quality-evidence
