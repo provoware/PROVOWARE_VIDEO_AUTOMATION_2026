@@ -1,0 +1,58 @@
+name: A32 quality evidence one-shot
+
+on:
+  push:
+    branches:
+      - ci/a32-2-quality-evidence-048aa573
+
+permissions:
+  contents: read
+
+jobs:
+  quality-evidence:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          ref: 048aa5733d9d0ce5fef872d25e0437fae08eab94
+          fetch-depth: 1
+
+      - name: Assert exact candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "048aa5733d9d0ce5fef872d25e0437fae08eab94"
+          git status --short
+
+      - name: Prepare Python and Tk runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y python3-tk
+          python3 --version
+
+      - name: Run exact pinned offline quality gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          export VIDEOBATCH_QUALITY_EVIDENCE_DIR="$RUNNER_TEMP/videobatch-quality-evidence"
+          bash scripts/run_offline_quality_gate.sh
+
+      - name: Capture candidate identity
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/videobatch-quality-evidence"
+          printf '%s\n' "048aa5733d9d0ce5fef872d25e0437fae08eab94" > "$RUNNER_TEMP/videobatch-quality-evidence/verified-candidate-sha.txt"
+          printf '%s\n' "${GITHUB_RUN_ID}" > "$RUNNER_TEMP/videobatch-quality-evidence/workflow-run-id.txt"
+
+      - name: Upload quality evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a32-pinned-offline-quality-evidence-048aa573
+          path: ${{ runner.temp }}/videobatch-quality-evidence
+          retention-days: 30
