@@ -1,4 +1,4 @@
-name: P1-001 exact full P0 control
+name: P1-001 canonical docs renderer parity
 
 on:
   push:
@@ -9,90 +9,98 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: p1-001-exact-full-p0-control
+  group: p1-001-canonical-docs-renderer-parity
   cancel-in-progress: true
 
 jobs:
-  control:
-    name: Exact full-suite control on final P0 head
+  regenerate:
+    name: Canonicalize sole renderer outputs and manifest
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 15
     env:
-      EXPECTED_HEAD_SHA: 12b5a9daecdd4fdf2d8c5756c19c2705908681d4
+      TARGET_BRANCH: p1-001-release-evidence-reconciliation
+      EXPECTED_HEAD_SHA: e7169ba6c67f74b9f990cfe093ddaf019edc2ef4
       PYTHONDONTWRITEBYTECODE: '1'
       PYTHONUTF8: '1'
       PYTHONPATH: src
-      XDG_SESSION_TYPE: x11
 
     steps:
-      - name: Check out exact final P0 head
+      - name: Check out exact P1 renderer source head
         uses: actions/checkout@v5
         with:
-          ref: 12b5a9daecdd4fdf2d8c5756c19c2705908681d4
-          persist-credentials: false
+          ref: p1-001-release-evidence-reconciliation
+          fetch-depth: 1
 
-      - name: Prove exact pristine P0 head
+      - name: Prove exact pristine source head
         shell: bash
         run: |
           set -Eeuo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD_SHA"
           test -z "$(git status --porcelain --untracked-files=all)"
-          mkdir -p "$RUNNER_TEMP/p0-control"
-          printf '%s\n' "$EXPECTED_HEAD_SHA" > "$RUNNER_TEMP/p0-control/head-sha.txt"
 
-      - name: Prepare identical cached Kubuntu dependencies
-        uses: ./.github/actions/kubuntu-package-cache
+      - name: Prepare pinned Python toolchain
+        uses: actions/setup-python@v6
         with:
-          os: ubuntu-24.04
-          session: x11
-          mode: matrix
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-toolchain.lock
 
-      - name: Preserve dependency diagnostics outside repository
+      - name: Install locked Python dependencies
         shell: bash
         run: |
           set -Eeuo pipefail
-          test -d matrix-logs
-          test -f CI_PACKAGE_METRICS.json
-          cp -R matrix-logs "$RUNNER_TEMP/p0-control/dependency-matrix-logs"
-          cp CI_PACKAGE_METRICS.json "$RUNNER_TEMP/p0-control/CI_PACKAGE_METRICS.json"
-          rm -rf matrix-logs CI_PACKAGE_METRICS.json
-          test -z "$(git status --porcelain --untracked-files=all)"
+          python -m pip install --disable-pip-version-check --requirement requirements-toolchain.lock
 
-      - name: Start identical deterministic X11 display
+      - name: Run focused renderer ownership and parity regression
         shell: bash
         run: |
           set -Eeuo pipefail
-          Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
-          echo 'DISPLAY=:99' >> "$GITHUB_ENV"
-          sleep 2
+          python -m pytest -q tests/test_release_docs.py
+          python diagnostics/release_readiness/generate_from_evidence.py --check
+          python scripts/validate_release_file_status.py
 
-      - name: Run exact complete pytest control
+      - name: Render README and STATUS through sole renderer
         shell: bash
         run: |
           set -Eeuo pipefail
-          set +e
-          python3 -m pytest -q -p no:cacheprovider 2>&1 | tee "$RUNNER_TEMP/p0-control/pytest.log"
-          code=${PIPESTATUS[0]}
-          set -e
-          printf '%s\n' "$code" > "$RUNNER_TEMP/p0-control/pytest.exit-code.txt"
-          git status --porcelain --untracked-files=all > "$RUNNER_TEMP/p0-control/git-status-after-pytest.txt"
-          test ! -s "$RUNNER_TEMP/p0-control/git-status-after-pytest.txt"
-          exit "$code"
+          python scripts/render_release_docs.py --write
+          python scripts/render_release_docs.py --check
+          grep -F '**Kanal:** RC – noch keine Stable-Freigabe' README.md
+          grep -F '**Kanonische Quelle:** `diagnostics/release_readiness/RELEASE_EVIDENCE.json`' README.md
+          grep -F 'Kubuntu-CI-Matrix: 4/4 Kombinationen bestanden' README.md
+          grep -F '**Kanonische Quelle:** `diagnostics/release_readiness/RELEASE_EVIDENCE.json`' STATUS.md
+          grep -F 'Kubuntu-CI-Matrix: 4/4 Kombinationen bestanden' STATUS.md
 
-      - name: Collect display evidence
-        if: always()
+      - name: Regenerate and verify canonical manifest
         shell: bash
         run: |
-          cp /tmp/xvfb.log "$RUNNER_TEMP/p0-control/xvfb.log" 2>/dev/null || true
+          set -Eeuo pipefail
+          python scripts/build_release_manifest.py
+          python scripts/build_release_manifest.py --check --json
 
-      - name: Upload exact P0 control evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: p1-exact-full-p0-control-${{ env.EXPECTED_HEAD_SHA }}
-          path: ${{ runner.temp }}/p0-control/**
-          if-no-files-found: error
-          retention-days: 30
+      - name: Prove exact generated file set
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git diff --name-only | LC_ALL=C sort > "$RUNNER_TEMP/actual.txt"
+          cat > "$RUNNER_TEMP/expected.txt" <<'EOF'
+          README.md
+          RELEASE_MANIFEST.json
+          STATUS.md
+          EOF
+          LC_ALL=C sort -o "$RUNNER_TEMP/expected.txt" "$RUNNER_TEMP/expected.txt"
+          diff -u "$RUNNER_TEMP/expected.txt" "$RUNNER_TEMP/actual.txt"
+          test -z "$(git ls-files --others --exclude-standard)"
+
+      - name: Commit exact canonical outputs
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add README.md STATUS.md RELEASE_MANIFEST.json
+          git commit -m 'build: canonicalize P1 docs renderer outputs'
+          git push origin "HEAD:$TARGET_BRANCH"
