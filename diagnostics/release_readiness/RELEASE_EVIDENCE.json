@@ -14,11 +14,16 @@
     "manifest_regeneration_run_id": 30965984513,
     "matrix_workflow_run_id": 30966067548,
     "evidence_regression_base_head": "f05bafb53938b7a2e99095d525830c737c0f89de",
-    "evidence_regression_method": "four deterministic pytest partitions; 325/325 passed"
+    "evidence_regression_method": "four deterministic pytest partitions; 325/325 passed",
+    "canonical_p0_head": "9823e790f8e67a6e0f406b132c37569e3b95d977",
+    "canonical_p0_checkpoint2_run_id": 33791408050,
+    "offline_quality_report": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md",
+    "offline_quality_run_id": 30972392104,
+    "offline_quality_verified_commit": "2e33a2c00a0b2e7aa44f3db38a0a60a2d6998710"
   },
   "manifest": {
     "path": "RELEASE_MANIFEST.json",
-    "file_count": 398,
+    "file_count": 443,
     "status": "passed"
   },
   "tests": {
@@ -46,8 +51,8 @@
     "status": "passed",
     "passed_targets": 4,
     "total_targets": 4,
-    "workflow_run_id": 30966067548,
-    "verified_commit": "ef003d2c01fa94b899d0ebac9947f1795dd23e8f",
+    "workflow_run_id": 33791408050,
+    "verified_commit": "9823e790f8e67a6e0f406b132c37569e3b95d977",
     "targets": [
       {
         "os": "ubuntu-22.04",
@@ -70,7 +75,7 @@
         "status": "passed"
       }
     ],
-    "scope_note": "Headless deterministic CI matrix; not a substitute for physical KDE acceptance."
+    "scope_note": "Canonical P0 head; deterministic headless CI matrix, not a substitute for physical KDE acceptance."
   },
   "runtime_start": {
     "status": "passed",
@@ -94,8 +99,8 @@
   "release_cleanup": {
     "historical_reports_archived": 56,
     "obsolete_visual_baselines_removed": 16,
-    "ready_deliverables": 10,
-    "unfinished_gate_files": 8,
+    "ready_deliverables": 11,
+    "unfinished_gate_files": 6,
     "release_archive_excluded": true,
     "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe"
   },
@@ -139,6 +144,11 @@
         "evidence": "Interne Qualitätsprüfung ohne Befund"
       },
       {
+        "path": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md",
+        "label": "Offline-Qualitätsbericht",
+        "evidence": "Ruff, MyPy, Bandit und pip-audit exakt gepinnt mit Rückgabecode 0"
+      },
+      {
         "path": "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md",
         "label": "Implementierungsbericht",
         "evidence": "Umgesetzte Funktions- und Sicherheitsverträge dokumentiert"
@@ -161,11 +171,6 @@
         "reason": "Enthält bewusst die verbleibenden Stable-Gates"
       },
       {
-        "path": "QUALITY_GATE_ATTEMPT_2.8.3-rc24.md",
-        "label": "Externe Qualitätswerkzeuge",
-        "reason": "Ruff, MyPy, Bandit und pip-audit sind noch nicht abschließend ausgeführt"
-      },
-      {
         "path": "STABLE_GATE_ITERATION_2.8.3-rc24_2026-08-04.md",
         "label": "Stable-Freigabeiteration",
         "reason": "Stable-Freigabe ist ausdrücklich noch blockiert"
@@ -186,11 +191,6 @@
         "reason": "Physische KDE-X11-/Wayland-Abnahme bleibt offen"
       },
       {
-        "path": "QUALITY_ENVIRONMENT_STATUS.json",
-        "label": "Qualitätsumgebung",
-        "reason": "Exakte Offline-Werkzeugumgebung ist nicht vollständig freigegeben"
-      },
-      {
         "path": "VISUAL_INSPECTION_MANIFEST.json",
         "label": "Visuelles Prüfmanifest",
         "reason": "Aktueller physischer Lauf ist nicht vollständig bestätigt"
@@ -201,26 +201,26 @@
     {
       "id": "ruff_0_16_1",
       "label": "Ruff 0.16.1",
-      "status": "open",
-      "reason": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen"
+      "status": "passed",
+      "reason": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md · Workflow 30972392104 · Rückgabecode 0"
     },
     {
       "id": "mypy_2_3_0",
       "label": "MyPy 2.3.0",
-      "status": "open",
-      "reason": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen"
+      "status": "passed",
+      "reason": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md · Workflow 30972392104 · Rückgabecode 0"
     },
     {
       "id": "bandit_1_9_4",
       "label": "Bandit 1.9.4",
-      "status": "open",
-      "reason": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen"
+      "status": "passed",
+      "reason": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md · Workflow 30972392104 · Rückgabecode 0"
     },
     {
       "id": "pip_audit_2_10_1",
       "label": "pip-audit 2.10.1",
-      "status": "open",
-      "reason": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen"
+      "status": "passed",
+      "reason": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md · Workflow 30972392104 · Rückgabecode 0"
     },
     {
       "id": "physical_kde_x11_wayland",
@@ -237,11 +237,11 @@
   ],
   "stable_ready": false,
   "progress": {
-    "percent": 80,
-    "completed": 24,
-    "open": 6,
+    "percent": 93,
+    "completed": 28,
+    "open": 2,
     "total": 30,
-    "current_todo": "Kanonische Release-Nachweise synchronisiert; externe Stable-Gates bleiben offen"
+    "current_todo": "Quality-Evidence synchronisiert; physische KDE-Abnahme und Large-Media-Soak bleiben offen"
   },
   "approved_quality_report": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
   "artifact_policy": "full-project-zip-before-stable",

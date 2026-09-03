@@ -158,6 +158,7 @@ if [[ "$MODE" != "local" ]]; then
 fi
 
 "$ENV_PYTHON" "$ROOT_DIR/scripts/validate_version_contract.py"
+"$ENV_PYTHON" "$ROOT_DIR/diagnostics/release_readiness/generate_from_evidence.py" --check
 "$ENV_PYTHON" "$ROOT_DIR/scripts/render_release_docs.py" --check
 "$ENV_PYTHON" "$ROOT_DIR/scripts/verify_compile_isolated.py"
 "$ENV_PYTHON" "$ROOT_DIR/scripts/validate_registries.py"
