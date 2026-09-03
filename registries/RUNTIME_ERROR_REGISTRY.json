@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "errors": {
+    "INTERNAL_IMMUTABLE_STATE_ERROR": {
+      "title": "Ein interner Zustand war schreibgeschützt",
+      "cause": "Programmcode hat versucht, ein unveränderliches Zustandsobjekt nachträglich zu verändern.",
+      "effect": "Die betroffene Aktion wurde gestoppt, bevor ein inkonsistenter Zustand weiterverwendet wird.",
+      "automatic_action": "Der Fehler wird mit genauer Python-Stelle und Fingerprint protokolliert; identische Folgemeldungen werden kurzzeitig unterdrückt.",
+      "solution": "Den Bericht prüfen und die gemeldete Zustandsänderung im betroffenen Codepfad korrigieren.",
+      "alternative": "Die Aktion nach einem regulären Neustart einmal reproduzieren und den ersten Bericht verwenden.",
+      "severity": "blocking",
+      "actions": ["open_logs", "retry_validation"]
+    },
+    "RUNTIME_PERMISSION_DENIED": {
+      "title": "Zugriff wurde vom System verweigert",
+      "cause": "VideoBatch besitzt für Datei, Ordner oder Systemressource nicht die nötigen Rechte.",
+      "effect": "Der betroffene Vorgang kann an dieser Stelle nicht sicher fortgesetzt werden.",
+      "automatic_action": "Die Ausnahme wird isoliert und mit dem betroffenen Laufzeitbereich protokolliert.",
+      "solution": "Pfad, Besitzer und Schreibrechte prüfen und anschließend nur den betroffenen Vorgang erneut starten.",
+      "alternative": "Einen beschreibbaren Projekt- oder Ausgabeordner verwenden.",
+      "severity": "blocking",
+      "actions": ["open_logs", "choose_output"]
+    },
+    "RUNTIME_FILE_OR_TOOL_MISSING": {
+      "title": "Eine benötigte Datei oder ein Werkzeug fehlt",
+      "cause": "Ein erwarteter Pfad, eine Quelldatei oder ein externes Programm ist nicht mehr erreichbar.",
+      "effect": "Die betroffene Funktion kann ihre Voraussetzungen nicht erfüllen.",
+      "automatic_action": "Die Verarbeitung wird vor weiteren abhängigen Schritten gestoppt und der Fundort protokolliert.",
+      "solution": "Fehlenden Pfad oder das benötigte Werkzeug wieder bereitstellen und die Prüfung wiederholen.",
+      "alternative": "Die betroffene Datei neu auswählen oder einen gültigen Werkzeugpfad konfigurieren.",
+      "severity": "blocking",
+      "actions": ["open_logs", "reselect_file"]
+    },
+    "RUNTIME_MEMORY_LIMIT_REACHED": {
+      "title": "Der verfügbare Arbeitsspeicher reicht nicht aus",
+      "cause": "Python oder eine Medienoperation konnte keinen weiteren benötigten Speicher reservieren.",
+      "effect": "Der aktuelle Vorgang kann nicht zuverlässig fortgeführt werden.",
+      "automatic_action": "Der Fehler wird isoliert; vorhandene Original- und Ausgabedateien bleiben unangetastet.",
+      "solution": "Parallele Last reduzieren, kleinere Stapel verwenden und den Vorgang erneut prüfen.",
+      "alternative": "Andere speicherintensive Anwendungen schließen und VideoBatch neu starten.",
+      "severity": "blocking",
+      "actions": ["open_logs", "retry_validation"]
+    },
+    "RUNTIME_SUBPROCESS_FAILED": {
+      "title": "Ein externer Prozess ist fehlgeschlagen",
+      "cause": "Ein gestartetes Werkzeug oder Unterprogramm wurde mit einem Fehlercode beendet.",
+      "effect": "Der abhängige VideoBatch-Schritt wurde nicht erfolgreich abgeschlossen.",
+      "automatic_action": "Der Rückgabecode und der Python-Kontext werden im Fehlerbericht festgehalten.",
+      "solution": "Prozessausgabe und Eingabedateien prüfen und erst danach den betroffenen Auftrag wiederholen.",
+      "alternative": "Werkzeugpfad, Parameter und Dateiformat separat validieren.",
+      "severity": "blocking",
+      "actions": ["open_logs", "retry_validation"]
+    },
+    "RUNTIME_INVALID_STATE": {
+      "title": "Ein ungültiger Programmzustand wurde abgefangen",
+      "cause": "Ein Wert oder Datentyp widerspricht dem erwarteten Vertrag der aktuellen Funktion.",
+      "effect": "Die aktuelle Aktion wurde gestoppt, damit der fehlerhafte Zustand nicht weitergereicht wird.",
+      "automatic_action": "Fehlerort, Typ und Fingerprint werden protokolliert.",
+      "solution": "Den ersten Bericht verwenden und den dort genannten Eingabe- oder Zustandsvertrag korrigieren.",
+      "alternative": "Die betroffene Auswahl zurücksetzen und die Aktion mit gültigen Eingaben erneut ausführen.",
+      "severity": "blocking",
+      "actions": ["open_logs", "retry_validation"]
+    },
+    "RUNTIME_OS_ERROR": {
+      "title": "Das Betriebssystem hat die Aktion abgelehnt",
+      "cause": "Eine Datei-, Prozess- oder Geräteoperation ist auf Betriebssystemebene fehlgeschlagen.",
+      "effect": "Der betroffene Laufzeitpfad kann nicht sicher fortgesetzt werden.",
+      "automatic_action": "Der Betriebssystemfehler wird mit Laufzeitbereich und Fingerprint protokolliert.",
+      "solution": "Datenträger, Pfad, Dateisystemzustand und Systemmeldung im Bericht prüfen.",
+      "alternative": "Das betroffene Gerät neu verbinden oder einen anderen gültigen Zielpfad verwenden.",
+      "severity": "blocking",
+      "actions": ["open_logs", "retry_validation"]
+    },
+    "RUNTIME_UNHANDLED_EXCEPTION": {
+      "title": "Ein unerwarteter Laufzeitfehler wurde abgefangen",
+      "cause": "Die Ausnahme gehört noch keiner spezielleren bekannten Fehlerklasse an.",
+      "effect": "Der betroffene Vorgang wird kontrolliert beendet oder isoliert.",
+      "automatic_action": "Vollständiger Traceback, Laufzeitbereich und stabiler Fingerprint werden lokal protokolliert.",
+      "solution": "Den ersten vollständigen Bericht prüfen und die genaue Python-Stelle als Ausgangspunkt verwenden.",
+      "alternative": "Den Fehler einmal kontrolliert reproduzieren; identische Meldungen werden kurzzeitig gebündelt.",
+      "severity": "blocking",
+      "actions": ["open_logs"]
+    }
+  }
+}
