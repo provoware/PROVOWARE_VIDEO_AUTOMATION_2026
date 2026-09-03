@@ -30,8 +30,8 @@
     {
       "mode": "0o644",
       "path": ".github/workflows/checkpoint2-shell-matrix.yml",
-      "sha256": "5572b0020732af1bbe30111d8963a0b070a72fe2bf72d3d50f16d85c93d21bfa",
-      "size": 11286
+      "sha256": "293ed178842df3d26aa0c95c7eb1f90484f5351d3fef0d9486190e780d1713c4",
+      "size": 11697
     },
     {
       "mode": "0o644",
@@ -1038,8 +1038,8 @@
     {
       "mode": "0o644",
       "path": "scripts/checkpoint2_shell_smoke.py",
-      "sha256": "a10ca9fc5c3b63435f48305098186be1f58d59e29ac3f33e409c88ad25ba2c69",
-      "size": 6212
+      "sha256": "7c18c84da230697bcd979af09db9682090880db5172508cd5486ebff62de1b65",
+      "size": 6303
     },
     {
       "mode": "0o644",
@@ -2238,8 +2238,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_canonical_kpi_contract.py",
-      "sha256": "a277727074a04b3574f464793cfe6d3ee1dc95a750d50fa5fda1fba2d4afb052",
-      "size": 5293
+      "sha256": "68cefe17beeaf16e4c099fd69fc6df2f8cbce108c82a735faed80cbd0d82c991",
+      "size": 5463
     },
     {
       "mode": "0o644",
