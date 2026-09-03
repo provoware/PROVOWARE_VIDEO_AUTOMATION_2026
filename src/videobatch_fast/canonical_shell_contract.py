@@ -56,7 +56,7 @@ SHELL_NAVIGATION = (
     ShellNavigationItem("media", "▧  Medien", 1),
     ShellNavigationItem("queue", "☷  Queue", 4),
     ShellNavigationItem("effects", "✦  Effekte", 3),
-    ShellNavigationItem("scheduler", "◷  Startzeit", None, "disabled"),
+    ShellNavigationItem("scheduler", "◷  Scheduler · Startzeit", None, "disabled"),
     ShellNavigationItem("preview", "▣  Vorschau", 2),
     ShellNavigationItem("diagnostics", "◎  Hilfe & Diagnose", 5),
     ShellNavigationItem("settings", "⚙  Einstellungen", 3, "settings"),
