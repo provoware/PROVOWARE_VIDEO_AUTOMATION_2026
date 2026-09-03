@@ -80,14 +80,14 @@ def run_app() -> None:
         )
         root.mainloop()
         RUNTIME.mark_clean_shutdown()
-    except BaseException as exc:
+    except Exception as exc:
         capture_runtime_exception(
             type(exc),
             exc,
             exc.__traceback__,
             scope="runtime",
             fatal=True,
-            where="canonical_ui.run_app · genauer Python-Ort steht im Bericht",
+            where="canonical_ui.run_app",
             root=root,
             auto_open=True,
         )
