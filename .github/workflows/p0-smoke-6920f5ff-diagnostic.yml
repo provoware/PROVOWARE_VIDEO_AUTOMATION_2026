@@ -1,0 +1,151 @@
+name: P0 diagnostic - original 6920f5ff X11 smoke
+
+on:
+  push:
+    branches:
+      - diagnose/p0-smoke-6920f5ff-evidence
+    paths:
+      - .github/workflows/p0-smoke-6920f5ff-diagnostic.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: p0-smoke-6920f5ff-diagnostic
+  cancel-in-progress: false
+
+jobs:
+  reproduce-original-smoke:
+    name: Ubuntu 24.04 / X11 / original smoke evidence
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      XDG_SESSION_TYPE: x11
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      PYTHONPATH: src
+      EXPECTED_HEAD_SHA: 6920f5ff9434f5cbab3d73476848b268acb86a6d
+      EVIDENCE_DIR: ${{ runner.temp }}/p0-smoke-evidence
+
+    steps:
+      - name: Check out exact original failing head
+        uses: actions/checkout@v5
+        with:
+          ref: 6920f5ff9434f5cbab3d73476848b268acb86a6d
+          persist-credentials: false
+
+      - name: Prove exact source head
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p "$EVIDENCE_DIR"
+          actual="$(git rev-parse HEAD)"
+          printf '%s\n' "$actual" | tee "$EVIDENCE_DIR/checked-out-head.txt"
+          if [[ "$actual" != "$EXPECTED_HEAD_SHA" ]]; then
+            echo "::error title=Wrong diagnostic source head::Expected $EXPECTED_HEAD_SHA but checked out $actual"
+            exit 1
+          fi
+          sha256sum \
+            scripts/checkpoint2_shell_smoke.py \
+            requirements-toolchain.lock \
+            .github/ci/kubuntu-packages.txt \
+            > "$EVIDENCE_DIR/source-input-sha256.txt"
+
+      - name: Prepare identical Kubuntu dependencies
+        uses: ./.github/actions/kubuntu-package-cache
+        with:
+          os: ubuntu-24.04
+          session: x11
+          mode: matrix
+
+      - name: Start identical deterministic X11 display
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp \
+            >/tmp/xvfb.log 2>&1 &
+          echo "DISPLAY=:99" >> "$GITHUB_ENV"
+          sleep 2
+
+      - name: Capture exact original smoke stdout stderr and exit code
+        id: smoke
+        shell: bash
+        run: |
+          mkdir -p "$EVIDENCE_DIR"
+          printf '%s\n' 'python3 scripts/checkpoint2_shell_smoke.py' \
+            > "$EVIDENCE_DIR/smoke-command.txt"
+          set +e
+          python3 scripts/checkpoint2_shell_smoke.py \
+            >"$EVIDENCE_DIR/smoke.stdout.log" \
+            2>"$EVIDENCE_DIR/smoke.stderr.log"
+          rc=$?
+          set -e
+          printf '%s\n' "$rc" > "$EVIDENCE_DIR/smoke.exit-code.txt"
+          printf 'smoke_exit_code=%s\n' "$rc" >> "$GITHUB_OUTPUT"
+          echo '----- smoke stdout -----'
+          cat "$EVIDENCE_DIR/smoke.stdout.log"
+          echo '----- smoke stderr -----' >&2
+          cat "$EVIDENCE_DIR/smoke.stderr.log" >&2
+          echo "----- smoke exit code: $rc -----"
+          exit "$rc"
+
+      - name: Collect immutable diagnostic context
+        if: always()
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p "$EVIDENCE_DIR"
+          test ! -f /tmp/xvfb.log || cp /tmp/xvfb.log "$EVIDENCE_DIR/xvfb.log"
+          if [[ -d matrix-logs ]]; then
+            cp -a matrix-logs "$EVIDENCE_DIR/dependency-logs"
+          fi
+          python3 --version > "$EVIDENCE_DIR/python-version.txt" 2>&1 || true
+          python3 -m pip freeze > "$EVIDENCE_DIR/pip-freeze.txt" 2>&1 || true
+          uname -a > "$EVIDENCE_DIR/uname.txt" 2>&1 || true
+          git status --porcelain=v1 --untracked-files=all \
+            > "$EVIDENCE_DIR/repository-status-after-smoke.txt" || true
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          evidence = Path(os.environ["EVIDENCE_DIR"])
+          exit_path = evidence / "smoke.exit-code.txt"
+          exit_code = None
+          if exit_path.is_file():
+              try:
+                  exit_code = int(exit_path.read_text(encoding="utf-8").strip())
+              except ValueError:
+                  pass
+
+          smoke_path = Path("scripts/checkpoint2_shell_smoke.py")
+          smoke_sha256 = hashlib.sha256(smoke_path.read_bytes()).hexdigest()
+          payload = {
+              "schema_version": 1,
+              "purpose": "reproduce_original_checkpoint2_shell_smoke_failure_only",
+              "product_head": os.environ["EXPECTED_HEAD_SHA"],
+              "runner": "ubuntu-24.04",
+              "session": "x11",
+              "display": os.environ.get("DISPLAY"),
+              "command": "python3 scripts/checkpoint2_shell_smoke.py",
+              "smoke_script_sha256": smoke_sha256,
+              "exit_code": exit_code,
+              "product_files_modified_by_diagnostic_workflow": False,
+          }
+          (evidence / "diagnostic.json").write_text(
+              json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Upload complete P0 smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p0-smoke-6920f5ff-ubuntu-24.04-x11
+          if-no-files-found: error
+          retention-days: 30
+          path: ${{ runner.temp }}/p0-smoke-evidence/
