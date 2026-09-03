@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 from dataclasses import FrozenInstanceError
 from pathlib import Path
 
@@ -7,6 +8,7 @@ from videobatch_fast.error_handling import error_definition
 from videobatch_fast.runtime_error_guidance import (
     classify_runtime_exception,
     exception_fingerprint,
+    exception_location,
 )
 from videobatch_fast import runtime_error_hooks
 
@@ -26,6 +28,7 @@ def test_common_runtime_exceptions_are_not_collapsed_to_unknown() -> None:
         (PermissionError("blocked"), "RUNTIME_PERMISSION_DENIED"),
         (FileNotFoundError("missing"), "RUNTIME_FILE_OR_TOOL_MISSING"),
         (MemoryError("memory"), "RUNTIME_MEMORY_LIMIT_REACHED"),
+        (subprocess.TimeoutExpired("ffmpeg", 1), "RUNTIME_SUBPROCESS_FAILED"),
         (ValueError("bad value"), "RUNTIME_INVALID_STATE"),
         (OSError("device"), "RUNTIME_OS_ERROR"),
         (RuntimeError("other"), "RUNTIME_UNHANDLED_EXCEPTION"),
@@ -51,6 +54,15 @@ def test_exception_fingerprint_is_stable_for_same_incident() -> None:
     assert len(first) == 16
 
 
+def test_exception_location_points_to_deepest_python_frame() -> None:
+    try:
+        raise RuntimeError("location probe")
+    except RuntimeError as exc:
+        location = exception_location(exc.__traceback__)
+    assert "test_runtime_error_hardening.py" in location
+    assert "test_exception_location_points_to_deepest_python_frame()" in location
+
+
 def test_duplicate_incidents_are_suppressed_inside_window(monkeypatch) -> None:
     runtime_error_hooks._recent_fingerprints.clear()
     moments = iter((100.0, 105.0, 113.0))
@@ -60,7 +72,7 @@ def test_duplicate_incidents_are_suppressed_inside_window(monkeypatch) -> None:
     assert runtime_error_hooks._claim_fingerprint("ABC") is True
 
 
-def test_capture_adds_code_and_fingerprint_to_debug_context(monkeypatch) -> None:
+def test_capture_adds_code_fingerprint_and_exact_location(monkeypatch) -> None:
     runtime_error_hooks._recent_fingerprints.clear()
     captured: dict[str, object] = {}
 
@@ -69,22 +81,25 @@ def test_capture_adds_code_and_fingerprint_to_debug_context(monkeypatch) -> None
         return None
 
     monkeypatch.setattr(runtime_error_hooks.RUNTIME, "capture_exception", fake_capture_exception)
-    exc = PermissionError("denied")
-    handled = runtime_error_hooks.capture_runtime_exception(
-        type(exc),
-        exc,
-        None,
-        scope="runtime",
-        fatal=False,
-        where="test",
-        root=None,
-        auto_open=False,
-    )
+    try:
+        raise PermissionError("denied")
+    except PermissionError as exc:
+        handled = runtime_error_hooks.capture_runtime_exception(
+            type(exc),
+            exc,
+            exc.__traceback__,
+            scope="runtime",
+            fatal=False,
+            where="test",
+            root=None,
+            auto_open=False,
+        )
     assert handled is True
     context = captured["extra_context"]
     assert isinstance(context, dict)
     assert context["Fehlercode"] == "RUNTIME_PERMISSION_DENIED"
     assert len(str(context["Fehler-Fingerprint"])) == 16
+    assert "test_runtime_error_hardening.py" in str(captured["where"])
 
 
 def test_canonical_ui_uses_only_central_runtime_hooks() -> None:
@@ -96,3 +111,4 @@ def test_canonical_ui_uses_only_central_runtime_hooks() -> None:
     assert "def _tk_exception_handler" not in source
     assert "def _install_thread_debug_hook" not in source
     assert 'error_definition("UNKNOWN")' not in source
+    assert "except BaseException as exc:" not in source
