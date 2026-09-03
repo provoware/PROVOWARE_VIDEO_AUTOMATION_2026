@@ -1,0 +1,53 @@
+name: A32 full regression e9bedf83
+
+on:
+  push:
+    branches:
+      - ci/a32-2-full-regression-e9bedf83
+
+permissions:
+  contents: read
+
+jobs:
+  full-regression:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: e9bedf83aa948080ca0cf9329080c315dfd2a5cf
+          fetch-depth: 1
+      - name: Assert exact product candidate
+        run: test "$(git rev-parse HEAD)" = "e9bedf83aa948080ca0cf9329080c315dfd2a5cf"
+      - name: Install desktop and media prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-tk xvfb ffmpeg
+      - name: Count collected tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/toolchain.py prepare --scope quality --auto-repair --quiet
+          PY="$(python3 scripts/toolchain.py path --scope quality --quiet)"
+          PYTHONPATH="$GITHUB_WORKSPACE/src" "$PY" -m pytest --collect-only -q tests | tee "$RUNNER_TEMP/pytest-collect.txt"
+      - name: Run complete repository core regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          export VIDEOBATCH_QUALITY_ALREADY_VERIFIED=1
+          ./test.sh --core 2>&1 | tee "$RUNNER_TEMP/full-regression.log"
+      - name: Record exact evidence identity
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/full-regression-evidence"
+          cp "$RUNNER_TEMP/pytest-collect.txt" "$RUNNER_TEMP/full-regression-evidence/" 2>/dev/null || true
+          cp "$RUNNER_TEMP/full-regression.log" "$RUNNER_TEMP/full-regression-evidence/" 2>/dev/null || true
+          echo e9bedf83aa948080ca0cf9329080c315dfd2a5cf > "$RUNNER_TEMP/full-regression-evidence/verified-candidate-sha.txt"
+          echo "$GITHUB_RUN_ID" > "$RUNNER_TEMP/full-regression-evidence/workflow-run-id.txt"
+      - name: Upload full regression evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a32-full-regression-e9bedf83
+          path: ${{ runner.temp }}/full-regression-evidence
+          retention-days: 30
