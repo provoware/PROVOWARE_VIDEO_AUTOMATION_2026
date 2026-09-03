@@ -27,7 +27,7 @@ Der separate Nachweis `QUALITY_GATE_REPORT_2.8.3-rc24_save_.md` belegt den repro
 - MyPy 2.3.0: bestanden, Rückgabecode 0
 - Bandit 1.9.4: bestanden, Rückgabecode 0
 - pip-audit 2.10.1: bestanden, Rückgabecode 0
-- Workflow `30972392104`, geprüfter Commit `2e33a2c00a0b2e7aa44f3db38a0a60a2d6998710`
+- Workflow `33801346178`, geprüfter Commit `048aa5733d9d0ce5fef872d25e0437fae08eab94`
 
 ## Zusätzliche Härtungen
 
