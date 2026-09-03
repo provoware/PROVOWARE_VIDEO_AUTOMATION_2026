@@ -27,7 +27,7 @@ jobs:
       PYTHONUTF8: '1'
       PYTHONPATH: src
       EXPECTED_HEAD_SHA: 6920f5ff9434f5cbab3d73476848b268acb86a6d
-      EVIDENCE_DIR: ${{ runner.temp }}/p0-smoke-evidence
+      EVIDENCE_DIR: /tmp/p0-smoke-evidence
 
     steps:
       - name: Check out exact original failing head
@@ -148,4 +148,4 @@ jobs:
           name: p0-smoke-6920f5ff-ubuntu-24.04-x11
           if-no-files-found: error
           retention-days: 30
-          path: ${{ runner.temp }}/p0-smoke-evidence/
+          path: /tmp/p0-smoke-evidence/
