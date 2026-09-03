@@ -142,7 +142,7 @@
       "size": 4976
     },
     {
-      "mode": "0o600",
+      "mode": "0o644",
       "path": "DEVELOPMENT_STATUS.json",
       "sha256": "64ed27bafd5016f75f30458485e80034d300779c64eecb1a997f26264ec0ac7e",
       "size": 705
@@ -238,7 +238,7 @@
       "size": 10608
     },
     {
-      "mode": "0o600",
+      "mode": "0o644",
       "path": "QUALITY_ENVIRONMENT_STATUS.json",
       "sha256": "9ff0d6a953c04e36a0f5a6825013a7c59e33855d6660fbfe0d8a35e066398b66",
       "size": 1935
@@ -268,7 +268,7 @@
       "size": 597
     },
     {
-      "mode": "0o600",
+      "mode": "0o644",
       "path": "RELEASE_FILE_STATUS.json",
       "sha256": "8ce7fc5a4dd392e19bafd24fe6fc4f0a0f21f6fb90c29a1af1b6ce1a1e4930cb",
       "size": 3345
@@ -382,7 +382,7 @@
       "size": 254
     },
     {
-      "mode": "0o600",
+      "mode": "0o644",
       "path": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
       "sha256": "10f3c55a7918e94616275654612bfd23edf98a45cdfa09178669eeef1e543d97",
       "size": 3091
@@ -2496,8 +2496,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_release_docs.py",
-      "sha256": "85aa10f91009099d276a4931dd40acf4aa0252d396271b3e5f01d9377030a259",
-      "size": 2166
+      "sha256": "ae6830003854e5a30369dd95c107a783edc2dadefd73b49e597e6eccaaedef39",
+      "size": 2605
     },
     {
       "mode": "0o644",
