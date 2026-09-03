@@ -92,7 +92,7 @@ def test_canonical_ui_installs_debug_before_constructing_application() -> None:
     source = (ROOT / "src/videobatch_fast/canonical_ui.py").read_text(encoding="utf-8")
     assert "CanonicalDebugMixin" in source
     assert source.index("root.report_callback_exception") < source.index("CanonicalVideoBatchFastUI(root)")
-    assert "RUNTIME.capture_exception" in source
+    assert "capture_runtime_exception(" in source
     assert "VIDEOBATCH_DEBUG_CLEAN_MARKER" in source
 
 
