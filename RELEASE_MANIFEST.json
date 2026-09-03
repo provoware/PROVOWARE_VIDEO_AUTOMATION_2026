@@ -2220,8 +2220,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_autonomous_bootstrap_2_8_3_rc8.py",
-      "sha256": "41e547622765eeccd0b37fb25607de59c15c93f7ceff262770ca058f71353d94",
-      "size": 4252
+      "sha256": "02f658c178902b075d92c98eb09acf165ff7b247c5efa9d59a4858d8aad85ac8",
+      "size": 4399
     },
     {
       "mode": "0o644",
@@ -2310,8 +2310,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_kubuntu_main_comment_dispatch.py",
-      "sha256": "0f55ea991e420467e53346fdf17120f0399de1fe88db714d3c7e9a77f2c0cdd3",
-      "size": 1840
+      "sha256": "81e43bdc3c9a4dde6653c2000ccbf8b1905799e1258e0f7cbabbdac778af2d50",
+      "size": 1846
     },
     {
       "mode": "0o644",
@@ -2352,8 +2352,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_predictive_bootstrap_2_8_3_rc10.py",
-      "sha256": "89b368a974cef27010943c642a8817d29dc97e5431972257e93607f2ade023b2",
-      "size": 4698
+      "sha256": "1d0f920e79f40201ee2c8b1b8db1b2b21b606207758ab4dbbdac3422ef7a80d9",
+      "size": 4836
     },
     {
       "mode": "0o644",
@@ -2604,8 +2604,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_unified_toolchain_2_8_3_rc7.py",
-      "sha256": "dc509887154d042885ede9c24efe66ffc205da550c32946e652b6a63c02f65f5",
-      "size": 4583
+      "sha256": "8ee1229f2a45440c7fbceaba769b2d630d38e2cbe676bd172506e89999f69b62",
+      "size": 4730
     },
     {
       "mode": "0o644",
