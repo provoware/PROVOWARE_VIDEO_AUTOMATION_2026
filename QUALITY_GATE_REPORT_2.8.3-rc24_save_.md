@@ -2,7 +2,7 @@
 
 ## Ergebnis
 
-Die exakt gepinnte Qualitätswerkzeugkette wurde am 3. September 2026 auf dem aktuellen A32.2-Kandidaten vollständig ausgeführt. Alle vier Pflichtwerkzeuge bestanden ohne Quell- oder Sicherheitsbefund.
+Die exakt gepinnte Qualitätswerkzeugkette wurde am 3. September 2026 erneut vollständig auf dem aktuellen A32.2-Head `934688e8a2f9e1344a91a959396aaef361ee9b67` ausgeführt. Alle vier Pflichtwerkzeuge bestanden mit Rückgabecode 0; der finale Werkzeuglauf lief mit aktivierter Offline-Netzwerksperre.
 
 | Werkzeug | Exakte Version | Ergebnis | Rückgabecode |
 |---|---:|---|---:|
@@ -13,44 +13,29 @@ Die exakt gepinnte Qualitätswerkzeugkette wurde am 3. September 2026 auf dem ak
 
 ## Geprüfter Kandidat
 
-- Produkt-Commit: `048aa5733d9d0ce5fef872d25e0437fae08eab94`
-- Workflow-Lauf: `33801346178`
-- isolierter Probe-PR: `#89` (nicht gemergt)
-- Evidence-Artefakt: `a32-quality-evidence-048aa573`
-- Artefakt-ID: `9911189721`
-- Artefakt-SHA-256: `63c172740436777e0bcdfa7593839da0ef8b1c180d9eae7c3070e3fa8cd99fec`
-- Runner: Ubuntu 24.04.4 / Python 3.12
+- Produkt-Commit: `934688e8a2f9e1344a91a959396aaef361ee9b67`
+- Workflow-Lauf: `33804721216`
+- Trigger-Branch: `ci/a32-2-quality-evidence-934688e8`
+- Evidence-Artefakt: `a32-pinned-offline-quality-evidence-934688e8`
+- Artefakt-ID: `9912461944`
+- Artefakt-SHA-256: `7574b309911b3c067583510b7e418af1ceec999e59008ea1c07c1d12525a4c7c`
 - Offline-Netzwerkguard während der vier Qualitätswerkzeuge: aktiv
 
-Der Workflow-Trigger selbst lief auf einem isolierten Probe-Branch. Vor der Qualitätsprüfung wurde hart der oben genannte Produkt-Commit detached ausgecheckt und mit `git rev-parse HEAD` gegen den erwarteten SHA geprüft. Der Probe-Commit ist deshalb nicht der geprüfte Produktstand.
-
-## Reproduzierbarer Ablauf
-
-1. Repository auf exakt `048aa5733d9d0ce5fef872d25e0437fae08eab94` ausgecheckt und Commit-Identität geprüft.
-2. Einheits-Wheelhouse aus der gesperrten Werkzeugkette aufgebaut.
-3. 47 Wheel-Dateien identifiziert und vollständig verifiziert.
-4. Quality-Umgebung aus dem geprüften Wheelhouse offline neu installiert.
-5. Installierte Werkzeugversionen exakt gegen den Vertrag geprüft.
-6. Ruff, MyPy, Bandit und pip-audit mit aktivem Offline-Netzwerkguard ausgeführt.
-7. Version, Status und Rückgabecode aller vier Werkzeuge maschinenlesbar protokolliert.
+Der Workflow-Trigger lief absichtlich auf einem isolierten Helper-Branch. Vor der Qualitätsprüfung wurde hart der oben genannte Produkt-Commit ausgecheckt und gegen den erwarteten SHA geprüft. Der Helper-Commit ist deshalb nicht der geprüfte Produktstand; der nachträgliche Evidence-Commit zertifiziert nicht sich selbst.
 
 ## Einzelbefunde
 
 ### Ruff 0.16.1
-Rückgabecode 0. Umfang: `src`, `scripts`, `tests` gemäß `pyproject.toml`.
+Rückgabecode 0; Umfang `src`, `scripts`, `tests` gemäß `pyproject.toml`.
 
 ### MyPy 2.3.0
-Rückgabecode 0. Umfang: zehn sicherheits- und laufzeitkritische Module des verbindlichen externen Qualitätsrunners.
+Rückgabecode 0; zehn sicherheits- und laufzeitkritische Module des verbindlichen externen Qualitätsrunners ohne Befund.
 
 ### Bandit 1.9.4
 Rückgabecode 0; keine Sicherheitsbefunde.
 
 ### pip-audit 2.10.1
-Rückgabecode 0; keine bekannte Schwachstelle in der exakt gepinnten Laufzeit-Lockdatei. Der Lauf nutzte den vorbereiteten Advisory-Cache unter aktivem Offline-Netzwerkguard.
-
-## Einordnung
-
-Dieser Nachweis ersetzt den veralteten Offline-Quality-Nachweis vom 5. August 2026 für Commit `2e33a2c00a0b2e7aa44f3db38a0a60a2d6998710`. Die Qualitätsampeln werden nicht bloß umgeschrieben, sondern durch einen neuen Lauf auf dem aktuellen A32.2-Kandidaten belegt.
+Rückgabecode 0; keine bekannte Schwachstelle in der exakt gepinnten Laufzeit-Lockdatei. Der finale Audit lief unter aktivem Offline-Netzwerkguard.
 
 ## Verbleibende Stable-Gates
 

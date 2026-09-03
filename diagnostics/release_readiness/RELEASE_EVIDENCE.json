@@ -18,12 +18,12 @@
     "canonical_p0_head": "9823e790f8e67a6e0f406b132c37569e3b95d977",
     "canonical_p0_checkpoint2_run_id": 33791408050,
     "offline_quality_report": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md",
-    "offline_quality_run_id": 33801346178,
-    "offline_quality_verified_commit": "048aa5733d9d0ce5fef872d25e0437fae08eab94",
-    "offline_quality_artifact_id": 9911189721,
-    "offline_quality_artifact_sha256": "63c172740436777e0bcdfa7593839da0ef8b1c180d9eae7c3070e3fa8cd99fec",
-    "offline_quality_verified_at": "2026-09-03T20:17:56Z",
-    "offline_quality_probe_pr": 89
+    "offline_quality_run_id": 33804721216,
+    "offline_quality_verified_commit": "934688e8a2f9e1344a91a959396aaef361ee9b67",
+    "offline_quality_artifact_id": 9912461944,
+    "offline_quality_artifact_sha256": "7574b309911b3c067583510b7e418af1ceec999e59008ea1c07c1d12525a4c7c",
+    "offline_quality_verified_at": "2026-09-03T20:52:37Z",
+    "offline_quality_artifact_name": "a32-pinned-offline-quality-evidence-934688e8"
   },
   "manifest": {
     "path": "RELEASE_MANIFEST.json",
@@ -206,25 +206,25 @@
       "id": "ruff_0_16_1",
       "label": "Ruff 0.16.1",
       "status": "passed",
-      "reason": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md · Workflow 33801346178 · Commit 048aa5733d9d0ce5fef872d25e0437fae08eab94 · Rückgabecode 0"
+      "reason": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md · Workflow 33804721216 · Commit 934688e8a2f9e1344a91a959396aaef361ee9b67 · Rückgabecode 0"
     },
     {
       "id": "mypy_2_3_0",
       "label": "MyPy 2.3.0",
       "status": "passed",
-      "reason": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md · Workflow 33801346178 · Commit 048aa5733d9d0ce5fef872d25e0437fae08eab94 · Rückgabecode 0"
+      "reason": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md · Workflow 33804721216 · Commit 934688e8a2f9e1344a91a959396aaef361ee9b67 · Rückgabecode 0"
     },
     {
       "id": "bandit_1_9_4",
       "label": "Bandit 1.9.4",
       "status": "passed",
-      "reason": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md · Workflow 33801346178 · Commit 048aa5733d9d0ce5fef872d25e0437fae08eab94 · Rückgabecode 0"
+      "reason": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md · Workflow 33804721216 · Commit 934688e8a2f9e1344a91a959396aaef361ee9b67 · Rückgabecode 0"
     },
     {
       "id": "pip_audit_2_10_1",
       "label": "pip-audit 2.10.1",
       "status": "passed",
-      "reason": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md · Workflow 33801346178 · Commit 048aa5733d9d0ce5fef872d25e0437fae08eab94 · Rückgabecode 0"
+      "reason": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md · Workflow 33804721216 · Commit 934688e8a2f9e1344a91a959396aaef361ee9b67 · Rückgabecode 0"
     },
     {
       "id": "physical_kde_x11_wayland",
@@ -245,7 +245,7 @@
     "completed": 28,
     "open": 2,
     "total": 30,
-    "current_todo": "Quality-Evidence auf aktuellem A32.2-Kandidaten bestätigt; physische KDE-Abnahme und Large-Media-Soak bleiben offen"
+    "current_todo": "Quality-Evidence auf aktuellem A32.2-Head bestätigt; physische KDE-Abnahme und Large-Media-Soak bleiben offen"
   },
   "approved_quality_report": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
   "artifact_policy": "full-project-zip-before-stable",
