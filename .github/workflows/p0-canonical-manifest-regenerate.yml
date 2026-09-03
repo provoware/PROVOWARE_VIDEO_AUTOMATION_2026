@@ -34,11 +34,15 @@ jobs:
           ref: f4a5cd850c66ed1715ff53a212bce8cf15047233
           persist-credentials: false
 
-      - name: Prove exact head
+      - name: Prove exact head and capture pristine status
         shell: bash
         run: |
           set -Eeuo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD_SHA"
+          mkdir -p p1-census
+          git status --porcelain --untracked-files=all > p1-census/git-status-before-deps.txt
+          git diff --name-status > p1-census/git-diff-before-deps.txt
+          test ! -s p1-census/git-status-before-deps.txt
 
       - name: Prepare cached Kubuntu dependencies
         uses: ./.github/actions/kubuntu-package-cache
@@ -46,6 +50,15 @@ jobs:
           os: ubuntu-24.04
           session: x11
           mode: matrix
+
+      - name: Capture repository status after dependency preparation
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p p1-census
+          git status --porcelain --untracked-files=all > p1-census/git-status-after-deps.txt
+          git diff --name-status > p1-census/git-diff-after-deps.txt
+          git diff > p1-census/git-diff-after-deps.patch
 
       - name: Start deterministic X11 display
         shell: bash
@@ -55,15 +68,43 @@ jobs:
           echo 'DISPLAY=:99' >> "$GITHUB_ENV"
           sleep 2
 
-      - name: Recheck canonical evidence and manifest
+      - name: Capture each canonical read-only recheck separately
         shell: bash
         run: |
           set -Eeuo pipefail
-          python3 diagnostics/release_readiness/generate_from_evidence.py --check
-          python3 scripts/render_release_docs.py --check
-          python3 scripts/validate_release_file_status.py
-          python3 scripts/build_release_manifest.py --check --json
-          test -z "$(git status --porcelain --untracked-files=all)"
+          mkdir -p p1-census
+
+          capture() {
+            local name="$1"
+            shift
+            set +e
+            "$@" 2>&1 | tee "p1-census/${name}.log"
+            local code=${PIPESTATUS[0]}
+            set -e
+            printf '%s\n' "$code" > "p1-census/${name}.exit-code.txt"
+            return 0
+          }
+
+          capture evidence-check python3 diagnostics/release_readiness/generate_from_evidence.py --check
+          capture docs-render-check python3 scripts/render_release_docs.py --check
+          capture release-file-status python3 scripts/validate_release_file_status.py
+          capture manifest-check python3 scripts/build_release_manifest.py --check --json
+
+          git status --porcelain --untracked-files=all > p1-census/git-status-after-rechecks.txt
+          git diff --name-status > p1-census/git-diff-after-rechecks.txt
+          git diff > p1-census/git-diff-after-rechecks.patch
+
+      - name: Gate canonical recheck before pytest
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          for file in p1-census/*.exit-code.txt; do
+            printf '%s: %s\n' "$file" "$(cat "$file")"
+            test "$(cat "$file")" = '0'
+          done
+          # Evidence files created under p1-census are intentionally untracked.
+          # Ignore only that diagnostics directory when proving the checked-out tree stayed unchanged.
+          test -z "$(git status --porcelain --untracked-files=all -- . ':(exclude)p1-census')"
 
       - name: Run complete pytest census
         shell: bash
@@ -84,6 +125,7 @@ jobs:
           mkdir -p p1-census
           cp /tmp/xvfb.log p1-census/xvfb.log 2>/dev/null || true
           printf '%s\n' "$EXPECTED_HEAD_SHA" > p1-census/head-sha.txt
+          git status --porcelain --untracked-files=all > p1-census/git-status-final.txt
 
       - name: Upload full regression census
         if: always()
