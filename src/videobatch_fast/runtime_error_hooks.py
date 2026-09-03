@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 import threading
 import time
+import traceback
 from dataclasses import replace
 from typing import Any
 
@@ -140,7 +141,7 @@ def tk_exception_handler(root: Any):
     """Return the one canonical Tk callback error handler used by all UI entry points."""
 
     def handle(exc_type, exc, tb) -> None:
-        capture_runtime_exception(
+        handled = capture_runtime_exception(
             exc_type,
             exc,
             tb,
@@ -150,6 +151,8 @@ def tk_exception_handler(root: Any):
             root=root,
             auto_open=True,
         )
+        if not handled:
+            traceback.print_exception(exc_type, exc, tb)
 
     return handle
 
