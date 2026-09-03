@@ -120,6 +120,18 @@ def test_product_version_detection_flags_old_videobatch_release() -> None:
     assert module.stale_product_versions(text, "2.8.3-rc24") == [("2.8.3-rc23", 1)]
 
 
+def test_product_version_detection_flags_generic_version_label_across_series() -> None:
+    module = load_validator()
+    text = "**Version:** 2.7.9\n"
+    assert module.stale_product_versions(text, "2.8.3-rc24") == [("2.7.9", 1)]
+
+
+def test_product_version_detection_does_not_treat_named_tool_version_as_product() -> None:
+    module = load_validator()
+    text = "Python Version: 3.12.3\n"
+    assert module.stale_product_versions(text, "2.8.3-rc24") == []
+
+
 def contract_tests() -> tuple[tuple[str, Callable[[], None]], ...]:
     return tuple(
         (name, value)
