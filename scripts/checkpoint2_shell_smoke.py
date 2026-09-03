@@ -102,6 +102,7 @@ def main() -> int:
     app.transition.set("none")
     app._refresh_kpi_cards()
     assert app._shell_kpi_status_vars["effects"].get() == "Wiederherstellung nötig"
+    assert app._shell_kpi_buttons["effects"].cget("text") == "Automatik herstellen"
     app._shell_kpi_buttons["effects"].invoke()
     root.update_idletasks()
     assert app.quick_mode.get() == "smart_auto"
