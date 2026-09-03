@@ -2,7 +2,7 @@
 
 ## Ergebnis
 
-Die exakt gepinnte Qualitätswerkzeugkette wurde am 5. August 2026 vollständig und reproduzierbar ausgeführt. Alle vier Pflichtwerkzeuge bestanden ohne Quell- oder Sicherheitsbefund.
+Die exakt gepinnte Qualitätswerkzeugkette wurde am 3. September 2026 erneut vollständig auf dem aktuellen A32.2-Kandidaten `048aa5733d9d0ce5fef872d25e0437fae08eab94` ausgeführt. Alle vier Pflichtwerkzeuge bestanden mit Rückgabecode 0. Der eigentliche Werkzeuglauf lief mit aktivierter Offline-Netzwerksperre.
 
 | Werkzeug | Exakte Version | Ergebnis | Rückgabecode |
 |---|---:|---|---:|
@@ -13,12 +13,12 @@ Die exakt gepinnte Qualitätswerkzeugkette wurde am 5. August 2026 vollständig 
 
 ## Reproduzierbarer Ablauf
 
-1. Die Paketbasis wurde einmalig mit ausdrücklich freigegebenem Zugriff auf den im Vertrag festgelegten öffentlichen Paketindex aufgebaut.
-2. 47 Wheel-Dateien wurden identifiziert, gehasht und in einem atomar veröffentlichten Wheelhouse gebunden.
-3. Wheelhouse, Manifest und aufgelöste Hash-Lockdatei wurden erfolgreich verifiziert.
-4. Die Qualitätsumgebung wurde ausschließlich mit `--no-index`, `--find-links` und `--require-hashes` installiert.
-5. Die installierten Versionen wurden über `importlib.metadata` gegen die Pflichtversionen geprüft.
-6. Alle vier Werkzeuge liefen getrennt. Rückgabecodes und vollständige Rohprotokolle wurden unabhängig vom Ergebnis als GitHub-Actions-Artefakt gespeichert.
+1. Der CI-Helfer wurde ausschließlich als Trigger verwendet; geprüft wurde durch expliziten Checkout der festgefrorene Produktkandidat `048aa5733d9d0ce5fef872d25e0437fae08eab94`.
+2. Das Quality-Wheelhouse wurde aufgebaut und vollständig verifiziert.
+3. Die Qualitätsumgebung wurde mit den exakt gepinnten Versionen Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4 und pip-audit 2.10.1 vorbereitet.
+4. Vor dem finalen Werkzeuglauf wurde die Offline-Umgebung erneut hergestellt und verifiziert.
+5. `scripts/run_external_quality.py --mode required --offline` führte alle vier Pflichtwerkzeuge mit aktivierter Socket-Netzwerksperre aus.
+6. Rückgabecodes, Toolversionen, Logs, Wheelhouse-Manifest und Kandidaten-SHA wurden als Actions-Artefakt gesichert.
 
 ## Einzelbefunde
 
@@ -36,32 +36,34 @@ Geprüfter Umfang: die zehn im verbindlichen externen Qualitätsrunner festgeleg
 
 ### Bandit 1.9.4
 
-Rückgabecode 0; keine Sicherheitsbefunde. Bandit gab ausschließlich harmlose Parserhinweise zu natürlichen Wörtern in Kommentaren aus. Diese Hinweise sind keine Test-IDs, keine Schwachstellen und rechtfertigen keine Quelländerung.
+Rückgabecode 0; keine Sicherheitsbefunde. Die bekannten Parserhinweise zu natürlichen Wörtern in Kommentaren sind keine Test-IDs und keine Schwachstellen.
 
 ### pip-audit 2.10.1
 
 `No known vulnerabilities found`
 
-Geprüft wurde die exakt gepinnte Laufzeit-Lockdatei mit deaktivierter impliziter Pip-Auflösung.
+Geprüft wurde die exakt gepinnte Laufzeit-Lockdatei mit deaktivierter impliziter Pip-Auflösung und vorbereitetem Advisory-Cache; der finale Audit lief unter der Offline-Netzwerksperre.
 
 ## Nachweis
 
-- Workflow-Lauf: `30972392104`
-- geprüfter Commit: `2e33a2c00a0b2e7aa44f3db38a0a60a2d6998710`
-- Artefakt: `pinned-offline-quality-evidence`
-- Artefakt-ID: `8917005198`
-- Artefakt-SHA-256: `4bc19bb1f3d935f8fab4b197ba9b6a1e5dc3e962b7bc11e28a41a3c5c95b58fd`
+- Workflow-Lauf: `33803727562`
+- geprüfter Produkt-Commit: `048aa5733d9d0ce5fef872d25e0437fae08eab94`
+- Trigger-Branch: `ci/a32-2-quality-evidence-048aa573`
+- Artefakt: `a32-pinned-offline-quality-evidence-048aa573`
+- Artefakt-ID: `9912083312`
+- Artefakt-SHA-256: `f0151cf3193dc5e073c9313a4bee26b4507810c131fcd6a7d6d2613b38328801`
 - Aufbewahrung: 30 Tage
+- Gate-Ausgang: `0`
 
-## Patchentscheidung
+## Provenienzentscheidung
 
-Es wurden keine Anwendungsdateien geändert, weil kein konkreter reproduzierbarer Quell- oder Sicherheitsbefund vorlag. Der einzige erste Laufabbruch war eine fehlende Runner-Systemvoraussetzung (`python3-tk`) vor der Werkzeugausführung. Nach Ergänzung dieser bereits vom Toolchain-Laufzeitvertrag verlangten Systemkomponente bestand die unveränderte Werkzeugkette vollständig.
+Der Workflow-Trigger-Commit ist absichtlich **nicht** der geprüfte Produkt-Commit. Der Workflow checkte den Produktkandidaten `048aa5733d9d0ce5fef872d25e0437fae08eab94` explizit aus und bestätigte diesen SHA vor der Werkzeugausführung. Dadurch beweist der nachträgliche Evidence-Commit nicht sich selbst und es entsteht keine zirkuläre Commit-Bindung.
 
 ## Verbleibende Stable-Gates
 
-Die externen Python-Qualitätswerkzeuge blockieren Stable nicht mehr. Weiterhin offen bleiben:
+Die externen Python-Qualitätswerkzeuge blockieren Stable nicht. Weiterhin offen bleiben:
 
-1. physische KDE-Abnahme unter echten X11- und Wayland-Sitzungen,
+1. physische KDE-Abnahme unter echten Zielsystem-Sitzungen,
 2. dokumentierter Langzeitrender mit großer Medienauswahl und langsamem externem Ziel.
 
-Der Kandidat bleibt bis zu diesen beiden Nachweisen `2.8.3-rc24` und wird nicht als Stable bezeichnet.
+Der Kandidat bleibt bis zu diesen Nachweisen `2.8.3-rc24` und wird nicht als Stable bezeichnet.
