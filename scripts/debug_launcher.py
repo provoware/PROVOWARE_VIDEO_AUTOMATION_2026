@@ -17,6 +17,7 @@ from videobatch_fast.debug_runtime import RUNTIME, debug_enabled_from_config, sh
 
 STATE = Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state")) / "VideoBatchFast"
 _UI_READY_RE = re.compile(r"UI_READY pid=(\d+)")
+_EXISTING_INSTANCE_RE = re.compile(r"['\"]existing_instance['\"]\s*:\s*(?:True|true)")
 
 
 def _latest_file(directory: Path, pattern: str) -> Path | None:
@@ -107,15 +108,24 @@ def _stream_file(path: Path | None, offset: int, *, prefix: str) -> int:
     return new_offset
 
 
-def _ready_pid(bootstrap_log: Path | None) -> int | None:
+def _ready_state(bootstrap_log: Path | None) -> tuple[int, bool] | None:
+    """Return the ready PID and whether it is only an existing-instance handoff."""
     text = _tail(bootstrap_log, 40_000)
-    matches = _UI_READY_RE.findall(text)
-    if not matches:
-        return None
-    try:
-        return int(matches[-1])
-    except ValueError:
-        return None
+    for line in reversed(text.splitlines()):
+        match = _UI_READY_RE.search(line)
+        if match is None:
+            continue
+        try:
+            pid = int(match.group(1))
+        except ValueError:
+            return None
+        return pid, bool(_EXISTING_INSTANCE_RE.search(line))
+    return None
+
+
+def _ready_pid(bootstrap_log: Path | None) -> int | None:
+    state = _ready_state(bootstrap_log)
+    return state[0] if state is not None else None
 
 
 def _process_exists(pid: int) -> bool:
@@ -234,6 +244,29 @@ def _monitor_application(
         )
 
 
+def _monitor_ready_application(
+    pid: int,
+    existing_instance: bool,
+    application_log: Path | None,
+    bootstrap_log: Path | None,
+    clean_marker: Path,
+    started_at: float,
+) -> None:
+    if existing_instance:
+        RUNTIME.verbose(
+            "Die bereits laufende VideoBatch-Instanz wurde fokussiert.",
+            (
+                "Der soeben gestartete Weiterleitungsprozess hat seine Aufgabe regulär beendet. "
+                "Er ist nicht der bereits laufende Anwendungsprozess und wird deshalb nicht als Absturz überwacht."
+            ),
+            f"UI-Ready-Handoff · Weiterleitungs-PID {pid}",
+            "Keine Reparatur nötig. Das bereits geöffnete VideoBatch-Fenster kann normal weiterverwendet werden.",
+            level="OK",
+        )
+        return
+    _monitor_application(pid, application_log, bootstrap_log, clean_marker, started_at)
+
+
 def main() -> int:
     started_at = time.time()
     enabled = debug_enabled_from_config(default=True)
@@ -336,19 +369,11 @@ def main() -> int:
             )
         return returncode
 
-    RUNTIME.verbose(
-        "Der sichere Starter hat die Oberfläche erfolgreich freigegeben.",
-        "Die UI-Ready-Meldung wurde empfangen; die Anwendung läuft als eigener Prozess weiter.",
-        "scripts/bootstrap.py → UI_READY",
-        "Der Debug-Wächter übernimmt jetzt die laufende Anwendungsausgabe.",
-        level="OK",
-    )
     if not enabled:
         return 0
 
-    pid = _ready_pid(bootstrap_log)
-    application_log = _latest_file_since(STATE / "logs", "application_*.log", started_at)
-    if pid is None:
+    ready_state = _ready_state(bootstrap_log)
+    if ready_state is None:
         RUNTIME.verbose(
             "Die Anwendung läuft, ihre Prozess-ID konnte aber nicht aus dem Bootstrap-Log gelesen werden.",
             "Der Starter hat erfolgreich beendet, aber keine auswertbare UI_READY-PID gefunden.",
@@ -358,7 +383,34 @@ def main() -> int:
         )
         return 0
 
-    _monitor_application(pid, application_log, bootstrap_log, clean_marker, started_at)
+    pid, existing_instance = ready_state
+    if existing_instance:
+        _monitor_ready_application(
+            pid,
+            True,
+            None,
+            bootstrap_log,
+            clean_marker,
+            started_at,
+        )
+        return 0
+
+    RUNTIME.verbose(
+        "Der sichere Starter hat die Oberfläche erfolgreich freigegeben.",
+        "Die UI-Ready-Meldung wurde empfangen; die Anwendung läuft als eigener Prozess weiter.",
+        "scripts/bootstrap.py → UI_READY",
+        "Der Debug-Wächter übernimmt jetzt die laufende Anwendungsausgabe.",
+        level="OK",
+    )
+    application_log = _latest_file_since(STATE / "logs", "application_*.log", started_at)
+    _monitor_ready_application(
+        pid,
+        False,
+        application_log,
+        bootstrap_log,
+        clean_marker,
+        started_at,
+    )
     return 0
 
 
