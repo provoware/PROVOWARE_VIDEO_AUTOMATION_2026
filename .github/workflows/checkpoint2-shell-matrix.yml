@@ -64,6 +64,30 @@ jobs:
           set -Eeuo pipefail
           python -m pip install --disable-pip-version-check --requirement requirements-toolchain.lock
 
+      - name: Generate exact expected release manifest evidence
+        run: |
+          set -Eeuo pipefail
+          current="$RUNNER_TEMP/RELEASE_MANIFEST.current.json"
+          expected="$RUNNER_TEMP/RELEASE_MANIFEST.expected.json"
+          cp RELEASE_MANIFEST.json "$current"
+          restore_manifest() {
+            cp "$current" RELEASE_MANIFEST.json
+          }
+          trap restore_manifest EXIT
+          python scripts/build_release_manifest.py
+          cp RELEASE_MANIFEST.json "$expected"
+          restore_manifest
+          trap - EXIT
+          cmp -s RELEASE_MANIFEST.json "$current"
+
+      - name: Upload expected release manifest evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkpoint2-expected-release-manifest
+          if-no-files-found: error
+          retention-days: 14
+          path: ${{ runner.temp }}/RELEASE_MANIFEST.expected.json
+
       - name: Compile and validate contracts
         run: |
           set -Eeuo pipefail
