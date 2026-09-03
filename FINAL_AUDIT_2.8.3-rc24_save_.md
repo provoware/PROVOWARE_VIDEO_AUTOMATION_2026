@@ -27,8 +27,8 @@ Alle Punkte wurden korrigiert und mit Regressionen abgesichert.
 
 ## Audit-Ergebnis
 
-- 323/323 Tests bestanden
-- 0 übersprungene Tests im finalen Xvfb-Lauf
+- 325/325 Tests im kanonischen Vollregressionsnachweis bestanden
+- 0 übersprungene Tests im belegten Vollregressionslauf
 - 82,43 % Statement-/Zeilenabdeckung
 - 67,21 % Branch-Abdeckung
 - 18/18 visuelle Szenarien
@@ -38,17 +38,18 @@ Alle Punkte wurden korrigiert und mit Regressionen abgesichert.
 - 0 interne Qualitätsbefunde
 - maximale Komplexität 29
 - reale Klick-Stressprüfung mit 120 Auswahlwechseln bestanden
+- exakter Offline-Qualitätslauf: Ruff, MyPy, Bandit und pip-audit jeweils bestanden
+- P0-Kubuntu-Matrix auf `12b5a9daecdd4fdf2d8c5756c19c2705908681d4`: 4/4 bestanden
 
 ## Freigabegrenze
 
-RC24 ist ein Releasekandidat. Stable bleibt blockiert, bis externe Qualitätswerkzeuge,
-physische KDE-X11-/Wayland-Abnahme und Langzeitrender vollständig grün sind.
+RC24 ist ein Releasekandidat. Stable bleibt blockiert, bis die physische
+KDE-X11-/Wayland-Abnahme und der Langzeitrender vollständig grün sind.
 
 ## Frischpaketprüfung
 
-Ein neu entpacktes Vorab-ZIP bestand Manifest, Version, isolierte Kompilierung, Architektur, interne Qualität sowie 323/323 Tests. Der Diagnosepfad wurde dabei absichtlich unter einem noch nicht vorhandenen Elternordner angelegt.
-
+Ein neu entpacktes Vorab-ZIP bestand Manifest, Version, isolierte Kompilierung, Architektur, interne Qualität sowie den belegten Vollregressionslauf. Der Diagnosepfad wurde dabei absichtlich unter einem noch nicht vorhandenen Elternordner angelegt.
 
 ## Repository-Abschluss
 
-Der aktive Projektstamm enthält nur die aktuellen RC24-Nachweise. Frühere Berichte bleiben im historischen Archiv nachvollziehbar, werden jedoch nicht ausgeliefert. Der Release-Dateivertrag, die zweispaltige README-Tabelle und die `_save_`-Kennzeichnung sind maschinell geprüft. Stable bleibt wegen der sechs ausdrücklich genannten externen und physischen Gates gesperrt.
+Der aktive Projektstamm enthält nur die aktuellen RC24-Nachweise. Frühere Berichte bleiben im historischen Archiv nachvollziehbar, werden jedoch nicht ausgeliefert. Der Release-Dateivertrag, die zweispaltige README-Tabelle und die `_save_`-Kennzeichnung sind maschinell geprüft. Stable bleibt wegen der zwei ausdrücklich genannten physischen beziehungsweise Langzeit-Gates gesperrt.
