@@ -1,4 +1,4 @@
-name: P0 canonical manifest regenerate for PR84
+name: P1-001 canonical release-evidence derivation
 
 on:
   push:
@@ -12,29 +12,29 @@ permissions:
   contents: write
 
 concurrency:
-  group: p0-pr84-canonical-manifest-regenerate
+  group: p1-001-release-evidence-derivation
   cancel-in-progress: false
 
 jobs:
-  regenerate:
-    name: Regenerate manifest on exact PR84 head
+  derive:
+    name: Derive P1 evidence outputs and canonical manifest
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    timeout-minutes: 15
     env:
-      TARGET_BRANCH: codex/a32-2-current-state-error-hardening
-      EXPECTED_HEAD_SHA: 2aa6ed91c94069d71dfd5e36f28aa13b16c8a1da
+      TARGET_BRANCH: p1-001-release-evidence-reconciliation
+      EXPECTED_HEAD_SHA: 3a3088d5e2a1cd8666526bda8660e7e0cbee0882
       PYTHONDONTWRITEBYTECODE: '1'
       PYTHONUTF8: '1'
       PYTHONPATH: src
 
     steps:
-      - name: Check out target branch with write credentials
+      - name: Check out exact P1 source head with write credentials
         uses: actions/checkout@v5
         with:
-          ref: codex/a32-2-current-state-error-hardening
+          ref: p1-001-release-evidence-reconciliation
           fetch-depth: 1
 
-      - name: Prove exact target head
+      - name: Prove exact P1 source head
         shell: bash
         run: |
           set -Eeuo pipefail
@@ -55,27 +55,73 @@ jobs:
           set -Eeuo pipefail
           python -m pip install --disable-pip-version-check --requirement requirements-toolchain.lock
 
-      - name: Regenerate canonical manifest
+      - name: Validate P1 source contracts before derivation
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          python -m py_compile \
+            diagnostics/release_readiness/generate_from_evidence.py \
+            scripts/render_release_docs.py \
+            scripts/validate_release_file_status.py \
+            tests/test_release_docs.py
+          python -m pytest -q tests/test_release_docs.py
+
+      - name: Derive machine-readable evidence outputs
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          python diagnostics/release_readiness/generate_from_evidence.py --write
+          python diagnostics/release_readiness/generate_from_evidence.py --check
+
+      - name: Render README and STATUS through the sole document renderer
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          python scripts/render_release_docs.py --write
+          python scripts/render_release_docs.py --check
+          python scripts/validate_release_file_status.py
+          python -m pytest -q tests/test_release_docs.py tests/test_release_file_status.py
+
+      - name: Regenerate canonical release manifest
         shell: bash
         run: |
           set -Eeuo pipefail
           python scripts/build_release_manifest.py
           python scripts/build_release_manifest.py --check --json
 
-      - name: Prove only manifest changed
+      - name: Prove exact generated file set
         shell: bash
         run: |
           set -Eeuo pipefail
-          changed="$(git status --porcelain --untracked-files=all)"
-          printf '%s\n' "$changed"
-          test "$changed" = ' M RELEASE_MANIFEST.json'
+          git diff --name-only | LC_ALL=C sort > "$RUNNER_TEMP/actual-files.txt"
+          cat > "$RUNNER_TEMP/expected-files.txt" <<'EOF'
+          DEVELOPMENT_STATUS.json
+          QUALITY_ENVIRONMENT_STATUS.json
+          README.md
+          RELEASE_FILE_STATUS.json
+          RELEASE_MANIFEST.json
+          STATUS.md
+          VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json
+          EOF
+          LC_ALL=C sort -o "$RUNNER_TEMP/expected-files.txt" "$RUNNER_TEMP/expected-files.txt"
+          echo 'Generated files:'
+          cat "$RUNNER_TEMP/actual-files.txt"
+          diff -u "$RUNNER_TEMP/expected-files.txt" "$RUNNER_TEMP/actual-files.txt"
+          test -z "$(git ls-files --others --exclude-standard)"
 
-      - name: Commit exact generated manifest
+      - name: Commit exact generated outputs
         shell: bash
         run: |
           set -Eeuo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add RELEASE_MANIFEST.json
-          git commit -m 'build: regenerate canonical release manifest'
+          git add \
+            DEVELOPMENT_STATUS.json \
+            QUALITY_ENVIRONMENT_STATUS.json \
+            README.md \
+            RELEASE_FILE_STATUS.json \
+            RELEASE_MANIFEST.json \
+            STATUS.md \
+            VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json
+          git commit -m 'build: derive P1 release evidence and manifest'
           git push origin "HEAD:$TARGET_BRANCH"
