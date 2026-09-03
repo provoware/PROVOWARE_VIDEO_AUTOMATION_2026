@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from functools import lru_cache
 
 from .registry import RegistryError, load_json
 
@@ -36,7 +35,6 @@ class ErrorDefinition:
     actions: tuple[str, ...]
 
 
-@lru_cache(maxsize=1)
 def _merged_error_registry() -> dict[str, dict]:
     merged: dict[str, dict] = {}
     for path in _ERROR_REGISTRIES:

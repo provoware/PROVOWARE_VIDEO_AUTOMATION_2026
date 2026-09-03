@@ -11,7 +11,7 @@ from videobatch_fast.runtime_error_guidance import (
     exception_fingerprint,
     exception_location,
 )
-from videobatch_fast import registry, runtime_error_hooks
+from videobatch_fast import error_handling, registry, runtime_error_hooks
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -43,6 +43,24 @@ def test_runtime_registry_definitions_are_resolved() -> None:
     assert definition.title == "Ein interner Zustand war schreibgeschützt"
     assert definition.severity == "blocking"
     assert "open_logs" in definition.actions
+
+
+def test_transient_registry_failure_does_not_poison_runtime_definitions(monkeypatch) -> None:
+    real_load = error_handling.load_json
+    failed_once = False
+
+    def flaky_load(path: str):
+        nonlocal failed_once
+        if path == "registries/RUNTIME_ERROR_REGISTRY.json" and not failed_once:
+            failed_once = True
+            raise error_handling.RegistryError("temporär nicht lesbar")
+        return real_load(path)
+
+    monkeypatch.setattr(error_handling, "load_json", flaky_load)
+    first = error_handling.error_definition("INTERNAL_IMMUTABLE_STATE_ERROR")
+    second = error_handling.error_definition("INTERNAL_IMMUTABLE_STATE_ERROR")
+    assert first.title == "Unbekanntes Problem"
+    assert second.title == "Ein interner Zustand war schreibgeschützt"
 
 
 def test_runtime_registry_is_part_of_central_registry_validation() -> None:
