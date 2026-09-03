@@ -17,6 +17,10 @@ MANIFEST = ROOT / "RELEASE_MANIFEST.json"
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")
 LINK_RE = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 VERSION_RE = re.compile(r"(?<![\w.-])(\d+\.\d+\.\d+(?:-rc\d+)?)(?![\w.-])")
+VERSION_LABEL_RE = re.compile(
+    r"^\s*(?:[-*]\s*)?(?:\*\*|__)?(?:version|release[- ]?version|build[- ]?version)\s*[:=](?:\*\*|__)?\s*",
+    re.IGNORECASE,
+)
 ALLOWED_CATEGORIES = frozenset({"active", "technical", "historical", "internal"})
 STRICT_CATEGORIES = frozenset({"active", "technical"})
 PRODUCT_VERSION_CONTEXT = (
@@ -178,6 +182,7 @@ def stale_product_versions(text: str, version: str) -> list[tuple[str, int]]:
     for line_number, line in enumerate(strip_code_fences(text.splitlines()), 1):
         context = line.casefold()
         product_context = any(marker in context for marker in PRODUCT_VERSION_CONTEXT)
+        product_context = product_context or bool(VERSION_LABEL_RE.search(line))
         for match in VERSION_RE.finditer(line):
             found = match.group(1)
             if found == version:
