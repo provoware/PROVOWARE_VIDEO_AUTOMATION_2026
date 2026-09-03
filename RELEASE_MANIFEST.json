@@ -1236,8 +1236,8 @@
     {
       "mode": "0o644",
       "path": "scripts/validate_documentation.py",
-      "sha256": "f4959ed8591b123b61c109dfa8622edf09b2c400db62a0185e942476e0cec00c",
-      "size": 12958
+      "sha256": "7f0abb52498f6b6cf292e6e5f36ece18ec4a25eabd0af7e3a69185bbcf1c7f49",
+      "size": 13199
     },
     {
       "mode": "0o644",
@@ -1752,8 +1752,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/registry.py",
-      "sha256": "755e79fb9f6c9f163f318fbe00ac49623b07426690b73fda232b0f86d9d45591",
-      "size": 9451
+      "sha256": "cc83a02f77c4e93350ab683030a3cc84c7f46c14a6370dec317ce1b3f95b3c87",
+      "size": 9497
     },
     {
       "mode": "0o644",
@@ -2268,8 +2268,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_documentation_contract.py",
-      "sha256": "d70a6581764ae94032d56e24670283feffafbad153cfc33f1ce96b30c1eee54f",
-      "size": 5285
+      "sha256": "e558a2089d17c746a2f6de8c6a31f8477c7e4b70084f8d434088da652a5b2488",
+      "size": 5746
     },
     {
       "mode": "0o644",
@@ -2556,8 +2556,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_runtime_error_hardening.py",
-      "sha256": "1ddd78bbe4d1592d51470b2e7ff9306c253ddd3798b9ee8a957509b5c5c2fae6",
-      "size": 5960
+      "sha256": "0a6a1178098f4520c34ca696a88f4a162afd890db9d63a71c749bf0e7ce60c39",
+      "size": 6132
     },
     {
       "mode": "0o644",
