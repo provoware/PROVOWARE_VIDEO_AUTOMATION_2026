@@ -42,17 +42,22 @@ jobs:
           mkdir -p "$RUNNER_TEMP/p0-baseline"
           printf '%s\n' "$EXPECTED_HEAD_SHA" > "$RUNNER_TEMP/p0-baseline/head-sha.txt"
 
-      - name: Prepare minimal pinned pytest
+      - name: Prepare minimal pinned Python
         uses: actions/setup-python@v6
         with:
           python-version: '3.12'
           cache: pip
 
-      - name: Install exact pytest only
+      - name: Install exact runtime minimum and pytest
         shell: bash
         run: |
           set -Eeuo pipefail
-          python -m pip install --disable-pip-version-check 'pytest==9.0.2'
+          python -m pip install --disable-pip-version-check \
+            'cffi==2.0.0' \
+            'cryptography==50.0.0' \
+            'Pillow==12.3.0' \
+            'pycparser==3.0' \
+            'pytest==9.0.2'
 
       - name: Run only the eight-failure test files
         shell: bash
