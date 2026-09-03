@@ -1,0 +1,80 @@
+name: A32.2 quality evidence refresh
+
+on:
+  push:
+    branches:
+      - ci/a32-2-quality-evidence-refresh
+
+permissions:
+  contents: read
+
+jobs:
+  qualify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      TARGET_SHA: 048aa5733d9d0ce5fef872d25e0437fae08eab94
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ env.TARGET_SHA }}
+          fetch-depth: 1
+
+      - name: Verify exact candidate
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$TARGET_SHA"
+          printf 'QUALITY_TARGET_SHA=%s\n' "$actual"
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: |
+            requirements-quality.lock
+            requirements-toolchain.lock
+            requirements.lock
+
+      - name: Install runner prerequisites
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          sudo apt-get update
+          sudo apt-get install -y python3-tk
+
+      - name: Run canonical offline quality gate
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          bash scripts/run_offline_quality_gate.sh
+
+      - name: Summarize exact results
+        if: always()
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          printf 'QUALITY_TARGET_SHA=%s\n' "$(git rev-parse HEAD)"
+          if [[ -f quality-toolchain-evidence/diagnostics/external_quality_latest.json ]]; then
+            python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('quality-toolchain-evidence/diagnostics/external_quality_latest.json')
+          data = json.loads(p.read_text(encoding='utf-8'))
+          print('OFFLINE=', data.get('offline'))
+          for item in data.get('results', []):
+              print(f"{item.get('tool')}|{item.get('version')}|{item.get('status')}|{item.get('returncode')}")
+          PY
+          fi
+
+      - name: Upload quality evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a32-quality-evidence-048aa573
+          path: quality-toolchain-evidence/
+          if-no-files-found: warn
+          retention-days: 30
