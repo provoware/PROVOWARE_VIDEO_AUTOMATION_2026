@@ -66,10 +66,11 @@ def main() -> int:
     assert app._shell_kpi_status_vars["media"].get() == "Leer"
     assert str(app._shell_kpi_buttons["scheduler"].cget("state")) == "disabled"
 
-    for key, page_index in (("media", 1), ("queue", 4), ("effects", 3)):
+    for key, page_index in (("media", 1), ("queue", 1), ("effects", 3)):
         app._shell_kpi_buttons[key].invoke()
         root.update_idletasks()
-        assert app.main_notebook.index(app.main_notebook.select()) == page_index
+        actual_page = app.main_notebook.index(app.main_notebook.select())
+        assert actual_page == page_index, f"{key}: expected page {page_index}, got {actual_page}"
 
     app.audios = [existing]
     app.media = [missing]
