@@ -7,7 +7,7 @@ on:
 
 jobs:
   qualify-and-canonicalize:
-    if: github.event.pull_request.head.ref == 'fix/a32-2-final-review-blockers'
+    if: github.event.pull_request.head.ref == 'fix/a32-2-final-review-blockers' || github.event.pull_request.head.ref == 'fix/a32-2-final-evidence-scrub'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     permissions:
@@ -61,6 +61,18 @@ jobs:
           PYTHONPATH=src python3 tests/test_documentation_contract.py
           PYTHONPATH=src python3 scripts/validate_documentation.py
 
+      - name: Prove current offline-quality provenance in retained report
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          report='CODE_QUALITY_REPORT_2.8.3-rc24_save_.md'
+          grep -F '33801346178' "$report"
+          grep -F '048aa5733d9d0ce5fef872d25e0437fae08eab94' "$report"
+          if grep -Fq '30972392104' "$report"; then
+            echo 'STALE_QUALITY_RUN_FOUND' >&2
+            exit 1
+          fi
+
       - name: Compile changed runtime modules
         shell: bash
         run: |
@@ -100,5 +112,5 @@ jobs:
           git config user.name 'provoware-ci'
           git config user.email 'provoware-ci@users.noreply.github.com'
           git add RELEASE_MANIFEST.json
-          git commit -m 'manifest: canonicalize final A32.2 review fixes'
+          git commit -m 'manifest: canonicalize final A32.2 evidence scrub'
           git push origin HEAD:"$HEAD_BRANCH"
