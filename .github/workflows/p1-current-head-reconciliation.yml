@@ -15,7 +15,7 @@ concurrency:
 jobs:
   reconcile:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/scripts
     steps:
@@ -28,6 +28,9 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+
+      - name: Install exact locked toolchain
+        run: python3 -m pip install -r requirements-toolchain.lock
 
       - name: Rebind evidence to canonical A32.2 head
         env:
@@ -67,6 +70,7 @@ jobs:
           python3 diagnostics/release_readiness/generate_from_evidence.py --check
           python3 scripts/render_release_docs.py --check
           python3 scripts/build_release_manifest.py --check
+          python3 -m pytest -q tests/test_release_docs.py
           python3 -m py_compile \
             diagnostics/release_readiness/generate_from_evidence.py \
             scripts/render_release_docs.py \
