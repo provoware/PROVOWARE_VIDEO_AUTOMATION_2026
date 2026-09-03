@@ -197,6 +197,24 @@ def test_successful_incident_dialog_includes_code_and_fingerprint(monkeypatch, t
     assert "Fehler-Fingerprint:" in visible
 
 
+def test_tk_callback_falls_back_to_traceback_when_capture_is_unavailable(monkeypatch) -> None:
+    seen: list[tuple[object, ...]] = []
+    monkeypatch.setattr(
+        runtime_error_hooks,
+        "capture_runtime_exception",
+        lambda *args, **kwargs: False,
+    )
+    monkeypatch.setattr(
+        runtime_error_hooks.traceback,
+        "print_exception",
+        lambda *args, **kwargs: seen.append(args),
+    )
+    exc = RuntimeError("callback failed")
+    handler = runtime_error_hooks.tk_exception_handler(object())
+    handler(RuntimeError, exc, None)
+    assert seen == [(RuntimeError, exc, None)]
+
+
 def test_thread_hook_calls_previous_hook_when_central_report_is_unavailable(monkeypatch) -> None:
     seen: list[object] = []
     previous = lambda args: seen.append(args)
