@@ -1038,8 +1038,8 @@
     {
       "mode": "0o644",
       "path": "scripts/checkpoint2_shell_smoke.py",
-      "sha256": "7c18c84da230697bcd979af09db9682090880db5172508cd5486ebff62de1b65",
-      "size": 6303
+      "sha256": "68f237fdc2adf68ebe8dbede81113858f00eacb9d7752ccd115b9532ad282eaa",
+      "size": 6387
     },
     {
       "mode": "0o644",
