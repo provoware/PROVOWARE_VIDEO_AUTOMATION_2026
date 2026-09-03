@@ -5,6 +5,8 @@ from dataclasses import FrozenInstanceError
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from videobatch_fast.debug_runtime import DebugIncident
 from videobatch_fast.error_handling import error_definition
 from videobatch_fast.runtime_error_guidance import (
@@ -12,7 +14,7 @@ from videobatch_fast.runtime_error_guidance import (
     exception_fingerprint,
     exception_location,
 )
-from videobatch_fast import error_handling, registry, runtime_error_hooks
+from videobatch_fast import canonical_ui, error_handling, registry, runtime_error_hooks
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -141,6 +143,21 @@ def test_capture_adds_code_location_and_falls_back_without_report(monkeypatch) -
     assert not runtime_error_hooks._recent_fingerprints
 
 
+def test_canonical_startup_reraises_original_exception_when_capture_is_unavailable(monkeypatch) -> None:
+    def failing_tk():
+        raise RuntimeError("startup traceback must survive")
+
+    monkeypatch.setattr(canonical_ui, "Tk", failing_tk)
+    monkeypatch.setattr(
+        canonical_ui,
+        "capture_runtime_exception",
+        lambda *args, **kwargs: False,
+    )
+
+    with pytest.raises(RuntimeError, match="startup traceback must survive"):
+        canonical_ui.run_app()
+
+
 def test_successful_incident_dialog_includes_code_and_fingerprint(monkeypatch, tmp_path: Path) -> None:
     runtime_error_hooks._recent_fingerprints.clear()
     incident = DebugIncident(
@@ -208,6 +225,8 @@ def test_canonical_ui_uses_only_central_runtime_hooks() -> None:
     assert "root.report_callback_exception = tk_exception_handler(root)" in source
     assert "install_thread_debug_hook()" in source
     assert "capture_runtime_exception(" in source
+    assert "handled = capture_runtime_exception(" in source
+    assert "if not handled:" in source
     assert "def _tk_exception_handler" not in source
     assert "def _install_thread_debug_hook" not in source
     assert 'error_definition("UNKNOWN")' not in source
