@@ -1,13 +1,15 @@
 <!-- release-status:start -->
 # provoware - videoautomation - 2026 · 2.8.3-rc24
 
-**Kanal:** rc
+**Kanal:** RC – noch keine Stable-Freigabe  
+**Kanonische Quelle:** `diagnostics/release_readiness/RELEASE_EVIDENCE.json`  
 **Freigegebener Qualitätsbericht:** `VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json`
 
 - 325/325 automatisierte Tests bestanden
 - 82,43 % Zeilenabdeckung
 - 67,21 % Zweigabdeckung
 - 18/18 visuelle Szenarien bestanden
+- Kubuntu-CI-Matrix: 4/4 Kombinationen bestanden
 
 ### Offene Stable-Gates
 

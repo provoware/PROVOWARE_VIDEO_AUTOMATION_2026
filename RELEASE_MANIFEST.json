@@ -258,8 +258,8 @@
     {
       "mode": "0o644",
       "path": "README.md",
-      "sha256": "cde0ffb4971b6db27d8ff4931f8d13874269036283355416fe7e70abb321fabc",
-      "size": 7346
+      "sha256": "06dae70697b9dfd423893eb4bf5fbef6e89f487a3ddc379cb299c8f50b48ae72",
+      "size": 7507
     },
     {
       "mode": "0o644",
@@ -312,8 +312,8 @@
     {
       "mode": "0o644",
       "path": "STATUS.md",
-      "sha256": "11fb56a38cdc827d613f26075d41596fbe66e81d7665a7c2601985c54002e53a",
-      "size": 2392
+      "sha256": "071a30e62b819ada37b035b61beab8e4f06928ac5693053aebcfec281e6c6f31",
+      "size": 2553
     },
     {
       "mode": "0o644",
@@ -1132,10 +1132,10 @@
       "size": 1860
     },
     {
-      "mode": "0o755",
+      "mode": "0o644",
       "path": "scripts/render_release_docs.py",
-      "sha256": "0ddd0ccad486ad0823ab20f60a8c05127ab3c70ae701fdae58c010e9e532da09",
-      "size": 5417
+      "sha256": "a7553651feba7bd6e81f10afa6585e6c19a82147317439c42faedb355ea06381",
+      "size": 6086
     },
     {
       "mode": "0o644",
@@ -2496,8 +2496,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_release_docs.py",
-      "sha256": "ae6830003854e5a30369dd95c107a783edc2dadefd73b49e597e6eccaaedef39",
-      "size": 2605
+      "sha256": "38b66d2779b77c59e99a3ff252e877778a07d07942fa852047baf475ca87984a",
+      "size": 2992
     },
     {
       "mode": "0o644",
