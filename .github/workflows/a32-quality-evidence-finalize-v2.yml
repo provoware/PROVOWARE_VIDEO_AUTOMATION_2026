@@ -23,6 +23,8 @@ jobs:
       - name: Remove temporary helpers
         run: rm -f .github/workflows/a32-quality-evidence-finalize.yml .github/workflows/a32-quality-evidence-finalize-v2.yml scripts/a32_quality_evidence_finalize_tmp.py
       - name: Rebuild manifest
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
         run: |
           python3 scripts/build_release_manifest.py
           python3 scripts/build_release_manifest.py --check
