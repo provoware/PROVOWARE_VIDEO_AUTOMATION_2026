@@ -103,6 +103,23 @@ def test_intent_help_is_safe_and_complete() -> None:
     assert "self._start(" not in help_source
 
 
+def test_product_version_detection_ignores_tool_versions() -> None:
+    module = load_validator()
+    text = """# VideoBatch 2.8.3-rc24
+- Ruff 0.16.1
+- MyPy 2.3.0
+- Bandit 1.9.4
+- pip-audit 2.10.1
+"""
+    assert module.stale_product_versions(text, "2.8.3-rc24") == []
+
+
+def test_product_version_detection_flags_old_videobatch_release() -> None:
+    module = load_validator()
+    text = "VideoBatch Fast 2.8.3-rc23\n"
+    assert module.stale_product_versions(text, "2.8.3-rc24") == [("2.8.3-rc23", 1)]
+
+
 def contract_tests() -> tuple[tuple[str, Callable[[], None]], ...]:
     return tuple(
         (name, value)
