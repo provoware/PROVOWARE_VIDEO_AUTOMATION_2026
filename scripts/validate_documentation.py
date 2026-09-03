@@ -19,6 +19,15 @@ LINK_RE = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 VERSION_RE = re.compile(r"(?<![\w.-])(\d+\.\d+\.\d+(?:-rc\d+)?)(?![\w.-])")
 ALLOWED_CATEGORIES = frozenset({"active", "technical", "historical", "internal"})
 STRICT_CATEGORIES = frozenset({"active", "technical"})
+PRODUCT_VERSION_CONTEXT = (
+    "videobatch",
+    "videoautomation",
+    "release candidate",
+    "release-version",
+    "releaseversion",
+    "build-version",
+    "buildversion",
+)
 
 
 @dataclass(frozen=True)
@@ -156,6 +165,28 @@ def validate_link(
     return None
 
 
+def product_series_prefix(version: str) -> str:
+    base = version.split("-", 1)[0]
+    parts = base.split(".")
+    return ".".join(parts[:2]) + "." if len(parts) >= 2 else base
+
+
+def stale_product_versions(text: str, version: str) -> list[tuple[str, int]]:
+    """Return stale VideoBatch versions without mistaking tool versions for app versions."""
+    series_prefix = product_series_prefix(version)
+    findings: list[tuple[str, int]] = []
+    for line_number, line in enumerate(strip_code_fences(text.splitlines()), 1):
+        context = line.casefold()
+        product_context = any(marker in context for marker in PRODUCT_VERSION_CONTEXT)
+        for match in VERSION_RE.finditer(line):
+            found = match.group(1)
+            if found == version:
+                continue
+            if found.startswith(series_prefix) or product_context:
+                findings.append((found, line_number))
+    return findings
+
+
 def validate() -> dict[str, Any]:
     findings: list[Finding] = []
     config = load_json(CLASSIFICATION)
@@ -266,18 +297,15 @@ def validate() -> dict[str, Any]:
                             )
                         )
 
-            for match in VERSION_RE.finditer(text):
-                found = match.group(1)
-                if found != version:
-                    line = text.count("\n", 0, match.start()) + 1
-                    findings.append(
-                        Finding(
-                            "DOC_STALE_VERSION",
-                            rel_path,
-                            f"Veraltete Versionsangabe {found}; aktuell ist {version}",
-                            line,
-                        )
+            for found, line in stale_product_versions(text, version):
+                findings.append(
+                    Finding(
+                        "DOC_STALE_VERSION",
+                        rel_path,
+                        f"Veraltete Versionsangabe {found}; aktuell ist {version}",
+                        line,
                     )
+                )
 
         cleaned = "\n".join(strip_code_fences(text.splitlines()))
         for match in LINK_RE.finditer(cleaned):
