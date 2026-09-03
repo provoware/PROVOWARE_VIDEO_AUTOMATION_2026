@@ -16,6 +16,8 @@ jobs:
   reconcile:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/scripts
     steps:
       - name: Checkout exact reconciliation head
         uses: actions/checkout@v4
