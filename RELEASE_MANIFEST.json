@@ -1050,8 +1050,8 @@
     {
       "mode": "0o644",
       "path": "scripts/debug_launcher.py",
-      "sha256": "bdfd26bb5fd4c8f8d70ccb1cf073c3fea507c3a87cb571a05f16c35abe4261c5",
-      "size": 14382
+      "sha256": "531cd6571a537ab30639e98d98fc86f92fc8c38fc035b38b27e229d44f345231",
+      "size": 16099
     },
     {
       "mode": "0o644",
@@ -2586,8 +2586,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_startup_supervision_2_8_3_rc11.py",
-      "sha256": "ad4d83edc27c00b6bd7df3a32a2382b028b181eb21d527165bb04cf1f208a7f8",
-      "size": 4549
+      "sha256": "98a6d2c3982462fbc8916a3b4d7629b6344733345071d2986ab2ef272ad23adc",
+      "size": 6013
     },
     {
       "mode": "0o644",
