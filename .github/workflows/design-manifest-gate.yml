@@ -44,7 +44,7 @@ jobs:
       - name: Run documentation contract
         run: |
           set -Eeuo pipefail
-          python3 -m pytest -q tests/test_documentation_contract.py
+          python3 tests/test_documentation_contract.py
           python3 scripts/validate_documentation.py --json
 
       - name: Verify release manifest
