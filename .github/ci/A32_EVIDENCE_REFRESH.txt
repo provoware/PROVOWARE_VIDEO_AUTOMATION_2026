@@ -1,2 +1,3 @@
 Temporary trigger for canonical A32.2 quality-evidence finalization.
+Retry after adding locked runtime dependencies required by the manifest generator.
 The finalizer removes this file before producing the final evidence commit.
