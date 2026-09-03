@@ -1,0 +1,98 @@
+name: A33 Consolidated Package
+
+on:
+  push:
+    branches:
+      - iteration/a33-consolidated-start-ui-fault-hardening-20260904
+
+permissions:
+  contents: read
+
+jobs:
+  validate-package:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Quellen holen
+        uses: actions/checkout@v4
+
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Systempakete
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-tk xvfb ffmpeg zip
+
+      - name: Python-Abhängigkeiten
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install pytest
+
+      - name: Startvertrag prüfen
+        run: |
+          bash -n start.sh STARTEN.sh
+          bash start.sh --help > /tmp/a33-help.txt
+          grep -F -- '--doctor' /tmp/a33-help.txt
+          grep -F -- '--hilfe' /tmp/a33-help.txt
+          set +e
+          VIDEOBATCH_BOOTSTRAP_PYTHON=python3-existiert-nicht bash STARTEN.sh >/tmp/a33-start-out.txt 2>/tmp/a33-start-err.txt
+          rc=$?
+          set -e
+          test "$rc" -eq 127
+          grep -F 'Python 3 wurde nicht gefunden' /tmp/a33-start-err.txt
+
+      - name: Kompilierung
+        run: python -m compileall -q scripts src tests
+
+      - name: A33 Fokusregression
+        run: |
+          xvfb-run -a env PYTHONPATH=src pytest -q \
+            tests/test_a33_consolidation.py \
+            tests/test_canonical_application_shell_contract.py \
+            tests/test_canonical_layout_resilience.py \
+            tests/test_canonical_kpi_contract.py \
+            tests/test_debug_runtime_contract.py \
+            tests/test_ui_ready_handshake_contract.py \
+            tests/test_rc24_selected_media_crash.py
+
+      - name: Vollregression
+        run: xvfb-run -a env PYTHONPATH=src pytest -q
+
+      - name: Architektur-Audit
+        run: PYTHONPATH=src python scripts/architecture_audit.py
+
+      - name: Manifest aktualisieren
+        run: python scripts/build_release_manifest.py
+
+      - name: Prüfbericht erzeugen
+        run: |
+          cat > A33_PRUEFBERICHT.txt <<EOF
+          PROVOWARE VideoBatch Fast A33 – Konsolidierungsprüfung
+          Commit: $GITHUB_SHA
+          Startvertrag: PASS
+          Python-Preflight: PASS
+          Kompilierung: PASS
+          A33-Fokusregression: PASS
+          Vollregression: PASS
+          Architektur-Audit: PASS
+          ZIP-Integrität: wird nach Paketbau geprüft
+          EOF
+
+      - name: Vollständige ZIP bauen
+        run: |
+          ZIP=PROVOWARE_VideoBatch_Fast_A33_CURRENT_CONSOLIDATED_2026-09-04.zip
+          zip -qr "$ZIP" . -x '.git/*' "$ZIP"
+          unzip -t "$ZIP"
+          sha256sum "$ZIP" > "$ZIP.sha256.txt"
+
+      - name: Artefakt hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: PROVOWARE_VideoBatch_Fast_A33_CURRENT_CONSOLIDATED_2026-09-04
+          path: |
+            PROVOWARE_VideoBatch_Fast_A33_CURRENT_CONSOLIDATED_2026-09-04.zip
+            PROVOWARE_VideoBatch_Fast_A33_CURRENT_CONSOLIDATED_2026-09-04.zip.sha256.txt
+          if-no-files-found: error
