@@ -1,7 +1,7 @@
 name: A32.2 quality evidence refresh
 
 on:
-  push:
+  pull_request:
     branches:
       - ci/a32-2-quality-evidence-refresh
 
