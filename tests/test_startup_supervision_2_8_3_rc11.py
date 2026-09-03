@@ -15,6 +15,7 @@ if str(SCRIPTS) not in sys.path:
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
+import debug_launcher  # noqa: E402
 import toolchain  # noqa: E402
 from toolchain_common import load_contract  # noqa: E402
 from videobatch_fast.instance_lock import focus_request_token, request_existing_instance_focus  # noqa: E402
@@ -84,6 +85,53 @@ def test_second_launch_requests_focus_and_returns_success() -> None:
     assert "request_existing_instance_focus()" in source
     assert "signal_ui_ready(existing_instance=True)" in source
     assert "return 0" in source
+
+
+def test_debug_launcher_preserves_existing_instance_handoff_state(tmp_path: Path) -> None:
+    bootstrap_log = tmp_path / "bootstrap.log"
+    bootstrap_log.write_text(
+        "UI_READY pid=51051 safe_mode=False payload={'existing_instance': True, 'pid': 51051, 'schema_version': 2}\n",
+        encoding="utf-8",
+    )
+    assert debug_launcher._ready_state(bootstrap_log) == (51051, True)
+
+    bootstrap_log.write_text(
+        "UI_READY pid=51052 safe_mode=False payload={'existing_instance': False, 'pid': 51052, 'schema_version': 2}\n",
+        encoding="utf-8",
+    )
+    assert debug_launcher._ready_state(bootstrap_log) == (51052, False)
+
+
+def test_debug_launcher_does_not_monitor_existing_instance_handoff(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monitored: list[int] = []
+    monkeypatch.setattr(debug_launcher.RUNTIME, "verbose", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        debug_launcher,
+        "_monitor_application",
+        lambda pid, *_args, **_kwargs: monitored.append(pid),
+    )
+
+    debug_launcher._monitor_ready_application(
+        51051,
+        True,
+        None,
+        None,
+        tmp_path / "clean.marker",
+        0.0,
+    )
+    assert monitored == []
+
+    debug_launcher._monitor_ready_application(
+        51052,
+        False,
+        None,
+        None,
+        tmp_path / "clean.marker",
+        0.0,
+    )
+    assert monitored == [51052]
 
 
 def test_verified_system_python_is_last_resort_and_forces_safe_mode() -> None:
