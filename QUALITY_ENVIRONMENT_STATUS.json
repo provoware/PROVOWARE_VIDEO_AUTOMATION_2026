@@ -29,24 +29,24 @@
     "architecture_findings": 0,
     "internal_quality_findings": 0,
     "maximum_complexity": 29,
-    "release_manifest_files": 398,
+    "release_manifest_files": 443,
     "kubuntu_matrix": {
       "status": "passed",
       "passed_targets": 4,
       "total_targets": 4,
-      "workflow_run_id": 30966067548,
-      "verified_commit": "ef003d2c01fa94b899d0ebac9947f1795dd23e8f",
-      "scope_note": "Headless deterministic CI matrix; not a substitute for physical KDE acceptance."
+      "workflow_run_id": 33770879108,
+      "verified_commit": "12b5a9daecdd4fdf2d8c5756c19c2705908681d4",
+      "scope_note": "Canonical P0 head; deterministic headless CI matrix, not a substitute for physical KDE acceptance."
     }
   },
   "external_gates": {
-    "ruff_0_16_1": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
-    "mypy_2_3_0": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
-    "bandit_1_9_4": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
-    "pip_audit_2_10_1": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
+    "ruff_0_16_1": "passed",
+    "mypy_2_3_0": "passed",
+    "bandit_1_9_4": "passed",
+    "pip_audit_2_10_1": "passed",
     "physical_kde_x11_wayland": "Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless",
     "large_media_soak": "Realer Lauf auf langsamem externem Ziel fehlt"
   },
   "stable_ready": false,
-  "stable_block_reason": "External quality tools, physical KDE session acceptance and large-media soak remain required."
+  "stable_block_reason": "Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless; Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt"
 }
