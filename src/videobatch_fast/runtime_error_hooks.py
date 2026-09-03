@@ -7,7 +7,11 @@ from typing import Any
 
 from .debug_runtime import RUNTIME, show_incident_dialog
 from .error_handling import error_definition
-from .runtime_error_guidance import classify_runtime_exception, exception_fingerprint
+from .runtime_error_guidance import (
+    classify_runtime_exception,
+    exception_fingerprint,
+    exception_location,
+)
 from .ui_components import SolutionDialog
 
 _DEDUP_WINDOW_SECONDS = 12.0
@@ -46,11 +50,13 @@ def capture_runtime_exception(
     """Classify, deduplicate, report and optionally display one runtime exception."""
     guidance = classify_runtime_exception(exc_type, exc, scope=scope)
     fingerprint = exception_fingerprint(exc_type, exc, tb, scope=scope)
+    trace_where = exception_location(tb)
+    actual_where = f"{where} · {trace_where}" if where and trace_where else (trace_where or where)
     if not _claim_fingerprint(fingerprint):
         RUNTIME.verbose(
             "Ein bereits gemeldeter Fehler wurde erneut erkannt.",
             f"Fehlercode {guidance.code}, Fingerprint {fingerprint}. Ein weiterer Bericht/Dialog wird unterdrückt.",
-            where,
+            actual_where,
             "Die erste Meldung verwenden; identische Wiederholungen werden nach kurzer Zeit wieder zugelassen.",
             level="WARNUNG",
         )
@@ -64,7 +70,7 @@ def capture_runtime_exception(
             tb,
             what=guidance.what,
             how=guidance.how,
-            where=where,
+            where=actual_where,
             solutions=guidance.solutions,
             fatal=fatal,
             auto_open=auto_open,
@@ -118,7 +124,7 @@ def tk_exception_handler(root: Any):
             tb,
             scope="tkinter",
             fatal=False,
-            where="Tkinter-Callback · genauer Python-Ort steht im Bericht",
+            where="Tkinter-Callback",
             root=root,
             auto_open=True,
         )
@@ -135,6 +141,9 @@ def install_thread_debug_hook() -> None:
         previous = threading.excepthook
 
         def handle(args: threading.ExceptHookArgs) -> None:
+            if not issubclass(args.exc_type, Exception):
+                previous(args)
+                return
             try:
                 handled = capture_runtime_exception(
                     args.exc_type,
