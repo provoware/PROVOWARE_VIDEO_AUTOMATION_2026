@@ -1,0 +1,70 @@
+name: A30 Start-Hilfe Paket
+
+on:
+  push:
+    branches:
+      - iteration/a30-start-hilfe-20260903
+
+permissions:
+  contents: read
+
+jobs:
+  pruefen-und-packen:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Quellstand holen
+        uses: actions/checkout@v4
+
+      - name: Python bereitstellen
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Startskripte syntaktisch prüfen
+        run: bash -n start.sh STARTEN.sh
+
+      - name: Hilfevertrag prüfen
+        run: |
+          ./start.sh --help > /tmp/videobatch-hilfe.txt
+          grep -F 'PROVOWARE VideoBatch Fast' /tmp/videobatch-hilfe.txt
+          grep -F -- '--doctor' /tmp/videobatch-hilfe.txt
+          grep -F -- '--status' /tmp/videobatch-hilfe.txt
+
+      - name: Python-Fehlerpfad prüfen
+        run: |
+          set +e
+          VIDEOBATCH_BOOTSTRAP_PYTHON=python3-gibt-es-nicht ./STARTEN.sh >/tmp/a30-out.txt 2>/tmp/a30-err.txt
+          rc=$?
+          set -e
+          test "$rc" -eq 127
+          grep -F 'Python 3 wurde nicht gefunden' /tmp/a30-err.txt
+
+      - name: Python-Quellen kompilieren
+        run: python -m compileall -q scripts src
+
+      - name: A30 Prüfbericht erzeugen
+        run: |
+          printf '%s\n' \
+            'A30 START/HILFE VALIDIERUNG: PASS' \
+            'bash -n: PASS' \
+            'start.sh --help Vertrag: PASS' \
+            'fehlender Python-Befehl -> RC 127: PASS' \
+            'python compileall scripts+src: PASS' \
+            "Commit: $GITHUB_SHA" > A30_PRUEFBERICHT.txt
+
+      - name: Vollständige ZIP erzeugen
+        run: |
+          zip -qr PROVOWARE_VideoBatch_Fast_A30_START_HILFE_OPTIMIERT_2026-09-03.zip . \
+            -x '.git/*' \
+            -x 'PROVOWARE_VideoBatch_Fast_A30_START_HILFE_OPTIMIERT_2026-09-03.zip'
+          sha256sum PROVOWARE_VideoBatch_Fast_A30_START_HILFE_OPTIMIERT_2026-09-03.zip > PROVOWARE_VideoBatch_Fast_A30_START_HILFE_OPTIMIERT_2026-09-03.zip.sha256.txt
+          unzip -t PROVOWARE_VideoBatch_Fast_A30_START_HILFE_OPTIMIERT_2026-09-03.zip
+
+      - name: Paket hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: PROVOWARE_VideoBatch_Fast_A30_START_HILFE_OPTIMIERT_2026-09-03
+          path: |
+            PROVOWARE_VideoBatch_Fast_A30_START_HILFE_OPTIMIERT_2026-09-03.zip
+            PROVOWARE_VideoBatch_Fast_A30_START_HILFE_OPTIMIERT_2026-09-03.zip.sha256.txt
+          if-no-files-found: error
