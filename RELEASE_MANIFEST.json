@@ -2256,8 +2256,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_debug_runtime_contract.py",
-      "sha256": "a2e40d9527322d0dffa2b84cc1d90635af936b1c8b41924aaa471fbf5bd49e3a",
-      "size": 5714
+      "sha256": "7d0fd23de8ea0bcc931d2c21141de26a8e36ed69e211066b05f5dc742ee6a069",
+      "size": 5715
     },
     {
       "mode": "0o644",
