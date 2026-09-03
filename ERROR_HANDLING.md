@@ -4,6 +4,17 @@
 
 Diese Anleitung erklärt, wie Meldungen sicher eingeordnet, behoben und abschließend geprüft werden. Sie richtet sich ausdrücklich auch an Nutzer ohne Linux- oder Entwicklerkenntnisse.
 
+## Pflichtgrad
+
+Bei einer blockierenden Fehlermeldung ist diese Anleitung verbindlich. Bei Hinweisen und Warnungen genügt die ausdrücklich angebotene sichere Aktion, sofern die Ursache eindeutig ist. Pauschale Rechteänderungen, blindes Wiederholen und das Überschreiben von Originalmedien gehören nicht zur Fehlerbehebung.
+
+## Voraussetzungen
+
+- VideoBatch regulär gestartet oder der automatisch erzeugte Fehlerbericht vorhanden.
+- Der erste vollständige Bericht eines Fehlers wurde nicht gelöscht.
+- Originalmedien und Projektdateien bleiben unverändert.
+- Bei Datei- oder Gerätefehlern ist der betroffene Pfad beziehungsweise Datenträger bekannt.
+
 ## Grundregel
 
 Jeder VideoBatch-Fehler soll fünf Fragen beantworten:
@@ -40,7 +51,24 @@ Der betroffene Schritt wurde blockiert, damit keine unvollständige, unsichere o
 
 **Kann ignoriert werden?** Nein.
 
-## Schritt-für-Schritt-Fehlerbehebung
+## Laufzeit-Fehlercodes A32.2
+
+Der zentrale Laufzeitkanal unterscheidet technische Ursachen, damit nicht jede Ausnahme als unbekannter Fehler endet.
+
+| Fehlercode | Bedeutung | Sichere erste Reaktion |
+|---|---|---|
+| `INTERNAL_IMMUTABLE_STATE_ERROR` | Ein unveränderlicher interner Zustand sollte nachträglich verändert werden. | Ersten Bericht mit Python-Ort verwenden; betroffene Aktion nicht blind wiederholen. |
+| `RUNTIME_PERMISSION_DENIED` | Datei, Ordner oder Ressource ist nicht ausreichend freigegeben. | Besitzer und Schreibbarkeit prüfen; keine pauschalen Rootrechte vergeben. |
+| `RUNTIME_FILE_OR_TOOL_MISSING` | Datei, Quelle oder benötigtes Werkzeug fehlt. | Pfad beziehungsweise Werkzeug wieder bereitstellen oder Quelle neu auswählen. |
+| `RUNTIME_MEMORY_LIMIT_REACHED` | Arbeitsspeicher konnte nicht weiter reserviert werden. | Last oder Stapelgröße reduzieren und kontrolliert erneut prüfen. |
+| `RUNTIME_SUBPROCESS_FAILED` | Ein externes Werkzeug wurde mit Fehler oder Zeitüberschreitung beendet. | Prozessausgabe, Eingaben und Parameter prüfen. |
+| `RUNTIME_INVALID_STATE` | Wert oder Datentyp verletzt einen erwarteten Vertrag. | Betroffene Auswahl beziehungsweise Zustand zurücksetzen und erneut validieren. |
+| `RUNTIME_OS_ERROR` | Betriebssystem, Dateisystem oder Gerät hat eine Operation abgelehnt. | Datenträger, Pfad und Systemmeldung im Bericht prüfen. |
+| `RUNTIME_UNHANDLED_EXCEPTION` | Für die Ausnahme existiert noch keine speziellere Klasse. | Vollständigen ersten Bericht und den exakten Python-Ort verwenden. |
+
+Identische Laufzeitfehler erhalten einen stabilen Fingerprint. Wiederholt sich derselbe Vorfall innerhalb eines kurzen Zeitfensters, wird kein Dialog- oder Berichtssturm erzeugt; maßgeblich bleibt die erste vollständige Meldung.
+
+## Schritt-für-Schritt-Anleitung
 
 ### Schritt 1: Meldung vollständig lesen
 
