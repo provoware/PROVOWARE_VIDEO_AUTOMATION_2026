@@ -36,6 +36,12 @@ def _claim_fingerprint(fingerprint: str) -> bool:
         return True
 
 
+def _release_fingerprint(fingerprint: str) -> None:
+    """Allow normal fallback handling when no report or dialog was produced."""
+    with _dedup_lock:
+        _recent_fingerprints.pop(fingerprint, None)
+
+
 def capture_runtime_exception(
     exc_type: type[BaseException],
     exc: BaseException,
@@ -90,6 +96,7 @@ def capture_runtime_exception(
         )
         incident = None
 
+    handled = incident is not None
     if root is not None:
         if incident is not None:
             try:
@@ -104,6 +111,7 @@ def capture_runtime_exception(
                 )
         try:
             SolutionDialog(root, error_definition(guidance.code), technical)
+            return True
         except Exception as fallback_exc:
             print(
                 "[FEHLER-NOTFALL] Auch der Ersatzdialog ist fehlgeschlagen: "
@@ -111,7 +119,12 @@ def capture_runtime_exception(
                 file=sys.stderr,
                 flush=True,
             )
-    return True
+
+    if handled:
+        return True
+
+    _release_fingerprint(fingerprint)
+    return False
 
 
 def tk_exception_handler(root: Any):
