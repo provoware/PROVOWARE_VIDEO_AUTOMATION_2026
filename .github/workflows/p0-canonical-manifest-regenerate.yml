@@ -25,6 +25,7 @@ jobs:
       EXPECTED_HEAD_SHA: f82626e890679513147bc70d2a7d7f214323ef80
       PYTHONDONTWRITEBYTECODE: '1'
       PYTHONUTF8: '1'
+      PYTHONPATH: src
 
     steps:
       - name: Check out target branch with write credentials
