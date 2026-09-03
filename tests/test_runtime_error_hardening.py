@@ -67,6 +67,20 @@ def test_runtime_registry_is_part_of_central_registry_validation() -> None:
     assert "registries/RUNTIME_ERROR_REGISTRY.json" in registry.REQUIRED_REGISTRIES
 
 
+def test_runtime_registry_validation_rejects_empty_error_map(monkeypatch) -> None:
+    real_load = registry.load_json
+
+    def fake_load(path: str):
+        if path == "registries/RUNTIME_ERROR_REGISTRY.json":
+            return {"schema_version": 1, "errors": {}}
+        return real_load(path)
+
+    monkeypatch.setattr(registry, "load_json", fake_load)
+    errors: list[str] = []
+    registry._validate_error_registry(errors)
+    assert any("RUNTIME_ERROR_REGISTRY.json" in item and "leer" in item for item in errors)
+
+
 def test_exception_fingerprint_is_stable_for_same_incident() -> None:
     exc = RuntimeError("same failure")
     first = exception_fingerprint(type(exc), exc, None, scope="runtime")

@@ -71,18 +71,19 @@ def _validate_required_files(errors: list[str]) -> None:
 
 
 def _validate_error_registry(errors: list[str]) -> None:
-    registry = load_json("registries/ERROR_REGISTRY.json").get("errors", {})
-    if not isinstance(registry, dict) or not registry:
-        errors.append("Fehlerregister ist leer.")
-        return
     fields = ("title", "cause", "effect", "automatic_action", "solution", "alternative", "severity", "actions")
-    for code, item in registry.items():
-        if not isinstance(item, dict):
-            errors.append(f"{code}: Fehlerdefinition ist kein Objekt.")
+    for path in ("registries/ERROR_REGISTRY.json", "registries/RUNTIME_ERROR_REGISTRY.json"):
+        registry = load_json(path).get("errors", {})
+        if not isinstance(registry, dict) or not registry:
+            errors.append(f"{path}: Fehlerregister ist leer.")
             continue
-        for field in fields:
-            if not item.get(field):
-                errors.append(f"{code}: Pflichtfeld fehlt: {field}")
+        for code, item in registry.items():
+            if not isinstance(item, dict):
+                errors.append(f"{path}: {code}: Fehlerdefinition ist kein Objekt.")
+                continue
+            for field in fields:
+                if not item.get(field):
+                    errors.append(f"{path}: {code}: Pflichtfeld fehlt: {field}")
 
 
 def _validate_plugin_registries(errors: list[str]) -> None:
