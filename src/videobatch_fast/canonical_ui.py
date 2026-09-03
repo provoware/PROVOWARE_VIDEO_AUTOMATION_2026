@@ -36,6 +36,33 @@ class CanonicalVideoBatchFastUI(
     """VB-GFX-1.0 shell around the complete VideoBatch implementation."""
 
 
+def _apply_optional_tk_scaling(root: Tk) -> None:
+    """Respect the desktop's Tk scaling unless the user explicitly overrides it."""
+    raw = os.environ.get("VIDEOBATCH_TK_SCALING", "").strip()
+    if not raw:
+        return
+    try:
+        value = float(raw)
+        if not 0.75 <= value <= 3.0:
+            raise ValueError("Wert außerhalb 0.75..3.0")
+        root.tk.call("tk", "scaling", value)
+        RUNTIME.verbose(
+            "Manuelle Tk-Skalierung wurde angewendet.",
+            f"VIDEOBATCH_TK_SCALING={value:g}",
+            "canonical_ui._apply_optional_tk_scaling",
+            "Ohne Umgebungsvariable verwendet VideoBatch ausschließlich die KDE/Tk-Systemskalierung.",
+            level="OK",
+        )
+    except (TypeError, ValueError, Exception) as exc:
+        RUNTIME.verbose(
+            "Manuelle Tk-Skalierung wurde verworfen.",
+            f"Ungültiger Wert {raw!r}: {type(exc).__name__}: {exc}",
+            "canonical_ui._apply_optional_tk_scaling",
+            "VIDEOBATCH_TK_SCALING entfernen oder einen Wert zwischen 0.75 und 3.0 setzen.",
+            level="WARNUNG",
+        )
+
+
 def run_app() -> None:
     clean_marker = os.environ.get("VIDEOBATCH_DEBUG_CLEAN_MARKER", "").strip()
     if clean_marker:
@@ -51,16 +78,7 @@ def run_app() -> None:
         root = Tk()
         root.report_callback_exception = tk_exception_handler(root)
         install_thread_debug_hook()
-        try:
-            root.tk.call("tk", "scaling", max(1.0, root.winfo_fpixels("1i") / 72.0))
-        except Exception as exc:
-            RUNTIME.verbose(
-                "Die automatische DPI-Skalierung konnte nicht vollständig gesetzt werden.",
-                f"Tk meldete {type(exc).__name__}: {exc}. VideoBatch verwendet die vorhandene Skalierung.",
-                "Tk scaling",
-                "Keine Aktion nötig, solange Schrift und Elemente lesbar bleiben.",
-                level="WARNUNG",
-            )
+        _apply_optional_tk_scaling(root)
 
         RUNTIME.verbose(
             "Die VideoBatch-Oberfläche wird jetzt konstruiert.",
