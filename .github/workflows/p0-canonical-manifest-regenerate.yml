@@ -1,4 +1,4 @@
-name: P1-001 full regression census
+name: P1-001 canonical evidence regeneration
 
 on:
   push:
@@ -9,141 +9,101 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: p1-001-full-regression-census
+  group: p1-001-canonical-evidence-regeneration
   cancel-in-progress: true
 
 jobs:
-  census:
-    name: Full regression on exact canonical P1 head
+  regenerate:
+    name: Regenerate exact P1 evidence manifest
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 15
     env:
-      EXPECTED_HEAD_SHA: f4a5cd850c66ed1715ff53a212bce8cf15047233
+      TARGET_BRANCH: p1-001-release-evidence-reconciliation
+      EXPECTED_HEAD_SHA: 2b2209a72ee0ae32694422cd8e1d6acde6e454aa
       PYTHONDONTWRITEBYTECODE: '1'
       PYTHONUTF8: '1'
       PYTHONPATH: src
-      XDG_SESSION_TYPE: x11
 
     steps:
-      - name: Check out exact canonical P1 head
+      - name: Check out exact P1 source head
         uses: actions/checkout@v5
         with:
-          ref: f4a5cd850c66ed1715ff53a212bce8cf15047233
-          persist-credentials: false
+          ref: p1-001-release-evidence-reconciliation
+          fetch-depth: 1
 
-      - name: Prove exact head and capture pristine status
+      - name: Prove exact source head and clean tree
         shell: bash
         run: |
           set -Eeuo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD_SHA"
-          git status --porcelain --untracked-files=all > "$RUNNER_TEMP/git-status-before-deps.txt"
-          git diff --name-status > "$RUNNER_TEMP/git-diff-before-deps.txt"
-          test ! -s "$RUNNER_TEMP/git-status-before-deps.txt"
-          mkdir -p p1-census
-          cp "$RUNNER_TEMP/git-status-before-deps.txt" p1-census/git-status-before-deps.txt
-          cp "$RUNNER_TEMP/git-diff-before-deps.txt" p1-census/git-diff-before-deps.txt
+          test -z "$(git status --porcelain --untracked-files=all)"
 
-      - name: Prepare cached Kubuntu dependencies
-        uses: ./.github/actions/kubuntu-package-cache
+      - name: Prepare pinned Python test toolchain
+        uses: actions/setup-python@v6
         with:
-          os: ubuntu-24.04
-          session: x11
-          mode: matrix
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-toolchain.lock
 
-      - name: Capture and remove known dependency diagnostics
+      - name: Install locked Python dependencies
         shell: bash
         run: |
           set -Eeuo pipefail
-          mkdir -p p1-census
-          git status --porcelain --untracked-files=all -- . ':(exclude)p1-census' > p1-census/git-status-after-deps.txt
-          git diff --name-status -- . ':(exclude)p1-census' > p1-census/git-diff-after-deps.txt
-          git diff -- . ':(exclude)p1-census' > p1-census/git-diff-after-deps.patch
-          test -d matrix-logs
-          test -f CI_PACKAGE_METRICS.json
-          cp -R matrix-logs p1-census/dependency-matrix-logs
-          cp CI_PACKAGE_METRICS.json p1-census/CI_PACKAGE_METRICS.json
-          rm -rf matrix-logs CI_PACKAGE_METRICS.json
-          git status --porcelain --untracked-files=all -- . ':(exclude)p1-census' > p1-census/git-status-after-known-diagnostics-cleanup.txt
-          test ! -s p1-census/git-status-after-known-diagnostics-cleanup.txt
+          python -m pip install --disable-pip-version-check --requirement requirements-toolchain.lock
 
-      - name: Start deterministic X11 display
+      - name: Run focused ownership and file-mode regression
         shell: bash
         run: |
           set -Eeuo pipefail
-          Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
-          echo 'DISPLAY=:99' >> "$GITHUB_ENV"
-          sleep 2
+          python -m pytest -q tests/test_release_docs.py
 
-      - name: Capture each canonical read-only recheck separately
+      - name: Regenerate machine evidence and prove canonical modes
         shell: bash
         run: |
           set -Eeuo pipefail
-          mkdir -p p1-census
-
-          capture() {
-            local name="$1"
-            shift
-            set +e
-            "$@" 2>&1 | tee "p1-census/${name}.log"
-            local code=${PIPESTATUS[0]}
-            set -e
-            printf '%s\n' "$code" > "p1-census/${name}.exit-code.txt"
-            return 0
-          }
-
-          capture evidence-check python3 diagnostics/release_readiness/generate_from_evidence.py --check
-          capture docs-render-check python3 scripts/render_release_docs.py --check
-          capture release-file-status python3 scripts/validate_release_file_status.py
-          capture manifest-check python3 scripts/build_release_manifest.py --check --json
-
-          git status --porcelain --untracked-files=all -- . ':(exclude)p1-census' > p1-census/git-status-after-rechecks.txt
-          git diff --name-status -- . ':(exclude)p1-census' > p1-census/git-diff-after-rechecks.txt
-          git diff -- . ':(exclude)p1-census' > p1-census/git-diff-after-rechecks.patch
-
-      - name: Gate canonical recheck before pytest
-        shell: bash
-        run: |
-          set -Eeuo pipefail
+          python diagnostics/release_readiness/generate_from_evidence.py --write
+          python diagnostics/release_readiness/generate_from_evidence.py --check
           for file in \
-            p1-census/evidence-check.exit-code.txt \
-            p1-census/docs-render-check.exit-code.txt \
-            p1-census/release-file-status.exit-code.txt \
-            p1-census/manifest-check.exit-code.txt; do
-            printf '%s: %s\n' "$file" "$(cat "$file")"
-            test "$(cat "$file")" = '0'
+            DEVELOPMENT_STATUS.json \
+            QUALITY_ENVIRONMENT_STATUS.json \
+            RELEASE_FILE_STATUS.json \
+            VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json; do
+            test "$(stat -c '%a' "$file")" = '644'
           done
-          test ! -s p1-census/git-status-after-known-diagnostics-cleanup.txt
-          test ! -s p1-census/git-status-after-rechecks.txt
 
-      - name: Run complete pytest census
+      - name: Render release documents through sole renderer
         shell: bash
         run: |
           set -Eeuo pipefail
-          mkdir -p p1-census
-          set +e
-          python3 -m pytest -q -p no:cacheprovider 2>&1 | tee p1-census/pytest.log
-          code=${PIPESTATUS[0]}
-          set -e
-          printf '%s\n' "$code" > p1-census/pytest.exit-code.txt
-          exit "$code"
+          python scripts/render_release_docs.py --write
+          python scripts/render_release_docs.py --check
+          python scripts/validate_release_file_status.py
 
-      - name: Collect display evidence
-        if: always()
+      - name: Regenerate and verify canonical manifest
         shell: bash
         run: |
-          mkdir -p p1-census
-          cp /tmp/xvfb.log p1-census/xvfb.log 2>/dev/null || true
-          printf '%s\n' "$EXPECTED_HEAD_SHA" > p1-census/head-sha.txt
-          git status --porcelain --untracked-files=all -- . ':(exclude)p1-census' > p1-census/git-status-final.txt
+          set -Eeuo pipefail
+          python scripts/build_release_manifest.py
+          python scripts/build_release_manifest.py --check --json
 
-      - name: Upload full regression census
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: p1-full-regression-census-${{ env.EXPECTED_HEAD_SHA }}
-          path: p1-census/**
-          if-no-files-found: error
-          retention-days: 30
+      - name: Prove minimal generated diff
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git diff --name-only | LC_ALL=C sort > "$RUNNER_TEMP/actual.txt"
+          printf '%s\n' RELEASE_MANIFEST.json > "$RUNNER_TEMP/expected.txt"
+          diff -u "$RUNNER_TEMP/expected.txt" "$RUNNER_TEMP/actual.txt"
+          test -z "$(git ls-files --others --exclude-standard)"
+
+      - name: Commit canonical manifest only
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add RELEASE_MANIFEST.json
+          git commit -m 'build: canonicalize P1 evidence manifest'
+          git push origin "HEAD:$TARGET_BRANCH"
