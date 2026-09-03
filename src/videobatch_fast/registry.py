@@ -9,6 +9,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 REQUIRED_REGISTRIES = (
     "registries/ERROR_REGISTRY.json",
+    "registries/RUNTIME_ERROR_REGISTRY.json",
     "registries/FUNCTION_REGISTRY.json",
     "registries/PLUGIN_REGISTRY.json",
     "registries/UPDATE_REGISTRY.json",
