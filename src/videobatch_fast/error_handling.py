@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import lru_cache
 
 from .registry import RegistryError, load_json
 
@@ -16,6 +17,10 @@ _FALLBACK_TEXT = {
 }
 _FALLBACK_ACTIONS = ("open_logs",)
 _SEVERITIES = frozenset({"information", "warning", "blocking"})
+_ERROR_REGISTRIES = (
+    "registries/ERROR_REGISTRY.json",
+    "registries/RUNTIME_ERROR_REGISTRY.json",
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,12 +36,25 @@ class ErrorDefinition:
     actions: tuple[str, ...]
 
 
+@lru_cache(maxsize=1)
+def _merged_error_registry() -> dict[str, dict]:
+    merged: dict[str, dict] = {}
+    for path in _ERROR_REGISTRIES:
+        try:
+            payload = load_json(path)
+        except RegistryError:
+            continue
+        errors = payload.get("errors", {}) if isinstance(payload, dict) else {}
+        if not isinstance(errors, dict):
+            continue
+        for code, raw in errors.items():
+            if isinstance(code, str) and isinstance(raw, dict):
+                merged[code] = raw
+    return merged
+
+
 def error_definition(code: str) -> ErrorDefinition:
-    try:
-        registry = load_json("registries/ERROR_REGISTRY.json").get("errors", {})
-    except RegistryError:
-        registry = {}
-    raw = registry.get(code) if isinstance(registry, dict) else None
+    raw = _merged_error_registry().get(code)
     if not isinstance(raw, dict):
         raw = {}
     values = {key: _text_value(raw, key) for key in _FALLBACK_TEXT}
