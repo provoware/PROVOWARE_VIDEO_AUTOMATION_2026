@@ -1,0 +1,2 @@
+Temporary trigger for canonical A32.2 quality-evidence finalization.
+The finalizer removes this file before producing the final evidence commit.
