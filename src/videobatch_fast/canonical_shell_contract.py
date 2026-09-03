@@ -10,13 +10,11 @@ CANONICAL_THEME_LABELS = {
 }
 FONT_PROFILES = {"Kompakt": 90, "Standard": 105, "Groß": 125}
 
-# Breakpoints beziehen sich auf die tatsächlich verfügbare Inhaltsbreite rechts
-# neben der festen Sidebar. Dadurch bleiben sie bei KDE-Skalierung und
-# unterschiedlichen Fensterdekorationen reproduzierbar.
 DASHBOARD_STACKED_MAX = 759
 DASHBOARD_TWO_COLUMN_MAX = 1119
 DASHBOARD_COLUMN_WEIGHTS = (22, 48, 30)
-SIDEBAR_WIDTH = 220
+# A33: mehr Nutzfläche auf 1024/1280/1366px, ohne die Navigation unlesbar zu machen.
+SIDEBAR_WIDTH = 188
 
 
 def dashboard_layout_mode(content_width: int) -> str:
@@ -58,8 +56,8 @@ SHELL_NAVIGATION = (
     ShellNavigationItem("media", "▧  Medien", 1),
     ShellNavigationItem("queue", "☷  Queue", 4),
     ShellNavigationItem("effects", "✦  Effekte", 3),
-    ShellNavigationItem("scheduler", "◷  Scheduler", None, "disabled"),
+    ShellNavigationItem("scheduler", "◷  Startzeit", None, "disabled"),
     ShellNavigationItem("preview", "▣  Vorschau", 2),
-    ShellNavigationItem("diagnostics", "◎  Diagnose", 5),
+    ShellNavigationItem("diagnostics", "◎  Hilfe & Diagnose", 5),
     ShellNavigationItem("settings", "⚙  Einstellungen", 3, "settings"),
 )
