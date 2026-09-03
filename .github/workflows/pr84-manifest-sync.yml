@@ -10,6 +10,9 @@ on:
 permissions:
   contents: write
 
+env:
+  PYTHONPATH: src
+
 jobs:
   sync:
     runs-on: ubuntu-24.04
