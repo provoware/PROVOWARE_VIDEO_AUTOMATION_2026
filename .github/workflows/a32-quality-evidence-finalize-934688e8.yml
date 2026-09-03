@@ -1,0 +1,38 @@
+name: A32 quality evidence finalize 934688e8
+
+on:
+  push:
+    branches:
+      - fix/a32-2-quality-evidence-934688e8
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/a32-2-quality-evidence-934688e8
+          fetch-depth: 0
+      - name: Verify measured candidate ancestry
+        run: git merge-base --is-ancestor 934688e8a2f9e1344a91a959396aaef361ee9b67 HEAD
+      - name: Write exact measured evidence
+        run: python3 scripts/a32_quality_evidence_934688e8_tmp.py
+      - name: Remove temporary helpers
+        run: rm -f .github/workflows/a32-quality-evidence-finalize-934688e8.yml scripts/a32_quality_evidence_934688e8_tmp.py
+      - name: Rebuild and validate manifest
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
+        run: |
+          python3 scripts/build_release_manifest.py
+          python3 scripts/build_release_manifest.py --check
+          python3 scripts/validate_release_manifest.py
+      - name: Commit canonical evidence
+        run: |
+          git config user.name provoware
+          git config user.email provoware.one@gmail.com
+          git add -A
+          git commit -m "evidence: bind quality proof to current A32.2 head"
+          git push origin HEAD:fix/a32-2-quality-evidence-934688e8
