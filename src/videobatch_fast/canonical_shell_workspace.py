@@ -16,10 +16,17 @@ class CanonicalShellWorkspaceMixin:
         self.workflow_grids = {}
         self._build_menu_bar()
         self._configure_shell_styles()
+        # A30.1: The root owns exactly one canonical shell. Using an explicit
+        # weighted grid contract keeps the shell bound to the complete Tk client
+        # area during KDE/X11/Wayland resizes and avoids a stale requested width.
+        self.root.columnconfigure(0, weight=1)
+        self.root.rowconfigure(0, weight=1)
         shell = ttk.Frame(self.root, style="Shell.TFrame")
-        shell.pack(fill="both", expand=True)
+        shell.grid(row=0, column=0, sticky="nsew")
         shell.columnconfigure(1, weight=1)
         shell.rowconfigure(0, weight=1)
+        self._canonical_shell = shell
+        self.root.after_idle(self._verify_canonical_shell_fill)
 
         sidebar = ttk.Frame(
             shell,
@@ -45,6 +52,40 @@ class CanonicalShellWorkspaceMixin:
         footer_host.grid(row=1, column=0, columnspan=2, sticky="ew")
         self._build_canonical_status_bar(footer_host)
         self._restore_shell_selection()
+
+    def _verify_canonical_shell_fill(self) -> None:
+        """Record a non-fatal diagnostic when root and shell client sizes diverge."""
+
+        shell = getattr(self, "_canonical_shell", None)
+        if shell is None:
+            return
+        try:
+            self.root.update_idletasks()
+            root_width = int(self.root.winfo_width())
+            root_height = int(self.root.winfo_height())
+            shell_width = int(shell.winfo_width())
+            shell_height = int(shell.winfo_height())
+        except Exception:
+            return
+        width_gap = abs(root_width - shell_width)
+        height_gap = abs(root_height - shell_height)
+        if width_gap <= 2 and height_gap <= 2:
+            return
+        # Geometry is intentionally not mutated here. The weighted-grid contract
+        # must be sufficient; a mismatch is evidence for the platform diagnostic.
+        try:
+            self._event(
+                "SHELL_GEOMETRY_MISMATCH",
+                "Fensterfläche und Arbeitsfläche unterscheiden sich",
+                (
+                    f"Fenster {root_width}×{root_height}, Shell {shell_width}×{shell_height}; "
+                    f"Abweichung {width_gap}×{height_gap} Pixel."
+                ),
+                level="warning",
+                solution="Fenster einmal wiederherstellen/maximieren und Diagnosebericht prüfen.",
+            )
+        except Exception:
+            pass
 
     def _build_shell_workspace(self, parent) -> None:
         workspace = ttk.Frame(parent, style="Shell.TFrame")
