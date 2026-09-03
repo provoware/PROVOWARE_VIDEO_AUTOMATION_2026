@@ -3,6 +3,7 @@ from __future__ import annotations
 import subprocess
 from dataclasses import FrozenInstanceError
 from pathlib import Path
+from types import SimpleNamespace
 
 from videobatch_fast.error_handling import error_definition
 from videobatch_fast.runtime_error_guidance import (
@@ -72,7 +73,7 @@ def test_duplicate_incidents_are_suppressed_inside_window(monkeypatch) -> None:
     assert runtime_error_hooks._claim_fingerprint("ABC") is True
 
 
-def test_capture_adds_code_fingerprint_and_exact_location(monkeypatch) -> None:
+def test_capture_adds_code_location_and_falls_back_without_report(monkeypatch) -> None:
     runtime_error_hooks._recent_fingerprints.clear()
     captured: dict[str, object] = {}
 
@@ -94,12 +95,35 @@ def test_capture_adds_code_fingerprint_and_exact_location(monkeypatch) -> None:
             root=None,
             auto_open=False,
         )
-    assert handled is True
+    assert handled is False
     context = captured["extra_context"]
     assert isinstance(context, dict)
     assert context["Fehlercode"] == "RUNTIME_PERMISSION_DENIED"
     assert len(str(context["Fehler-Fingerprint"])) == 16
     assert "test_runtime_error_hardening.py" in str(captured["where"])
+    assert not runtime_error_hooks._recent_fingerprints
+
+
+def test_thread_hook_calls_previous_hook_when_central_report_is_unavailable(monkeypatch) -> None:
+    seen: list[object] = []
+    previous = lambda args: seen.append(args)
+    monkeypatch.setattr(runtime_error_hooks, "_thread_hook_installed", False)
+    monkeypatch.setattr(runtime_error_hooks.threading, "excepthook", previous)
+    monkeypatch.setattr(
+        runtime_error_hooks,
+        "capture_runtime_exception",
+        lambda *args, **kwargs: False,
+    )
+    runtime_error_hooks.install_thread_debug_hook()
+    installed = runtime_error_hooks.threading.excepthook
+    args = SimpleNamespace(
+        exc_type=RuntimeError,
+        exc_value=RuntimeError("worker failed"),
+        exc_traceback=None,
+        thread=SimpleNamespace(name="worker"),
+    )
+    installed(args)
+    assert seen == [args]
 
 
 def test_canonical_ui_uses_only_central_runtime_hooks() -> None:
@@ -112,3 +136,12 @@ def test_canonical_ui_uses_only_central_runtime_hooks() -> None:
     assert "def _install_thread_debug_hook" not in source
     assert 'error_definition("UNKNOWN")' not in source
     assert "except BaseException as exc:" not in source
+
+
+def test_legacy_ui_entry_delegates_to_canonical_runtime_path() -> None:
+    source = (ROOT / "src/videobatch_fast/ui.py").read_text(encoding="utf-8")
+    run_app = source[source.rfind("\ndef run_app() -> None:") :]
+    assert "from .canonical_ui import run_app as run_canonical_app" in run_app
+    assert "run_canonical_app()" in run_app
+    assert "report_callback_exception" not in run_app
+    assert 'error_definition("UNKNOWN")' not in run_app
