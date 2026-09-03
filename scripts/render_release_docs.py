@@ -40,22 +40,36 @@ def _release_block(version: dict[str, Any], status: dict[str, Any], report: dict
     gate_lines = "\n".join(f"- {item}" for item in blockers) or "- keine"
     line_coverage = f"{tests['line_coverage_percent']:.2f}".replace(".", ",")
     branch_coverage = f"{tests['branch_coverage_percent']:.2f}".replace(".", ",")
+    channel = str(version["channel"]).upper()
+    if not bool(status.get("stable_ready")):
+        channel += " – noch keine Stable-Freigabe"
+    source = str(status.get("generated_from") or "unbekannt")
+    matrix = report.get("matrix")
+    matrix_line = ""
+    if isinstance(matrix, dict):
+        passed_targets = matrix.get("passed_targets")
+        total_targets = matrix.get("total_targets")
+        if passed_targets is not None and total_targets is not None:
+            matrix_line = (
+                f"\n- Kubuntu-CI-Matrix: {passed_targets}/{total_targets} "
+                "Kombinationen bestanden"
+            )
     return f"""{README_START}
 # {version['name']} · {version['build']}
 
-**Kanal:** {version['channel']}
+**Kanal:** {channel}  
+**Kanonische Quelle:** `{source}`  
 **Freigegebener Qualitätsbericht:** `{status['approved_quality_report']}`
 
 - {tests['passed']}/{tests['passed']} automatisierte Tests bestanden
 - {line_coverage} % Zeilenabdeckung
 - {branch_coverage} % Zweigabdeckung
-- {tests['visual_scenarios']} visuelle Szenarien bestanden
+- {tests['visual_scenarios']} visuelle Szenarien bestanden{matrix_line}
 
 ### Offene Stable-Gates
 
 {gate_lines}
 {README_END}"""
-
 
 
 def _file_status_block(contract: dict[str, Any]) -> str:
@@ -79,6 +93,7 @@ def _file_status_block(contract: dict[str, Any]) -> str:
         *rows,
         FILES_END,
     ])
+
 
 def _replace_marked_block(text: str, start_marker: str, end_marker: str, block: str) -> str:
     start, end = text.find(start_marker), text.find(end_marker)
