@@ -640,13 +640,6 @@ class VideoBatchFastUI(UiResolutionMixin, UiAccessMediaMixin, UiSelectionPreview
 
 
 def run_app() -> None:
-    root = Tk()
-    try:
-        root.tk.call("tk", "scaling", max(1.0, root.winfo_fpixels("1i") / 72.0))
-    except Exception:
-        pass
-    app = VideoBatchFastUI(root)
-    root.report_callback_exception = lambda exc_type, exc, tb: SolutionDialog(root, error_definition("UNKNOWN"), f"{exc_type.__name__}: {exc}")
-    root.update_idletasks()
-    signal_ui_ready()
-    root.mainloop()
+    from .canonical_ui import run_app as run_canonical_app
+
+    run_canonical_app()
