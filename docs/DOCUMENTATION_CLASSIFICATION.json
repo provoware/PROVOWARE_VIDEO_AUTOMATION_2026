@@ -1,6 +1,7 @@
 {
   "current_version_source": "RELEASE_MANIFEST.json",
   "documents": {
+    "A32.2_ERROR_HARDENING_2026-09-03.md": {"category": "technical"},
     "AGENTS.md": {"category": "technical"},
     "AUTOINSTALLATION_save_.md": {"category": "active", "required_sections": ["Ziel", "Pflichtgrad", "Voraussetzungen", "Sicherung und Rückweg", "Schritt-für-Schritt-Anleitung", "Abschlussprüfung", "Nächster Schritt"]},
     "BEST_PRACTICES.md": {"category": "technical"},
