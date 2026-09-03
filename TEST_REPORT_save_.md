@@ -13,11 +13,11 @@
 - 27/27 fokussierte Release-, Cache-, Tooltip- und Vorschauregessionen bestanden
 - reale GUI-Stressprüfung mit 120 schnellen Medienklicks bestanden
 - Version, Textkatalog, Release-Dateistatus, Dokumentrendering und interne Qualität bestanden
-- P0-Kubuntu-CI-Matrix auf `12b5a9daecdd4fdf2d8c5756c19c2705908681d4`: 4/4 Kombinationen bestanden
+- P0-Kubuntu-CI-Matrix, kanonischer Evidence-Lauf `33791408050` auf `9823e790f8e67a6e0f406b132c37569e3b95d977`: 4/4 Kombinationen bestanden
 
 ## Externe Qualitätswerkzeuge
 
-Der exakte Offline-Qualitätslauf `30972392104` ist abgeschlossen:
+Der exakte Offline-Qualitätslauf `33801346178` auf Produkt-Commit `048aa5733d9d0ce5fef872d25e0437fae08eab94` ist abgeschlossen:
 
 - Ruff 0.16.1: bestanden
 - MyPy 2.3.0: bestanden
