@@ -1,0 +1,41 @@
+name: A32 quality evidence 934688e8
+
+on:
+  push:
+    branches:
+      - ci/a32-2-quality-evidence-934688e8
+
+permissions:
+  contents: read
+
+jobs:
+  quality-evidence:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 934688e8a2f9e1344a91a959396aaef361ee9b67
+          fetch-depth: 1
+      - name: Assert exact candidate
+        run: test "$(git rev-parse HEAD)" = "934688e8a2f9e1344a91a959396aaef361ee9b67"
+      - name: Prepare system prerequisite
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-tk
+      - name: Run pinned offline quality gate
+        run: |
+          export VIDEOBATCH_QUALITY_EVIDENCE_DIR="$RUNNER_TEMP/videobatch-quality-evidence"
+          bash scripts/run_offline_quality_gate.sh
+      - name: Record identity
+        if: always()
+        run: |
+          mkdir -p "$RUNNER_TEMP/videobatch-quality-evidence"
+          echo 934688e8a2f9e1344a91a959396aaef361ee9b67 > "$RUNNER_TEMP/videobatch-quality-evidence/verified-candidate-sha.txt"
+          echo "$GITHUB_RUN_ID" > "$RUNNER_TEMP/videobatch-quality-evidence/workflow-run-id.txt"
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a32-pinned-offline-quality-evidence-934688e8
+          path: ${{ runner.temp }}/videobatch-quality-evidence
+          retention-days: 30
