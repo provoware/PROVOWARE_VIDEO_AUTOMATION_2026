@@ -81,7 +81,7 @@ def run_app() -> None:
         root.mainloop()
         RUNTIME.mark_clean_shutdown()
     except Exception as exc:
-        capture_runtime_exception(
+        handled = capture_runtime_exception(
             type(exc),
             exc,
             exc.__traceback__,
@@ -96,4 +96,6 @@ def run_app() -> None:
                 root.destroy()
         except Exception:
             pass
+        if not handled:
+            raise
         raise SystemExit(1) from None
