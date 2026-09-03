@@ -1,4 +1,4 @@
-name: P1-001 canonical docs renderer parity
+name: P1-001 final exact-head qualification
 
 on:
   push:
@@ -9,98 +9,102 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: p1-001-canonical-docs-renderer-parity
+  group: p1-001-final-exact-head-qualification
   cancel-in-progress: true
 
 jobs:
-  regenerate:
-    name: Canonicalize sole renderer outputs and manifest
+  qualify:
+    name: Final P1 exact-head qualification
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 45
     env:
-      TARGET_BRANCH: p1-001-release-evidence-reconciliation
-      EXPECTED_HEAD_SHA: e7169ba6c67f74b9f990cfe093ddaf019edc2ef4
+      EXPECTED_HEAD_SHA: 86cd86aca703b5cb71e0a04e4ff20714682b3349
       PYTHONDONTWRITEBYTECODE: '1'
       PYTHONUTF8: '1'
       PYTHONPATH: src
+      XDG_SESSION_TYPE: x11
 
     steps:
-      - name: Check out exact P1 renderer source head
+      - name: Check out exact canonical P1 head
         uses: actions/checkout@v5
         with:
-          ref: p1-001-release-evidence-reconciliation
-          fetch-depth: 1
+          ref: 86cd86aca703b5cb71e0a04e4ff20714682b3349
+          persist-credentials: false
 
-      - name: Prove exact pristine source head
+      - name: Prove exact pristine head
         shell: bash
         run: |
           set -Eeuo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD_SHA"
           test -z "$(git status --porcelain --untracked-files=all)"
+          mkdir -p "$RUNNER_TEMP/p1-final"
+          printf '%s\n' "$EXPECTED_HEAD_SHA" > "$RUNNER_TEMP/p1-final/head-sha.txt"
 
-      - name: Prepare pinned Python toolchain
-        uses: actions/setup-python@v6
+      - name: Prepare identical cached Kubuntu dependencies
+        uses: ./.github/actions/kubuntu-package-cache
         with:
-          python-version: '3.12'
-          cache: pip
-          cache-dependency-path: requirements-toolchain.lock
+          os: ubuntu-24.04
+          session: x11
+          mode: matrix
 
-      - name: Install locked Python dependencies
+      - name: Preserve dependency diagnostics outside repository
         shell: bash
         run: |
           set -Eeuo pipefail
-          python -m pip install --disable-pip-version-check --requirement requirements-toolchain.lock
+          test -d matrix-logs
+          test -f CI_PACKAGE_METRICS.json
+          cp -R matrix-logs "$RUNNER_TEMP/p1-final/dependency-matrix-logs"
+          cp CI_PACKAGE_METRICS.json "$RUNNER_TEMP/p1-final/CI_PACKAGE_METRICS.json"
+          rm -rf matrix-logs CI_PACKAGE_METRICS.json
+          test -z "$(git status --porcelain --untracked-files=all)"
 
-      - name: Run focused renderer ownership and parity regression
+      - name: Start deterministic X11 display
         shell: bash
         run: |
           set -Eeuo pipefail
-          python -m pytest -q tests/test_release_docs.py
-          python diagnostics/release_readiness/generate_from_evidence.py --check
-          python scripts/validate_release_file_status.py
+          Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
+          echo 'DISPLAY=:99' >> "$GITHUB_ENV"
+          sleep 2
 
-      - name: Render README and STATUS through sole renderer
+      - name: Run canonical read-only P1 gates
         shell: bash
         run: |
           set -Eeuo pipefail
-          python scripts/render_release_docs.py --write
-          python scripts/render_release_docs.py --check
-          grep -F '**Kanal:** RC – noch keine Stable-Freigabe' README.md
+          python3 diagnostics/release_readiness/generate_from_evidence.py --check 2>&1 | tee "$RUNNER_TEMP/p1-final/evidence-check.log"
+          python3 scripts/render_release_docs.py --check 2>&1 | tee "$RUNNER_TEMP/p1-final/docs-render-check.log"
+          python3 scripts/validate_release_file_status.py 2>&1 | tee "$RUNNER_TEMP/p1-final/release-file-status.log"
+          python3 scripts/build_release_manifest.py --check --json 2>&1 | tee "$RUNNER_TEMP/p1-final/manifest-check.log"
           grep -F '**Kanonische Quelle:** `diagnostics/release_readiness/RELEASE_EVIDENCE.json`' README.md
           grep -F 'Kubuntu-CI-Matrix: 4/4 Kombinationen bestanden' README.md
-          grep -F '**Kanonische Quelle:** `diagnostics/release_readiness/RELEASE_EVIDENCE.json`' STATUS.md
-          grep -F 'Kubuntu-CI-Matrix: 4/4 Kombinationen bestanden' STATUS.md
+          test -z "$(git status --porcelain --untracked-files=all)"
 
-      - name: Regenerate and verify canonical manifest
+      - name: Run complete pytest census
         shell: bash
         run: |
           set -Eeuo pipefail
-          python scripts/build_release_manifest.py
-          python scripts/build_release_manifest.py --check --json
+          set +e
+          python3 -m pytest -q -p no:cacheprovider 2>&1 | tee "$RUNNER_TEMP/p1-final/pytest.log"
+          code=${PIPESTATUS[0]}
+          set -e
+          printf '%s\n' "$code" > "$RUNNER_TEMP/p1-final/pytest.exit-code.txt"
+          git status --porcelain --untracked-files=all > "$RUNNER_TEMP/p1-final/git-status-after-pytest.txt"
+          test ! -s "$RUNNER_TEMP/p1-final/git-status-after-pytest.txt"
+          exit "$code"
 
-      - name: Prove exact generated file set
+      - name: Collect display evidence
+        if: always()
         shell: bash
         run: |
-          set -Eeuo pipefail
-          git diff --name-only | LC_ALL=C sort > "$RUNNER_TEMP/actual.txt"
-          cat > "$RUNNER_TEMP/expected.txt" <<'EOF'
-          README.md
-          RELEASE_MANIFEST.json
-          STATUS.md
-          EOF
-          LC_ALL=C sort -o "$RUNNER_TEMP/expected.txt" "$RUNNER_TEMP/expected.txt"
-          diff -u "$RUNNER_TEMP/expected.txt" "$RUNNER_TEMP/actual.txt"
-          test -z "$(git ls-files --others --exclude-standard)"
+          cp /tmp/xvfb.log "$RUNNER_TEMP/p1-final/xvfb.log" 2>/dev/null || true
 
-      - name: Commit exact canonical outputs
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add README.md STATUS.md RELEASE_MANIFEST.json
-          git commit -m 'build: canonicalize P1 docs renderer outputs'
-          git push origin "HEAD:$TARGET_BRANCH"
+      - name: Upload final exact-head evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p1-final-exact-head-${{ env.EXPECTED_HEAD_SHA }}
+          path: ${{ runner.temp }}/p1-final/**
+          if-no-files-found: error
+          retention-days: 30
