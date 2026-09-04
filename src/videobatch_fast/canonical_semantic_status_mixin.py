@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from tkinter import TclError, ttk
 
+from .canonical_visual_polish_mixin import VISUAL_PASS2_MIN_HINT_FONT, visual_scale_factor
 from .theme import COLORS, safe_text_color
 
 
@@ -50,6 +51,9 @@ class CanonicalSemanticStatusMixin:
     def _configure_shell_styles(self) -> None:
         super()._configure_shell_styles()
         style = ttk.Style(self.root)
+        scale = int(self.global_font_scale.get()) if hasattr(self, "global_font_scale") else 105
+        factor = visual_scale_factor(scale)
+        status_font = max(VISUAL_PASS2_MIN_HINT_FONT, round(10 * factor))
         palette = {
             "neutral": COLORS["muted"],
             "success": COLORS["success"],
@@ -62,13 +66,13 @@ class CanonicalSemanticStatusMixin:
                 f"ShellSemanticStatus{state.title()}.TLabel",
                 background=COLORS["toolbar"],
                 foreground=foreground,
-                font=("DejaVu Sans", 9, "bold"),
+                font=("DejaVu Sans", status_font, "bold"),
             )
             style.configure(
                 f"ShellSemanticSidebar{state.title()}.TLabel",
                 background=COLORS["panel"],
                 foreground=safe_text_color(COLORS["panel"], color),
-                font=("DejaVu Sans", 9, "bold"),
+                font=("DejaVu Sans", status_font, "bold"),
             )
 
     def _semantic_status_style(self, *, sidebar: bool = False) -> str:
