@@ -363,6 +363,7 @@ jobs:
             --cov=videobatch_fast --cov-branch --cov-fail-under=0 \
             --cov-report=term --cov-report=json:coverage.json
           python scripts/coverage_policy.py coverage.json 80 65
+          rm -f coverage.json
 
       - name: Architektur-Audit
         run: |
