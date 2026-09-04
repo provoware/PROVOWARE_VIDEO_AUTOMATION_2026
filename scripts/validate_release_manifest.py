@@ -5,7 +5,7 @@ import hashlib
 import json
 from pathlib import Path, PurePosixPath
 
-from release_file_contract import included_release_file
+from release_file_contract import selected_release_files
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "RELEASE_MANIFEST.json"
@@ -36,8 +36,7 @@ def main() -> int:
             errors.append(f"Modus: {rel}")
     actual = {
         path.relative_to(ROOT).as_posix()
-        for path in ROOT.rglob("*")
-        if included_release_file(ROOT, path)
+        for path in selected_release_files(ROOT)
     }
     for rel in sorted(actual - listed):
         errors.append(f"nicht manifestiert: {rel}")

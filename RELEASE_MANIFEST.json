@@ -24,8 +24,8 @@
     {
       "mode": "0o644",
       "path": ".github/workflows/bounded-long-render-rehearsal.yml",
-      "sha256": "fb9d24a6fcb539a75a88c1cfbd6158064584196be000a921e34da771bd79e6c9",
-      "size": 6690
+      "sha256": "e6508d67799783e9058a8a1a0d5a86b4daacf42f232ea3e7220cf8b81899109d",
+      "size": 7004
     },
     {
       "mode": "0o644",
@@ -60,14 +60,14 @@
     {
       "mode": "0o644",
       "path": ".github/workflows/kubuntu-pr-matrix.yml",
-      "sha256": "547612a772395d081ad6ca83b60922ce7c40fc60325b0e066ca9ce30a6c34723",
-      "size": 19182
+      "sha256": "0025c4410efb2f17733e304d27b184f792d5b96ba2ee609b006d54a7094f9de0",
+      "size": 19455
     },
     {
       "mode": "0o644",
       "path": ".github/workflows/kubuntu-pr-validation.yml",
-      "sha256": "f9cde51990db857af4f49f616227de3509e3d60c883531cba60f5af71e1f3171",
-      "size": 13347
+      "sha256": "0c0c5349adbcc913e1e54f6edde3a51406b420997d8f3e45dd09bfb8b1b0f93f",
+      "size": 13620
     },
     {
       "mode": "0o644",
@@ -954,8 +954,8 @@
     {
       "mode": "0o644",
       "path": "scripts/build_long_render_contract.py",
-      "sha256": "10f8059b38734d83d64ced93665443b47d24c6a4697a2d9d1e3a1585ae12d8d6",
-      "size": 4344
+      "sha256": "c83cd2ffcb63dd20934bbc8dcd322000326995505ade1810d86cd24a2eadcc63",
+      "size": 4873
     },
     {
       "mode": "0o644",
@@ -972,8 +972,8 @@
     {
       "mode": "0o644",
       "path": "scripts/build_release_manifest.py",
-      "sha256": "44fbaf185600bf1b1f1aa6ae5c8fed14033cc4fbbb82607869a265768bd39d82",
-      "size": 8513
+      "sha256": "a78a4f446dd0c4d9240a0b32216e5e4daa1261b66d2a18eb95b9c355083af9e8",
+      "size": 8452
     },
     {
       "mode": "0o644",
@@ -1122,8 +1122,8 @@
     {
       "mode": "0o644",
       "path": "scripts/release_file_contract.py",
-      "sha256": "a543b7a5c315ed409060f8a40581244b2b3676e0d4a1c315a8ab5c19f6e56223",
-      "size": 1860
+      "sha256": "d725cf96916833ef1cc5a8297c0108385d04b23da4694fb96d34ecde345cda92",
+      "size": 3848
     },
     {
       "mode": "0o755",
@@ -1254,8 +1254,8 @@
     {
       "mode": "0o644",
       "path": "scripts/validate_release_manifest.py",
-      "sha256": "2b7868cf393a6693b82771b5e429153326973dfa9b89e59b41d71e7f8fe84786",
-      "size": 2103
+      "sha256": "ad910a9af1a0ebd85e019baf51f6cc87cb8f7b7274c70249118302fffe0ba351",
+      "size": 2072
     },
     {
       "mode": "0o644",
@@ -2514,14 +2514,14 @@
     {
       "mode": "0o644",
       "path": "tests/test_release_literal_hygiene.py",
-      "sha256": "4ccbcbc3eab74c45c37cf909941483e8f4e84125ba8ed015af2f563438b3cf36",
-      "size": 2449
+      "sha256": "946334b699421f0ea3dbd2126e129a4c9aee07a08d06ad094e2b8d99823d8924",
+      "size": 2605
     },
     {
       "mode": "0o644",
       "path": "tests/test_repository_finalization.py",
-      "sha256": "2503443fcd8e204968a9fedb4dc33194958f9a35c2ef84d4181d09293b4785c9",
-      "size": 2356
+      "sha256": "7c4ca4b2296f88da731ecce1484fdb78e933d3a989e4cff8490df4869cd44e85",
+      "size": 4101
     },
     {
       "mode": "0o644",

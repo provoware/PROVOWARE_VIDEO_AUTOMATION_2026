@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-from pathlib import Path
+import os
+import subprocess
+from pathlib import Path, PurePosixPath
 
 EXCLUDE_PARTS = frozenset(
     {
@@ -48,6 +50,10 @@ EXCLUDE_FILES = frozenset(
 )
 
 
+class ReleaseFileSelectionError(RuntimeError):
+    """Raised when a Git-backed release source set cannot be determined safely."""
+
+
 def included_release_file(root: Path, path: Path) -> bool:
     """Return whether *path* belongs to the reproducible release source set."""
     if not path.is_file() or path.is_symlink():
@@ -64,3 +70,54 @@ def included_release_file(root: Path, path: Path) -> bool:
     if path.name.startswith("matrix-status-") and path.suffix == ".json":
         return False
     return True
+
+
+def _git_tracked_paths(root: Path) -> list[Path]:
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(root), "ls-files", "-z", "--cached"],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+    except OSError as exc:
+        raise ReleaseFileSelectionError(
+            f"Git-Dateiliste kann nicht gestartet werden: {exc}"
+        ) from exc
+    except subprocess.CalledProcessError as exc:
+        detail = os.fsdecode(exc.stderr).strip() or f"Exit-Code {exc.returncode}"
+        raise ReleaseFileSelectionError(
+            f"Git-Dateiliste kann nicht gelesen werden: {detail}"
+        ) from exc
+
+    paths: list[Path] = []
+    for raw in result.stdout.split(b"\0"):
+        if not raw:
+            continue
+        relative = os.fsdecode(raw)
+        pure = PurePosixPath(relative)
+        if pure.is_absolute() or ".." in pure.parts:
+            raise ReleaseFileSelectionError(
+                f"Unsicherer Git-Pfad in Dateiliste: {relative!r}"
+            )
+        paths.append(root.joinpath(*pure.parts))
+    return paths
+
+
+def selected_release_files(root: Path) -> list[Path]:
+    """Return the deterministic release source set for *root*.
+
+    In a Git worktree, the index is authoritative so CI-injected or otherwise
+    untracked workspace files cannot alter the release manifest. A real
+    Fresh-Extract without ``.git`` falls back to the filesystem contract.
+    Git failures inside an existing worktree are fail-closed.
+    """
+    candidates = (
+        _git_tracked_paths(root)
+        if (root / ".git").exists()
+        else list(root.rglob("*"))
+    )
+    return sorted(
+        (path for path in candidates if included_release_file(root, path)),
+        key=lambda path: path.relative_to(root).as_posix(),
+    )

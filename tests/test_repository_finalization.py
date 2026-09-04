@@ -1,8 +1,19 @@
+import importlib.util
 import json
 import re
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _release_contract_module():
+    path = ROOT / "scripts/release_file_contract.py"
+    spec = importlib.util.spec_from_file_location("release_file_contract_test", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def test_release_tools_share_one_file_selection_contract() -> None:
@@ -15,10 +26,49 @@ def test_release_tools_share_one_file_selection_contract() -> None:
     contract = (ROOT / "scripts/release_file_contract.py").read_text(
         encoding="utf-8"
     )
-    assert "from release_file_contract import included_release_file" in builder
-    assert "from release_file_contract import included_release_file" in validator
+    assert "from release_file_contract import selected_release_files" in builder
+    assert "from release_file_contract import selected_release_files" in validator
+    assert "git\", \"-C\", str(root), \"ls-files\"" in contract
     assert '"archive"' in contract
     assert '"matrix-logs"' in contract
+
+
+def test_git_backed_release_selection_ignores_untracked_workspace_files(
+    tmp_path: Path,
+) -> None:
+    module = _release_contract_module()
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    tracked = tmp_path / "tracked.txt"
+    tracked.write_text("tracked\n", encoding="utf-8")
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "add", "tracked.txt"],
+        check=True,
+    )
+    injected = tmp_path / ".github/workflows/ci-injected.yml"
+    injected.parent.mkdir(parents=True)
+    injected.write_text("name: injected\n", encoding="utf-8")
+
+    selected = {
+        path.relative_to(tmp_path).as_posix()
+        for path in module.selected_release_files(tmp_path)
+    }
+    assert selected == {"tracked.txt"}
+
+
+def test_fresh_extract_without_git_uses_filesystem_contract(tmp_path: Path) -> None:
+    module = _release_contract_module()
+    extract = tmp_path / "fresh-extract"
+    extract.mkdir()
+    (extract / "README.md").write_text("ok\n", encoding="utf-8")
+    generated = extract / "matrix-logs" / "runtime.log"
+    generated.parent.mkdir()
+    generated.write_text("ignore\n", encoding="utf-8")
+
+    selected = {
+        path.relative_to(extract).as_posix()
+        for path in module.selected_release_files(extract)
+    }
+    assert selected == {"README.md"}
 
 
 def test_release_builders_exclude_historical_archive() -> None:
