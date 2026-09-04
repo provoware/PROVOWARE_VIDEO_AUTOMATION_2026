@@ -109,6 +109,18 @@ chmod +x videobatch.sh
 
 **Kann entfallen?** Vor Veröffentlichung oder Archivierung: nein.
 
+## Ampelstatus in 15 Sekunden
+
+VideoBatch verwendet Statusfarben nur als **zusätzliche Orientierung**. Der Text der Meldung bleibt immer maßgeblich, damit die Bedeutung auch ohne Farberkennung eindeutig ist.
+
+| Status | Bedeutung | Was jetzt tun? |
+| --- | --- | --- |
+| **Grün** | Prüfung oder Schritt ist erfolgreich beziehungsweise betriebsbereit. | Normal weiterarbeiten. Bei einer Abschlussmeldung Ergebnis trotzdem kurz prüfen. |
+| **Gelb** | Aufmerksamkeit nötig; der Vorgang ist nicht automatisch endgültig gesperrt. | Meldung vollständig lesen, genannten Wert prüfen und die empfohlene Aktion ausführen. |
+| **Rot** | Der betroffene Schritt wurde zum Schutz gestoppt. | Nicht blind erneut starten. Ursache lesen, sichere Lösung anwenden und danach Quellen, Ziel und Queue erneut prüfen. |
+
+**Merksatz:** Grün = weiter, Gelb = prüfen, Rot = stoppen und Ursache klären.
+
 ## Gelbe oder rote Meldungen
 
 ### Gelb
