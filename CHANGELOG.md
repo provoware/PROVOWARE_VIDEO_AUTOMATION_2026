@@ -2,6 +2,18 @@
 
 Alle wichtigen Änderungen dieses Projekts werden hier in zusammengefasster, chronologischer Form dokumentiert. Die vollständige frühere Detailhistorie liegt unter `docs/archive/release-history/CHANGELOG_FULL_PRE_FINALIZATION.md`.
 
+## Iteration 39B · Core-vs.-Tk-Transfermatrix für PySide6/QML · 2026-09-04
+
+- finalen 39A-Head `121211244d90932775348ac26039b3d7315e60b2` als alleinige Transferbasis festgelegt;
+- maschinenlesbare Transfermatrix mit drei verpflichtenden Klassen eingeführt: A direkt wiederverwendbar, B vor Transfer entkoppeln, C Tk-spezifisch und nativ in PySide6/QML neu bauen;
+- 9 toolkit-neutrale Start-, Fehler-, Audit-, Registry- und Packaging-Komponenten als A klassifiziert;
+- `debug_launcher.py`, `runtime_error_hooks.py`, `canonical_shell_contract.py` und den 39A-CI-Workflow als B klassifiziert;
+- `canonical_ui.py`, `canonical_shell_workspace.py` und `canonical_shell_chrome.py` als C klassifiziert und direkten Tk→Qt-Codeport ausdrücklich ausgeschlossen;
+- Regressionstests ergänzt, die bekannte A/B/C-Grenzen, Toolkit-Neutralität der A-Pythonquellen und die unveränderten Stable-Gates absichern;
+- als ersten echten Qt-Transfer für 39C die Extraktion eines toolkit-neutralen Runtime-Error-Cores festgelegt;
+- Coverage-Schwellen 80 % Zeilen / 65 % Branch sowie physische KDE-X11-/Wayland- und Slow-Target-Soak-Gates unverändert gelassen;
+- kein Merge von PR #101, PR #84 oder `main` durchgeführt.
+
 ## Iteration 39A · A33-Lineage-Rebase & Packaging-Hygiene · 2026-09-04
 
 - A33 mechanisch auf den kanonischen A32.2-Head `8755d5333b2f53ff8080655f8af39727db9b8c48` rebaset; danach 18 Commits voraus und 0 hinter der Basis;
