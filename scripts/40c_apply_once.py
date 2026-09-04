@@ -85,6 +85,7 @@ def update_version_contract() -> None:
         "DEVELOPMENT_STATUS.json",
         "STARTUP_CONTRACT.json",
         "INSTALLER_SYSTEM_CONTRACT.json",
+        "PORTABLE_RUNTIME_CONTRACT.json",
         "registries/UI_BLUEPRINT.json",
         "registries/UI_COMPONENT_REGISTRY.json",
         "registries/VISUAL_INSPECTION_REGISTRY.json",
