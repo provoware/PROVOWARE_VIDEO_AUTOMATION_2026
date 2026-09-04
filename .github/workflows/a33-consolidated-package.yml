@@ -44,8 +44,26 @@ jobs:
         run: |
           set -Eeuo pipefail
           python -m pip install --requirement requirements-toolchain.lock
-          test "$(python -m pytest --version | awk '{print $2}')" = "9.0.2"
-          test "$(python -m coverage --version | awk 'NR==1 {print $2}')" = "7.13.3"
+          python - <<'PY'
+          from importlib.metadata import version
+
+          expected = {
+              "coverage": "7.13.3",
+              "pytest": "9.0.2",
+              "pytest-cov": "7.0.0",
+              "ruff": "0.16.1",
+              "mypy": "2.3.0",
+              "bandit": "1.9.4",
+              "pip-audit": "2.10.1",
+          }
+          for package, wanted in expected.items():
+              actual = version(package)
+              if actual != wanted:
+                  raise SystemExit(
+                      f"Toolchain-Drift: {package}={actual}, erwartet {wanted}"
+                  )
+              print(f"TOOLCHAIN PASS · {package}=={actual}")
+          PY
 
       - name: Startvertrag prüfen
         run: |
