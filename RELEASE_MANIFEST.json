@@ -1464,8 +1464,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/canonical_visual_polish_mixin.py",
-      "sha256": "3c622d11a82360d150effa5a3065a926c919099cbcbc928268f8eabc1528a9c9",
-      "size": 9122
+      "sha256": "c7e749b8dc69f01f5839cd50f746c53e1c943d68ea1c19afea1f76d99089577b",
+      "size": 9991
     },
     {
       "mode": "0o644",
@@ -2616,8 +2616,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_visual_pass2_contract.py",
-      "sha256": "16aeae96e8ddbf79c3f7ff5f429cb83fe51434197360c66c26fc13a3c1b875a2",
-      "size": 2288
+      "sha256": "23717f0c071f12a7b26a3933d4dd1e64bccd7bfea29e4363d403bbb2ac7bf58d",
+      "size": 3231
     },
     {
       "mode": "0o644",
