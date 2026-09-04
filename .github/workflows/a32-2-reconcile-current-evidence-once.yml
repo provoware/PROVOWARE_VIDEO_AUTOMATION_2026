@@ -103,7 +103,6 @@ jobs:
               'total': 30,
               'current_todo': 'Coverage-Vertrag 80/65 schließen; danach physische KDE-Abnahme und Large-Media-Soak auf demselben finalen Kandidaten.',
           })
-
           evidence_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
           todo_path = root / 'TODO.md'
@@ -111,16 +110,28 @@ jobs:
           stable_heading = '## Noch offene Stable-Gates\n\n'
           coverage_line = '- [ ] **Coverage-Vertrag 80/65:** aktuelle Messung 73,38 % Zeilen / 59,01 % Branch; Schwellen nicht absenken, sondern ungetestete kritische Pfade gezielt schließen.\n'
           if coverage_line not in todo:
-              todo = todo.replace(stable_heading, stable_heading + coverage_line)
+              if stable_heading not in todo:
+                  raise SystemExit('TODO-Stable-Gate-Abschnitt fehlt; fail-closed.')
+              todo = todo.replace(stable_heading, stable_heading + coverage_line, 1)
           todo_path.write_text(todo, encoding='utf-8')
 
           renderer_path = root / 'scripts/render_release_docs.py'
           renderer = renderer_path.read_text(encoding='utf-8')
-          old = '    return f"""{README_START}\n# {version[\'name\']} · {version[\'build\']}\n\n**Kanal:** {channel}  \\n**Kanonische Quelle:** `{source}`  \\n**Freigegebener Qualitätsbericht:** `{status[\'approved_quality_report\']}`\n\n- {tests[\'passed\']}/{tests[\'passed\']} automatisierte Tests bestanden\n- {line_coverage} % Zeilenabdeckung'
-          new = '    collected = int(tests.get("collected", int(tests["passed"]) + int(tests.get("failed", 0)) + int(tests.get("skipped", 0))))\n    skipped = int(tests.get("skipped", 0))\n    return f"""{README_START}\n# {version[\'name\']} · {version[\'build\']}\n\n**Kanal:** {channel}  \\n**Kanonische Quelle:** `{source}`  \\n**Freigegebener Qualitätsbericht:** `{status[\'approved_quality_report\']}`\n\n- {tests[\'passed\']}/{collected} automatisierte Tests bestanden; {skipped} übersprungen\n- {line_coverage} % Zeilenabdeckung'
-          if old not in renderer:
+          test_line = "- {tests['passed']}/{tests['passed']} automatisierte Tests bestanden"
+          replacement_line = "- {tests['passed']}/{collected} automatisierte Tests bestanden; {skipped} übersprungen"
+          return_anchor = '    return f"""{README_START}'
+          if test_line not in renderer or return_anchor not in renderer:
               raise SystemExit('Renderer-Vertrag nicht an erwarteter Stelle gefunden; fail-closed.')
-          renderer_path.write_text(renderer.replace(old, new, 1), encoding='utf-8')
+          if 'collected = int(tests.get("collected"' not in renderer:
+              renderer = renderer.replace(
+                  return_anchor,
+                  '    collected = int(tests.get("collected", int(tests["passed"]) + int(tests.get("failed", 0)) + int(tests.get("skipped", 0))))\n'
+                  '    skipped = int(tests.get("skipped", 0))\n'
+                  + return_anchor,
+                  1,
+              )
+          renderer = renderer.replace(test_line, replacement_line, 1)
+          renderer_path.write_text(renderer, encoding='utf-8')
 
           regression = root / 'tests/test_current_release_evidence_contract.py'
           regression.write_text('''from __future__ import annotations\n\nimport json\nfrom pathlib import Path\n\n\nROOT = Path(__file__).resolve().parents[1]\nEVIDENCE = ROOT / "diagnostics/release_readiness/RELEASE_EVIDENCE.json"\n\n\ndef _evidence() -> dict:\n    return json.loads(EVIDENCE.read_text(encoding="utf-8"))\n\n\ndef test_current_full_regression_is_canonical_release_evidence() -> None:\n    data = _evidence()\n    tests = data["tests"]\n    assert tests["collected"] == 468\n    assert tests["passed"] == 466\n    assert tests["failed"] == 0\n    assert tests["skipped"] == 2\n    assert tests["line_coverage_percent"] == 73.38\n    assert tests["branch_coverage_percent"] == 59.01\n    assert data["provenance"]["full_regression_run_id"] == 33805992774\n    assert data["provenance"]["full_regression_verified_commit"] == "2e7d4350b0ccb0a5d0a69fa1033f0b1aded54e02"\n\n\ndef test_coverage_policy_is_an_explicit_stable_blocker() -> None:\n    data = _evidence()\n    gate = next(item for item in data["stable_gates"] if item["id"] == "coverage_80_65")\n    assert gate["status"] == "failed"\n    assert data["stable_ready"] is False\n    assert data["progress"] == {\n        "percent": 90,\n        "completed": 27,\n        "open": 3,\n        "total": 30,\n        "current_todo": "Coverage-Vertrag 80/65 schließen; danach physische KDE-Abnahme und Large-Media-Soak auf demselben finalen Kandidaten.",\n    }\n\ndef test_readme_does_not_fall_back_to_superseded_325_test_claim() -> None:\n    readme = (ROOT / "README.md").read_text(encoding="utf-8")\n    assert "466/468 automatisierte Tests bestanden; 2 übersprungen" in readme\n    assert "73,38 % Zeilenabdeckung" in readme\n    assert "59,01 % Zweigabdeckung" in readme\n    assert "Coverage-Vertrag 80/65" in readme\n    assert "325/325 automatisierte Tests bestanden" not in readme\n''', encoding='utf-8')
