@@ -1458,8 +1458,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/canonical_shell_workspace.py",
-      "sha256": "7ac55ad63830e1fa45134f92b38d292ed41d9ac6d63c9ea8ae833db4a19db2bc",
-      "size": 7206
+      "sha256": "83c9b39c8cc7943e3842a78dfe35f21c44c65be68432cef7cd9b99db681e7494",
+      "size": 7247
     },
     {
       "mode": "0o644",
@@ -2226,8 +2226,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_canonical_application_shell_contract.py",
-      "sha256": "2065451ec23ffb910f70f24290e1508c4072ae27fe025aed728534032b78d8ff",
-      "size": 3693
+      "sha256": "d70f63b1f7552f8c64896c323364703bd622c5c9f60df6fd85cd7daf8da6da13",
+      "size": 4064
     },
     {
       "mode": "0o644",
