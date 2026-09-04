@@ -109,3 +109,10 @@ def test_canonical_dashboard_has_all_required_visual_zones() -> None:
     assert "normalize_window_geometry" in source
     assert "CanonicalDashboardMixin" in source
     assert "CanonicalHelpStatusMixin" in source
+
+
+def test_shell_search_understands_output_destination_language() -> None:
+    source = _source(ROOT / "src/videobatch_fast/canonical_shell_workspace.py")
+    for keyword in ("ausgabe", "speicher", "ziel", "ordner"):
+        assert f'"{keyword}"' in source
+    assert '(("queue", "render", "produktion", "auftrag", "ausgabe", "speicher", "ziel", "ordner"), 4)' in source
