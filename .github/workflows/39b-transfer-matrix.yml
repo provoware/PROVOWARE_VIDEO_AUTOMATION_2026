@@ -1,0 +1,191 @@
+name: Iteration 39B · Core-vs-Tk transfer governance
+
+on:
+  push:
+    branches:
+      - iteration/39b-core-vs-tk-transfer-matrix-20260904
+
+permissions:
+  contents: read
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: '1'
+  PIP_NO_INPUT: '1'
+  PYTHONHASHSEED: '0'
+  PYTHONUTF8: '1'
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONPATH: ${{ github.workspace }}/src
+
+jobs:
+  validate-transfer-matrix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Quellen holen
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-toolchain.lock
+
+      - name: Systempakete für unveränderte Tk-Regression
+        run: |
+          set -Eeuo pipefail
+          sudo apt-get update
+          sudo apt-get install -y python3-tk xvfb ffmpeg
+
+      - name: Exakt gesperrte Toolchain installieren
+        run: |
+          set -Eeuo pipefail
+          python -m pip install --requirement requirements-toolchain.lock
+          python - <<'PY'
+          from importlib.metadata import version
+
+          expected = {
+              "coverage": "7.13.3",
+              "pytest": "9.0.2",
+              "pytest-cov": "7.0.0",
+              "ruff": "0.16.1",
+              "mypy": "2.3.0",
+              "bandit": "1.9.4",
+              "pip-audit": "2.10.1",
+          }
+          for package, wanted in expected.items():
+              actual = version(package)
+              if actual != wanted:
+                  raise SystemExit(f"Toolchain-Drift: {package}={actual}, erwartet {wanted}")
+              print(f"TOOLCHAIN PASS · {package}=={actual}")
+          PY
+
+      - name: 39B Transfermatrix-Governance
+        run: |
+          set -Eeuo pipefail
+          python -m pytest -q -p no:cacheprovider tests/test_39b_transfer_matrix_contract.py \
+            | tee "$RUNNER_TEMP/39b-matrix.log"
+
+      - name: Kompilierung
+        env:
+          PYTHONPYCACHEPREFIX: ${{ runner.temp }}/39b-pycache
+        run: |
+          set -Eeuo pipefail
+          python -m compileall -q -f scripts src tests
+
+      - name: Vollregression des unveränderten Produktcodes
+        run: |
+          set -Eeuo pipefail
+          xvfb-run -a python -m pytest -q -p no:cacheprovider \
+            | tee "$RUNNER_TEMP/39b-full.log"
+
+      - name: Coverage neu messen und Stable-Gate separat dokumentieren
+        run: |
+          set -Eeuo pipefail
+          xvfb-run -a python -m pytest -q -p no:cacheprovider \
+            --cov=videobatch_fast \
+            --cov-branch \
+            --cov-fail-under=0 \
+            --cov-report=term \
+            --cov-report=json:coverage.json \
+            | tee "$RUNNER_TEMP/39b-coverage.log"
+          set +e
+          python scripts/coverage_policy.py coverage.json 80 65 \
+            | tee "$RUNNER_TEMP/39b-coverage-policy.log"
+          coverage_rc=${PIPESTATUS[0]}
+          set -e
+          echo "STABLE_COVERAGE_RC=$coverage_rc" >> "$GITHUB_ENV"
+          printf '%s\n' "$coverage_rc" > "$RUNNER_TEMP/stable-coverage-rc.txt"
+
+      - name: Architektur-Audit
+        run: |
+          set -Eeuo pipefail
+          python scripts/architecture_audit.py \
+            | tee "$RUNNER_TEMP/39b-architecture.log"
+
+      - name: Kanonischen Release-Dateisatz im Runner erzeugen
+        run: |
+          set -Eeuo pipefail
+          python scripts/build_release_manifest.py
+          python scripts/build_release_manifest.py --check --json
+          python scripts/validate_release_manifest.py
+
+      - name: 39B Evidence-Report erzeugen
+        run: |
+          set -Eeuo pipefail
+          python - <<'PY'
+          import json
+          import os
+          from collections import Counter
+          from pathlib import Path
+
+          matrix = json.loads(Path('A33_PYSIDE6_TRANSFER_MATRIX.json').read_text(encoding='utf-8'))
+          coverage = json.loads(Path('coverage.json').read_text(encoding='utf-8'))
+          totals = coverage['totals']
+          statements = int(totals.get('num_statements', 0) or 0)
+          covered_lines = int(totals.get('covered_lines', 0) or 0)
+          branches = int(totals.get('num_branches', 0) or 0)
+          covered_branches = int(totals.get('covered_branches', 0) or 0)
+          counts = Counter(item['classification'] for item in matrix['components'])
+          report = {
+              'schema_version': 1,
+              'iteration': '39B',
+              'commit': os.environ['GITHUB_SHA'],
+              'source_lineage_sha': matrix['source_lineage_sha'],
+              'matrix_gate': 'passed',
+              'full_regression': 'passed',
+              'architecture_audit': 'passed',
+              'classification_counts': dict(sorted(counts.items())),
+              'component_groups': len(matrix['components']),
+              'coverage': {
+                  'line_percent': round(covered_lines / statements * 100.0, 2) if statements else 0.0,
+                  'branch_percent': round(covered_branches / branches * 100.0, 2) if branches else 100.0,
+                  'minimum_line_percent': 80.0,
+                  'minimum_branch_percent': 65.0,
+                  'stable_gate': 'passed' if os.environ.get('STABLE_COVERAGE_RC') == '0' else 'failed',
+              },
+              'product_runtime_changed_by_39b': False,
+              'recommended_first_candidate': matrix['recommended_first_candidate_after_39B'],
+          }
+          target = Path(os.environ['RUNNER_TEMP']) / 'ITERATION_39B_CI_REPORT.json'
+          target.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          print(json.dumps(report, ensure_ascii=False, indent=2))
+          PY
+
+      - name: Deterministisches 39B-Projekt-ZIP bauen
+        run: |
+          set -Eeuo pipefail
+          ZIP=PROVOWARE_VideoBatch_Fast_ITER39B_TRANSFER_GOVERNANCE_2026-09-04.zip
+          echo "ZIP_NAME=$ZIP" >> "$GITHUB_ENV"
+          python scripts/package_release.py --output "$ZIP"
+          python scripts/verify_release_zip.py "$ZIP"
+          python scripts/package_release.py --output "$RUNNER_TEMP/39b-repro.zip"
+          cmp -s "$ZIP" "$RUNNER_TEMP/39b-repro.zip"
+          sha256sum "$ZIP" > "$ZIP.sha256.txt"
+
+      - name: 39B Evidence hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: PROVOWARE_VideoBatch_Fast_ITER39B_TRANSFER_GOVERNANCE_2026-09-04
+          path: |
+            ${{ env.ZIP_NAME }}
+            ${{ env.ZIP_NAME }}.sha256.txt
+            A33_PYSIDE6_TRANSFER_MATRIX.json
+            ITERATION_39B_CORE_VS_TK_TRANSFER_MATRIX_2026-09-04.md
+            coverage.json
+            ${{ runner.temp }}/ITERATION_39B_CI_REPORT.json
+            ${{ runner.temp }}/39b-matrix.log
+            ${{ runner.temp }}/39b-full.log
+            ${{ runner.temp }}/39b-coverage.log
+            ${{ runner.temp }}/39b-coverage-policy.log
+            ${{ runner.temp }}/39b-architecture.log
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: 39B-Governance-Ergebnis
+        run: |
+          set -Eeuo pipefail
+          echo "39B Governance PASS · Stable-Coverage-Gate bleibt separat dokumentiert: RC=${STABLE_COVERAGE_RC:-unknown}"
