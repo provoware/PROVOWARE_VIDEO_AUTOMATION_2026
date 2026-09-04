@@ -16,26 +16,29 @@ class ControlledBatchRunner(BatchRunner):
     def paused(self) -> bool:
         return self.execution_control.paused
 
+    def _log_control(self, message: str) -> None:
+        self._publish_mapping("log", level="info", message=message)
+
     def pause(self) -> None:
         if self.running:
             self.execution_control.pause()
-            self._publish_mapping("execution_paused", message="Laufender FFmpeg-Prozess wird pausiert.")
+            self._log_control("Laufender FFmpeg-Prozess wird pausiert.")
 
     def resume(self) -> None:
         was_paused = self.execution_control.paused
         self.execution_control.resume()
         if was_paused:
-            self._publish_mapping("execution_resumed", message="FFmpeg wird am gehaltenen Zustand fortgesetzt.")
+            self._log_control("FFmpeg wird am gehaltenen Zustand fortgesetzt.")
 
     def set_cpu_limit_50(self, enabled: bool) -> None:
         self.execution_control.set_cpu_limit_50(enabled)
         state = "aktiv" if enabled else "aus"
-        self._publish_mapping("resource_limit_changed", message=f"CPU-Limit 50 %: {state}.")
+        self._log_control(f"CPU-Limit 50 %: {state}.")
 
     def set_memory_limit_gb(self, gigabytes: float | None) -> None:
         self.execution_control.set_memory_limit_gb(gigabytes)
         state = "aus" if gigabytes is None else f"{gigabytes:g} GB"
-        self._publish_mapping("resource_limit_changed", message=f"RAM-Limit: {state}.")
+        self._log_control(f"RAM-Limit: {state}.")
 
     def start(self, jobs, options) -> None:
         self.execution_control.resume()
