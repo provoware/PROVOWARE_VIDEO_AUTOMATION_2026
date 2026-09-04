@@ -47,6 +47,7 @@ def test_iteration_39a_workflow_uses_locked_toolchain_and_manifest_packager() ->
     assert "python -m pip install pytest" not in workflow
     assert "scripts/package_release.py" in workflow
     assert "scripts/verify_release_zip.py" in workflow
+    assert "--cov-fail-under=0" in workflow
     assert "scripts/coverage_policy.py coverage.json 80 65" in workflow
     assert 'zip -qr "$ZIP" .' not in workflow
 
