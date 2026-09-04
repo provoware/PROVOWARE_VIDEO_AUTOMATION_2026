@@ -245,7 +245,7 @@ jobs:
           assert str(app._shell_kpi_buttons["scheduler"].cget("state")) == "disabled"
 
           for key, page_index in (("media", 1), ("queue", 4), ("effects", 3)):
-              app._shell_kpi_buttons[key].invoke()
+              app._shell_nav_buttons[key].invoke()
               root.update_idletasks()
               assert app.main_notebook.index(app.main_notebook.select()) == page_index
 
