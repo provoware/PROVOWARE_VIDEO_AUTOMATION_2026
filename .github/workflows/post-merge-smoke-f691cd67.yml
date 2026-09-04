@@ -72,23 +72,76 @@ jobs:
       - name: Validate canonical source contracts
         run: |
           set -Eeuo pipefail
+          mkdir -p "$RUNNER_TEMP/post-merge-logs"
           python3 scripts/build_release_manifest.py --check --json | tee "$RUNNER_TEMP/release-manifest-check.json"
           python3 -m compileall -q -f src scripts diagnostics tests
           python3 -m pytest -q \
             tests/test_design_manifest_contract.py \
             tests/test_canonical_application_shell_contract.py \
             tests/test_canonical_kpi_contract.py \
-            tests/test_visual_pass2_contract.py
-
-      - name: Run repository Kubuntu compatibility smoke
-        run: |
-          set -Eeuo pipefail
-          mkdir -p "$RUNNER_TEMP/post-merge-logs"
+            tests/test_visual_pass2_contract.py \
+            2>&1 | tee "$RUNNER_TEMP/post-merge-logs/focused-pytest.log"
           python3 scripts/check_release_literal_hygiene.py \
             --report "$RUNNER_TEMP/RELEASE_LITERAL_HYGIENE.json" \
             2>&1 | tee "$RUNNER_TEMP/post-merge-logs/release-literal-hygiene.log"
-          bash scripts/kubuntu_matrix_smoke.sh \
-            2>&1 | tee "$RUNNER_TEMP/post-merge-logs/kubuntu-matrix-smoke.log"
+
+      - name: Isolate full pytest suite
+        id: full_pytest
+        continue-on-error: true
+        run: |
+          set +e
+          printf '%s\n' '=== BEFORE FULL PYTEST ===' | tee "$RUNNER_TEMP/post-merge-logs/full-pytest.log"
+          git status --porcelain --untracked-files=all | tee -a "$RUNNER_TEMP/post-merge-logs/full-pytest.log"
+          find src/videobatch_fast -maxdepth 1 -type f -name 'update.py' -print | tee -a "$RUNNER_TEMP/post-merge-logs/full-pytest.log"
+          python3 -m pytest -q -x -vv 2>&1 | tee -a "$RUNNER_TEMP/post-merge-logs/full-pytest.log"
+          rc=${PIPESTATUS[0]}
+          printf 'FULL_PYTEST_RC=%s\n' "$rc" | tee "$RUNNER_TEMP/full-pytest-status.txt"
+          printf '%s\n' '=== AFTER FULL PYTEST ===' | tee -a "$RUNNER_TEMP/post-merge-logs/full-pytest.log"
+          git status --porcelain --untracked-files=all | tee -a "$RUNNER_TEMP/post-merge-logs/full-pytest.log"
+          find src/videobatch_fast -maxdepth 1 -type f -name 'update.py' -print | tee -a "$RUNNER_TEMP/post-merge-logs/full-pytest.log"
+          exit "$rc"
+
+      - name: Isolate fault lab
+        id: fault_lab
+        if: always()
+        continue-on-error: true
+        run: |
+          set +e
+          printf '%s\n' '=== BEFORE FAULT LAB ===' | tee "$RUNNER_TEMP/post-merge-logs/fault-lab.log"
+          git status --porcelain --untracked-files=all | tee -a "$RUNNER_TEMP/post-merge-logs/fault-lab.log"
+          find src/videobatch_fast -maxdepth 1 -type f -name 'update.py' -print | tee -a "$RUNNER_TEMP/post-merge-logs/fault-lab.log"
+          bash videobatch.sh fault-lab 2>&1 | tee -a "$RUNNER_TEMP/post-merge-logs/fault-lab.log"
+          rc=${PIPESTATUS[0]}
+          printf 'FAULT_LAB_RC=%s\n' "$rc" | tee "$RUNNER_TEMP/fault-lab-status.txt"
+          printf '%s\n' '=== AFTER FAULT LAB ===' | tee -a "$RUNNER_TEMP/post-merge-logs/fault-lab.log"
+          git status --porcelain --untracked-files=all | tee -a "$RUNNER_TEMP/post-merge-logs/fault-lab.log"
+          find src/videobatch_fast -maxdepth 1 -type f -name 'update.py' -print | tee -a "$RUNNER_TEMP/post-merge-logs/fault-lab.log"
+          exit "$rc"
+
+      - name: Upload isolation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-merge-f691cd67-isolation-evidence
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            ${{ runner.temp }}/post-merge-logs/*
+            ${{ runner.temp }}/full-pytest-status.txt
+            ${{ runner.temp }}/fault-lab-status.txt
+            ${{ runner.temp }}/source-identity.txt
+            ${{ runner.temp }}/release-manifest-check.json
+            ${{ runner.temp }}/RELEASE_LITERAL_HYGIENE.json
+            /tmp/xvfb.log
+
+      - name: Enforce isolated repository smoke statuses
+        run: |
+          set -Eeuo pipefail
+          source "$RUNNER_TEMP/full-pytest-status.txt"
+          source "$RUNNER_TEMP/fault-lab-status.txt"
+          printf 'FULL_PYTEST_RC=%s\nFAULT_LAB_RC=%s\n' "$FULL_PYTEST_RC" "$FAULT_LAB_RC"
+          test "$FULL_PYTEST_RC" -eq 0
+          test "$FAULT_LAB_RC" -eq 0
 
       - name: Prove smoke remained source-read-only
         run: |
@@ -105,11 +158,7 @@ jobs:
           set -Eeuo pipefail
           short_sha="${EXPECTED_SHA:0:12}"
           archive="PROVOWARE_VIDEO_AUTOMATION_2026_2.8.3-rc24_main_${short_sha}_POST_MERGE_VERIFIED.zip"
-          git archive \
-            --format=zip \
-            --prefix=PROVOWARE_VIDEO_AUTOMATION_2026/ \
-            --output="$RUNNER_TEMP/$archive" \
-            "$EXPECTED_SHA"
+          git archive --format=zip --prefix=PROVOWARE_VIDEO_AUTOMATION_2026/ --output="$RUNNER_TEMP/$archive" "$EXPECTED_SHA"
           unzip -t "$RUNNER_TEMP/$archive"
           sha256sum "$RUNNER_TEMP/$archive" > "$RUNNER_TEMP/$archive.sha256"
           echo "ARCHIVE=$archive" >> "$GITHUB_ENV"
@@ -118,9 +167,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           python3 - <<'PY'
-          import json
-          import os
-          import subprocess
+          import json, os, subprocess
           from pathlib import Path
           payload = {
               "schema_version": 1,
@@ -130,19 +177,8 @@ jobs:
               "branch_under_test": "main",
               "os": "ubuntu-24.04",
               "session": "x11",
-              "checks": [
-                  "exact_sha",
-                  "exact_tree",
-                  "release_manifest",
-                  "compileall",
-                  "focused_canonical_pytest",
-                  "release_literal_hygiene",
-                  "kubuntu_matrix_smoke",
-                  "read_only_worktree",
-                  "zip_integrity",
-              ],
+              "checks": ["exact_sha", "exact_tree", "release_manifest", "compileall", "focused_canonical_pytest", "release_literal_hygiene", "full_pytest", "fault_lab", "read_only_worktree", "zip_integrity"],
               "archive": os.environ["ARCHIVE"],
-              "note": "Historical release-readiness evidence is intentionally not a post-merge source-integrity gate; it remains tied to its recorded qualification SHA.",
           }
           target = Path(os.environ["RUNNER_TEMP"]) / "POST_MERGE_SMOKE.json"
           target.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -162,15 +198,4 @@ jobs:
             ${{ runner.temp }}/release-manifest-check.json
             ${{ runner.temp }}/source-identity.txt
             ${{ runner.temp }}/RELEASE_LITERAL_HYGIENE.json
-            ${{ runner.temp }}/post-merge-logs/*
-
-      - name: Upload display log on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: post-merge-f691cd67-failure-evidence
-          if-no-files-found: warn
-          retention-days: 14
-          path: |
-            /tmp/xvfb.log
             ${{ runner.temp }}/post-merge-logs/*
