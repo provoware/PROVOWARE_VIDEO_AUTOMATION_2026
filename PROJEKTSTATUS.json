@@ -3,14 +3,14 @@
   "projektname": "PROVOWARE VideoBatch Fast",
   "aliasnamen": ["VideoBatch Fast", "PROVOWARE Video Automation 2026"],
   "programmversion": "2.8.3-rc24",
-  "entwicklungsiteration": "39B",
+  "entwicklungsiteration": "40A",
   "repository": "provoware/PROVOWARE_VIDEO_AUTOMATION_2026",
   "hauptdatei": "src/videobatch_fast/app.py",
   "startdatei": "start.sh",
-  "status": "39B Core-vs.-Tk-Transfermatrix für PySide6/QML validiert; Stable weiterhin durch Coverage und physische Gates blockiert",
-  "lineage_base_sha": "121211244d90932775348ac26039b3d7315e60b2",
-  "referenz_ci_sha": "4ef7ce950bdea8cd5a24cf085c26cab8e631721d",
-  "referenz_ci_run": 33832842183,
+  "status": "40A Standarderscheinungsbild gegen kanonische Repo-Referenzen ausgerichtet; finale Validierung läuft; Stable weiterhin blockiert",
+  "lineage_base_sha": "ffe050744128963942db2f413a7b18c6a344063c",
+  "referenz_ci_sha": "ffe050744128963942db2f413a7b18c6a344063c",
+  "referenz_ci_run": null,
   "letztes_validiertes_release": "2.8.3-rc24",
   "stable_freigabe": false,
   "fortschritt": {
@@ -19,11 +19,10 @@
     "gesamt": 30
   },
   "tests": {
-    "39b_transfermatrix_bestanden": 6,
+    "40a_reference_alignment_status": "pending_ci",
     "vollregression_bestanden": 483,
     "vollregression_uebersprungen": 2,
-    "vollregression_fehlgeschlagen": 0,
-    "39b_transfermatrix_status": "passed"
+    "vollregression_fehlgeschlagen": 0
   },
   "coverage": {
     "zeilen_prozent": 73.16,
@@ -39,6 +38,13 @@
     "groesste_python_datei_zeilen": 699,
     "befunde": 0
   },
+  "erscheinungsbild": {
+    "primary_reference": "docs/design/VIDEOBATCH_CANONICAL_UI_REFERENCE.svg",
+    "standard_theme_id": "neon_gravity",
+    "standard_theme_label": "Midnight Blue",
+    "reference_alignment": "implemented_pending_ci",
+    "legacy_visual_capture_harness": "captures VideoBatchFastUI instead of CanonicalVideoBatchFastUI; baselines not auto-accepted"
+  },
   "pyside6_qml_transfer": {
     "matrix": "docs/architecture/PYSIDE6_QML_TRANSFER_MATRIX.json",
     "klasse_a_direkt": 9,
@@ -50,14 +56,12 @@
     "deterministisch": true,
     "manifestgefuehrt": true,
     "backup_cache_bytecode_ausgeschlossen": true,
-    "projekt_zip_sha256": "6decb2761eff708d7a106562ce20ec472b12d9db4f163baa63a093743afbad0b",
-    "evidence_artifact_sha256": "68c2e29683621016f9432cb1b659e34e58e74f1bc69abb09cb00e0d30062f136",
-    "status": "passed"
+    "status": "pending_40a_validation"
   },
   "offene_stable_gates": [
     "Coverage-Vertrag 80/65",
     "physische KDE-X11-/Wayland-Abnahme",
     "realer Langzeitrender mit großer Medienauswahl und langsamem Ziel"
   ],
-  "naechster_schritt": "39C Toolkit-neutralen Runtime-Error-Core aus runtime_error_hooks.py extrahieren und Tk-/Qt-Präsentationsadapter trennen"
+  "naechster_schritt": "Nach grünem 40A-Abschluss Screenshot-Harness separat auf CanonicalVideoBatchFastUI umstellen und capture-only gegen Repo-Referenzen prüfen"
 }
