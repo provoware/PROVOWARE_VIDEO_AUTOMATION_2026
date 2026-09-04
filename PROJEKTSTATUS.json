@@ -7,10 +7,10 @@
   "repository": "provoware/PROVOWARE_VIDEO_AUTOMATION_2026",
   "hauptdatei": "src/videobatch_fast/app.py",
   "startdatei": "start.sh",
-  "status": "39B Core-vs.-Tk-Transfermatrix für PySide6/QML definiert; Validierung läuft; Stable weiterhin durch Coverage und physische Gates blockiert",
+  "status": "39B Core-vs.-Tk-Transfermatrix für PySide6/QML validiert; Stable weiterhin durch Coverage und physische Gates blockiert",
   "lineage_base_sha": "121211244d90932775348ac26039b3d7315e60b2",
-  "referenz_ci_sha": "d787b824688b73de1a96c6cfa2ce7bd276728486",
-  "referenz_ci_run": 33827615114,
+  "referenz_ci_sha": "4ef7ce950bdea8cd5a24cf085c26cab8e631721d",
+  "referenz_ci_run": 33832842183,
   "letztes_validiertes_release": "2.8.3-rc24",
   "stable_freigabe": false,
   "fortschritt": {
@@ -19,11 +19,11 @@
     "gesamt": 30
   },
   "tests": {
-    "fokus_bestanden": 47,
-    "vollregression_bestanden": 477,
+    "39b_transfermatrix_bestanden": 6,
+    "vollregression_bestanden": 483,
     "vollregression_uebersprungen": 2,
     "vollregression_fehlgeschlagen": 0,
-    "39b_transfermatrix_status": "pending_ci"
+    "39b_transfermatrix_status": "passed"
   },
   "coverage": {
     "zeilen_prozent": 73.16,
@@ -50,6 +50,8 @@
     "deterministisch": true,
     "manifestgefuehrt": true,
     "backup_cache_bytecode_ausgeschlossen": true,
+    "projekt_zip_sha256": "6decb2761eff708d7a106562ce20ec472b12d9db4f163baa63a093743afbad0b",
+    "evidence_artifact_sha256": "68c2e29683621016f9432cb1b659e34e58e74f1bc69abb09cb00e0d30062f136",
     "status": "passed"
   },
   "offene_stable_gates": [
