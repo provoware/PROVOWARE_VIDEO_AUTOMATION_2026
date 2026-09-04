@@ -17,9 +17,7 @@ def _evidence() -> dict:
     return _object(EVIDENCE)
 
 
-def test_current_full_regression_is_canonical_release_evidence() -> None:
-    data = _evidence()
-    tests = data["tests"]
+def _assert_test_metrics(tests: dict) -> None:
     assert tests["failed"] == 0
     assert tests["collected"] == tests["passed"] + tests["failed"] + tests["skipped"]
     assert tests["passed"] > 0
@@ -28,6 +26,8 @@ def test_current_full_regression_is_canonical_release_evidence() -> None:
     assert tests["combined_coverage_percent"] > 0.0
     assert "full_regression_groups" not in tests
 
+
+def _assert_manifest_contract(data: dict) -> None:
     manifest = _object(ROOT / "RELEASE_MANIFEST.json")
     assert data["manifest"] == {
         "path": "RELEASE_MANIFEST.json",
@@ -36,7 +36,8 @@ def test_current_full_regression_is_canonical_release_evidence() -> None:
     }
     assert manifest["file_count"] > 0
 
-    provenance = data["provenance"]
+
+def _assert_provenance_contract(provenance: dict) -> None:
     assert int(provenance["full_regression_run_id"]) > 0
     assert len(str(provenance["full_regression_verified_commit"])) == 40
     assert int(provenance["evidence_normalization_run_id"]) > 0
@@ -45,30 +46,49 @@ def test_current_full_regression_is_canonical_release_evidence() -> None:
     assert "full_regression_artifact_id" not in provenance
     assert "full_regression_artifact_sha256" not in provenance
 
-    quality = data["internal_quality"]
-    for key in (
-        "architecture_findings",
-        "internal_files_checked",
-        "internal_findings",
-        "internal_function_count",
-        "largest_python_file_lines",
-        "maximum_complexity",
-    ):
-        assert isinstance(quality[key], int)
-        assert quality[key] >= 0
-    assert quality["internal_findings"] == 0
-    assert quality["maximum_complexity"] <= 30
-    assert quality["measurement_source"] == "scripts/internal_quality_gate.py"
-    assert quality["measurement_scope"] == "src+scripts+tests"
 
-    architecture = quality["current_architecture"]
-    for key in ("modules_checked", "function_count", "class_count", "largest_python_file_lines", "architecture_findings"):
+def _assert_architecture_contract(architecture: dict) -> None:
+    integer_keys = (
+        "modules_checked",
+        "function_count",
+        "class_count",
+        "largest_python_file_lines",
+        "architecture_findings",
+    )
+    for key in integer_keys:
         assert isinstance(architecture[key], int)
         assert architecture[key] >= 0
     assert architecture["architecture_findings"] == 0
     assert architecture["modules_checked"] > 0
     assert architecture["function_count"] > 0
     assert architecture["largest_python_file"]
+
+
+def _assert_quality_contract(quality: dict) -> None:
+    integer_keys = (
+        "architecture_findings",
+        "internal_files_checked",
+        "internal_findings",
+        "internal_function_count",
+        "largest_python_file_lines",
+        "maximum_complexity",
+    )
+    for key in integer_keys:
+        assert isinstance(quality[key], int)
+        assert quality[key] >= 0
+    assert quality["internal_findings"] == 0
+    assert quality["maximum_complexity"] <= 30
+    assert quality["measurement_source"] == "scripts/internal_quality_gate.py"
+    assert quality["measurement_scope"] == "src+scripts+tests"
+    _assert_architecture_contract(quality["current_architecture"])
+
+
+def test_current_full_regression_is_canonical_release_evidence() -> None:
+    data = _evidence()
+    _assert_test_metrics(data["tests"])
+    _assert_manifest_contract(data)
+    _assert_provenance_contract(data["provenance"])
+    _assert_quality_contract(data["internal_quality"])
 
 
 def test_coverage_policy_is_closed_but_stable_remains_fail_closed() -> None:
