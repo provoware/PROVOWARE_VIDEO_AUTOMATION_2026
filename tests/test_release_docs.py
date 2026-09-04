@@ -35,7 +35,7 @@ def test_release_evidence_generator_owns_machine_outputs_only() -> None:
         "DEVELOPMENT_STATUS.json",
         "QUALITY_ENVIRONMENT_STATUS.json",
         "RELEASE_FILE_STATUS.json",
-        "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
+        "VideoBatch_Fast_2.8.3-rc25_BUILD_REPORT_save_.json",
     }
     assert "README.md" not in outputs
     assert "STATUS.md" not in outputs
