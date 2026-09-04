@@ -1,7 +1,7 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 454,
+  "file_count": 457,
   "files": [
     {
       "mode": "0o644",
@@ -26,6 +26,12 @@
       "path": ".github/workflows/39b-pyside6-qml-transfer-matrix.yml",
       "sha256": "4d1319fa6b6346d9dffff26a31939e519c694e7fd2c1e1785cba1cdbd4faeebf",
       "size": 3068
+    },
+    {
+      "mode": "0o644",
+      "path": ".github/workflows/40a-reference-aligned-visual-polish.yml",
+      "sha256": "2a1f10389e0c8489bb34f3cc6ea140488c56d3b4d8f8dd5ba48f464e51b62a08",
+      "size": 3244
     },
     {
       "mode": "0o644",
@@ -138,8 +144,8 @@
     {
       "mode": "0o644",
       "path": "CHANGELOG.md",
-      "sha256": "ed769a6b62cd5c5cf66f4ed3891421d665669995ead3e1f7bcca46e46044c23c",
-      "size": 6039
+      "sha256": "4c80d5c24653497c9ff7a6da5cf1c1257326fa139be1515a6e83cb0dc5438c05",
+      "size": 7264
     },
     {
       "mode": "0o644",
@@ -233,6 +239,12 @@
     },
     {
       "mode": "0o644",
+      "path": "ITERATION_40A_VISUAL_AUDIT_AND_REFERENCE_ALIGNMENT_2026-09-04.md",
+      "sha256": "5367670d34b7be602464006359c6486e59b25f8d070978dfb8f77a8a40df79c0",
+      "size": 7922
+    },
+    {
+      "mode": "0o644",
       "path": "KEY_ARCHIVE.md",
       "sha256": "84c2cb7e8df6ed6f92d822d97e6c9cecbbf3e28d5f5938b5f9b785e672bf5de8",
       "size": 572
@@ -270,8 +282,8 @@
     {
       "mode": "0o644",
       "path": "PROJEKTSTATUS.json",
-      "sha256": "c83673c49542d1c9b84dbaa51e5dc7c395b247cb24cd5f34a6596ad615ad2c25",
-      "size": 2276
+      "sha256": "8a76252a2154a54803f06372b59604e0d006df482005f7e0a9e42502c1d1b353",
+      "size": 2588
     },
     {
       "mode": "0o644",
@@ -900,8 +912,8 @@
     {
       "mode": "0o644",
       "path": "resources/themes/neon_gravity.json",
-      "sha256": "f6267760407dc439a1eadb3c4d4f92983b7eb079f804e22042d3587e4c3ffc46",
-      "size": 1214
+      "sha256": "1220f8c86005ff07a6db8e832ca69f35027c5d8eb19b808cf4477eebf76fe9a8",
+      "size": 1216
     },
     {
       "mode": "0o644",
@@ -1908,8 +1920,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/theme.py",
-      "sha256": "5d63eff84388a0128fc7f4319aeaf3871c6b8a5da5a92cd2f7d43cc0b4664685",
-      "size": 17281
+      "sha256": "3a5eb4cc4669101fa98c33f253b4c6b3716c1c9beb78319d31e9b5b94a9c3171",
+      "size": 17516
     },
     {
       "mode": "0o644",
@@ -2552,6 +2564,12 @@
       "path": "tests/test_recovery_consistency.py",
       "sha256": "f859379b56ebbe7c5b9447dd94651121f248a21ab4fe8a8aa8adb99b03190cf7",
       "size": 7832
+    },
+    {
+      "mode": "0o644",
+      "path": "tests/test_reference_aligned_midnight_blue.py",
+      "sha256": "472a3ffecf301be1a1a54d67ab55148dc1843298e07ff5c1704bded9259ea326",
+      "size": 2549
     },
     {
       "mode": "0o644",
