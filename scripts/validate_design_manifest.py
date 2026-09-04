@@ -100,65 +100,72 @@ def _file_sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _validate_shell(root: Path, errors: list[str]) -> None:
-    shell_paths = [root / path.relative_to(ROOT) for path in SHELL_PATHS]
-    app_path = root / APP_PATH.relative_to(ROOT)
-    shell = "\n".join(path.read_text(encoding="utf-8") for path in shell_paths)
-    app = app_path.read_text(encoding="utf-8")
+def _require_values(text: str, values, errors: list[str], message: str) -> None:
+    for value in values:
+        if value not in text:
+            errors.append(message.format(value=value))
 
-    for path in (*shell_paths, app_path):
+
+def _validate_python_syntax(paths: tuple[Path, ...], root: Path, errors: list[str]) -> None:
+    for path in paths:
         try:
             ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         except SyntaxError as exc:
             errors.append(f"PYTHON_SYNTAX_UNGUELTIG: {path.relative_to(root)}: {exc}")
 
-    for label in REQUIRED_SHELL_LABELS:
-        if label not in shell:
-            errors.append(f"Shell-Navigation fehlt: {label}")
-    for zone in REQUIRED_DASHBOARD_ZONES:
-        if zone not in shell:
-            errors.append(f"Dashboard-Zone fehlt: {zone}")
-    for token in REQUIRED_RESPONSIVE_TOKENS:
-        if token not in shell:
-            errors.append(f"Responsive Shell-Kopplung fehlt: {token}")
-    for label in REQUIRED_HELP_INTENTS:
-        if label not in shell:
-            errors.append(f"Hilfeabsicht fehlt: {label}")
+
+def _validate_shell_labels(shell: str, errors: list[str]) -> None:
+    _require_values(shell, REQUIRED_SHELL_LABELS, errors, "Shell-Navigation fehlt: {value}")
+    _require_values(shell, REQUIRED_DASHBOARD_ZONES, errors, "Dashboard-Zone fehlt: {value}")
+    _require_values(shell, REQUIRED_RESPONSIVE_TOKENS, errors, "Responsive Shell-Kopplung fehlt: {value}")
+    _require_values(shell, REQUIRED_HELP_INTENTS, errors, "Hilfeabsicht fehlt: {value}")
+    _require_values(shell, EXPECTED_THEMES.values(), errors, "Shell-Theme fehlt: {value}")
+    _require_values(shell, REQUIRED_KPI_ACTIONS, errors, "KPI-Aktion fehlt: {value}")
+
+
+def _validate_shell_bindings(shell: str, app: str, errors: list[str]) -> None:
     for builder in REQUIRED_PAGE_BUILDERS:
         if f"self.{builder}(" not in shell:
             errors.append(f"Bestehende Funktionsseite nicht eingebunden: {builder}")
-    for callback in (
+    callbacks = (
         "self._new_project",
         "self._add_audio",
         "self._add_media",
         "self._open_settings",
         "self._start",
         "self._choose_directory",
-    ):
-        if callback not in shell:
-            errors.append(f"Primäraktion fehlt: {callback}")
-    for label in EXPECTED_THEMES.values():
-        if label not in shell:
-            errors.append(f"Shell-Theme fehlt: {label}")
+    )
+    _require_values(shell, callbacks, errors, "Primäraktion fehlt: {value}")
     for label, value in (("Kompakt", 90), ("Standard", 105), ("Groß", 125)):
         if f'"{label}": {value}' not in shell:
             errors.append(f"Shell-Schriftprofil fehlt: {label}={value}")
     for state in REQUIRED_KPI_STATES:
         if f'"{state}"' not in shell:
             errors.append(f"KPI-Zustand fehlt: {state}")
-    for action in REQUIRED_KPI_ACTIONS:
-        if action not in shell:
-            errors.append(f"KPI-Aktion fehlt: {action}")
-    if "build_kpi_snapshots(" not in shell or "self._refresh_kpi_cards()" not in shell:
-        errors.append("KPI-Karten sind nicht an den realen Zustandsvertrag gebunden")
-    if "CanonicalKpiCompactMixin" not in shell or "ShellKpiLink.TButton" not in shell:
-        errors.append("KPI-Detaildarstellung besitzt keine kompakte responsive Grenze")
-    if "kein automatischer Start" not in shell:
-        errors.append("Startzeituhr ist nicht eindeutig als deaktiviert gekennzeichnet")
-    if "from .canonical_ui import run_app" not in app:
-        errors.append("App-Einstieg verwendet nicht die kanonische Shell")
-    if "from .ui import run_app" in app:
-        errors.append("App-Einstieg umgeht die kanonische Shell")
+    _validate_shell_contract_flags(shell, app, errors)
+
+
+def _validate_shell_contract_flags(shell: str, app: str, errors: list[str]) -> None:
+    checks = (
+        ("build_kpi_snapshots(" in shell and "self._refresh_kpi_cards()" in shell, "KPI-Karten sind nicht an den realen Zustandsvertrag gebunden"),
+        ("CanonicalKpiCompactMixin" in shell and "ShellKpiLink.TButton" in shell, "KPI-Detaildarstellung besitzt keine kompakte responsive Grenze"),
+        ("kein automatischer Start" in shell, "Startzeituhr ist nicht eindeutig als deaktiviert gekennzeichnet"),
+        ("from .canonical_ui import run_app" in app, "App-Einstieg verwendet nicht die kanonische Shell"),
+        ("from .ui import run_app" not in app, "App-Einstieg umgeht die kanonische Shell"),
+    )
+    for valid, message in checks:
+        if not valid:
+            errors.append(message)
+
+
+def _validate_shell(root: Path, errors: list[str]) -> None:
+    shell_paths = tuple(root / path.relative_to(ROOT) for path in SHELL_PATHS)
+    app_path = root / APP_PATH.relative_to(ROOT)
+    shell = "\n".join(path.read_text(encoding="utf-8") for path in shell_paths)
+    app = app_path.read_text(encoding="utf-8")
+    _validate_python_syntax((*shell_paths, app_path), root, errors)
+    _validate_shell_labels(shell, errors)
+    _validate_shell_bindings(shell, app, errors)
 
 
 def validate(root: Path = ROOT) -> list[str]:
