@@ -51,6 +51,14 @@ def test_iteration_39a_workflow_uses_locked_toolchain_and_manifest_packager() ->
     assert 'zip -qr "$ZIP" .' not in workflow
 
 
+def test_iteration_39a_workflow_preserves_subprocess_import_isolation() -> None:
+    workflow = (ROOT / ".github/workflows/a33-consolidated-package.yml").read_text(
+        encoding="utf-8"
+    )
+    assert "PYTHONPATH: ${{ github.workspace }}/src\n" in workflow
+    assert "PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/scripts" not in workflow
+
+
 def test_toolchain_lock_pins_pytest_and_pytest_cov() -> None:
     lock = (ROOT / "requirements-toolchain.lock").read_text(encoding="utf-8")
     assert "pytest==9.0.2" in lock
