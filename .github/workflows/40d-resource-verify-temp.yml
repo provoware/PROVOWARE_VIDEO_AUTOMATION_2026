@@ -57,7 +57,7 @@ jobs:
       - name: Run fresh internal quality gate
         run: |
           cp diagnostics/internal_quality_latest.json "$RUNNER_TEMP/internal_quality_before.json"
-          python scripts/internal_quality_gate.py --json
+          python scripts/internal_quality_gate.py
           cp diagnostics/internal_quality_latest.json "$RUNNER_TEMP/internal_quality_measured.json"
           git checkout -- diagnostics/internal_quality_latest.json
       - name: Verify measured quality result
@@ -66,9 +66,9 @@ jobs:
           import json, sys
           from pathlib import Path
           report = json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))
-          assert report['status'] == 'passed', report
+          assert report['status'] == 'pass', report
           assert report['findings'] == [], report
-          assert report['maximum_complexity'] <= 30, report
+          assert report['metrics']['max_complexity'] <= 30, report
           print(json.dumps(report, ensure_ascii=False, indent=2))
           PY
       - name: Keep verification read-only
