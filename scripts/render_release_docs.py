@@ -54,6 +54,8 @@ def _release_block(version: dict[str, Any], status: dict[str, Any], report: dict
                 f"\n- Kubuntu-CI-Matrix: {passed_targets}/{total_targets} "
                 "Kombinationen bestanden"
             )
+    collected = int(tests.get("collected", int(tests["passed"]) + int(tests.get("failed", 0)) + int(tests.get("skipped", 0))))
+    skipped = int(tests.get("skipped", 0))
     return f"""{README_START}
 # {version['name']} · {version['build']}
 
@@ -61,7 +63,7 @@ def _release_block(version: dict[str, Any], status: dict[str, Any], report: dict
 **Kanonische Quelle:** `{source}`  
 **Freigegebener Qualitätsbericht:** `{status['approved_quality_report']}`
 
-- {tests['passed']}/{tests['passed']} automatisierte Tests bestanden
+- {tests['passed']}/{collected} automatisierte Tests bestanden; {skipped} übersprungen
 - {line_coverage} % Zeilenabdeckung
 - {branch_coverage} % Zweigabdeckung
 - {tests['visual_scenarios']} visuelle Szenarien bestanden{matrix_line}

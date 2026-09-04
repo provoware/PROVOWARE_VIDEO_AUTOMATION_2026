@@ -52,3 +52,10 @@ Alle wichtigen Änderungen dieses Projekts werden hier in zusammengefasster, chr
 ## 2.8.2 und früher
 
 - Grundverträge für Datenintegrität, Ausgabeprüfung, Plugins, Updates, Layoutprofile und Buildverifikation aufgebaut
+
+## A32.2 Evidence-Reconciliation · 2026-09-04
+
+- aktuellen 468-Test-Vollregressionsnachweis als kanonische Release-Evidence übernommen;
+- Coverage 73,38 % / 59,01 % als expliziten blockierenden 80/65-Gate aufgenommen;
+- README/STATUS zeigen bestandene, gesammelte und übersprungene Tests getrennt;
+- keine Produkt-/Runtime-Logik geändert.
