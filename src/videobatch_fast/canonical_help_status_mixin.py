@@ -3,7 +3,6 @@ from __future__ import annotations
 from tkinter import StringVar, ttk
 
 from .canonical_shell_contract import responsive_column_count
-from .ui_components import Tooltip
 
 
 class CanonicalHelpStatusMixin:
@@ -125,26 +124,21 @@ class CanonicalHelpStatusMixin:
         bar.columnconfigure(0, weight=1)
         self.shell_footer_guidance = StringVar(value="")
 
-        guidance_label = ttk.Label(
-            bar,
-            textvariable=self.shell_footer_guidance,
-            style="ShellHint.TLabel",
-            width=1,
-            anchor="w",
-            takefocus=True,
-        )
-        guidance_label.grid(row=0, column=0, sticky="ew")
-        self._footer_guidance_tooltip = Tooltip(guidance_label, "")
-
         def sync_guidance(*_args) -> None:
             value = self.guidance_text.get().replace("\n", " ").strip()
             self.shell_footer_guidance.set(
                 value if len(value) <= 180 else value[:177] + "…"
             )
-            self._footer_guidance_tooltip.message = value
 
         self.guidance_text.trace_add("write", sync_guidance)
         sync_guidance()
+        ttk.Label(
+            bar,
+            textvariable=self.shell_footer_guidance,
+            style="ShellHint.TLabel",
+            width=1,
+            anchor="w",
+        ).grid(row=0, column=0, sticky="ew")
         ttk.Label(
             bar,
             textvariable=self.status_text,
