@@ -109,9 +109,13 @@ jobs:
       - name: Coverage messen und 80/65-Vertrag auswerten
         run: |
           set -Eeuo pipefail
+          # Nur messen: der ältere kombinierte Pytest-fail-under=77 wird hier neutralisiert.
+          # Die Release-Governance bleibt unverändert und wird direkt danach getrennt
+          # als 80 % Zeilen / 65 % Branch über coverage_policy.py ausgewertet.
           xvfb-run -a python -m pytest -q -p no:cacheprovider \
             --cov=videobatch_fast \
             --cov-branch \
+            --cov-fail-under=0 \
             --cov-report=term \
             --cov-report=json:coverage.json \
             | tee "$RUNNER_TEMP/39a-coverage.log"
