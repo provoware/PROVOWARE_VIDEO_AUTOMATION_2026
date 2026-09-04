@@ -2,10 +2,10 @@
   "schema_version": 1,
   "product": {
     "name": "VideoBatch Fast",
-    "version": "2.8.3-rc24",
+    "version": "2.8.3-rc25",
     "channel": "rc",
-    "iteration": 24,
-    "build_date": "2026-08-05"
+    "iteration": 40,
+    "build_date": "2026-09-04"
   },
   "provenance": {
     "canonical_source": "diagnostics/release_readiness/RELEASE_EVIDENCE.json",
@@ -14,7 +14,7 @@
     "manifest_regeneration_run_id": 30965984513,
     "matrix_workflow_run_id": 30966067548,
     "evidence_regression_base_head": "f05bafb53938b7a2e99095d525830c737c0f89de",
-    "evidence_regression_method": "legacy four deterministic pytest partitions; 325/325 passed; superseded by full_regression_run_id 33805992774",
+    "evidence_regression_method": "full Python 3.12/Xvfb suite; 503 passed / 2 skipped; coverage contract 80/65 passed",
     "canonical_p0_head": "9823e790f8e67a6e0f406b132c37569e3b95d977",
     "canonical_p0_checkpoint2_run_id": 33791408050,
     "offline_quality_report": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md",
@@ -25,33 +25,37 @@
     "offline_quality_verified_at": "2026-09-03T20:52:37Z",
     "offline_quality_artifact_name": "a32-pinned-offline-quality-evidence-934688e8",
     "current_a32_2_head": "8c6691cfaffd371d39fa5696c78f67114f83a7aa",
-    "full_regression_verified_commit": "2e7d4350b0ccb0a5d0a69fa1033f0b1aded54e02",
-    "full_regression_run_id": 33805992774,
+    "full_regression_verified_commit": "58a8a06b5eae6992a6dd6e20ed3d4d0a982c7d4c",
+    "full_regression_run_id": 33845125393,
     "full_regression_artifact_name": "a32-full-suite-2e7d4350",
     "full_regression_artifact_id": 9912964969,
     "full_regression_artifact_sha256": "592d17cf5120bdd7a1920ddf8dc3e7db14f4cf7233541ea350f00da71d9b9e2a",
-    "full_regression_verified_at": "2026-09-03"
+    "full_regression_verified_at": "2026-09-04",
+    "current_40d_head": "58a8a06b5eae6992a6dd6e20ed3d4d0a982c7d4c",
+    "coverage_contract_run_id": 33845125393,
+    "coverage_contract_verified_commit": "58a8a06b5eae6992a6dd6e20ed3d4d0a982c7d4c",
+    "coverage_contract_verified_at": "2026-09-04"
   },
   "manifest": {
     "path": "RELEASE_MANIFEST.json",
-    "file_count": 444,
+    "file_count": 465,
     "status": "passed"
   },
   "tests": {
-    "passed": 466,
+    "passed": 503,
     "failed": 0,
     "skipped": 2,
-    "line_coverage_percent": 73.38,
-    "branch_coverage_percent": 59.01,
-    "combined_coverage_percent": 70.54,
+    "line_coverage_percent": 81.06,
+    "branch_coverage_percent": 65.79,
+    "combined_coverage_percent": 78.04,
     "assurance_scenarios": "12/12",
     "fault_lab": "12/12",
     "visual_scenarios": "18/18",
     "targeted_rc24": "27/27 finalization and preview regressions",
     "selected_media_click_stress": "120 rapid selection changes, passed",
-    "full_regression": "466 passed / 2 skipped / 468 collected",
-    "test_environment": "Ubuntu 24.04.4 LTS · Python 3.12.3 · Xvfb 1920x1080x24",
-    "collected": 468
+    "full_regression": "503 passed / 2 skipped / 505 collected",
+    "test_environment": "Ubuntu 24.04.4 LTS · Python 3.12.14 · Xvfb",
+    "collected": 505
   },
   "matrix": {
     "status": "passed",
@@ -231,8 +235,8 @@
     {
       "id": "coverage_80_65",
       "label": "Coverage-Vertrag 80/65",
-      "status": "failed",
-      "reason": "73,38 % Zeilenabdeckung bei geforderten 80,00 % und 59,01 % Branch-Abdeckung bei geforderten 65,00 %; scripts/coverage_policy.py blockiert."
+      "status": "passed",
+      "reason": "81,06 % Zeilenabdeckung und 65,79 % Branch-Abdeckung; scripts/coverage_policy.py bestanden · Workflow 33845125393 · Python 3.12.14."
     },
     {
       "id": "physical_kde_x11_wayland",
@@ -249,11 +253,11 @@
   ],
   "stable_ready": false,
   "progress": {
-    "percent": 90,
-    "completed": 27,
-    "open": 3,
+    "percent": 93,
+    "completed": 28,
+    "open": 2,
     "total": 30,
-    "current_todo": "Coverage-Vertrag 80/65 schließen; danach physische KDE-Abnahme und Large-Media-Soak auf demselben finalen Kandidaten."
+    "current_todo": "Physische KDE-X11-/Wayland-Abnahme und Large-Media-Soak auf demselben finalen Kandidaten durchführen."
   },
   "approved_quality_report": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
   "artifact_policy": "full-project-zip-before-stable",

@@ -88,9 +88,9 @@ Diese Punkte dürfen nicht durch Scrollen oder kleinere Schrift lediglich verdec
 
 ## Noch offene Stable-Gates
 
-- [ ] **Coverage-Vertrag 80/65:** aktuelle Messung 73,38 % Zeilen / 59,01 % Branch; Schwellen nicht absenken, sondern ungetestete kritische Pfade gezielt schließen.
+- [x] **Coverage-Vertrag 80/65:** 81,06 % Zeilen / 65,79 % Branch; Schwellen unverändert bestanden · Workflow `33845125393` · Python 3.12.14.
 - [ ] **Physische KDE-Abnahme unter X11 und Wayland** für den finalen, korrigierten UI-Stand dokumentieren.
 - [ ] **Langzeitrender** mit großer Medienauswahl und langsamem externem Ziel durchführen.
-- [ ] `RELEASE_MANIFEST.json` erst **nach** finalem Code-/UI-/Startnachweis genau einmal regenerieren und anschließend read-only verifizieren.
+- [x] `RELEASE_MANIFEST.json` nach dem 40D-Status-/Evidence-Sync auf dem workflowfreien Endbaum regenerieren und read-only verifizieren.
 
 Stable bleibt gesperrt, bis diese realen Nachweise auf demselben unveränderten Kandidaten vorliegen.

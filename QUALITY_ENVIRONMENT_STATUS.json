@@ -15,13 +15,13 @@
   },
   "internal_gates": {
     "tests": {
-      "passed": 466,
+      "passed": 503,
       "failed": 0,
       "skipped": 2
     },
-    "line_coverage_percent": 73.38,
-    "branch_coverage_percent": 59.01,
-    "combined_coverage_percent": 70.54,
+    "line_coverage_percent": 81.06,
+    "branch_coverage_percent": 65.79,
+    "combined_coverage_percent": 78.04,
     "application_simulations": "12/12",
     "fault_lab": "12/12",
     "visual_scenarios": "18/18",
@@ -29,7 +29,7 @@
     "architecture_findings": 0,
     "internal_quality_findings": 0,
     "maximum_complexity": 29,
-    "release_manifest_files": 444,
+    "release_manifest_files": 465,
     "kubuntu_matrix": {
       "status": "passed",
       "passed_targets": 4,
@@ -44,10 +44,10 @@
     "mypy_2_3_0": "passed",
     "bandit_1_9_4": "passed",
     "pip_audit_2_10_1": "passed",
-    "coverage_80_65": "73,38 % Zeilenabdeckung bei geforderten 80,00 % und 59,01 % Branch-Abdeckung bei geforderten 65,00 %; scripts/coverage_policy.py blockiert.",
+    "coverage_80_65": "passed · 81,06 % Zeilen / 65,79 % Branches · Workflow 33845125393",
     "physical_kde_x11_wayland": "Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless",
     "large_media_soak": "Realer Lauf auf langsamem externem Ziel fehlt"
   },
   "stable_ready": false,
-  "stable_block_reason": "Coverage-Vertrag 80/65: 73,38 % Zeilenabdeckung bei geforderten 80,00 % und 59,01 % Branch-Abdeckung bei geforderten 65,00 %; scripts/coverage_policy.py blockiert.; Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless; Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt"
+  "stable_block_reason": "Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless; Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt"
 }

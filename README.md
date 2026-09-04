@@ -1,19 +1,19 @@
 <!-- release-status:start -->
-# provoware - videoautomation - 2026 · 2.8.3-rc24
+# provoware - videoautomation - 2026 · 2.8.3-rc25
 
 **Kanal:** RC – noch keine Stable-Freigabe  
 **Kanonische Quelle:** `diagnostics/release_readiness/RELEASE_EVIDENCE.json`  
-**Freigegebener Qualitätsbericht:** `VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json`
+**Letzter freigegebener Qualitätsbericht:** `VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json`
 
-- 466/468 automatisierte Tests bestanden; 2 übersprungen
-- 73,38 % Zeilenabdeckung
-- 59,01 % Zweigabdeckung
+- 503/505 automatisierte Tests bestanden; 2 übersprungen
+- 81,06 % Zeilenabdeckung · Mindestwert 80,00 % bestanden
+- 65,79 % Zweigabdeckung · Mindestwert 65,00 % bestanden
+- Coverage-Vertrag 80/65: **BESTANDEN** · Workflow `33845125393`
 - 18/18 visuelle Szenarien bestanden
 - Kubuntu-CI-Matrix: 4/4 Kombinationen bestanden
 
 ### Offene Stable-Gates
 
-- Coverage-Vertrag 80/65: 73,38 % Zeilenabdeckung bei geforderten 80,00 % und 59,01 % Branch-Abdeckung bei geforderten 65,00 %; scripts/coverage_policy.py blockiert.
 - Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless
 - Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt
 <!-- release-status:end -->

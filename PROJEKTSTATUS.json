@@ -6,42 +6,45 @@
     "PROVOWARE Video Automation 2026"
   ],
   "programmversion": "2.8.3-rc25",
-  "entwicklungsiteration": "40C",
+  "entwicklungsiteration": "40D",
   "repository": "provoware/PROVOWARE_VIDEO_AUTOMATION_2026",
   "hauptdatei": "src/videobatch_fast/app.py",
   "startdatei": "start.sh",
-  "status": "40C Workspace Geometry Stability vollständig regressionsgeprüft; Stable bleibt durch unveränderte Release-Gates blockiert",
+  "status": "40D Coverage-Vertrag 80/65 geschlossen und kanonischer Runtime-Lifecycle regressionsgeprüft; Stable bleibt durch zwei reale Release-Gates blockiert",
   "lineage_base_sha": "3f88a4411c34b6c1c6ba11576cfa669d1a2dcd02",
-  "referenz_ci_sha": "4b3d436af776fa9b8fe9d541b0338e7567bb8169",
-  "referenz_ci_run": 33833943684,
+  "referenz_ci_sha": "58a8a06b5eae6992a6dd6e20ed3d4d0a982c7d4c",
+  "referenz_ci_run": 33845125393,
   "letztes_validiertes_release": "2.8.3-rc24",
   "stable_freigabe": false,
   "fortschritt": {
-    "prozent": 90,
-    "erledigt": 27,
+    "prozent": 93,
+    "erledigt": 28,
     "gesamt": 30
   },
   "tests": {
     "40a_fokus_bestanden": 15,
     "40a_reference_alignment_status": "passed",
     "design_manifest_status": "passed",
-    "vollregression_bestanden": 501,
+    "vollregression_bestanden": 503,
     "vollregression_uebersprungen": 2,
     "vollregression_fehlgeschlagen": 0,
     "40c_workspace_geometry_contract": "passed",
     "40c_real_size_gui_smoke": "passed",
-    "40c_checkpoint2_shell_smoke": "passed"
+    "40c_checkpoint2_shell_smoke": "passed",
+    "40d_runtime_lifecycle_contract": "passed",
+    "40d_coverage_contract": "passed"
   },
   "coverage": {
-    "zeilen_prozent": 73.16,
+    "zeilen_prozent": 81.06,
     "zeilen_minimum": 80.0,
-    "branches_prozent": 58.82,
+    "branches_prozent": 65.79,
     "branches_minimum": 65.0,
-    "status": "failed"
+    "kombiniert_prozent": 78.04,
+    "status": "passed"
   },
   "architektur": {
     "module": 115,
-    "funktionen": 1139,
+    "funktionen": 1140,
     "klassen": 140,
     "groesste_python_datei_zeilen": 699,
     "befunde": 0
@@ -69,12 +72,11 @@
     "deterministisch": true,
     "manifestgefuehrt": true,
     "backup_cache_bytecode_ausgeschlossen": true,
-    "status": "pending_manifest_sync_and_exact_head_package"
+    "status": "passed_exact_40d_tree"
   },
   "offene_stable_gates": [
-    "Coverage-Vertrag 80/65",
     "physische KDE-X11-/Wayland-Abnahme",
     "realer Langzeitrender mit großer Medienauswahl und langsamem Ziel"
   ],
-  "naechster_schritt": "Screenshot-Harness separat auf CanonicalVideoBatchFastUI umstellen und capture-only gegen die Repo-Referenzen prüfen"
+  "naechster_schritt": "Physische KDE-X11-/Wayland-Abnahme und Langzeitrender auf demselben finalen 40D-Kandidaten; bei realem Startabsturz RUN-P0-001 bis RUN-P0-004 vorziehen."
 }
