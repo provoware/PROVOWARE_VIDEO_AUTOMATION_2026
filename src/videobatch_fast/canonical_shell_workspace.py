@@ -146,7 +146,7 @@ class CanonicalShellWorkspaceMixin:
             (("medien", "audio", "bild", "video", "import"), 1),
             (("vorschau", "preview", "wellenform", "playlist"), 2),
             (("effekt", "theme", "schrift", "einstellung"), 3),
-            (("queue", "render", "produktion", "auftrag"), 4),
+            (("queue", "render", "produktion", "auftrag", "ausgabe", "speicher", "ziel", "ordner"), 4),
             (("hilfe", "diagnose", "fehler", "log"), 5),
         )
         for keywords, index in routes:
