@@ -1,0 +1,52 @@
+name: UX116 manifest refresh
+
+on:
+  push:
+    branches: [automation/ux-search-output-destination-20260904]
+
+permissions:
+  contents: write
+
+env:
+  PYTHONUTF8: '1'
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONPATH: ${{ github.workspace }}/src
+
+jobs:
+  refresh:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Remove one-shot helper and regenerate canonical manifest
+        run: |
+          set -Eeuo pipefail
+          rm .github/workflows/ux116-manifest-refresh-temp.yml
+          python scripts/build_release_manifest.py
+          python scripts/build_release_manifest.py --check
+          python scripts/validate_release_manifest.py
+          python -m compileall -q -f src/videobatch_fast/canonical_shell_workspace.py tests/test_canonical_application_shell_contract.py
+          python -m pytest -q -p no:cacheprovider tests/test_canonical_application_shell_contract.py
+          git diff --check
+          test ! -e .github/workflows/ux116-manifest-refresh-temp.yml
+
+      - name: Commit only manifest binding and helper removal
+        run: |
+          set -Eeuo pipefail
+          git config user.name "provoware-automation"
+          git config user.email "provoware-automation@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git status --short
+          git commit -m "chore: bind UX search slice to canonical manifest"
+          git push origin HEAD:automation/ux-search-output-destination-20260904
