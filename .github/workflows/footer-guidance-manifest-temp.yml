@@ -1,17 +1,18 @@
-name: Footer guidance manifest refresh
+name: Footer guidance manifest repair
 
 on:
   push:
-    branches: [automation/footer-full-guidance-tooltip-20260904-1810]
+    branches: [main]
 
 permissions:
   contents: write
 
 jobs:
-  refresh:
+  repair:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-24.04
     steps:
-      - name: Checkout exact branch
+      - name: Checkout exact main head
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
@@ -23,12 +24,12 @@ jobs:
           python scripts/build_release_manifest.py
           python scripts/build_release_manifest.py --check
           git diff --check
-          git status --short
-      - name: Commit regenerated manifest and workflow removal
+          test ! -e .github/workflows/footer-guidance-manifest-temp.yml
+      - name: Commit repaired tree
         run: |
           set -Eeuo pipefail
           git config user.name "provoware-automation"
           git config user.email "provoware-automation@users.noreply.github.com"
           git add -A
-          git commit -m "chore: refresh release manifest for footer guidance UX"
-          git push origin HEAD:automation/footer-full-guidance-tooltip-20260904-1810
+          git commit -m "chore: repair manifest after footer guidance UX merge"
+          git push origin HEAD:main
