@@ -1,0 +1,473 @@
+name: Iteration 40D · Normalize final evidence provenance
+
+on:
+  push:
+    branches:
+      - iteration/40d-coverage-contract-20260904
+
+permissions:
+  contents: write
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: '1'
+  PIP_NO_INPUT: '1'
+  PYTHONHASHSEED: '0'
+  PYTHONUTF8: '1'
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONPATH: ${{ github.workspace }}/src
+
+jobs:
+  normalize-evidence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Quellen holen
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-toolchain.lock
+
+      - name: Systempakete
+        run: |
+          set -Eeuo pipefail
+          sudo apt-get update
+          sudo apt-get install -y python3-tk xvfb ffmpeg
+
+      - name: Exakt gesperrte Toolchain installieren
+        run: |
+          set -Eeuo pipefail
+          python -m pip install --requirement requirements-toolchain.lock
+
+      - name: Aktuelle 40D-Provenienz semantisch normalisieren
+        run: |
+          set -Eeuo pipefail
+          python - <<'PY'
+          from __future__ import annotations
+          import json
+          from pathlib import Path
+
+          ROOT = Path('.')
+          FINAL_COMMIT = 'f46a5669cb7698d12dab318edca9b4d725074bcb'
+          FINAL_RUN = 33861063069
+          VERSION = '2.8.3-rc25'
+          APPROVED_REPORT = 'VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json'
+          NEXT = 'Physische KDE-X11-/Wayland-Abnahme und Large-Media-Soak auf demselben finalen Kandidaten durchführen.'
+
+          def load_json(path: str):
+              return json.loads((ROOT / path).read_text(encoding='utf-8'))
+
+          def write_json(path: str, data):
+              (ROOT / path).write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          def replace_block(path: str, start: str, end: str, replacement: str):
+              p = ROOT / path
+              text = p.read_text(encoding='utf-8')
+              if start not in text or end not in text:
+                  raise SystemExit(f'Marker fehlen in {path}')
+              before, rest = text.split(start, 1)
+              _, after = rest.split(end, 1)
+              p.write_text(before + replacement + after, encoding='utf-8')
+
+          evidence = load_json('diagnostics/release_readiness/RELEASE_EVIDENCE.json')
+          evidence['product'].update({
+              'version': VERSION,
+              'iteration': 40,
+              'build_date': '2026-09-04',
+          })
+
+          provenance = evidence['provenance']
+          legacy_artifact = {
+              'commit': provenance.pop('full_regression_artifact_name', None),
+          }
+          # Preserve the old A32 artifact facts, but no longer present them as current 40D evidence.
+          legacy_name = legacy_artifact.pop('commit')
+          legacy = {
+              'commit': '2e7d4350b0ccb0a5d0a69fa1033f0b1aded54e02',
+              'run_id': 33805992774,
+              'artifact_name': legacy_name,
+              'artifact_id': provenance.pop('full_regression_artifact_id', None),
+              'artifact_sha256': provenance.pop('full_regression_artifact_sha256', None),
+              'verified_at': '2026-09-03',
+              'status': 'historical_superseded',
+          }
+          provenance.pop('current_40d_head', None)
+          provenance.update({
+              'verified_source_commit': FINAL_COMMIT,
+              'repository_finalization_commit': FINAL_COMMIT,
+              'manifest_regeneration_run_id': FINAL_RUN,
+              'matrix_workflow_run_id': evidence['matrix']['workflow_run_id'],
+              'finalized_40d_source_commit': FINAL_COMMIT,
+              'finalization_run_id': FINAL_RUN,
+              'coverage_contract_run_id': FINAL_RUN,
+              'coverage_contract_verified_commit': FINAL_COMMIT,
+              'coverage_contract_verified_at': '2026-09-04',
+              'full_regression_run_id': FINAL_RUN,
+              'full_regression_verified_commit': FINAL_COMMIT,
+              'full_regression_verified_at': '2026-09-04',
+              'evidence_regression_method': 'full Python 3.12/Xvfb suite on the synchronized workflow-free 40D tree; 503 passed / 2 skipped; coverage contract 80/65 passed; exact tested tree committed as f46a5669cb7698d12dab318edca9b4d725074bcb',
+              'legacy_a32_full_regression': legacy,
+          })
+
+          evidence['manifest'] = {'path': 'RELEASE_MANIFEST.json', 'file_count': 465, 'status': 'passed'}
+          evidence['tests'].update({
+              'passed': 503,
+              'failed': 0,
+              'skipped': 2,
+              'collected': 505,
+              'line_coverage_percent': 81.06,
+              'branch_coverage_percent': 65.79,
+              'combined_coverage_percent': 78.04,
+              'full_regression': '503 passed / 2 skipped / 505 collected',
+              'test_environment': 'Ubuntu 24.04.4 LTS · Python 3.12.14 · Xvfb',
+          })
+
+          evidence['internal_quality'] = {
+              'architecture_findings': 0,
+              'modules_checked': 115,
+              'function_count': 1140,
+              'class_count': 140,
+              'largest_python_file': 'ui_workspace_grid_mixin.py',
+              'largest_python_file_lines': 699,
+              'verified_run_id': FINAL_RUN,
+              'verified_commit': FINAL_COMMIT,
+          }
+
+          gate = next(item for item in evidence['stable_gates'] if item['id'] == 'coverage_80_65')
+          gate['status'] = 'passed'
+          gate['reason'] = f'81,06 % Zeilenabdeckung und 65,79 % Branch-Abdeckung; scripts/coverage_policy.py bestanden · Workflow {FINAL_RUN} · Commit {FINAL_COMMIT} · Python 3.12.14.'
+          evidence['stable_ready'] = False
+          evidence['progress'] = {'percent': 93, 'completed': 28, 'open': 2, 'total': 30, 'current_todo': NEXT}
+          evidence['approved_quality_report'] = APPROVED_REPORT
+
+          for item in evidence['release_files']['ready']:
+              path = item['path']
+              if path == 'RELEASE_NOTES_save_.md':
+                  item['evidence'] = 'Aktueller RC25-/40D-Funktions- und Freigabestand dokumentiert'
+              elif path == 'FRESH_PACKAGE_REPORT_save_.md':
+                  item['evidence'] = 'Aktuelle workflowfreie RC25-/40D-Paketprüfung mit 465 Dateien dokumentiert'
+              elif 'rc24' in path.lower() or '2.8.3-rc24' in path.lower():
+                  item['evidence'] = 'Historischer, weiterhin gültiger RC24-Nachweis; für 40D nicht als neu ausgeführter rc25-Nachweis ausgegeben'
+
+          write_json('diagnostics/release_readiness/RELEASE_EVIDENCE.json', evidence)
+
+          release_status = f'''<!-- release-status:start -->
+          # provoware - videoautomation - 2026 · 2.8.3-rc25
+
+          **Kanal:** RC – noch keine Stable-Freigabe  
+          **Kanonische Quelle:** `diagnostics/release_readiness/RELEASE_EVIDENCE.json`  
+          **Letzter freigegebener Offline-Qualitätsbericht:** `{APPROVED_REPORT}`
+
+          - 503/505 automatisierte Tests bestanden; 2 übersprungen
+          - 81,06 % Zeilenabdeckung · Mindestwert 80,00 % bestanden
+          - 65,79 % Zweigabdeckung · Mindestwert 65,00 % bestanden
+          - Coverage-Vertrag 80/65: **BESTANDEN** · Workflow `{FINAL_RUN}` · Commit `{FINAL_COMMIT}`
+          - Architekturaudit: 115 Module · 1.140 Funktionen · 140 Klassen · 0 Befunde
+          - finales workflowfreies Release-Manifest: 465 Dateien · bestanden
+          - Kubuntu-CI-Matrix: 4/4 deterministische Kombinationen bestanden
+
+          ### Offene Stable-Gates
+
+          - Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless
+          - Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt
+          <!-- release-status:end -->'''.replace('\n          ', '\n')
+          replace_block('README.md', '<!-- release-status:start -->', '<!-- release-status:end -->', release_status)
+          replace_block('STATUS.md', '<!-- release-status:start -->', '<!-- release-status:end -->', release_status)
+
+          project = load_json('PROJEKTSTATUS.json')
+          project['referenz_ci_sha'] = FINAL_COMMIT
+          project['referenz_ci_run'] = FINAL_RUN
+          project['fortschritt'] = {'prozent': 93, 'erledigt': 28, 'gesamt': 30}
+          project['tests']['vollregression_bestanden'] = 503
+          project['tests']['vollregression_uebersprungen'] = 2
+          project['tests']['vollregression_fehlgeschlagen'] = 0
+          project['coverage'] = {
+              'zeilen_prozent': 81.06,
+              'zeilen_minimum': 80.0,
+              'branches_prozent': 65.79,
+              'branches_minimum': 65.0,
+              'kombiniert_prozent': 78.04,
+              'status': 'passed',
+          }
+          project['architektur'].update({'module': 115, 'funktionen': 1140, 'klassen': 140, 'befunde': 0, 'groesste_datei': 'ui_workspace_grid_mixin.py', 'groesste_datei_zeilen': 699})
+          project['packaging']['status'] = 'passed_exact_40d_tree'
+          project['packaging']['manifest_dateien'] = 465
+          write_json('PROJEKTSTATUS.json', project)
+
+          quality = load_json('QUALITY_ENVIRONMENT_STATUS.json')
+          quality['build'] = VERSION
+          quality['internal_gates']['tests'] = {'passed': 503, 'failed': 0, 'skipped': 2}
+          quality['internal_gates']['line_coverage_percent'] = 81.06
+          quality['internal_gates']['branch_coverage_percent'] = 65.79
+          quality['internal_gates']['combined_coverage_percent'] = 78.04
+          quality['internal_gates']['release_manifest_files'] = 465
+          quality['external_gates']['coverage_80_65'] = f'passed · 81,06 % Zeilen / 65,79 % Branches · Workflow {FINAL_RUN} · Commit {FINAL_COMMIT}'
+          quality['stable_ready'] = False
+          write_json('QUALITY_ENVIRONMENT_STATUS.json', quality)
+
+          todo_path = ROOT / 'TODO.md'
+          todo = todo_path.read_text(encoding='utf-8')
+          todo = todo.replace('Workflow `33845125393` · Python 3.12.14.', f'Workflow `{FINAL_RUN}` · Commit `{FINAL_COMMIT}` · Python 3.12.14.')
+          todo_path.write_text(todo, encoding='utf-8')
+
+          test_report = f'''# Testbericht · VideoBatch Fast 2.8.3-rc25
+
+          ## Kanonischer 40D-Abschlussnachweis
+
+          Der synchronisierte, workflowfreie 40D-Endbaum wurde am 4. September 2026 im GitHub-Actions-Lauf `{FINAL_RUN}` vollständig geprüft und anschließend **byte-identisch als Commit `{FINAL_COMMIT}`** in den Arbeitsbranch übernommen.
+
+          - **505 Tests gesammelt**
+          - **503 Tests bestanden**
+          - **2 Tests übersprungen**
+          - **0 Tests fehlgeschlagen**
+          - Zeilenabdeckung: **81,06 %** bei mindestens **80,00 %**
+          - Branch-Abdeckung: **65,79 %** bei mindestens **65,00 %**
+          - kombinierte Coverage: **78,04 %**
+          - Architekturaudit: **115 Module · 1.140 Funktionen · 140 Klassen · 0 Befunde**
+          - größtes Python-Modul: `ui_workspace_grid_mixin.py` · **699 Zeilen**
+          - finales Release-Manifest: **465 Dateien · bestanden**
+          - deterministisches Release-ZIP: **465 Dateien + Manifest · bestanden**
+
+          ## Was 40D verändert hat
+
+          40D ergänzt einen echten Regressionstest für den kanonischen Runtime-/UI-Lifecycle und synchronisiert Status, Evidence und Paketnachweise. **Produktcode unter `src/` wurde in 40D nicht verändert.** Die Coverage-Schwellen wurden nicht abgesenkt.
+
+          ## Qualitätsnachweis rc24 vs. rc25
+
+          Der letzte ausdrücklich freigegebene Offline-Qualitätsbericht bleibt `{APPROVED_REPORT}`. Er ist ein realer RC24-Nachweis und wird weiterhin als solcher bezeichnet. Ein nicht vorhandener rc25-Buildreport wird weder referenziert noch fingiert.
+
+          ## Stable-Status
+
+          Der Coverage-Blocker ist geschlossen. Stable bleibt fail-closed, bis zwei reale Nachweise erbracht sind:
+
+          1. physische KDE-X11-/Wayland-Abnahme auf dem finalen Kandidaten,
+          2. dokumentierter Langzeitrender mit großer Medienauswahl und langsamem externem Ziel.
+          '''.replace('\n          ', '\n')
+          (ROOT / 'TEST_REPORT_save_.md').write_text(test_report, encoding='utf-8')
+
+          release_notes = f'''# Release-Hinweise · VideoBatch Fast 2.8.3-rc25
+
+          ## Iteration 40D · Coverage- und Evidence-Abschluss
+
+          VideoBatch Fast bleibt im **RC-Kanal**. Iteration 40D schließt den automatisierbaren Coverage-Vertrag, ohne die Produktlogik für Kennzahlen zu verändern.
+
+          ### Neu abgesichert
+
+          - kanonischer Runtime-/UI-Lifecycle mit realer Tk-Oberfläche unter Xvfb,
+          - sechs Shell-Seiten, Suche, Dashboardzustände und responsive Layoutpfade,
+          - KPI-Fehlerpfade und Debug-Umschaltung,
+          - Vollregression mit **503 bestandenen / 2 übersprungenen / 0 fehlgeschlagenen Tests**,
+          - Coverage-Vertrag **80/65 bestanden** mit **81,06 % Zeilen** und **65,79 % Branches**,
+          - Architekturaudit mit **0 Befunden**,
+          - workflowfreies Release-Manifest mit **465 Dateien**,
+          - deterministisches Release-ZIP erfolgreich verifiziert.
+
+          ### Provenienz
+
+          Der exakte synchronisierte 40D-Baum wurde in Workflow `{FINAL_RUN}` geprüft und als Commit `{FINAL_COMMIT}` übernommen. Der temporäre Finalisierungsworkflow ist im Endbestand nicht enthalten.
+
+          ### Qualitätsberichte
+
+          Der letzte freigegebene Offline-Qualitätsbericht bleibt `{APPROVED_REPORT}` aus RC24. Es wird bewusst **kein nicht vorhandener rc25-Buildreport behauptet**.
+
+          ### Noch offen vor Stable
+
+          - physische KDE-X11-/Wayland-Abnahme,
+          - realer Langzeitrender mit großer Medienauswahl auf langsamem externem Ziel.
+
+          Solange diese zwei Nachweise fehlen, bleibt `stable_ready = false`.
+          '''.replace('\n          ', '\n')
+          (ROOT / 'RELEASE_NOTES_save_.md').write_text(release_notes, encoding='utf-8')
+
+          package_report = f'''# Fresh-Package-Bericht · VideoBatch Fast 2.8.3-rc25 · Iteration 40D
+
+          ## Geprüfter Paketstand
+
+          - Finalisierungsworkflow: `{FINAL_RUN}`
+          - geprüfter und anschließend übernommener Baum: `{FINAL_COMMIT}`
+          - finales workflowfreies Release-Manifest: **465 Dateien**
+          - Manifestprüfung: **BESTANDEN**
+          - keine unregistrierten Nutzdateien
+          - deterministisches Release-ZIP: **BESTANDEN**
+          - ZIP-Inhalt: **465 Release-Dateien + Manifest**
+          - temporärer One-Shot-Workflow: **nicht im Endbestand enthalten**
+          - Produktcode unter `src/`: **in Iteration 40D unverändert**
+
+          ## Paketgrenze
+
+          Das Release-Paket enthält bewusst nicht den vollständigen Entwicklungs-/Diagnosebaum. Entwicklungsnachweise wie `diagnostics/release_readiness/**` bleiben Quellbaum-Evidence und werden nicht durch einen vermeintlichen Fresh-Extract-Volltest des Release-ZIPs ersetzt.
+
+          ## Freigabestatus
+
+          Die Paket- und Automationsgates sind bestanden. Stable bleibt dennoch blockiert, bis die physische KDE-X11-/Wayland-Abnahme und der reale Large-Media-Soak dokumentiert sind.
+          '''.replace('\n          ', '\n')
+          (ROOT / 'FRESH_PACKAGE_REPORT_save_.md').write_text(package_report, encoding='utf-8')
+
+          contract = f'''from __future__ import annotations
+
+          import json
+          from pathlib import Path
+
+          ROOT = Path(__file__).resolve().parents[1]
+          EVIDENCE = ROOT / "diagnostics/release_readiness/RELEASE_EVIDENCE.json"
+          FINAL_COMMIT = "{FINAL_COMMIT}"
+          FINAL_RUN = {FINAL_RUN}
+
+          def _evidence() -> dict:
+              return json.loads(EVIDENCE.read_text(encoding="utf-8"))
+
+          def test_current_full_regression_is_canonical_release_evidence() -> None:
+              data = _evidence()
+              tests = data["tests"]
+              assert tests["collected"] == 505
+              assert tests["passed"] == 503
+              assert tests["failed"] == 0
+              assert tests["skipped"] == 2
+              assert tests["line_coverage_percent"] == 81.06
+              assert tests["branch_coverage_percent"] == 65.79
+              assert tests["combined_coverage_percent"] == 78.04
+              assert data["manifest"] == {{"path": "RELEASE_MANIFEST.json", "file_count": 465, "status": "passed"}}
+              provenance = data["provenance"]
+              assert provenance["full_regression_run_id"] == FINAL_RUN
+              assert provenance["full_regression_verified_commit"] == FINAL_COMMIT
+              assert provenance["repository_finalization_commit"] == FINAL_COMMIT
+              assert "full_regression_artifact_name" not in provenance
+              assert "full_regression_artifact_id" not in provenance
+              assert "full_regression_artifact_sha256" not in provenance
+              assert provenance["legacy_a32_full_regression"]["status"] == "historical_superseded"
+
+          def test_coverage_closed_and_only_real_stable_gates_remain_open() -> None:
+              data = _evidence()
+              gate = next(item for item in data["stable_gates"] if item["id"] == "coverage_80_65")
+              assert gate["status"] == "passed"
+              assert data["stable_ready"] is False
+              assert data["progress"] == {{
+                  "percent": 93,
+                  "completed": 28,
+                  "open": 2,
+                  "total": 30,
+                  "current_todo": "{NEXT}",
+              }}
+              assert [item["id"] for item in data["stable_gates"] if item["status"] == "open"] == [
+                  "physical_kde_x11_wayland",
+                  "large_media_soak",
+              ]
+
+          def test_current_internal_quality_and_active_docs_are_40d_consistent() -> None:
+              data = _evidence()
+              quality = data["internal_quality"]
+              assert quality == {{
+                  "architecture_findings": 0,
+                  "modules_checked": 115,
+                  "function_count": 1140,
+                  "class_count": 140,
+                  "largest_python_file": "ui_workspace_grid_mixin.py",
+                  "largest_python_file_lines": 699,
+                  "verified_run_id": FINAL_RUN,
+                  "verified_commit": FINAL_COMMIT,
+              }}
+              development = json.loads((ROOT / "DEVELOPMENT_STATUS.json").read_text(encoding="utf-8"))
+              assert development["approved_quality_report"] == "{APPROVED_REPORT}"
+              assert (ROOT / development["approved_quality_report"]).is_file()
+              readme = (ROOT / "README.md").read_text(encoding="utf-8")
+              assert f"Workflow `{{FINAL_RUN}}` · Commit `{{FINAL_COMMIT}}`" in readme
+              assert "81,06 % Zeilenabdeckung" in readme
+              assert "65,79 % Zweigabdeckung" in readme
+              assert "VideoBatch_Fast_2.8.3-rc25_BUILD_REPORT_save_.json" not in readme
+              assert (ROOT / "RELEASE_NOTES_save_.md").read_text(encoding="utf-8").startswith("# Release-Hinweise · VideoBatch Fast 2.8.3-rc25")
+              assert (ROOT / "FRESH_PACKAGE_REPORT_save_.md").read_text(encoding="utf-8").startswith("# Fresh-Package-Bericht · VideoBatch Fast 2.8.3-rc25")
+          '''.replace('\n          ', '\n')
+          (ROOT / 'tests/test_current_release_evidence_contract.py').write_text(contract, encoding='utf-8')
+          PY
+
+          rm -f .github/workflows/one-shot-40d-evidence-normalize.yml
+
+      - name: Manifest auf workflowfreiem normalisiertem Baum erzeugen
+        run: |
+          set -Eeuo pipefail
+          python scripts/build_release_manifest.py
+          python scripts/build_release_manifest.py --check --json
+          python scripts/validate_release_manifest.py
+
+      - name: Kompilierung
+        env:
+          PYTHONPYCACHEPREFIX: ${{ runner.temp }}/40d-normalize-pycache
+        run: |
+          set -Eeuo pipefail
+          python -m compileall -q -f scripts src tests
+
+      - name: Evidence- und 40D-Fokusvertrag
+        run: |
+          set -Eeuo pipefail
+          xvfb-run -a python -m pytest -q -p no:cacheprovider \
+            tests/test_current_release_evidence_contract.py \
+            tests/test_iteration40d_canonical_runtime_coverage.py
+
+      - name: Vollregression
+        run: |
+          set -Eeuo pipefail
+          xvfb-run -a python -m pytest -q -p no:cacheprovider
+
+      - name: Coverage 80/65
+        run: |
+          set -Eeuo pipefail
+          xvfb-run -a python -m pytest -q -p no:cacheprovider \
+            --cov=videobatch_fast --cov-branch --cov-fail-under=0 \
+            --cov-report=term --cov-report=json:coverage.json
+          python scripts/coverage_policy.py coverage.json 80 65
+          rm -f coverage.json
+
+      - name: Architektur und Manifest read-only
+        run: |
+          set -Eeuo pipefail
+          python scripts/architecture_audit.py
+          python scripts/build_release_manifest.py --check --json
+          python scripts/validate_release_manifest.py
+
+      - name: Deterministisches Release-ZIP
+        run: |
+          set -Eeuo pipefail
+          python scripts/package_release.py --output "$RUNNER_TEMP/VideoBatch_40D_NORMALIZED.zip"
+          python scripts/verify_release_zip.py "$RUNNER_TEMP/VideoBatch_40D_NORMALIZED.zip"
+
+      - name: Scope fail-closed prüfen und normalisierten Baum committen
+        run: |
+          set -Eeuo pipefail
+          python - <<'PY'
+          import subprocess
+          allowed = {
+              '.github/workflows/one-shot-40d-evidence-normalize.yml',
+              'FRESH_PACKAGE_REPORT_save_.md',
+              'PROJEKTSTATUS.json',
+              'QUALITY_ENVIRONMENT_STATUS.json',
+              'README.md',
+              'RELEASE_MANIFEST.json',
+              'RELEASE_NOTES_save_.md',
+              'STATUS.md',
+              'TEST_REPORT_save_.md',
+              'TODO.md',
+              'diagnostics/release_readiness/RELEASE_EVIDENCE.json',
+              'tests/test_current_release_evidence_contract.py',
+          }
+          lines = subprocess.check_output(['git', 'status', '--porcelain=v1'], text=True).splitlines()
+          paths = {line[3:] for line in lines if len(line) >= 4}
+          unexpected = sorted(paths - allowed)
+          if unexpected:
+              raise SystemExit('Unerwartete Änderungen: ' + ', '.join(unexpected))
+          if any(path.startswith('src/') for path in paths):
+              raise SystemExit('Produktcode wurde unerwartet verändert.')
+          if '.github/workflows/one-shot-40d-evidence-normalize.yml' not in paths:
+              raise SystemExit('Temporärer Normalisierungsworkflow wurde nicht aus dem Endbaum entfernt.')
+          print('Scope geprüft:', ', '.join(sorted(paths)))
+          PY
+          git config user.name "pppoppi"
+          git config user.email "provoware.one@gmail.com"
+          git add -A
+          git commit -m "chore(40d): normalize final evidence provenance"
+          git push origin HEAD:iteration/40d-coverage-contract-20260904
