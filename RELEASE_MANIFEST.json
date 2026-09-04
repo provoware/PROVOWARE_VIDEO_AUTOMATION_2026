@@ -1440,8 +1440,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/canonical_semantic_status_mixin.py",
-      "sha256": "ee310c483bddfa7613a7d22800453b677669113f2a2b7a234a7c03f32658d8d0",
-      "size": 4227
+      "sha256": "2ef8d4511541733d8c319ce16c817509789cff9b4d422ace88f9a85b7095e32f",
+      "size": 4553
     },
     {
       "mode": "0o644",
@@ -2556,8 +2556,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_semantic_status_contract.py",
-      "sha256": "c3b13194268ddb74c7cde4b0a14888f1144b8a6b34417a9d7381d0c58cbb5b02",
-      "size": 1376
+      "sha256": "f428c2f1f0d9dcc3e2f9c4d28ddfe6cf1be6f0489d2729b67d4dcaca94b4ceb4",
+      "size": 1763
     },
     {
       "mode": "0o644",
