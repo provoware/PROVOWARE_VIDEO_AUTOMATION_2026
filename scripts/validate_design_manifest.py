@@ -24,6 +24,12 @@ SHELL_PATHS = (
     ROOT / "src" / "videobatch_fast" / "canonical_dashboard_mixin.py",
     ROOT / "src" / "videobatch_fast" / "canonical_help_status_mixin.py",
     ROOT / "src" / "videobatch_fast" / "canonical_window_mixin.py",
+    ROOT / "src" / "videobatch_fast" / "canonical_resource_control_mixin.py",
+    ROOT / "src" / "videobatch_fast" / "ui_resource_controls_mixin.py",
+    ROOT / "src" / "videobatch_fast" / "controlled_runner.py",
+    ROOT / "src" / "videobatch_fast" / "execution_control.py",
+    ROOT / "src" / "videobatch_fast" / "system_resources.py",
+    ROOT / "src" / "videobatch_fast" / "resource_process.py",
     ROOT / "src" / "videobatch_fast" / "window_geometry.py",
 )
 APP_PATH = ROOT / "src" / "videobatch_fast" / "app.py"
@@ -62,6 +68,21 @@ REQUIRED_RESPONSIVE_TOKENS = (
     "three_columns",
     "two_columns",
     "stacked",
+)
+REQUIRED_RESOURCE_TOKENS = (
+    "PROZESS & FORTSCHRITT",
+    "SYSTEMLAST",
+    "RESSOURCENLIMITS",
+    "CPU auf 50 % begrenzen",
+    "RAM_LIMIT_PRESETS_GB",
+    "ZRAM",
+    "Pausieren",
+    "Fortsetzen",
+    "total_progress",
+    "job_progress",
+    "SIGSTOP",
+    "SIGCONT",
+    "prlimit",
 )
 REQUIRED_HELP_INTENTS = (
     "Ich möchte …",
@@ -118,6 +139,7 @@ def _validate_shell_labels(shell: str, errors: list[str]) -> None:
     _require_values(shell, REQUIRED_SHELL_LABELS, errors, "Shell-Navigation fehlt: {value}")
     _require_values(shell, REQUIRED_DASHBOARD_ZONES, errors, "Dashboard-Zone fehlt: {value}")
     _require_values(shell, REQUIRED_RESPONSIVE_TOKENS, errors, "Responsive Shell-Kopplung fehlt: {value}")
+    _require_values(shell, REQUIRED_RESOURCE_TOKENS, errors, "Ressourcen-/Prozessvertrag fehlt: {value}")
     _require_values(shell, REQUIRED_HELP_INTENTS, errors, "Hilfeabsicht fehlt: {value}")
     _require_values(shell, EXPECTED_THEMES.values(), errors, "Shell-Theme fehlt: {value}")
     _require_values(shell, REQUIRED_KPI_ACTIONS, errors, "KPI-Aktion fehlt: {value}")
@@ -149,6 +171,7 @@ def _validate_shell_contract_flags(shell: str, app: str, errors: list[str]) -> N
     checks = (
         ("build_kpi_snapshots(" in shell and "self._refresh_kpi_cards()" in shell, "KPI-Karten sind nicht an den realen Zustandsvertrag gebunden"),
         ("CanonicalKpiCompactMixin" in shell and "ShellKpiLink.TButton" in shell, "KPI-Detaildarstellung besitzt keine kompakte responsive Grenze"),
+        ("CanonicalResourceControlMixin" in shell and "ControlledBatchRunner" in shell, "Ressourcensteuerung ist nicht an die kanonische Shell gebunden"),
         ("kein automatischer Start" in shell, "Startzeituhr ist nicht eindeutig als deaktiviert gekennzeichnet"),
         ("from .canonical_ui import run_app" in app, "App-Einstieg verwendet nicht die kanonische Shell"),
         ("from .ui import run_app" not in app, "App-Einstieg umgeht die kanonische Shell"),
