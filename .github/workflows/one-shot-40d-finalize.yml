@@ -1,0 +1,415 @@
+name: Iteration 40D · Final evidence and manifest
+
+on:
+  push:
+    branches:
+      - iteration/40d-coverage-contract-20260904
+
+permissions:
+  contents: write
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: '1'
+  PIP_NO_INPUT: '1'
+  PYTHONHASHSEED: '0'
+  PYTHONUTF8: '1'
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONPATH: ${{ github.workspace }}/src
+
+jobs:
+  finalize-exact-tree:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Quellen holen
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-toolchain.lock
+
+      - name: Systempakete
+        run: |
+          set -Eeuo pipefail
+          sudo apt-get update
+          sudo apt-get install -y python3-tk xvfb ffmpeg
+
+      - name: Exakt gesperrte Toolchain installieren
+        run: |
+          set -Eeuo pipefail
+          python -m pip install --requirement requirements-toolchain.lock
+
+      - name: 40D Evidence und aktive Statussichten synchronisieren
+        run: |
+          set -Eeuo pipefail
+          python - <<'PY'
+          from __future__ import annotations
+          import json
+          from pathlib import Path
+
+          ROOT = Path('.')
+          RUN_ID = 33845125393
+          VERIFIED_SHA = '58a8a06b5eae6992a6dd6e20ed3d4d0a982c7d4c'
+          VERSION = '2.8.3-rc25'
+          APPROVED_REPORT = 'VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json'
+          NEXT = 'Physische KDE-X11-/Wayland-Abnahme und Large-Media-Soak auf demselben finalen Kandidaten durchführen.'
+
+          def load_json(path: str):
+              return json.loads((ROOT / path).read_text(encoding='utf-8'))
+
+          def write_json(path: str, data):
+              (ROOT / path).write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          def replace_block(path: str, start: str, end: str, replacement: str):
+              p = ROOT / path
+              text = p.read_text(encoding='utf-8')
+              if start not in text or end not in text:
+                  raise SystemExit(f'Marker fehlen in {path}')
+              before, rest = text.split(start, 1)
+              _, after = rest.split(end, 1)
+              p.write_text(before + replacement + after, encoding='utf-8')
+
+          evidence = load_json('diagnostics/release_readiness/RELEASE_EVIDENCE.json')
+          evidence['product']['version'] = VERSION
+          evidence['product']['iteration'] = 40
+          evidence['product']['build_date'] = '2026-09-04'
+          provenance = evidence['provenance']
+          provenance['current_40d_head'] = VERIFIED_SHA
+          provenance['coverage_contract_run_id'] = RUN_ID
+          provenance['coverage_contract_verified_commit'] = VERIFIED_SHA
+          provenance['coverage_contract_verified_at'] = '2026-09-04'
+          provenance['full_regression_run_id'] = RUN_ID
+          provenance['full_regression_verified_commit'] = VERIFIED_SHA
+          provenance['full_regression_verified_at'] = '2026-09-04'
+          provenance['evidence_regression_method'] = 'full Python 3.12/Xvfb suite; 503 passed / 2 skipped; coverage contract 80/65 passed'
+          evidence['manifest']['file_count'] = 465
+          evidence['manifest']['status'] = 'passed'
+          tests = evidence['tests']
+          tests.update({
+              'passed': 503,
+              'failed': 0,
+              'skipped': 2,
+              'collected': 505,
+              'line_coverage_percent': 81.06,
+              'branch_coverage_percent': 65.79,
+              'combined_coverage_percent': 78.04,
+              'full_regression': '503 passed / 2 skipped / 505 collected',
+              'test_environment': 'Ubuntu 24.04.4 LTS · Python 3.12.14 · Xvfb',
+          })
+          coverage_gate = next(item for item in evidence['stable_gates'] if item['id'] == 'coverage_80_65')
+          coverage_gate['status'] = 'passed'
+          coverage_gate['reason'] = '81,06 % Zeilenabdeckung und 65,79 % Branch-Abdeckung; scripts/coverage_policy.py bestanden · Workflow 33845125393 · Python 3.12.14.'
+          evidence['stable_ready'] = False
+          evidence['progress'] = {
+              'percent': 93,
+              'completed': 28,
+              'open': 2,
+              'total': 30,
+              'current_todo': NEXT,
+          }
+          evidence['approved_quality_report'] = APPROVED_REPORT
+          write_json('diagnostics/release_readiness/RELEASE_EVIDENCE.json', evidence)
+
+          development = {
+              'schema_version': 2,
+              'generated_from': 'diagnostics/release_readiness/RELEASE_EVIDENCE.json',
+              'iteration': 40,
+              'iteration_label': '40D',
+              'version': VERSION,
+              'progress_percent': 93,
+              'completed': 28,
+              'open': 2,
+              'current_todo': NEXT,
+              'status': 'yellow',
+              'stable_ready': False,
+              'approved_quality_report': APPROVED_REPORT,
+              'stable_blockers': [
+                  'Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless',
+                  'Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt',
+              ],
+              'total': 30,
+          }
+          write_json('DEVELOPMENT_STATUS.json', development)
+
+          quality = load_json('QUALITY_ENVIRONMENT_STATUS.json')
+          quality['build'] = VERSION
+          quality['internal_gates']['tests'] = {'passed': 503, 'failed': 0, 'skipped': 2}
+          quality['internal_gates']['line_coverage_percent'] = 81.06
+          quality['internal_gates']['branch_coverage_percent'] = 65.79
+          quality['internal_gates']['combined_coverage_percent'] = 78.04
+          quality['internal_gates']['release_manifest_files'] = 465
+          quality['external_gates']['coverage_80_65'] = 'passed · 81,06 % Zeilen / 65,79 % Branches · Workflow 33845125393'
+          quality['stable_ready'] = False
+          quality['stable_block_reason'] = 'Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless; Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt'
+          write_json('QUALITY_ENVIRONMENT_STATUS.json', quality)
+
+          project = load_json('PROJEKTSTATUS.json')
+          project['programmversion'] = VERSION
+          project['entwicklungsiteration'] = '40D'
+          project['status'] = '40D Coverage-Vertrag 80/65 geschlossen und kanonischer Runtime-Lifecycle regressionsgeprüft; Stable bleibt durch zwei reale Release-Gates blockiert'
+          project['referenz_ci_sha'] = VERIFIED_SHA
+          project['referenz_ci_run'] = RUN_ID
+          project['fortschritt'] = {'prozent': 93, 'erledigt': 28, 'gesamt': 30}
+          project['tests']['vollregression_bestanden'] = 503
+          project['tests']['vollregression_uebersprungen'] = 2
+          project['tests']['vollregression_fehlgeschlagen'] = 0
+          project['tests']['40d_runtime_lifecycle_contract'] = 'passed'
+          project['tests']['40d_coverage_contract'] = 'passed'
+          project['coverage'] = {
+              'zeilen_prozent': 81.06,
+              'zeilen_minimum': 80.0,
+              'branches_prozent': 65.79,
+              'branches_minimum': 65.0,
+              'kombiniert_prozent': 78.04,
+              'status': 'passed',
+          }
+          project['architektur']['funktionen'] = 1140
+          project['architektur']['befunde'] = 0
+          project['packaging']['status'] = 'passed_exact_40d_tree'
+          project['offene_stable_gates'] = [
+              'physische KDE-X11-/Wayland-Abnahme',
+              'realer Langzeitrender mit großer Medienauswahl und langsamem Ziel',
+          ]
+          project['naechster_schritt'] = 'Physische KDE-X11-/Wayland-Abnahme und Langzeitrender auf demselben finalen 40D-Kandidaten; bei realem Startabsturz RUN-P0-001 bis RUN-P0-004 vorziehen.'
+          write_json('PROJEKTSTATUS.json', project)
+
+          release_status = '''<!-- release-status:start -->
+          # provoware - videoautomation - 2026 · 2.8.3-rc25
+
+          **Kanal:** RC – noch keine Stable-Freigabe  
+          **Kanonische Quelle:** `diagnostics/release_readiness/RELEASE_EVIDENCE.json`  
+          **Letzter freigegebener Qualitätsbericht:** `VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json`
+
+          - 503/505 automatisierte Tests bestanden; 2 übersprungen
+          - 81,06 % Zeilenabdeckung · Mindestwert 80,00 % bestanden
+          - 65,79 % Zweigabdeckung · Mindestwert 65,00 % bestanden
+          - Coverage-Vertrag 80/65: **BESTANDEN** · Workflow `33845125393`
+          - 18/18 visuelle Szenarien bestanden
+          - Kubuntu-CI-Matrix: 4/4 Kombinationen bestanden
+
+          ### Offene Stable-Gates
+
+          - Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless
+          - Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt
+          <!-- release-status:end -->'''.replace('\n          ', '\n')
+          replace_block('README.md', '<!-- release-status:start -->', '<!-- release-status:end -->', release_status)
+          replace_block('STATUS.md', '<!-- release-status:start -->', '<!-- release-status:end -->', release_status)
+
+          todo = ROOT / 'TODO.md'
+          text = todo.read_text(encoding='utf-8')
+          old = '''- [ ] **Coverage-Vertrag 80/65:** aktuelle Messung 73,38 % Zeilen / 59,01 % Branch; Schwellen nicht absenken, sondern ungetestete kritische Pfade gezielt schließen.
+          - [ ] **Physische KDE-Abnahme unter X11 und Wayland** für den finalen, korrigierten UI-Stand dokumentieren.
+          - [ ] **Langzeitrender** mit großer Medienauswahl und langsamem externem Ziel durchführen.
+          - [ ] `RELEASE_MANIFEST.json` erst **nach** finalem Code-/UI-/Startnachweis genau einmal regenerieren und anschließend read-only verifizieren.'''.replace('\n          ', '\n')
+          new = '''- [x] **Coverage-Vertrag 80/65:** 81,06 % Zeilen / 65,79 % Branch; Schwellen unverändert bestanden · Workflow `33845125393` · Python 3.12.14.
+          - [ ] **Physische KDE-Abnahme unter X11 und Wayland** für den finalen, korrigierten UI-Stand dokumentieren.
+          - [ ] **Langzeitrender** mit großer Medienauswahl und langsamem externem Ziel durchführen.
+          - [x] `RELEASE_MANIFEST.json` nach dem 40D-Status-/Evidence-Sync auf dem workflowfreien Endbaum regenerieren und read-only verifizieren.'''.replace('\n          ', '\n')
+          if old not in text:
+              raise SystemExit('TODO Stable-Gate-Block stimmt nicht mit erwartetem Ausgangszustand überein')
+          todo.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          test_report = '''# Testbericht · VideoBatch Fast 2.8.3-rc25
+
+          ## Aktueller Vollregressionsnachweis · Iteration 40D
+
+          Der aktuelle 40D-Testbestand wurde am 4. September 2026 auf Commit `58a8a06b5eae6992a6dd6e20ed3d4d0a982c7d4c` unter Ubuntu 24.04.4 LTS, Python 3.12.14 und Xvfb ausgeführt.
+
+          - Workflow-Lauf: `33845125393`
+          - **505 Tests gesammelt**
+          - **503 Tests bestanden**
+          - **2 Tests übersprungen**
+          - **0 Tests fehlgeschlagen**
+          - Vollregression: **21,91 s**
+          - separater Coverage-Lauf derselben Suite: **30,08 s**
+
+          Der zusätzliche 40D-Regressionsvertrag prüft den realen kanonischen UI-Lifecycle, sechs Shell-Seiten, Suche, Dashboardzustände, responsive Layoutpfade, KPI-Fehlerpfade und Debug-Umschaltung in einem isolierten Testprofil. Produktcode wurde für die Coverage-Schließung nicht verändert.
+
+          ## Coverage-Vertrag 80/65
+
+          Der unveränderte Coverage-Vertrag ist **bestanden**:
+
+          - Zeilenabdeckung: **81,06 %** bei geforderten **80,00 %**
+          - Branch-Abdeckung: **65,79 %** bei geforderten **65,00 %**
+          - kombinierte Coverage: **78,04 %**
+          - Ergebnis `scripts/coverage_policy.py`: **BESTANDEN**
+
+          ## Architektur und Paket
+
+          Im 40D-Nachweis wurden 115 Module, 1.140 Funktionen und 140 Klassen geprüft. Der Architekturaudit meldete **0 Befunde**. Das Release-Manifest und das deterministische Release-ZIP bestanden ebenfalls.
+
+          ## Externe Qualitätswerkzeuge
+
+          Der letzte ausdrücklich freigegebene Offline-Qualitätsbericht bleibt `QUALITY_GATE_REPORT_2.8.3-rc24_save_.md`. Er dokumentiert den damaligen Lauf mit Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4 und pip-audit 2.10.1. Für 40D wird kein nicht vorhandener rc25-Buildreport erfunden.
+
+          ## Weitere belegte Prüfungen
+
+          - 12/12 Anwendungssimulationen bestanden
+          - 12/12 Fehlerlabor-Szenarien bestanden
+          - 18/18 vorhandene visuelle Referenzszenarien bestanden
+          - Kubuntu-CI-Matrix: 4/4 deterministische Kombinationen bestanden
+          - reale GUI-Stressprüfung mit 120 schnellen Medienklicks bereits bestanden
+
+          ## Bewusst nicht behauptet
+
+          Stable ist weiterhin blockiert. Offen bleiben genau die realen Nachweise, die eine Headless-CI nicht ersetzen kann:
+
+          1. physische Kubuntu/KDE-X11-/Wayland-Abnahme auf dem finalen Kandidaten,
+          2. dokumentierter Langzeitrender mit großer Medienauswahl und langsamem externem Ziel.
+
+          Der Coverage-Blocker gehört seit Iteration 40D **nicht mehr** zu den offenen Stable-Gates.
+          '''.replace('\n          ', '\n')
+          (ROOT / 'TEST_REPORT_save_.md').write_text(test_report, encoding='utf-8')
+
+          contract = '''from __future__ import annotations
+
+          import json
+          from pathlib import Path
+
+
+          ROOT = Path(__file__).resolve().parents[1]
+          EVIDENCE = ROOT / "diagnostics/release_readiness/RELEASE_EVIDENCE.json"
+
+
+          def _evidence() -> dict:
+              return json.loads(EVIDENCE.read_text(encoding="utf-8"))
+
+
+          def test_current_full_regression_is_canonical_release_evidence() -> None:
+              data = _evidence()
+              tests = data["tests"]
+              assert tests["collected"] == 505
+              assert tests["passed"] == 503
+              assert tests["failed"] == 0
+              assert tests["skipped"] == 2
+              assert tests["line_coverage_percent"] == 81.06
+              assert tests["branch_coverage_percent"] == 65.79
+              assert tests["combined_coverage_percent"] == 78.04
+              assert "full_regression_groups" not in tests
+              assert data["manifest"]["file_count"] == 465
+              assert data["provenance"]["full_regression_run_id"] == 33845125393
+              assert data["provenance"]["full_regression_verified_commit"] == "58a8a06b5eae6992a6dd6e20ed3d4d0a982c7d4c"
+
+
+          def test_coverage_policy_is_closed_but_stable_remains_fail_closed() -> None:
+              data = _evidence()
+              gate = next(item for item in data["stable_gates"] if item["id"] == "coverage_80_65")
+              assert gate["status"] == "passed"
+              assert data["stable_ready"] is False
+              assert data["progress"] == {
+                  "percent": 93,
+                  "completed": 28,
+                  "open": 2,
+                  "total": 30,
+                  "current_todo": "Physische KDE-X11-/Wayland-Abnahme und Large-Media-Soak auf demselben finalen Kandidaten durchführen.",
+              }
+              assert [item["id"] for item in data["stable_gates"] if item["status"] == "open"] == [
+                  "physical_kde_x11_wayland",
+                  "large_media_soak",
+              ]
+
+
+          def test_active_status_uses_existing_approved_report_and_current_40d_numbers() -> None:
+              readme = (ROOT / "README.md").read_text(encoding="utf-8")
+              development = json.loads((ROOT / "DEVELOPMENT_STATUS.json").read_text(encoding="utf-8"))
+              assert "503/505 automatisierte Tests bestanden; 2 übersprungen" in readme
+              assert "81,06 % Zeilenabdeckung" in readme
+              assert "65,79 % Zweigabdeckung" in readme
+              assert "Coverage-Vertrag 80/65: **BESTANDEN**" in readme
+              assert development["approved_quality_report"] == "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json"
+              assert (ROOT / development["approved_quality_report"]).is_file()
+              assert "VideoBatch_Fast_2.8.3-rc25_BUILD_REPORT_save_.json" not in readme
+              assert "325/325 automatisierte Tests bestanden" not in readme
+          '''.replace('\n          ', '\n')
+          (ROOT / 'tests/test_current_release_evidence_contract.py').write_text(contract, encoding='utf-8')
+          PY
+
+          rm -f .github/workflows/one-shot-40d-finalize.yml
+
+      - name: Finales Manifest auf workflowfreiem 40D-Baum erzeugen
+        run: |
+          set -Eeuo pipefail
+          python scripts/build_release_manifest.py
+          python scripts/build_release_manifest.py --check --json
+          python scripts/validate_release_manifest.py
+
+      - name: Kompilierung
+        env:
+          PYTHONPYCACHEPREFIX: ${{ runner.temp }}/40d-final-pycache
+        run: |
+          set -Eeuo pipefail
+          python -m compileall -q -f scripts src tests
+
+      - name: 40D Fokusregression
+        run: |
+          set -Eeuo pipefail
+          xvfb-run -a python -m pytest -q -p no:cacheprovider tests/test_iteration40d_canonical_runtime_coverage.py tests/test_current_release_evidence_contract.py
+
+      - name: Vollregression auf finalem Baum
+        run: |
+          set -Eeuo pipefail
+          xvfb-run -a python -m pytest -q -p no:cacheprovider
+
+      - name: Coverage 80/65 auf finalem Baum
+        run: |
+          set -Eeuo pipefail
+          xvfb-run -a python -m pytest -q -p no:cacheprovider \
+            --cov=videobatch_fast --cov-branch --cov-fail-under=0 \
+            --cov-report=term --cov-report=json:coverage.json
+          python scripts/coverage_policy.py coverage.json 80 65
+
+      - name: Architektur-Audit
+        run: |
+          set -Eeuo pipefail
+          python scripts/architecture_audit.py
+
+      - name: Manifest nach allen Prüfungen read-only bestätigen
+        run: |
+          set -Eeuo pipefail
+          python scripts/build_release_manifest.py --check --json
+          python scripts/validate_release_manifest.py
+
+      - name: Deterministisches Release-ZIP prüfen
+        run: |
+          set -Eeuo pipefail
+          python scripts/package_release.py --output "$RUNNER_TEMP/VideoBatch_40D_FINAL.zip"
+          python scripts/verify_release_zip.py "$RUNNER_TEMP/VideoBatch_40D_FINAL.zip"
+
+      - name: Scope fail-closed prüfen und finalen Baum committen
+        run: |
+          set -Eeuo pipefail
+          python - <<'PY'
+          import subprocess
+          allowed = {
+              '.github/workflows/one-shot-40d-finalize.yml',
+              'DEVELOPMENT_STATUS.json',
+              'PROJEKTSTATUS.json',
+              'QUALITY_ENVIRONMENT_STATUS.json',
+              'README.md',
+              'RELEASE_MANIFEST.json',
+              'STATUS.md',
+              'TEST_REPORT_save_.md',
+              'TODO.md',
+              'diagnostics/release_readiness/RELEASE_EVIDENCE.json',
+              'tests/test_current_release_evidence_contract.py',
+          }
+          changed = set(subprocess.check_output(['git', 'status', '--porcelain=v1'], text=True).splitlines())
+          paths = {line[3:] for line in changed if len(line) >= 4}
+          unexpected = sorted(paths - allowed)
+          if unexpected:
+              raise SystemExit('Unerwartete Änderungen: ' + ', '.join(unexpected))
+          if any(path.startswith('src/') for path in paths):
+              raise SystemExit('Produktcode wurde unerwartet verändert.')
+          print('Scope geprüft:', ', '.join(sorted(paths)))
+          PY
+          git config user.name "pppoppi"
+          git config user.email "provoware.one@gmail.com"
+          git add -A
+          git commit -m "chore(40d): sync evidence and close coverage gate"
+          git push origin HEAD:iteration/40d-coverage-contract-20260904
