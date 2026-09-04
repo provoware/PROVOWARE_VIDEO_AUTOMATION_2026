@@ -8,6 +8,20 @@ from pathlib import Path
 from videobatch_fast.probe import AUDIO_EXTENSIONS, IMAGE_EXTENSIONS
 
 
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _candidate_version() -> str:
+    try:
+        payload = json.loads((ROOT / 'VERSION.json').read_text(encoding='utf-8'))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SystemExit(f'FEHLER: VERSION.json kann nicht gelesen werden: {exc}') from exc
+    candidate = str(payload.get('build') or payload.get('version') or '').strip()
+    if not candidate:
+        raise SystemExit('FEHLER: VERSION.json enthält weder build noch version.')
+    return candidate
+
+
 def _files(directory: Path, extensions: set[str]) -> list[Path]:
     return sorted(
         (path.resolve() for path in directory.iterdir() if path.is_file() and path.suffix.lower() in extensions),
@@ -16,7 +30,7 @@ def _files(directory: Path, extensions: set[str]) -> list[Path]:
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Fest gebundenen RC24-Langzeitrender-Vertrag erzeugen.")
+    parser = argparse.ArgumentParser(description="Versionsgebundenen Langzeitrender-Vertrag erzeugen.")
     parser.add_argument("--audio-dir", required=True, type=Path)
     parser.add_argument("--image-dir", required=True, type=Path)
     parser.add_argument("--target-dir", required=True, type=Path)
@@ -58,7 +72,7 @@ def main() -> int:
     ]
     payload = {
         "schema_version": 1,
-        "candidate": "2.8.3-rc24",
+        "candidate": _candidate_version(),
         "package": str(args.package.expanduser().resolve()) if args.package else "",
         "target_dir": str(args.target_dir.expanduser().resolve()),
         "limits": {

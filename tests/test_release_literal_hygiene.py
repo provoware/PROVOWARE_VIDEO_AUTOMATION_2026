@@ -78,3 +78,8 @@ def test_allows_authoritative_metadata_history_and_reasoned_exception(
     violations, _ = MODULE.scan_repository(root)
 
     assert violations == []
+
+def test_canonical_repository_has_no_operational_release_literals() -> None:
+    violations, _ = MODULE.scan_repository(ROOT)
+    assert violations == []
+

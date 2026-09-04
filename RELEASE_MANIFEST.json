@@ -1,7 +1,7 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 441,
+  "file_count": 442,
   "files": [
     {
       "mode": "0o644",
@@ -24,8 +24,8 @@
     {
       "mode": "0o644",
       "path": ".github/workflows/bounded-long-render-rehearsal.yml",
-      "sha256": "fb9d24a6fcb539a75a88c1cfbd6158064584196be000a921e34da771bd79e6c9",
-      "size": 6690
+      "sha256": "e6508d67799783e9058a8a1a0d5a86b4daacf42f232ea3e7220cf8b81899109d",
+      "size": 7004
     },
     {
       "mode": "0o644",
@@ -38,6 +38,12 @@
       "path": ".github/workflows/design-manifest-gate.yml",
       "sha256": "0a0255b4c0fecde4096dcbc84b9184cb501f0cae2491e530c1e5a489b06f4844",
       "size": 2090
+    },
+    {
+      "mode": "0o644",
+      "path": ".github/workflows/fix-post-merge-smoke-once.yml",
+      "sha256": "704d99ad169ffa8e955dafd0508164b81c8b3bb6b996e008c62f14bc1b5f3281",
+      "size": 4068
     },
     {
       "mode": "0o644",
@@ -60,14 +66,14 @@
     {
       "mode": "0o644",
       "path": ".github/workflows/kubuntu-pr-matrix.yml",
-      "sha256": "547612a772395d081ad6ca83b60922ce7c40fc60325b0e066ca9ce30a6c34723",
-      "size": 19182
+      "sha256": "0025c4410efb2f17733e304d27b184f792d5b96ba2ee609b006d54a7094f9de0",
+      "size": 19455
     },
     {
       "mode": "0o644",
       "path": ".github/workflows/kubuntu-pr-validation.yml",
-      "sha256": "f9cde51990db857af4f49f616227de3509e3d60c883531cba60f5af71e1f3171",
-      "size": 13347
+      "sha256": "0c0c5349adbcc913e1e54f6edde3a51406b420997d8f3e45dd09bfb8b1b0f93f",
+      "size": 13620
     },
     {
       "mode": "0o644",
@@ -954,8 +960,8 @@
     {
       "mode": "0o644",
       "path": "scripts/build_long_render_contract.py",
-      "sha256": "10f8059b38734d83d64ced93665443b47d24c6a4697a2d9d1e3a1585ae12d8d6",
-      "size": 4344
+      "sha256": "c83cd2ffcb63dd20934bbc8dcd322000326995505ade1810d86cd24a2eadcc63",
+      "size": 4873
     },
     {
       "mode": "0o644",
@@ -2514,8 +2520,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_release_literal_hygiene.py",
-      "sha256": "4ccbcbc3eab74c45c37cf909941483e8f4e84125ba8ed015af2f563438b3cf36",
-      "size": 2449
+      "sha256": "946334b699421f0ea3dbd2126e129a4c9aee07a08d06ad094e2b8d99823d8924",
+      "size": 2605
     },
     {
       "mode": "0o644",
