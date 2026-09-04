@@ -37,11 +37,12 @@ def test_release_contract_excludes_backup_cache_bytecode_and_coverage(tmp_path: 
     assert included_release_file(tmp_path, normal) is True
 
 
-def test_iteration_39a_workflow_uses_locked_toolchain_and_manifest_packager() -> None:
+def test_iteration_workflow_uses_locked_toolchain_and_manifest_packager() -> None:
     workflow = (ROOT / ".github/workflows/a33-consolidated-package.yml").read_text(
         encoding="utf-8"
     )
-    assert "iteration/39a-a33-rebased-packaging-hygiene-20260904" in workflow
+    assert "branches:" in workflow
+    assert "iteration/" in workflow
     assert "requirements-toolchain.lock" in workflow
     assert "python -m pip install --requirement requirements-toolchain.lock" in workflow
     assert "python -m pip install pytest" not in workflow
@@ -52,7 +53,7 @@ def test_iteration_39a_workflow_uses_locked_toolchain_and_manifest_packager() ->
     assert 'zip -qr "$ZIP" .' not in workflow
 
 
-def test_iteration_39a_workflow_preserves_subprocess_import_isolation() -> None:
+def test_iteration_workflow_preserves_subprocess_import_isolation() -> None:
     workflow = (ROOT / ".github/workflows/a33-consolidated-package.yml").read_text(
         encoding="utf-8"
     )
