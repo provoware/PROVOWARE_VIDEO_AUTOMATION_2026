@@ -1,0 +1,53 @@
+name: Temp status-help manifest repair
+
+on:
+  push:
+    branches: [automation/status-help-legend-20260904-1909]
+
+permissions:
+  contents: write
+
+jobs:
+  repair-and-validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Remove one-shot validator before canonical manifest
+        run: |
+          set -Eeuo pipefail
+          git rm .github/workflows/temp-status-help-manifest.yml
+
+      - name: Regenerate and validate release manifest
+        run: |
+          set -Eeuo pipefail
+          python scripts/build_release_manifest.py
+          python scripts/validate_release_manifest.py
+
+      - name: Validate documentation and design contracts
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
+        run: |
+          set -Eeuo pipefail
+          python scripts/validate_documentation.py
+          python scripts/validate_design_manifest.py --json
+
+      - name: Commit deterministic manifest-only repair
+        run: |
+          set -Eeuo pipefail
+          git config user.name 'provoware-automation'
+          git config user.email 'automation@users.noreply.github.com'
+          git add RELEASE_MANIFEST.json
+          git diff --cached --check
+          git commit -m 'ci: synchronize manifest for status-help UX slice'
+          git push origin HEAD:automation/status-help-legend-20260904-1909
