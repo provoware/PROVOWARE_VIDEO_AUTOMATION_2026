@@ -7,6 +7,15 @@ from .theme import COLORS, best_text_color, safe_text_color
 VISUAL_PASS2_GAP = 8
 VISUAL_PASS2_CARD_PADDING = 12
 VISUAL_PASS2_HALF_GAP = VISUAL_PASS2_GAP // 2
+VISUAL_PASS2_MIN_ROW_HEIGHT = 32
+VISUAL_PASS2_MIN_HINT_FONT = 10
+VISUAL_PASS2_MIN_BUTTON_PAD_Y = 7
+
+
+def visual_scale_factor(scale_percent: int) -> float:
+    """Return the shared low-vision scale without defeating 80–200% UI zoom."""
+
+    return max(0.8, min(2.0, scale_percent / 100.0))
 
 
 class CanonicalVisualPolishMixin:
@@ -21,9 +30,14 @@ class CanonicalVisualPolishMixin:
         super()._configure_shell_styles()
         style = ttk.Style(self.root)
         scale = int(self.global_font_scale.get()) if hasattr(self, "global_font_scale") else 105
-        factor = max(0.85, min(1.35, scale / 105.0))
+        factor = visual_scale_factor(scale)
         panel_text = safe_text_color(COLORS["panel"], COLORS["text"])
         panel_muted = safe_text_color(COLORS["panel"], COLORS["muted"])
+        button_pad_x = max(10, round(10 * factor))
+        button_pad_y = max(VISUAL_PASS2_MIN_BUTTON_PAD_Y, round(7 * factor))
+        row_height = max(VISUAL_PASS2_MIN_ROW_HEIGHT, round(32 * factor))
+        heading_pad_x = max(8, round(8 * factor))
+        heading_pad_y = max(6, round(6 * factor))
 
         style.configure(
             "ShellHeader.TFrame",
@@ -75,15 +89,19 @@ class CanonicalVisualPolishMixin:
             "ShellKpiHint.TLabel",
             background=COLORS["panel"],
             foreground=panel_muted,
-            font=("DejaVu Sans", max(9, round(9 * factor))),
+            font=(
+                "DejaVu Sans",
+                max(VISUAL_PASS2_MIN_HINT_FONT, round(10 * factor)),
+            ),
         )
 
         style.configure(
             "Ghost.TButton",
             background=COLORS["panel2"],
             foreground=safe_text_color(COLORS["panel2"], COLORS["text"]),
-            padding=(10, 6),
-            borderwidth=1,
+            padding=(button_pad_x, button_pad_y),
+            borderwidth=2,
+            bordercolor=COLORS["border_subtle"],
             relief="flat",
         )
         style.map(
@@ -93,15 +111,19 @@ class CanonicalVisualPolishMixin:
                 ("active", best_text_color(COLORS["hover"])),
                 ("focus", best_text_color(COLORS["selection"])),
             ],
+            bordercolor=[
+                ("focus", COLORS["accent2"]),
+                ("active", COLORS["hover"]),
+            ],
         )
 
-        style.configure("Treeview", rowheight=max(28, round(29 * factor)))
+        style.configure("Treeview", rowheight=row_height)
         style.configure(
             "Treeview.Heading",
             background=COLORS["panel2"],
             foreground=safe_text_color(COLORS["panel2"], COLORS["muted"]),
-            padding=(8, 6),
-            font=("DejaVu Sans", max(9, round(10 * factor)), "bold"),
+            padding=(heading_pad_x, heading_pad_y),
+            font=("DejaVu Sans", max(10, round(10 * factor)), "bold"),
             relief="flat",
         )
         style.configure(
@@ -109,7 +131,7 @@ class CanonicalVisualPolishMixin:
             background=COLORS["toolbar"],
             foreground=safe_text_color(COLORS["toolbar"], COLORS["success"]),
             padding=(6, 2),
-            font=("DejaVu Sans", max(9, round(9 * factor)), "bold"),
+            font=("DejaVu Sans", max(10, round(10 * factor)), "bold"),
             anchor="e",
         )
 
