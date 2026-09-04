@@ -7,7 +7,7 @@ Status der Iteration: technisch abgeschlossen; Stable weiterhin blockiert
 
 ## Ziel
 
-A33 auf den kanonischen A32.2-Head rebasen und anschließend Paketierung, Werkzeugkette, Regression, Coverage, Architektur und Manifest auf einem gemeinsamen Entwicklungsstand prüfen.
+A33 auf den kanonischen A32.2-Head rebasen und anschließend Paketierung, Werkzeugkette, Regression, Coverage, Architektur, Manifest und finalen Integrations-Diff auf einem gemeinsamen Entwicklungsstand prüfen.
 
 ## Lineage
 
@@ -15,13 +15,27 @@ A33 auf den kanonischen A32.2-Head rebasen und anschließend Paketierung, Werkze
 - ursprünglicher A33-Head: `71db290cbe5ffd0bfdf76c06f1de5b00dc6318b8`
 - A33 vor Rebase: 18 Commits voraus, 1 Commit hinter der kanonischen Basis
 - mechanischer Rebase: PR #100, Rebase-Merge ausschließlich in die 39A-Arbeitsbranch
-- Ergebnis nach Rebase: 18 Commits voraus, 0 Commits hinter; Merge-Base exakt `8755d533...`
+- Ergebnis nach Rebase: Merge-Base exakt `8755d533...`, 0 Commits hinter
+- Integrations-Child-PR: Draft PR #101 gegen `codex/a32-2-current-state-error-hardening`
 - `main` wurde nicht verändert
 - PR #84 wurde nicht nach `main` gemergt
+- PR #101 wurde nicht gemergt
+
+## Finaler Diff-Audit
+
+Der vollständige PR-101-Dateiaudit fand sechs redundante Rollback-Kopien unter `Backup/A32.2_vor_A33/`. Diese waren bereits vom Release-Paket ausgeschlossen, gehörten aber nicht in eine saubere Integrations-Lineage. Sie wurden vollständig aus dem Branch entfernt.
+
+Rückrollbarkeit erfolgt jetzt ausschließlich über:
+
+1. Git-Historie,
+2. dokumentierte kanonische Basis-SHA,
+3. bestehende qualifizierte Release-/Evidence-Artefakte.
+
+Der zentrale `Backup/`-Ausschluss bleibt defensiv bestehen, damit versehentlich neu erzeugte Sicherungskopien nicht paketiert werden.
 
 ## Packaging-Hygiene
 
-Der gemeinsame Release-Dateivertrag schließt jetzt insbesondere aus:
+Der gemeinsame Release-Dateivertrag schließt insbesondere aus:
 
 - `Backup/`
 - `__pycache__/`
@@ -32,13 +46,11 @@ Der gemeinsame Release-Dateivertrag schließt jetzt insbesondere aus:
 - Coverage-Zwischendateien
 - bestehende Build-, Diagnose- und Archivpfade
 
-Der A33-Paketworkflow verwendet nicht mehr `zip -qr` über den Arbeitsbaum, sondern den vorhandenen manifestgeführten deterministischen Packager `scripts/package_release.py` plus `scripts/verify_release_zip.py`.
-
-Im validierten CI-Lauf wurde das ZIP zweimal unabhängig erzeugt und byteweise verglichen. Der explizite Paket-Hygienescanner meldete: keine Backups, Caches oder Bytecode-Dateien.
+Der A33-Paketworkflow verwendet den manifestgeführten deterministischen Packager `scripts/package_release.py` plus `scripts/verify_release_zip.py`. Im validierten CI-Lauf wurde das ZIP zweimal unabhängig erzeugt und byteweise verglichen. Der explizite Paket-Hygienescanner meldete keine Backups, Caches oder Bytecode-Dateien.
 
 ## Werkzeugkette
 
-Der Workflow installiert die kanonisch festgelegten Werkzeugversionen aus `requirements-toolchain.lock` und prüft sie zur Laufzeit:
+Direkt verifiziert aus `requirements-toolchain.lock`:
 
 - Coverage 7.13.3
 - Pytest 9.0.2
@@ -48,23 +60,27 @@ Der Workflow installiert die kanonisch festgelegten Werkzeugversionen aus `requi
 - Bandit 1.9.4
 - pip-audit 2.10.1
 
-Hinweis: Diese Iteration fixiert und verifiziert die kanonischen Werkzeugversionen. Transitive Python-Abhängigkeiten werden weiterhin durch den Resolver aufgelöst; ein vollständiger Hash-Lock des gesamten transitiven Graphen ist ein separater Härtungsschritt und wird hier nicht fälschlich behauptet.
+Transitive Python-Abhängigkeiten werden weiterhin durch den Resolver aufgelöst; ein vollständiger Hash-Lock des gesamten transitiven Graphen wird nicht fälschlich behauptet.
 
-## Regression
+## Regression nach finalem Backup-Cleanup
 
-Referenzlauf: GitHub Actions Run `33827615114` auf Commit `d787b824688b73de1a96c6cfa2ce7bd276728486`.
+Referenzlauf: GitHub Actions Run `33831208494` auf Commit `12bfad1e92c6d6bb9992279302d2f1029c7f5848`.
 
 - Fokusregression: 47/47 bestanden
 - Vollregression: 477 bestanden
 - übersprungen: 2
 - fehlgeschlagen: 0
-- Coverage-instrumentierte Vollregression: ebenfalls 477 bestanden / 2 übersprungen
-
-Ein während 39A gefundener Installer-Testfehler wurde auf eine CI-Umgebungsverschmutzung durch globales `scripts/` im `PYTHONPATH` zurückgeführt. Der Workflow wurde auf `PYTHONPATH=<repo>/src` zurückgeführt und der Isolationsvertrag als Regressionstest fixiert. Produktlogik musste dafür nicht geändert werden.
+- Coverage-instrumentierte Vollregression: 477 bestanden / 2 übersprungen
+- Startvertrag: PASS
+- Kompilierung: PASS
+- Architektur-Audit: PASS
+- Manifest-Prüfung: PASS
+- deterministischer Paketbau: PASS
+- Artefakt-Upload: PASS
 
 ## Coverage
 
-Der ältere kombinierte Pytest-Fail-Under-Wert wird im Messschritt neutralisiert, damit die Messung vollständig geschrieben wird. Die eigentliche Release-Governance bleibt unverändert und wird separat mit `scripts/coverage_policy.py coverage.json 80 65` erzwungen.
+Die Release-Governance bleibt unverändert und wird separat mit `scripts/coverage_policy.py coverage.json 80 65` erzwungen.
 
 Gemessen:
 
@@ -72,9 +88,9 @@ Gemessen:
 - Branch-Abdeckung: **58,82 %** / Mindestwert 65,00 % → FAIL
 - kombinierte Darstellung: 70,32 %
 
-Die Schwellen wurden nicht abgesenkt. Der Coverage-Gate bleibt absichtlich rot.
+Die Schwellen wurden nicht abgesenkt. Der Workflow endet deshalb absichtlich ausschließlich am letzten Coverage-Gate rot.
 
-Auffällige große Testlücken liegen insbesondere in Tk-/Shell-nahen UI-Modulen, darunter `canonical_dashboard_mixin.py`, `canonical_shell_chrome.py`, `canonical_shell_workspace.py`, `canonical_kpi_detail_mixin.py`, `canonical_help_status_mixin.py` sowie in `long_render_target.py`. Das ist für die folgende Core-vs.-Tk-Transferentscheidung relevant, wird aber nicht in diese Hygieneiteration hineingezogen.
+Große Testlücken liegen weiterhin insbesondere in Tk-/Shell-nahen UI-Modulen sowie in `long_render_target.py`. Diese Trennung ist ein Eingangskriterium für Iteration 39B.
 
 ## Architektur
 
@@ -87,16 +103,16 @@ Auffällige große Testlücken liegen insbesondere in Tk-/Shell-nahen UI-Modulen
 
 ## Manifest und Paket
 
-Im Referenzlauf vor Einfügen dieses Abschlussberichts:
+Der bereinigte Referenzlauf bestätigte:
 
-- Release-Manifest: PASS
-- Nutzdateien: 449
-- unregistrierte Nutzdateien: 0
+- Release-Manifest-Prüfung: PASS
+- kanonischer Dateisatz: 450 Nutzdateien
 - Release-ZIP-Verifikation: PASS
 - deterministischer Zweitbau: PASS
 - Paket-Hygiene: PASS
+- inneres Projekt-ZIP SHA-256: `349224aeab5451bf3bad63a5228aa75f6bcc06f0cbce16d561cd21105629f04a`
 
-Nach dieser Dokumentationsänderung muss das Manifest auf dem finalen 39A-Head erneut erzeugt und geprüft werden; erst dieses Ergebnis ist der endgültige 39A-Paketstand.
+Nach dieser letzten Dokumentationsänderung wird das kanonische Manifest noch einmal auf den endgültigen 39A-Head synchronisiert und anschließend der PR-Scope erneut geprüft.
 
 ## Stable-Status
 
@@ -110,4 +126,4 @@ Iteration 39A schließt keinen dieser drei Stable-Gates künstlich.
 
 ## Nächster fachlicher Schritt
 
-Auf Basis der nun sauberen Lineage wird eine Transfermatrix erstellt: wiederverwendbarer Core/Startup/Fault-Hardening versus Tk-spezifische UI. Nur die fachlich unabhängigen und ausreichend testbaren Komponenten sollen anschließend gezielt in die PySide6/QML-Linie übernommen werden.
+Iteration 39B erstellt eine testbasierte Transfermatrix: direkt wiederverwendbarer Core/Startup/Fault-Hardening, adapterpflichtige Mischlogik und bewusst nicht zu portierende Tk-spezifische UI. Erst danach werden Komponenten für PySide6/QML freigegeben.
