@@ -1,0 +1,60 @@
+name: PR110 manifest sync temp
+
+on:
+  push:
+    branches: [automation/semantic-status-colors-20260904-1609]
+
+permissions:
+  contents: write
+
+env:
+  PYTHONPATH: ${{ github.workspace }}/src
+  PYTHONDONTWRITEBYTECODE: '1'
+  PIP_DISABLE_PIP_VERSION_CHECK: '1'
+
+jobs:
+  sync-and-validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-toolchain.lock
+
+      - name: Install pinned toolchain
+        run: python -m pip install -r requirements-toolchain.lock
+
+      - name: Remove temporary workflow before manifest generation
+        run: rm .github/workflows/pr110-manifest-sync-temp.yml
+
+      - name: Regenerate canonical release manifest
+        run: |
+          python scripts/build_release_manifest.py
+          python scripts/build_release_manifest.py --check
+
+      - name: Validate isolated UX slice
+        run: |
+          python -m compileall -q src/videobatch_fast/canonical_semantic_status_mixin.py src/videobatch_fast/canonical_ui.py tests/test_semantic_status_contract.py
+          python -m pytest -q -p no:cacheprovider tests/test_semantic_status_contract.py tests/test_release_docs.py
+          python scripts/validate_design_manifest.py --json
+          python scripts/internal_quality_gate.py
+          python scripts/architecture_audit.py
+
+      - name: Commit synchronized manifest and remove helper
+        run: |
+          set -Eeuo pipefail
+          git config user.name 'provoware automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A
+          git diff --cached --exit-code && exit 0 || true
+          git commit -m 'chore: sync manifest for semantic status UX'
+          git push origin HEAD:automation/semantic-status-colors-20260904-1609
