@@ -2,6 +2,18 @@
 
 Alle wichtigen Änderungen dieses Projekts werden hier in zusammengefasster, chronologischer Form dokumentiert. Die vollständige frühere Detailhistorie liegt unter `docs/archive/release-history/CHANGELOG_FULL_PRE_FINALIZATION.md`.
 
+## Iteration 39A · A33-Lineage-Rebase & Packaging-Hygiene · 2026-09-04
+
+- A33 mechanisch auf den kanonischen A32.2-Head `8755d5333b2f53ff8080655f8af39727db9b8c48` rebaset; danach 18 Commits voraus und 0 hinter der Basis;
+- gemeinsamen Release-Dateivertrag um Ausschlüsse für `Backup/`, Python-Caches, Test-/Qualitätscaches, Bytecode und Coverage-Zwischendateien gehärtet;
+- A33-Paketbau vom rohen Arbeitsbaum-ZIP auf den vorhandenen deterministischen manifestgeführten Release-Packager umgestellt;
+- kanonische Werkzeugversionen aus `requirements-toolchain.lock` im CI-Lauf explizit verifiziert;
+- Fokusregression 47/47 und Vollregression 477 bestanden / 2 übersprungen / 0 fehlgeschlagen;
+- Coverage neu gemessen: 73,16 % Zeilen und 58,82 % Branch; 80/65-Schwellen unverändert und weiterhin blockierend;
+- Architektur-Audit: 115 Module, 1.139 Funktionen, 140 Klassen, größte Python-Datei 699 Zeilen, 0 Befunde;
+- deterministischen Zweitbau, Manifest-Verifikation und expliziten Paket-Hygienetest ergänzt;
+- `main` und der Merge von PR #84 nach `main` blieben unangetastet.
+
 ## Unveröffentlicht · RC24-Finalbereinigung
 
 - `BatchRunner` vollständig auf direkte, versionierte `AppEvent`-Ausgabe migriert
