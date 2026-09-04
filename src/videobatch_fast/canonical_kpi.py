@@ -51,6 +51,223 @@ def _source_names(values: Iterable[str]) -> tuple[str, ...]:
     return tuple(names)
 
 
+def _build_media_snapshot(
+    *,
+    audio_count: int,
+    media_count: int,
+    missing_sources: int,
+    active_tasks: Iterable[str],
+    missing_source_names: Iterable[str],
+) -> KpiSnapshot:
+    total_media = max(0, int(audio_count)) + max(0, int(media_count))
+    missing_count = max(0, int(missing_sources))
+    media_loading = _task_matches(active_tasks, "preview", "probe", "scan", "media", "slideshow")
+
+    if media_loading:
+        return KpiSnapshot(
+            str(total_media),
+            "Quellen werden geprüft",
+            "Prüfung läuft",
+            "loading",
+            action_enabled=False,
+            cause="Eine Medienanalyse, Vorschau oder Ordnerprüfung ist noch aktiv.",
+            action_label="Prüfung läuft",
+            recovery_action="disabled",
+        )
+    if total_media == 0:
+        return KpiSnapshot(
+            "0",
+            "Noch keine Quellen importiert",
+            "Leer",
+            "empty",
+            cause="Das Projekt enthält weder Audio- noch Bild- oder Videoquellen.",
+            action_label="Medien öffnen",
+            recovery_action="open_media",
+        )
+    if missing_count:
+        names = _source_names(missing_source_names)
+        name_note = f" Betroffen: {', '.join(names)}." if names else ""
+        return KpiSnapshot(
+            str(total_media),
+            f"{missing_count} Quelle(n) nicht erreichbar",
+            "Wiederherstellung nötig",
+            "error",
+            cause=(
+                "Gespeicherte Projektpfade zeigen auf Dateien, die am ursprünglichen Ort nicht mehr vorhanden sind."
+                + name_note
+            ),
+            action_label="Fehlende entfernen",
+            recovery_action="remove_missing_sources",
+        )
+    if audio_count == 0 or media_count == 0:
+        missing_kind = "Audio fehlt" if audio_count == 0 else "Bild oder Video fehlt"
+        return KpiSnapshot(
+            str(total_media),
+            missing_kind,
+            "Unvollständig",
+            "warning",
+            cause=(
+                "Für eine gültige Zuordnung fehlt mindestens eine Audiodatei."
+                if audio_count == 0
+                else "Für eine gültige Zuordnung fehlt mindestens ein Bild oder Video."
+            ),
+            action_label="Audio importieren" if audio_count == 0 else "Medien importieren",
+            recovery_action="import_audio" if audio_count == 0 else "import_media",
+        )
+    return KpiSnapshot(
+        str(total_media),
+        f"{audio_count} Audio · {media_count} Medien",
+        "Bereit",
+        "success",
+        action_label="Medien öffnen",
+        recovery_action="open_media",
+    )
+
+
+def _build_queue_snapshot(
+    *,
+    job_count: int,
+    completed_jobs: int,
+    failed_jobs: int,
+    active_tasks: Iterable[str],
+    queue_failure_reasons: Iterable[str],
+    retryable_jobs: int,
+    blocked_jobs: int,
+) -> KpiSnapshot:
+    retryable_count = max(0, int(retryable_jobs))
+    blocked_count = max(0, int(blocked_jobs))
+    production_active = _task_matches(active_tasks, "batch", "render", "encode", "production")
+
+    if production_active:
+        return KpiSnapshot(
+            str(job_count),
+            "Produktion arbeitet",
+            "Läuft",
+            "loading",
+            action_enabled=False,
+            cause="Mindestens ein Render-, Encode- oder Batchauftrag ist noch aktiv.",
+            action_label="Produktion läuft",
+            recovery_action="disabled",
+        )
+    if failed_jobs or retryable_count or blocked_count:
+        failed_total = max(int(failed_jobs), retryable_count + blocked_count)
+        recovery_detail = []
+        if retryable_count:
+            recovery_detail.append(f"{retryable_count} wiederanlaufbar")
+        if blocked_count:
+            recovery_detail.append(f"{blocked_count} gesperrt")
+        detail = " · ".join(recovery_detail) or f"{failed_total} Auftrag/Aufträge fehlgeschlagen"
+        return KpiSnapshot(
+            str(job_count),
+            detail,
+            "Wiederherstellung nötig",
+            "error",
+            cause=_first_reason(
+                queue_failure_reasons,
+                "Mindestens ein Auftrag wurde mit einem Fehler beendet; Originaldateien bleiben unverändert.",
+            ),
+            action_label="Wiederanlauf laden" if retryable_count else "Fehlerliste öffnen",
+            recovery_action="reload_retry_queue" if retryable_count else "open_retry_queue",
+        )
+    if completed_jobs:
+        return KpiSnapshot(
+            str(job_count),
+            f"{completed_jobs} Auftrag/Aufträge abgeschlossen",
+            "Abgeschlossen",
+            "success",
+            action_label="Queue öffnen",
+            recovery_action="open_queue",
+        )
+    if job_count:
+        return KpiSnapshot(
+            str(job_count),
+            "Aufträge sind vorbereitet",
+            "Startbereit",
+            "ready",
+            action_label="Queue öffnen",
+            recovery_action="open_queue",
+        )
+    return KpiSnapshot(
+        "0",
+        "Noch keine gültige Zuordnung",
+        "Leer",
+        "empty",
+        cause="Audio und Medien sind noch nicht zu ausführbaren Aufträgen kombiniert.",
+        action_label="Zuordnung öffnen",
+        recovery_action="open_media",
+    )
+
+
+def _build_effects_snapshot(
+    *,
+    visual_effect: str,
+    transition: str,
+    quick_mode: str,
+    effect_valid: bool,
+    transition_valid: bool,
+) -> KpiSnapshot:
+    effect = str(visual_effect or "none")
+    transition_value = str(transition or "none")
+    mode = str(quick_mode or "smart_auto")
+
+    if not effect_valid or not transition_valid:
+        invalid = []
+        if not effect_valid:
+            invalid.append(f"Effekt „{effect}“")
+        if not transition_valid:
+            invalid.append(f"Übergang „{transition_value}“")
+        return KpiSnapshot(
+            "Ungültig",
+            "Gestaltungsvertrag weicht ab",
+            "Wiederherstellung nötig",
+            "error",
+            cause=f"{' und '.join(invalid)} ist nicht im aktuellen Effektregister enthalten.",
+            action_label="Automatik herstellen",
+            recovery_action="reset_effects",
+        )
+    if effect != "none" or transition_value != "none":
+        value = effect if effect != "none" else transition_value
+        detail = f"Effekt: {effect} · Übergang: {transition_value}"
+        return KpiSnapshot(
+            value,
+            detail,
+            "Aktiv",
+            "success",
+            action_label="Effekte öffnen",
+            recovery_action="open_effects",
+        )
+    if mode not in {"custom", "smart_auto"}:
+        return KpiSnapshot(
+            mode,
+            "Schnellmodus steuert die Gestaltung",
+            "Modus aktiv",
+            "ready",
+            action_label="Effekte öffnen",
+            recovery_action="open_effects",
+        )
+    return KpiSnapshot(
+        "Automatik",
+        "Noch kein fester Look gewählt",
+        "Neutral",
+        "empty",
+        action_label="Effekte öffnen",
+        recovery_action="open_effects",
+    )
+
+
+def _build_scheduler_snapshot() -> KpiSnapshot:
+    return KpiSnapshot(
+        "Nicht geplant",
+        "Produktive Startplanung folgt in Checkpoint 5",
+        "Deaktiviert",
+        "disabled",
+        action_enabled=False,
+        cause="Die Startzeituhr ist absichtlich noch nicht freigegeben und startet keine Aufträge.",
+        action_label="Checkpoint 5",
+        recovery_action="disabled",
+    )
+
+
 def build_kpi_snapshots(
     *,
     audio_count: int,
@@ -70,195 +287,32 @@ def build_kpi_snapshots(
     effect_valid: bool = True,
     transition_valid: bool = True,
 ) -> dict[str, KpiSnapshot]:
-    total_media = max(0, int(audio_count)) + max(0, int(media_count))
-    missing_count = max(0, int(missing_sources))
-    retryable_count = max(0, int(retryable_jobs))
-    blocked_count = max(0, int(blocked_jobs))
-    media_loading = _task_matches(active_tasks, "preview", "probe", "scan", "media", "slideshow")
-    production_active = _task_matches(active_tasks, "batch", "render", "encode", "production")
-
-    if media_loading:
-        media = KpiSnapshot(
-            str(total_media),
-            "Quellen werden geprüft",
-            "Prüfung läuft",
-            "loading",
-            action_enabled=False,
-            cause="Eine Medienanalyse, Vorschau oder Ordnerprüfung ist noch aktiv.",
-            action_label="Prüfung läuft",
-            recovery_action="disabled",
-        )
-    elif total_media == 0:
-        media = KpiSnapshot(
-            "0",
-            "Noch keine Quellen importiert",
-            "Leer",
-            "empty",
-            cause="Das Projekt enthält weder Audio- noch Bild- oder Videoquellen.",
-            action_label="Medien öffnen",
-            recovery_action="open_media",
-        )
-    elif missing_count:
-        names = _source_names(missing_source_names)
-        name_note = f" Betroffen: {', '.join(names)}." if names else ""
-        media = KpiSnapshot(
-            str(total_media),
-            f"{missing_count} Quelle(n) nicht erreichbar",
-            "Wiederherstellung nötig",
-            "error",
-            cause=(
-                "Gespeicherte Projektpfade zeigen auf Dateien, die am ursprünglichen Ort nicht mehr vorhanden sind."
-                + name_note
-            ),
-            action_label="Fehlende entfernen",
-            recovery_action="remove_missing_sources",
-        )
-    elif audio_count == 0 or media_count == 0:
-        missing_kind = "Audio fehlt" if audio_count == 0 else "Bild oder Video fehlt"
-        media = KpiSnapshot(
-            str(total_media),
-            missing_kind,
-            "Unvollständig",
-            "warning",
-            cause=(
-                "Für eine gültige Zuordnung fehlt mindestens eine Audiodatei."
-                if audio_count == 0
-                else "Für eine gültige Zuordnung fehlt mindestens ein Bild oder Video."
-            ),
-            action_label="Audio importieren" if audio_count == 0 else "Medien importieren",
-            recovery_action="import_audio" if audio_count == 0 else "import_media",
-        )
-    else:
-        media = KpiSnapshot(
-            str(total_media),
-            f"{audio_count} Audio · {media_count} Medien",
-            "Bereit",
-            "success",
-            action_label="Medien öffnen",
-            recovery_action="open_media",
-        )
-
-    if production_active:
-        queue = KpiSnapshot(
-            str(job_count),
-            "Produktion arbeitet",
-            "Läuft",
-            "loading",
-            action_enabled=False,
-            cause="Mindestens ein Render-, Encode- oder Batchauftrag ist noch aktiv.",
-            action_label="Produktion läuft",
-            recovery_action="disabled",
-        )
-    elif failed_jobs or retryable_count or blocked_count:
-        failed_total = max(int(failed_jobs), retryable_count + blocked_count)
-        recovery_detail = []
-        if retryable_count:
-            recovery_detail.append(f"{retryable_count} wiederanlaufbar")
-        if blocked_count:
-            recovery_detail.append(f"{blocked_count} gesperrt")
-        detail = " · ".join(recovery_detail) or f"{failed_total} Auftrag/Aufträge fehlgeschlagen"
-        queue = KpiSnapshot(
-            str(job_count),
-            detail,
-            "Wiederherstellung nötig",
-            "error",
-            cause=_first_reason(
-                queue_failure_reasons,
-                "Mindestens ein Auftrag wurde mit einem Fehler beendet; Originaldateien bleiben unverändert.",
-            ),
-            action_label="Wiederanlauf laden" if retryable_count else "Fehlerliste öffnen",
-            recovery_action="reload_retry_queue" if retryable_count else "open_retry_queue",
-        )
-    elif completed_jobs:
-        queue = KpiSnapshot(
-            str(job_count),
-            f"{completed_jobs} Auftrag/Aufträge abgeschlossen",
-            "Abgeschlossen",
-            "success",
-            action_label="Queue öffnen",
-            recovery_action="open_queue",
-        )
-    elif job_count:
-        queue = KpiSnapshot(
-            str(job_count),
-            "Aufträge sind vorbereitet",
-            "Startbereit",
-            "ready",
-            action_label="Queue öffnen",
-            recovery_action="open_queue",
-        )
-    else:
-        queue = KpiSnapshot(
-            "0",
-            "Noch keine gültige Zuordnung",
-            "Leer",
-            "empty",
-            cause="Audio und Medien sind noch nicht zu ausführbaren Aufträgen kombiniert.",
-            action_label="Zuordnung öffnen",
-            recovery_action="open_media",
-        )
-
-    effect = str(visual_effect or "none")
-    transition_value = str(transition or "none")
-    mode = str(quick_mode or "smart_auto")
-    if not effect_valid or not transition_valid:
-        invalid = []
-        if not effect_valid:
-            invalid.append(f"Effekt „{effect}“")
-        if not transition_valid:
-            invalid.append(f"Übergang „{transition_value}“")
-        effects = KpiSnapshot(
-            "Ungültig",
-            "Gestaltungsvertrag weicht ab",
-            "Wiederherstellung nötig",
-            "error",
-            cause=f"{' und '.join(invalid)} ist nicht im aktuellen Effektregister enthalten.",
-            action_label="Automatik herstellen",
-            recovery_action="reset_effects",
-        )
-    elif effect != "none" or transition_value != "none":
-        value = effect if effect != "none" else transition_value
-        detail = f"Effekt: {effect} · Übergang: {transition_value}"
-        effects = KpiSnapshot(
-            value,
-            detail,
-            "Aktiv",
-            "success",
-            action_label="Effekte öffnen",
-            recovery_action="open_effects",
-        )
-    elif mode not in {"custom", "smart_auto"}:
-        effects = KpiSnapshot(
-            mode,
-            "Schnellmodus steuert die Gestaltung",
-            "Modus aktiv",
-            "ready",
-            action_label="Effekte öffnen",
-            recovery_action="open_effects",
-        )
-    else:
-        effects = KpiSnapshot(
-            "Automatik",
-            "Noch kein fester Look gewählt",
-            "Neutral",
-            "empty",
-            action_label="Effekte öffnen",
-            recovery_action="open_effects",
-        )
-
-    scheduler = KpiSnapshot(
-        "Nicht geplant",
-        "Produktive Startplanung folgt in Checkpoint 5",
-        "Deaktiviert",
-        "disabled",
-        action_enabled=False,
-        cause="Die Startzeituhr ist absichtlich noch nicht freigegeben und startet keine Aufträge.",
-        action_label="Checkpoint 5",
-        recovery_action="disabled",
+    media = _build_media_snapshot(
+        audio_count=audio_count,
+        media_count=media_count,
+        missing_sources=missing_sources,
+        active_tasks=active_tasks,
+        missing_source_names=missing_source_names,
+    )
+    queue = _build_queue_snapshot(
+        job_count=job_count,
+        completed_jobs=completed_jobs,
+        failed_jobs=failed_jobs,
+        active_tasks=active_tasks,
+        queue_failure_reasons=queue_failure_reasons,
+        retryable_jobs=retryable_jobs,
+        blocked_jobs=blocked_jobs,
+    )
+    effects = _build_effects_snapshot(
+        visual_effect=visual_effect,
+        transition=transition,
+        quick_mode=quick_mode,
+        effect_valid=effect_valid,
+        transition_valid=transition_valid,
     )
     return {
         "media": media,
         "queue": queue,
         "effects": effects,
-        "scheduler": scheduler,
+        "scheduler": _build_scheduler_snapshot(),
     }
