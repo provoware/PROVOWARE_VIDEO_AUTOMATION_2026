@@ -1,0 +1,254 @@
+{
+  "schema_version": 1,
+  "iteration": "39B",
+  "source_lineage_sha": "121211244d90932775348ac26039b3d7315e60b2",
+  "source_lineage_branch": "iteration/39a-a33-rebased-packaging-hygiene-20260904",
+  "target_architecture": "PySide6/QML",
+  "policy": {
+    "A_DIRECT": "Toolkit-unabhaengiger Vertrag oder Service. Code darf erst nach bestandenem komponentenspezifischem Test-Gate uebernommen werden.",
+    "B_ADAPTER": "Fachlich wertvoll, aber UI-, Toolkit-, Plattform- oder Startverdrahtung ist mit Core-Logik vermischt. Vor Transfer extrahieren oder ueber Adapter anbinden.",
+    "C_REIMPLEMENT": "Darstellungs-/Widget-/Tk-Implementierung. Nicht kopieren; Verhalten und Akzeptanzkriterien nativ in PySide6/QML neu umsetzen."
+  },
+  "required_a33_process_paths": [
+    ".github/workflows/a33-consolidated-package.yml",
+    "STARTEN.sh",
+    "start.sh",
+    "scripts/architecture_audit.py",
+    "scripts/release_file_contract.py",
+    "src/videobatch_fast/canonical_shell_contract.py",
+    "src/videobatch_fast/canonical_shell_workspace.py",
+    "src/videobatch_fast/canonical_ui.py"
+  ],
+  "components": [
+    {
+      "id": "error-contract",
+      "paths": [
+        "src/videobatch_fast/error_handling.py",
+        "src/videobatch_fast/runtime_error_guidance.py"
+      ],
+      "classification": "A_DIRECT",
+      "transfer_status": "READY_AFTER_COMPONENT_TEST",
+      "rationale": "Fehlercodes, Registry-Merging, menschliche Definitionen, Exception-Klassifikation und Fingerprints sind GUI-frei und bilden einen stabilen Fehlervertrag.",
+      "transfer_action": "Unveraenderten fachlichen Vertrag uebernehmen; Qt-Darstellung nur ueber einen neuen Presenter anbinden.",
+      "test_gate": "Registry-Fallbacks, Exception-Klassifikation, Fingerprint-Stabilitaet und kaputte Registry-Eingaben gezielt testen.",
+      "platform_scope": "cross-platform"
+    },
+    {
+      "id": "application-event-contract",
+      "paths": [
+        "src/videobatch_fast/app_events.py"
+      ],
+      "classification": "A_DIRECT",
+      "transfer_status": "READY_AFTER_COMPONENT_TEST",
+      "rationale": "Immutable, versionierte AppEvent-Grenze mit Payload-Validierung ohne GUI-Abhaengigkeit; ideal zwischen Worker-Core und Qt/QML-Adapter.",
+      "transfer_action": "Als kanonische Ereignisgrenze beibehalten; Qt-Signale nur am Adapterrand erzeugen.",
+      "test_gate": "Event-Schema, Sequenzierung, Pflicht-Payloads und ungueltige Payloads testen.",
+      "platform_scope": "cross-platform"
+    },
+    {
+      "id": "single-instance-lock",
+      "paths": [
+        "src/videobatch_fast/instance_lock.py"
+      ],
+      "classification": "A_DIRECT",
+      "transfer_status": "READY_AFTER_COMPONENT_TEST",
+      "rationale": "Keine GUI-Abhaengigkeit; atomare Focus-Request-Datei und POSIX-flock sind vom Toolkit getrennt.",
+      "transfer_action": "Fuer Linux/Kubuntu direkt als Core-Service weiterverwenden; UI-Fokusreaktion im Qt-Adapter implementieren.",
+      "test_gate": "Zweitinstanz, Lock-Besitzer, atomarer Fokusrequest und Release nach Fehlern testen.",
+      "platform_scope": "linux-posix"
+    },
+    {
+      "id": "startup-ready-handshake",
+      "paths": [
+        "src/videobatch_fast/startup_handshake.py"
+      ],
+      "classification": "A_DIRECT",
+      "transfer_status": "READY_AFTER_COMPONENT_TEST",
+      "rationale": "Dateibasierter UI_READY-Vertrag ist GUI-frei; vorhandene schema_version 1/2-Kompatibilitaet kann Qt unveraendert bedienen.",
+      "transfer_action": "Handshake als Prozessvertrag beibehalten; Qt meldet Ready erst nach wirklich nutzbarer QML-Shell.",
+      "test_gate": "Ready, Existing-Instance, Safe-Mode, kaputte Markerdatei und alte Schema-Version testen.",
+      "platform_scope": "cross-platform"
+    },
+    {
+      "id": "architecture-audit",
+      "paths": [
+        "scripts/architecture_audit.py"
+      ],
+      "classification": "A_DIRECT",
+      "transfer_status": "READY",
+      "rationale": "Repository-/AST-Qualitaetspruefung ist vom GUI-Toolkit unabhaengig und wurde in A33 fehlertolerant gehaertet.",
+      "transfer_action": "Weiterverwenden und spaeter PySide6/QML-spezifische Architekturregeln additiv ergaenzen.",
+      "test_gate": "Bestehende Resilienztests muessen gruen bleiben.",
+      "platform_scope": "cross-platform"
+    },
+    {
+      "id": "release-file-contract",
+      "paths": [
+        "scripts/release_file_contract.py"
+      ],
+      "classification": "A_DIRECT",
+      "transfer_status": "READY",
+      "rationale": "Manifest-/Packaging-Dateivertrag ist toolkitunabhaengig und verhindert Backup-, Cache-, Bytecode- und Build-Leaks.",
+      "transfer_action": "Unveraendert als gemeinsamer Paket-Gate weiterverwenden; Qt-Buildprodukte nur explizit klassifizieren.",
+      "test_gate": "39A-Packaging-Hygiene-Vertrag muss gruen bleiben.",
+      "platform_scope": "cross-platform"
+    },
+    {
+      "id": "long-render-target-core",
+      "paths": [
+        "src/videobatch_fast/long_render_target.py"
+      ],
+      "classification": "A_DIRECT",
+      "transfer_status": "BLOCKED_TEST_GAP",
+      "rationale": "GUI-freier Storage-/Mount-/Schreibgeschwindigkeits-Core, aber Linux-/udev-/systemd-nahe Pfade und reale Slow-Target-Evidence sind noch nicht ausreichend qualifiziert.",
+      "transfer_action": "Nicht vorab kopieren. Erst gezielte Tests und realen Slow-Target-Soak bestehen; danach als Core-Service uebernehmen.",
+      "test_gate": "Unit-Coverage fuer Mount/udev/Probe-Failures plus realer Large-Media-/Slow-External-Target-Soak.",
+      "platform_scope": "linux-posix"
+    },
+    {
+      "id": "shell-entry-contract",
+      "paths": [
+        "start.sh",
+        "STARTEN.sh"
+      ],
+      "classification": "B_ADAPTER",
+      "transfer_status": "ADAPT_ENTRYPOINT",
+      "rationale": "Laienfreundlicher CLI-/Python-Preflight ist wertvoll, aber die konkrete Bootstrap-/Debug-Launcher-Verdrahtung gehoert zur aktuellen Tk-Startlinie.",
+      "transfer_action": "CLI-Flags, deutsche Fehlermeldungen und Preflight-Vertrag erhalten; Ziel-Entrypoint auf Qt-Bootstrap umverdrahten.",
+      "test_gate": "--help, --doctor, fehlendes Python, bestehende Instanz und Qt-Ready-Handshake testen.",
+      "platform_scope": "linux-posix"
+    },
+    {
+      "id": "debug-launcher-watchdog",
+      "paths": [
+        "scripts/debug_launcher.py"
+      ],
+      "classification": "B_ADAPTER",
+      "transfer_status": "EXTRACT_BEFORE_TRANSFER",
+      "rationale": "Prozessmonitor, UI_READY-Auswertung und Existing-Instance-Semantik sind wertvoll; Incident-Dialog/Praesentationspfad koppelt den Launcher an die aktuelle UI-Linie.",
+      "transfer_action": "Toolkitneutralen Prozess-/Watchdog-Core extrahieren; Qt-Fehlerpraesentation ueber Adapter injizieren.",
+      "test_gate": "Forwarding-PID darf nie als Crash gelten; Child-Exit, fehlendes UI_READY, sauberes Shutdown und Dialogfehler testen.",
+      "platform_scope": "linux-posix"
+    },
+    {
+      "id": "debug-runtime",
+      "paths": [
+        "src/videobatch_fast/debug_runtime.py"
+      ],
+      "classification": "B_ADAPTER",
+      "transfer_status": "EXTRACT_BEFORE_TRANSFER",
+      "rationale": "Berichtserzeugung, Fallback-Verzeichnisse und Systemkontext sind Core-tauglich; show_incident_dialog importiert und baut Tk-Widgets direkt.",
+      "transfer_action": "DebugIncident + Report Writer als Core extrahieren; Tk-Dialog verwerfen und Qt/QML-Presenter neu schreiben.",
+      "test_gate": "Report-Fallbacks, unbeschreibbare Pfade, kaputte __str__-Werte und Presenter-Ausfall testen.",
+      "platform_scope": "cross-platform-core-with-linux-context"
+    },
+    {
+      "id": "runtime-error-hooks",
+      "paths": [
+        "src/videobatch_fast/runtime_error_hooks.py"
+      ],
+      "classification": "B_ADAPTER",
+      "transfer_status": "EXTRACT_BEFORE_TRANSFER",
+      "rationale": "Thread-Hook, Deduplizierung und Reportpipeline sind wiederverwendbar; Tk-Exception-Handler und SolutionDialog koppeln die Datei an Tk.",
+      "transfer_action": "Never-Crash-Corehook von Tk-Handler/Dialogs trennen; Qt Message Handler und QApplication/Thread-Adapter separat anbinden.",
+      "test_gate": "Sekundaerfehler im Fehlerhandler, kaputte Exception-Strings, Reporter-/Presenter-Ausfall und Deduplizierung testen.",
+      "platform_scope": "cross-platform"
+    },
+    {
+      "id": "selection-preview-controller",
+      "paths": [
+        "src/videobatch_fast/selection_preview_controller.py"
+      ],
+      "classification": "B_ADAPTER",
+      "transfer_status": "EXTRACT_SMALL_UI_HELPER",
+      "rationale": "Worker, Tokenisierung und AppEvent-Ausgabe sind GUI-frei; resolve_tree_selection traegt jedoch noch eine konkrete Tree-Selection-Semantik im selben Modul.",
+      "transfer_action": "Worker/Request/Event-Core uebernehmen; Auswahlauflosung in einen Qt-Selection-Adapter verschieben.",
+      "test_gate": "Rapid-click latest-wins, Shutdown, Callback-Fehler, Probe-/Preview-Fehler und Qt-Adapter getrennt testen.",
+      "platform_scope": "cross-platform"
+    },
+    {
+      "id": "theme-and-contrast",
+      "paths": [
+        "src/videobatch_fast/theme.py"
+      ],
+      "classification": "B_ADAPTER",
+      "transfer_status": "EXTRACT_DESIGN_TOKENS",
+      "rationale": "Farbregister, Kontrastberechnung und Theme-Ressourcen sind wertvoll; apply_theme ist tief an tkinter.ttk gebunden.",
+      "transfer_action": "WCAG-Kontrastfunktionen und semantische Farbtokens extrahieren; Qt/QML-Theme nativ aus Tokens erzeugen, keine ttk-Styles portieren.",
+      "test_gate": "Kontrast 4.5:1, Theme-Schema und QML-Token-Mapping automatisiert pruefen.",
+      "platform_scope": "cross-platform"
+    },
+    {
+      "id": "canonical-shell-contract",
+      "paths": [
+        "src/videobatch_fast/canonical_shell_contract.py"
+      ],
+      "classification": "B_ADAPTER",
+      "transfer_status": "EXTRACT_SEMANTICS_ONLY",
+      "rationale": "Navigationstitel, Reihenfolge und semantische Shell-Regeln sind uebertragbar; Tk-/Pixel-/Layoutkonstanten sind kein Qt-Vertrag.",
+      "transfer_action": "Nur semantisches Navigationsmodell und sichtbare UX-Vertraege uebernehmen; Geometrie und Widgetannahmen verwerfen.",
+      "test_gate": "Navigationsvollstaendigkeit, stabile IDs und laienfreundliche Beschriftungen gegen QML-Modell testen.",
+      "platform_scope": "cross-platform"
+    },
+    {
+      "id": "a33-ci-package-workflow",
+      "paths": [
+        ".github/workflows/a33-consolidated-package.yml"
+      ],
+      "classification": "B_ADAPTER",
+      "transfer_status": "ADAPT_QT_ENVIRONMENT",
+      "rationale": "Fail-closed Reihenfolge, gepinnte Toolchain, Manifest und deterministisches Packaging sind wiederverwendbar; Xvfb/Tk/Systempakete und Fokusregression sind A33-spezifisch.",
+      "transfer_action": "Gate-Reihenfolge behalten; Runtime-Pakete, Headless-Qt, QML-Tests und Qt-Screenshot-Gates neu definieren.",
+      "test_gate": "Qt-Offscreen/X11/Wayland-Matrix plus manifestidentischer Paketbau.",
+      "platform_scope": "ci-linux"
+    },
+    {
+      "id": "canonical-ui-root",
+      "paths": [
+        "src/videobatch_fast/canonical_ui.py"
+      ],
+      "classification": "C_REIMPLEMENT",
+      "transfer_status": "DO_NOT_COPY",
+      "rationale": "Tk-Root, DPI-/Scaling-Manipulation und Widget-Shell sind Implementierungsdetails der alten UI. Nur der fachliche Akzeptanzsatz 'keine Doppel-Skalierung' bleibt relevant.",
+      "transfer_action": "QApplication/QML-root nativ implementieren; KDE-Skalierung als Akzeptanztest statt Codekopie uebernehmen.",
+      "test_gate": "100-200% Skalierung, KDE X11/Wayland, kein Clipping, keine Doppel-Skalierung.",
+      "platform_scope": "qt-qml"
+    },
+    {
+      "id": "canonical-shell-workspace",
+      "paths": [
+        "src/videobatch_fast/canonical_shell_workspace.py"
+      ],
+      "classification": "C_REIMPLEMENT",
+      "transfer_status": "DO_NOT_COPY",
+      "rationale": "Konkrete Tk-Frame/Grid/Widget-Struktur ist Darstellungsimplementierung und wuerde technische Schuld in QML uebertragen.",
+      "transfer_action": "Arbeitsflaeche nativ als QML-Komponenten/Layouts neu bauen; nur UX-Akzeptanzkriterien verwenden.",
+      "test_gate": "Responsive Layout, Tastaturfokus, Screenreader-Namen, 100-200% Zoom und visuelle Qt-Baselines.",
+      "platform_scope": "qt-qml"
+    },
+    {
+      "id": "canonical-tk-shell-family",
+      "paths": [
+        "src/videobatch_fast/canonical_shell_chrome.py",
+        "src/videobatch_fast/canonical_dashboard_mixin.py",
+        "src/videobatch_fast/canonical_help_status_mixin.py",
+        "src/videobatch_fast/canonical_kpi_detail_mixin.py"
+      ],
+      "classification": "C_REIMPLEMENT",
+      "transfer_status": "DO_NOT_COPY",
+      "rationale": "Tk-nahe Shell-/Mixin-Praesentation; 39A-Coverage zeigte hier zudem groessere ungetestete Flaechen.",
+      "transfer_action": "Nicht portieren. Fachliche Inhalte und sichtbare UX-Vertraege inventarisieren und nativ in QML umsetzen.",
+      "test_gate": "Qt-Komponententests und visuelle/Accessibility-Abnahme statt Tk-Baselines.",
+      "platform_scope": "qt-qml"
+    }
+  ],
+  "recommended_first_candidate_after_39B": {
+    "component_id": "application-event-contract",
+    "reason": "Klein, immutable, GUI-frei und als saubere Grenze zwischen Core und neuer Qt-Praesentation geeignet. Transfer erst nach expliziter Benutzerentscheidung."
+  },
+  "stable_blockers_unchanged": [
+    "Coverage-Vertrag 80 Prozent Zeilen / 65 Prozent Branch",
+    "physische Kubuntu/KDE-Abnahme unter realem X11 und Wayland",
+    "Large-Media-/Long-Render-Soak auf langsamem externem Ziel"
+  ]
+}
