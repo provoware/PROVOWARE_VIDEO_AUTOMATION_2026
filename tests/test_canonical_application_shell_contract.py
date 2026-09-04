@@ -18,6 +18,10 @@ SHELLS = tuple((ROOT / "src/videobatch_fast" / name) for name in (
     "window_geometry.py",
 ))
 APP = ROOT / "src/videobatch_fast/app.py"
+VISUAL_RUNNERS = (
+    ROOT / "scripts/capture_visual_scenarios.py",
+    ROOT / "scripts/live_desktop_gate.py",
+)
 
 
 def _source(path: Path) -> str:
@@ -30,6 +34,15 @@ def test_canonical_shell_is_syntactically_valid_and_selected_by_app() -> None:
     ast.parse(_source(APP), filename=str(APP))
     assert "from .canonical_ui import run_app" in _source(APP)
     assert "from .ui import run_app" not in _source(APP)
+
+
+def test_visual_runners_exercise_the_selected_canonical_shell() -> None:
+    for path in VISUAL_RUNNERS:
+        source = _source(path)
+        ast.parse(source, filename=str(path))
+        assert "from videobatch_fast.canonical_ui import CanonicalVideoBatchFastUI" in source
+        assert "CanonicalVideoBatchFastUI(root)" in source
+        assert "from videobatch_fast.ui import VideoBatchFastUI" not in source
 
 
 def test_shell_keeps_every_existing_workflow_page_reachable() -> None:

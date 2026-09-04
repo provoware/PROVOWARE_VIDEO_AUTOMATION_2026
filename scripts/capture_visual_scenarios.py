@@ -16,7 +16,7 @@ from videobatch_fast.preview_service import build_preview
 from videobatch_fast.media_import_dialog import MediaImportDialog
 from videobatch_fast.plugin_approval_manager import PluginApprovalManagerDialog
 from videobatch_fast.registry import PROJECT_ROOT, load_json
-from videobatch_fast.ui import VideoBatchFastUI
+from videobatch_fast.canonical_ui import CanonicalVideoBatchFastUI
 from videobatch_fast.ui_components import SolutionDialog
 from videobatch_fast.versioning import build_label
 from videobatch_fast.workflow_dialogs import (
@@ -118,7 +118,7 @@ def _clipped_widgets(root: Tk) -> list[str]:
 
 
 
-def _prepare_workspace(app: VideoBatchFastUI, state: str) -> None:
+def _prepare_workspace(app: CanonicalVideoBatchFastUI, state: str) -> None:
     media_root = PROJECT_ROOT / "tests" / "generated_media"
     audio = media_root / "audio_kurz.wav"
     image = media_root / "bild_querformat.png"
@@ -167,7 +167,7 @@ def _prepare_workspace(app: VideoBatchFastUI, state: str) -> None:
         app._event("VISUAL_MACHINE_EVENT", "Maschinenereignis erzeugt", "Strukturierter JSONL-Datensatz für die visuelle Prüfung.", solution="Maschinenprotokoll prüfen.")
 
 
-def _prepare_dialog(app: VideoBatchFastUI, state: str):
+def _prepare_dialog(app: CanonicalVideoBatchFastUI, state: str):
     if state == "update":
         return update_assistant_dialog(app.root, "2.7.1", 18, modal=False).window
     if state == "archive":
@@ -247,7 +247,7 @@ def capture_scenario(scenario: dict, output_dir: Path) -> tuple[Path, list[str]]
         with patch("videobatch_fast.ui.load_config", return_value=config), patch(
             "videobatch_fast.ui.load_project_state", return_value=(project_path, dict(FIXED_PROJECT), False)
         ):
-            app = VideoBatchFastUI(root)
+            app = CanonicalVideoBatchFastUI(root)
         page = str(scenario.get("page", "dashboard"))
         capture_widget = root
         if page == "workspace":

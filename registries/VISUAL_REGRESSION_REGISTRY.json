@@ -6,17 +6,17 @@
     "maximum_dhash_distance": 24,
     "maximum_mean_difference": 0.075,
     "required_semantic_colors": [
-      "#FFD43B",
-      "#E83E9E",
-      "#25B96B"
+      "#FFDE59",
+      "#49306F",
+      "#6DFF9B"
     ],
     "required_visible_texts": [
-      "provoware - videoautomation - 2026",
+      "VideoBatch Fast",
       "Version 2.8.3-rc24",
-      "Projekt",
-      "Schnellzugriff",
-      "Audio hinzufügen",
-      "Bilder/Videos"
+      "Quellen & Projekt",
+      "Render Queue",
+      "Jobdetails & Vorschau",
+      "Startzeituhr"
     ]
   },
   "reference_image": "resources/reference/laienmodus_einfach_reference.png",
@@ -28,17 +28,17 @@
       "id": "dashboard_1280x720_100",
       "page": "dashboard",
       "required_semantic_colors": [
-        "#FFD43B",
-        "#E83E9E",
-        "#25B96B"
+        "#FFDE59",
+        "#49306F",
+        "#6DFF9B"
       ],
       "required_visible_texts": [
-        "provoware - videoautomation - 2026",
+        "VideoBatch Fast",
         "Version 2.8.3-rc24",
-        "Projekt",
-        "Schnellzugriff",
-        "Audio hinzufügen",
-        "Bilder/Videos"
+        "Quellen & Projekt",
+        "Render Queue",
+        "Jobdetails & Vorschau",
+        "Startzeituhr"
       ],
       "width": 1280
     },
@@ -49,17 +49,17 @@
       "id": "dashboard_1366x768_100",
       "page": "dashboard",
       "required_semantic_colors": [
-        "#FFD43B",
-        "#E83E9E",
-        "#25B96B"
+        "#FFDE59",
+        "#49306F",
+        "#6DFF9B"
       ],
       "required_visible_texts": [
-        "provoware - videoautomation - 2026",
+        "VideoBatch Fast",
         "Version 2.8.3-rc24",
-        "Projekt",
-        "Schnellzugriff",
-        "Audio hinzufügen",
-        "Bilder/Videos"
+        "Quellen & Projekt",
+        "Render Queue",
+        "Jobdetails & Vorschau",
+        "Startzeituhr"
       ],
       "width": 1366
     },
@@ -70,17 +70,17 @@
       "id": "dashboard_1920x1080_100",
       "page": "dashboard",
       "required_semantic_colors": [
-        "#FFD43B",
-        "#E83E9E",
-        "#25B96B"
+        "#FFDE59",
+        "#49306F",
+        "#6DFF9B"
       ],
       "required_visible_texts": [
-        "provoware - videoautomation - 2026",
+        "VideoBatch Fast",
         "Version 2.8.3-rc24",
-        "Projekt",
-        "Schnellzugriff",
-        "Audio hinzufügen",
-        "Bilder/Videos"
+        "Quellen & Projekt",
+        "Render Queue",
+        "Jobdetails & Vorschau",
+        "Startzeituhr"
       ],
       "width": 1920
     },
@@ -91,17 +91,17 @@
       "id": "dashboard_1920x1080_140",
       "page": "dashboard",
       "required_semantic_colors": [
-        "#FFD43B",
-        "#E83E9E",
-        "#25B96B"
+        "#FFDE59",
+        "#49306F",
+        "#6DFF9B"
       ],
       "required_visible_texts": [
-        "provoware - videoautomation - 2026",
+        "VideoBatch Fast",
         "Version 2.8.3-rc24",
-        "Projekt",
-        "Schnellzugriff",
-        "Audio hinzufügen",
-        "Bilder/Videos"
+        "Quellen & Projekt",
+        "Render Queue",
+        "Jobdetails & Vorschau",
+        "Startzeituhr"
       ],
       "width": 1920
     },

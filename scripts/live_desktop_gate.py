@@ -27,7 +27,7 @@ def main() -> int:
     from tkinter import Tk
     from videobatch_fast.automated_desktop_approval import REPORT_NAME, sha256_file
     from videobatch_fast.config import DEFAULT_CONFIG
-    from videobatch_fast.ui import VideoBatchFastUI
+    from videobatch_fast.canonical_ui import CanonicalVideoBatchFastUI
     from videobatch_fast.versioning import build_label
 
     checks: list[dict[str, object]] = []
@@ -54,7 +54,7 @@ def main() -> int:
             with patch("videobatch_fast.ui.load_config", return_value=config), patch(
                 "videobatch_fast.ui.load_project_state", return_value=(project_file, state, False)
             ):
-                app = VideoBatchFastUI(root)
+                app = CanonicalVideoBatchFastUI(root)
             root.update_idletasks()
             root.update()
             time.sleep(0.25)
