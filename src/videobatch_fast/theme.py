@@ -6,12 +6,11 @@ from tkinter import ttk
 from .registry import load_json
 
 THEME_LABELS = {
-    "neon_gravity": "Neon Gravity",
-    "acid_paper": "Acid Paper",
-    "toxic_candy": "Toxic Candy",
-    "ultraviolet": "Ultraviolet",
+    "neon_gravity": "Midnight Blue",
+    "acid_paper": "Emerald Tech",
+    "toxic_candy": "Violet Pulse",
+    "ultraviolet": "Amber Graphite",
 }
-
 
 
 def _hex_rgb(value: str) -> tuple[float, float, float]:
@@ -182,10 +181,10 @@ def apply_theme(root, scale_percent: int = 100, theme_name: str = "neon_gravity"
     style.configure("TButton", background=COLORS["secondary"], foreground=best_text_color(COLORS["secondary"]), padding=(px, py), borderwidth=1, relief="flat")
     style.configure("HeaderControl.TButton", background=COLORS["panel2"], foreground=field_text, padding=(9, 5), font=("DejaVu Sans", base, "bold"), borderwidth=1)
     style.map("HeaderControl.TButton", background=[("active", COLORS["selection"]), ("focus", COLORS["accent2"])], foreground=[("focus", best_text_color(COLORS["accent2"]))])
-    style.map("TButton", background=[("active", COLORS["hover"]), ("focus", COLORS["selection"]), ("disabled", COLORS["disabled"])], foreground=[("active", best_text_color(COLORS["hover"])), ("focus", selected_text), ("disabled", best_text_color(COLORS["disabled"]))])
-    style.configure("Accent.TButton", background=COLORS["accent"], foreground=COLORS["accent_text"], padding=(px + 2, py + 1), font=("DejaVu Sans", base, "bold"), borderwidth=0)
-    style.map("Accent.TButton", background=[("active", COLORS["warning"]), ("disabled", COLORS["disabled"])], foreground=[("active", best_text_color(COLORS["warning"])), ("disabled", best_text_color(COLORS["disabled"]))])
-    style.configure("Ghost.TButton", background=COLORS["panel2"], foreground=field_text, padding=(px, py), font=("DejaVu Sans", base, "bold"), borderwidth=1)
+    style.map("TButton", background=[("active", COLORS["hover"]), ("focus", COLORS["selection"]), ("disabled", COLORS["disabled"])], foreground=[("active", best_text_color(COLORS["hover"])), ("focus", selected_text), ("disabled", best_text_color(COLORS["disabled"]))], bordercolor=[("focus", COLORS["accent2"])])
+    style.configure("Accent.TButton", background=COLORS["accent"], foreground=COLORS["accent_text"], padding=(px + 2, py + 1), font=("DejaVu Sans", base, "bold"), borderwidth=1, bordercolor=COLORS["accent"])
+    style.map("Accent.TButton", background=[("active", COLORS["selection"]), ("focus", COLORS["accent2"]), ("disabled", COLORS["disabled"])], foreground=[("active", best_text_color(COLORS["selection"])), ("focus", best_text_color(COLORS["accent2"])), ("disabled", best_text_color(COLORS["disabled"]))], bordercolor=[("focus", COLORS["accent2"])])
+    style.configure("Ghost.TButton", background=COLORS["panel2"], foreground=field_text, padding=(px, py), font=("DejaVu Sans", base, "bold"), borderwidth=1, bordercolor=COLORS["border"])
     style.configure("Danger.TButton", background=COLORS["danger"], foreground=best_text_color(COLORS["danger"]), padding=(px, py), font=("DejaVu Sans", base, "bold"))
     style.configure("Success.TButton", background=COLORS["success"], foreground=best_text_color(COLORS["success"]), padding=(px, py), font=("DejaVu Sans", base, "bold"))
 

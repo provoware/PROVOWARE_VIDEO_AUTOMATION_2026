@@ -64,6 +64,7 @@
     "docs/WORKSPACE_VISUAL_REGRESSION.md": {"category": "technical"},
     "docs/design/VIDEOBATCH_DESIGN_IMPLEMENTATION_PLAN.md": {"category": "technical"},
     "docs/design/VIDEOBATCH_GRAPHICS_MANIFEST.md": {"category": "technical"},
+    "debugging/README.md": {"category": "technical"},
     "resources/signing/README.md": {"category": "technical"},
     "toolchain_wheelhouse/README.md": {"category": "technical"}
   },

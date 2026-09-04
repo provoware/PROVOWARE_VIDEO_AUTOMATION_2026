@@ -33,6 +33,11 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
 
+      - name: Install pinned repository toolchain
+        run: |
+          set -Eeuo pipefail
+          python3 -m pip install --disable-pip-version-check --no-input -r requirements-toolchain.lock
+
       - name: Compile changed contracts
         run: |
           set -Eeuo pipefail

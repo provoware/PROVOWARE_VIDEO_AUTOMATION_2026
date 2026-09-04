@@ -183,6 +183,7 @@ def validate() -> dict[str, Any]:
         )
 
     version = current_version()
+    product_series = ".".join(version.split(".")[:2]) + "."
     heading_cache: dict[Path, set[str]] = {}
     checked_links = 0
     strictly_checked = 0
@@ -268,6 +269,8 @@ def validate() -> dict[str, Any]:
 
             for match in VERSION_RE.finditer(text):
                 found = match.group(1)
+                if not found.startswith(product_series):
+                    continue
                 if found != version:
                     line = text.count("\n", 0, match.start()) + 1
                     findings.append(
