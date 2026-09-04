@@ -10,6 +10,11 @@ on:
 permissions:
   contents: write
 
+env:
+  PYTHONPATH: src
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONUTF8: '1'
+
 jobs:
   sync:
     if: github.event.pull_request.head.repo.full_name == github.repository
