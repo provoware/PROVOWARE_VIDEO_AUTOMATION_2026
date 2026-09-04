@@ -7,10 +7,10 @@
   "repository": "provoware/PROVOWARE_VIDEO_AUTOMATION_2026",
   "hauptdatei": "src/videobatch_fast/app.py",
   "startdatei": "start.sh",
-  "status": "40A Standarderscheinungsbild gegen kanonische Repo-Referenzen ausgerichtet; finale Validierung läuft; Stable weiterhin blockiert",
+  "status": "40A Standarderscheinungsbild gegen kanonische Repo-Referenzen ausgerichtet und regressionsgeprüft; nur Manifest-/Packaging-Abschluss offen; Stable weiterhin blockiert",
   "lineage_base_sha": "ffe050744128963942db2f413a7b18c6a344063c",
-  "referenz_ci_sha": "ffe050744128963942db2f413a7b18c6a344063c",
-  "referenz_ci_run": null,
+  "referenz_ci_sha": "4b3d436af776fa9b8fe9d541b0338e7567bb8169",
+  "referenz_ci_run": 33833943684,
   "letztes_validiertes_release": "2.8.3-rc24",
   "stable_freigabe": false,
   "fortschritt": {
@@ -19,8 +19,10 @@
     "gesamt": 30
   },
   "tests": {
-    "40a_reference_alignment_status": "pending_ci",
-    "vollregression_bestanden": 483,
+    "40a_fokus_bestanden": 15,
+    "40a_reference_alignment_status": "passed",
+    "design_manifest_status": "passed",
+    "vollregression_bestanden": 489,
     "vollregression_uebersprungen": 2,
     "vollregression_fehlgeschlagen": 0
   },
@@ -42,7 +44,7 @@
     "primary_reference": "docs/design/VIDEOBATCH_CANONICAL_UI_REFERENCE.svg",
     "standard_theme_id": "neon_gravity",
     "standard_theme_label": "Midnight Blue",
-    "reference_alignment": "implemented_pending_ci",
+    "reference_alignment": "validated",
     "legacy_visual_capture_harness": "captures VideoBatchFastUI instead of CanonicalVideoBatchFastUI; baselines not auto-accepted"
   },
   "pyside6_qml_transfer": {
@@ -56,7 +58,7 @@
     "deterministisch": true,
     "manifestgefuehrt": true,
     "backup_cache_bytecode_ausgeschlossen": true,
-    "status": "pending_40a_validation"
+    "status": "pending_manifest_sync_and_exact_head_package"
   },
   "offene_stable_gates": [
     "Coverage-Vertrag 80/65",
