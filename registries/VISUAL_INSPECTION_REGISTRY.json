@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "id": "videobatch-fast-visual-inspection",
-  "version": "2.8.3-rc24",
+  "version": "2.8.3-rc25",
   "title": "provoware - videoautomation - 2026 · visuelle Prüfoberfläche",
   "html_output": "visual_inspection/index.html",
   "manifest_output": "VISUAL_INSPECTION_MANIFEST.json",

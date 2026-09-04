@@ -122,9 +122,14 @@ class CanonicalShellWorkspaceMixin:
             self._main_tab_restore_in_progress = False
 
     def _select_shell_page(self, page_index: int | None) -> None:
-        if page_index is not None:
-            self.main_notebook.select(page_index)
-            self.main_notebook.focus_set()
+        if page_index is None:
+            return
+        self.main_notebook.select(page_index)
+        self.main_notebook.focus_set()
+        area = {1: "media", 2: "preview", 3: "modes", 4: "production"}.get(page_index)
+        grid = getattr(self, "workflow_grids", {}).get(area) if area else None
+        if grid is not None:
+            self.root.after_idle(grid.scroll_to_top)
 
     def _on_shell_tab_changed(self, _event=None) -> None:
         if not self._shell_navigation_ready():
@@ -159,7 +164,7 @@ class CanonicalShellWorkspaceMixin:
             button = self._shell_nav_buttons.get(item.key)
             if button is None:
                 continue
-            active = item.page_index == selected_index and item.action != "disabled"
+            active = item.page_index == selected_index and item.action not in {"disabled", "settings"}
             button.configure(style="ShellNavActive.TButton" if active else "ShellNav.TButton")
 
     def _run_shell_search(self, _event=None) -> None:

@@ -58,7 +58,7 @@ def main() -> int:
 
     assert root.minsize() == (1024, 680)
     assert len(app._shell_nav_buttons) == len(SHELL_NAVIGATION)
-    assert len(app._shell_action_buttons) == 7
+    assert len(app._shell_action_buttons) == 6
     assert len(app._shell_kpi_buttons) == 4
     assert len(app._shell_kpi_cause_vars) == 4
     assert len(app._shell_kpi_updated_vars) == 4

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "generated_from": "diagnostics/release_readiness/RELEASE_EVIDENCE.json",
-  "build": "2.8.3-rc24",
+  "build": "2.8.3-rc25",
   "runtime_start": {
     "status": "passed",
     "architecture": "content-addressed user environment",

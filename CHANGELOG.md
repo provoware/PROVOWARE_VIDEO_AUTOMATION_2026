@@ -2,6 +2,24 @@
 
 Alle wichtigen Änderungen dieses Projekts werden hier in zusammengefasster, chronologischer Form dokumentiert. Die vollständige frühere Detailhistorie liegt unter `docs/archive/release-history/CHANGELOG_FULL_PRE_FINALIZATION.md`.
 
+## Iteration 40C · Workspace Geometry Stability · 2026-09-04
+
+- realen Queue-/Produktions-Screenshot mit abgeschnittenen Kartenköpfen, dominanten Scrollleisten und scheinbar leeren Tabellen als Geometrie-/Scrollproblem isoliert;
+- rekursives `update_idletasks()` aus dem Workflow-Grid-Refresh entfernt, damit der Aufbau nicht die globale Tk-Idle-Queue innerhalb eines Geometriecallbacks erneut leert;
+- KPI-Wraplength-Berechnung von Karten-`<Configure>`-Rückkopplungen auf eine idempotente, zeilenbreitenbasierte Berechnung umgestellt;
+- normale Navigation zu Medien, Vorschau, Effekten und Queue setzt den jeweiligen Workflow reproduzierbar auf den oberen Inhaltsanker zurück; gezielte Sprünge zu Unterkarten bleiben danach weiterhin möglich;
+- Regressionstest und 1858×1080-Xvfb-Smoke ergänzen Scroll-Reproduktion, Top-Anker und wiederholtes `root.update_idletasks()`;
+- keine Render-, Queue-Auftrags-, Medien-, FFmpeg- oder Fehlerbehandlungslogik verändert.
+
+## Iteration 40B · Real-Screenshot Visual Hierarchy · 2026-09-04
+
+- realen 1858×1080-Programmzustand gegen `VIDEOBATCH_CANONICAL_UI_REFERENCE.svg` und Design-Tokens geprüft;
+- erkannt, dass der Screenshot das gespeicherte Theme `toxic_candy` verwendet, obwohl es öffentlich bereits `Violet Pulse` heißt;
+- Legacy-Grün/Türkis-Palette auf echte Navy/Violet-Palette mit kanonischem Grundhintergrund und klaren Kontraststufen umgestellt;
+- helle Konturen aus normalen Containern, Eingabefeldern und Tabs zurückgenommen und für Fokus, Auswahl und Status reserviert;
+- KPI-Metadaten visuell verdichtet, Doppelmarkierung der Navigation beseitigt und die sechs realen Hauptaktionen auf breiten Fenstern bevorzugt einzeilig angeordnet;
+- keine Render-, Queue-, Medien-, FFmpeg- oder Fehlerbehandlungslogik verändert.
+
 ## Iteration 40A · Reference-Aligned Visual Polish · 2026-09-04
 
 - Gesamtprojekt gegen kanonische SVG-Referenz, Design-Tokens, UI-Blueprint, Einsteigerreferenz und aktuelle Shell-Verträge auditiert;

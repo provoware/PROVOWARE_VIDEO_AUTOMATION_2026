@@ -1,5 +1,5 @@
 {
-  "baseline_version": "2.8.3-rc24",
+  "baseline_version": "2.8.3-rc25",
   "policy": {
     "auto_replace_baseline": false,
     "baseline_changes_require_explicit_acceptance": true,
@@ -12,7 +12,7 @@
     ],
     "required_visible_texts": [
       "provoware - videoautomation - 2026",
-      "Version 2.8.3-rc24",
+      "Version 2.8.3-rc25",
       "Projekt",
       "Schnellzugriff",
       "Audio hinzufügen",
@@ -34,7 +34,7 @@
       ],
       "required_visible_texts": [
         "provoware - videoautomation - 2026",
-        "Version 2.8.3-rc24",
+        "Version 2.8.3-rc25",
         "Projekt",
         "Schnellzugriff",
         "Audio hinzufügen",
@@ -55,7 +55,7 @@
       ],
       "required_visible_texts": [
         "provoware - videoautomation - 2026",
-        "Version 2.8.3-rc24",
+        "Version 2.8.3-rc25",
         "Projekt",
         "Schnellzugriff",
         "Audio hinzufügen",
@@ -76,7 +76,7 @@
       ],
       "required_visible_texts": [
         "provoware - videoautomation - 2026",
-        "Version 2.8.3-rc24",
+        "Version 2.8.3-rc25",
         "Projekt",
         "Schnellzugriff",
         "Audio hinzufügen",
@@ -97,7 +97,7 @@
       ],
       "required_visible_texts": [
         "provoware - videoautomation - 2026",
-        "Version 2.8.3-rc24",
+        "Version 2.8.3-rc25",
         "Projekt",
         "Schnellzugriff",
         "Audio hinzufügen",

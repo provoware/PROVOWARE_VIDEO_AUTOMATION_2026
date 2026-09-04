@@ -92,10 +92,17 @@ class ScrollableWorkflowGrid:
             return
 
     def refresh(self) -> None:
+        """Refresh geometry without recursively draining Tk's global idle queue."""
         try:
-            self.body.update_idletasks()
             self._sync_width_and_rows()
             self._sync_scroll_region()
+        except TclError:
+            pass
+
+    def scroll_to_top(self) -> None:
+        """Return a workflow page to its deterministic first-content anchor."""
+        try:
+            self.canvas.yview_moveto(0.0)
         except TclError:
             pass
 

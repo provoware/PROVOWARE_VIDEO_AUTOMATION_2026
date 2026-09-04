@@ -23,24 +23,18 @@ class CanonicalKpiDetailMixin:
         keys = tuple(self._shell_kpi_buttons)
         self._shell_kpi_cause_vars = {key: StringVar(value="Ursache wird ermittelt") for key in keys}
         self._shell_kpi_updated_vars = {key: StringVar(value="Aktualisiert: –") for key in keys}
+        self._shell_kpi_meta_vars = {key: StringVar(value="Stand wird ermittelt") for key in keys}
         for key in keys:
             button = self._shell_kpi_buttons[key]
             card = button.master
             button.pack_forget()
             ttk.Label(
                 card,
-                textvariable=self._shell_kpi_cause_vars[key],
-                style="ShellKpiHint.TLabel",
-                wraplength=220,
+                textvariable=self._shell_kpi_meta_vars[key],
+                style="ShellKpiMeta.TLabel",
+                wraplength=240,
                 justify="left",
-            ).pack(anchor="w", pady=(0, 4))
-            ttk.Label(
-                card,
-                textvariable=self._shell_kpi_updated_vars[key],
-                style="ShellKpiHint.TLabel",
-                wraplength=220,
-                justify="left",
-            ).pack(anchor="w", pady=(0, 5))
+            ).pack(anchor="w", pady=(0, 6))
             button.pack(fill="x")
         self._refresh_kpi_cards()
 
@@ -138,6 +132,11 @@ class CanonicalKpiDetailMixin:
                 self._shell_kpi_cause_vars[key].set(f"Ursache: {cause}")
                 updated = format_kpi_timestamp(str(history[key].get("updated_at", "")))
                 self._shell_kpi_updated_vars[key].set(f"Aktualisiert: {updated}")
+                if hasattr(self, "_shell_kpi_meta_vars"):
+                    if snapshot.state in {"warning", "error"}:
+                        self._shell_kpi_meta_vars[key].set(f"{cause} · {updated}")
+                    else:
+                        self._shell_kpi_meta_vars[key].set(f"Stand {updated}")
             callback = self._kpi_action_callback(snapshot.recovery_action)
             button = self._shell_kpi_buttons[key]
             button.configure(

@@ -147,9 +147,9 @@ def apply_theme(root, scale_percent: int = 100, theme_name: str = "neon_gravity"
         background=COLORS["bg"],
         foreground=COLORS["text"],
         fieldbackground=COLORS["panel2"],
-        bordercolor=COLORS["border"],
+        bordercolor=COLORS["border_subtle"],
         lightcolor=COLORS["border_subtle"],
-        darkcolor=COLORS["border"],
+        darkcolor=COLORS["border_subtle"],
         padding=5,
     )
     style.configure("Card.TFrame", background=COLORS["panel"], relief="solid", borderwidth=1, bordercolor=COLORS["border_subtle"])
@@ -223,11 +223,12 @@ def apply_theme(root, scale_percent: int = 100, theme_name: str = "neon_gravity"
 
     style.configure("QuickMode.TButton", background=COLORS["panel2"], foreground=field_text, padding=(9, 10), anchor="center", font=("DejaVu Sans", base, "bold"), borderwidth=1)
     style.map("QuickMode.TButton", background=[("active", COLORS["hover"])])
-    style.configure("QuickModeSelected.TButton", background=COLORS["accent2"], foreground=best_text_color(COLORS["accent2"]), padding=(9, 10), anchor="center", font=("DejaVu Sans", base, "bold"), borderwidth=0)
+    style.configure("QuickModeSelected.TButton", background=COLORS["selection"], foreground=selected_text, padding=(9, 10), anchor="center", font=("DejaVu Sans", base, "bold"), borderwidth=1, bordercolor=COLORS["accent2"])
+    style.map("QuickModeSelected.TButton", background=[("active", COLORS["hover"]), ("focus", COLORS["selection"])], bordercolor=[("focus", COLORS["accent2"])])
 
-    style.configure("TEntry", fieldbackground=COLORS["panel2"], foreground=field_text, insertcolor=field_text, bordercolor=COLORS["border"], padding=(8, 7))
+    style.configure("TEntry", fieldbackground=COLORS["panel2"], foreground=field_text, insertcolor=field_text, bordercolor=COLORS["border_subtle"], padding=(8, 7))
     style.map("TEntry", bordercolor=[("focus", COLORS["accent2"])])
-    style.configure("TCombobox", fieldbackground=COLORS["panel2"], foreground=field_text, arrowcolor=COLORS["accent2"], bordercolor=COLORS["border"], padding=(7, 6))
+    style.configure("TCombobox", fieldbackground=COLORS["panel2"], foreground=field_text, arrowcolor=COLORS["accent2"], bordercolor=COLORS["border_subtle"], padding=(7, 6))
     style.map(
         "TCombobox",
         fieldbackground=[("readonly", COLORS["panel2"]), ("disabled", COLORS["disabled"])],
@@ -237,6 +238,7 @@ def apply_theme(root, scale_percent: int = 100, theme_name: str = "neon_gravity"
     )
     style.configure("TCheckbutton", background=COLORS["panel"], foreground=panel_text)
 
+    style.configure("TSeparator", background=COLORS["border_subtle"])
     style.configure("Treeview", background=COLORS["panel"], fieldbackground=COLORS["panel"], foreground=panel_text, rowheight=row_height, borderwidth=0)
     style.map("Treeview", background=[("selected", COLORS["selection"])], foreground=[("selected", selected_text)])
     style.configure("Treeview.Heading", background=COLORS["panel2"], foreground=heading_text, font=("DejaVu Sans", base, "bold"), padding=(8, 7), relief="flat")
@@ -254,5 +256,5 @@ def apply_theme(root, scale_percent: int = 100, theme_name: str = "neon_gravity"
     style.configure("Job.Horizontal.TProgressbar", background=COLORS["accent2"], troughcolor=COLORS["panel2"], thickness=max(12, round(14 * factor)))
     style.configure("TNotebook", background=COLORS["bg"], borderwidth=0, tabmargins=(0, 0, 0, 0))
     style.configure("TNotebook.Tab", background=COLORS["panel2"], foreground=COLORS["muted"], padding=(16, 10), borderwidth=1, font=("DejaVu Sans", base, "bold"))
-    style.map("TNotebook.Tab", background=[("selected", COLORS["accent2"]), ("active", COLORS["hover"])], foreground=[("selected", best_text_color(COLORS["accent2"])), ("active", best_text_color(COLORS["hover"]))], bordercolor=[("selected", COLORS["accent2"]), ("active", COLORS["border"])])
+    style.map("TNotebook.Tab", background=[("selected", COLORS["selection"]), ("active", COLORS["hover"])], foreground=[("selected", selected_text), ("active", best_text_color(COLORS["hover"]))], bordercolor=[("selected", COLORS["accent2"]), ("active", COLORS["border_subtle"])])
     style.configure("TPanedwindow", background=COLORS["border_subtle"], sashwidth=max(6, round(7 * factor)))

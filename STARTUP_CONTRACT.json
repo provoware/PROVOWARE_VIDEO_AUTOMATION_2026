@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "contract_id": "videobatch-fast.predictive-startup/2.8.3-rc24-v2",
-  "release_target": "2.8.3-rc24",
+  "contract_id": "videobatch-fast.predictive-startup/2.8.3-rc25-v2",
+  "release_target": "2.8.3-rc25",
   "goal": "Die Oberfläche ohne Nutzerintervention nach einer bestätigten UI-Bereitschaftsmeldung öffnen; bei einem frühen Oberflächenfehler automatisch in einen neutralen sicheren Startmodus wechseln.",
   "stages": [
     {

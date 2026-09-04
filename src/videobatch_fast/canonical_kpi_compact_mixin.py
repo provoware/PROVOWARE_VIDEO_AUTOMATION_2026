@@ -17,19 +17,11 @@ class CanonicalKpiCompactMixin:
                         child.pack_configure(pady=(0, 1))
                     except TclError:
                         pass
-            card.bind("<Configure>", self._compact_kpi_labels, add="+")
         self._shell_kpi_detail_labels = tracked
         self._compact_kpi_labels()
 
     def _compact_kpi_labels(self, _event=None) -> None:
-        for card in getattr(self, "_shell_kpi_cards", ()):
-            width = max(130, card.winfo_width() - 26)
-            for child in card.winfo_children():
-                if isinstance(child, ttk.Label):
-                    try:
-                        child.configure(wraplength=width)
-                    except TclError:
-                        return
+        self._update_shell_kpi_wraplengths()
 
     @staticmethod
     def _kpi_action_style(_snapshot) -> str:

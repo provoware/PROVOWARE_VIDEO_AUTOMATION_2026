@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "contract_id": "videobatch-fast.predictive-bootstrap/2.8.3-rc24-v1",
-  "release_target": "2.8.3-rc24",
+  "contract_id": "videobatch-fast.predictive-bootstrap/2.8.3-rc25-v1",
+  "release_target": "2.8.3-rc25",
   "packages": {
     "runtime": {
       "cffi": "2.0.0",

@@ -25,18 +25,28 @@ class CanonicalShellChromeMixin:
             background=COLORS["toolbar"],
             relief="solid",
             borderwidth=1,
+            bordercolor=COLORS["border_subtle"],
         )
         style.configure(
             "ShellHeader.TFrame",
             background=COLORS["toolbar"],
             relief="solid",
             borderwidth=1,
+            bordercolor=COLORS["border_subtle"],
+        )
+        style.configure(
+            "ShellActionBar.TFrame",
+            background=COLORS["panel"],
+            relief="solid",
+            borderwidth=1,
+            bordercolor=COLORS["border_subtle"],
         )
         style.configure(
             "ShellCard.TFrame",
             background=COLORS["panel"],
             relief="solid",
             borderwidth=1,
+            bordercolor=COLORS["border_subtle"],
         )
         style.configure(
             "ShellBrand.TLabel",
@@ -68,6 +78,12 @@ class CanonicalShellChromeMixin:
             background=COLORS["panel"],
             foreground=panel_muted,
             font=("DejaVu Sans", max(9, round(10 * factor))),
+        )
+        style.configure(
+            "ShellKpiMeta.TLabel",
+            background=COLORS["panel"],
+            foreground=safe_text_color(COLORS["panel"], COLORS["text_muted"]),
+            font=("DejaVu Sans", max(8, round(9 * factor))),
         )
         style.configure(
             "ShellKpiLink.TButton",
@@ -105,6 +121,11 @@ class CanonicalShellChromeMixin:
             relief="flat",
             borderwidth=0,
         )
+        style.map(
+            "ShellNav.TButton",
+            background=[("active", COLORS["hover"]), ("focus", COLORS["toolbar"])],
+            foreground=[("focus", safe_text_color(COLORS["toolbar"], COLORS["accent2"]))],
+        )
         style.configure(
             "ShellNavActive.TButton",
             background=COLORS["selection"],
@@ -113,6 +134,11 @@ class CanonicalShellChromeMixin:
             anchor="w",
             relief="flat",
             borderwidth=0,
+        )
+        style.map(
+            "ShellNavActive.TButton",
+            background=[("active", COLORS["selection"]), ("focus", COLORS["selection"])],
+            foreground=[("active", best_text_color(COLORS["selection"])), ("focus", best_text_color(COLORS["selection"]))],
         )
         style.configure("Shell.TNotebook", background=COLORS["bg"], borderwidth=0)
         style.layout("Shell.TNotebook.Tab", [])
@@ -342,7 +368,6 @@ class CanonicalShellChromeMixin:
             )
             button.pack(fill="x")
             self._shell_kpi_buttons[key] = button
-            card.bind("<Configure>", self._update_shell_kpi_wraplengths, add="+")
 
         row.bind("<Configure>", self._layout_shell_kpis, add="+")
         self.root.after_idle(lambda: self._layout_shell_kpis(width=row.winfo_width()))
@@ -372,13 +397,26 @@ class CanonicalShellChromeMixin:
                 padx=4,
                 pady=4,
             )
-        self._update_shell_kpi_wraplengths()
+        self._update_shell_kpi_wraplengths(available_width=available, columns=columns)
 
-    def _update_shell_kpi_wraplengths(self, _event=None) -> None:
-        for label in getattr(self, "_shell_kpi_detail_labels", ()): 
+    def _update_shell_kpi_wraplengths(
+        self,
+        _event=None,
+        *,
+        available_width: int | None = None,
+        columns: int | None = None,
+    ) -> None:
+        row = getattr(self, "_shell_kpi_row", None)
+        width = int(available_width or (row.winfo_width() if row is not None else 0) or 1)
+        if columns is None:
+            columns = 4 if width >= 1040 else 2 if width >= 600 else 1
+        target = max(130, min(560, width // max(1, columns) - 52))
+        for label in getattr(self, "_shell_kpi_detail_labels", ()):
             try:
-                label.configure(wraplength=max(130, label.master.winfo_width() - 26))
-            except TclError:
+                current = int(float(label.cget("wraplength") or 0))
+                if current != target:
+                    label.configure(wraplength=target)
+            except (TclError, TypeError, ValueError):
                 return
 
     def _refresh_kpi_cards(self) -> None:
@@ -426,7 +464,7 @@ class CanonicalShellChromeMixin:
             return
 
     def _build_shell_actions(self, parent) -> None:
-        bar = ttk.Frame(parent, style="ShellHeader.TFrame", padding=(7, 5))
+        bar = ttk.Frame(parent, style="ShellActionBar.TFrame", padding=(9, 6))
         bar.grid(row=2, column=0, sticky="ew", pady=(0, 9))
         actions: tuple[tuple[str, Callable[[], object], str, str], ...] = (
             ("＋ Neuer Auftrag", self._new_project, "Accent.TButton", "normal"),
@@ -435,7 +473,6 @@ class CanonicalShellChromeMixin:
             ("✦ Effekte prüfen", self._open_settings, "Ghost.TButton", "normal"),
             ("▶ Queue starten", self._start, "Success.TButton", "normal"),
             ("▣ Zielordner", lambda: self._choose_directory(self.output_dir), "Ghost.TButton", "normal"),
-            ("◷ Startzeituhr · Checkpoint 5", lambda: None, "Ghost.TButton", "disabled"),
         )
         self._shell_action_buttons = [
             ttk.Button(bar, text=label, command=command, style=style, state=state)
@@ -450,7 +487,10 @@ class CanonicalShellChromeMixin:
             return
         available = int(width if width is not None else getattr(event, "width", 0))
         requested = max((button.winfo_reqwidth() for button in buttons), default=170) + 12
-        columns = max(1, min(len(buttons), available // max(145, requested))) if available else 1
+        if available >= 1380 and len(buttons) <= 6:
+            columns = len(buttons)
+        else:
+            columns = max(1, min(len(buttons), available // max(145, requested))) if available else 1
         parent = buttons[0].master
         for column in range(len(buttons)):
             parent.columnconfigure(column, weight=1 if column < columns else 0)
@@ -460,8 +500,8 @@ class CanonicalShellChromeMixin:
                 row=index // columns,
                 column=index % columns,
                 sticky="ew",
-                padx=3,
-                pady=3,
+                padx=4,
+                pady=4,
             )
 
     def _set_canonical_theme(self, name: str) -> None:

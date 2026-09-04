@@ -1,6 +1,6 @@
 {
   "schema_version": 3,
-  "release_target": "2.8.3-rc24",
+  "release_target": "2.8.3-rc25",
   "installer_id": "videobatch-signed-channel-ab-installer-v3",
   "default_install_root": "~/.local/share/VideoBatchFast",
   "maximum_part_bytes": 31457280,

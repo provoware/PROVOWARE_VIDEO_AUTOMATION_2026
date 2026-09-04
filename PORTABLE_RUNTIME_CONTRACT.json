@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "contract_id": "videobatch-fast.portable-runtime/2.8.3-rc24-v1",
-  "release_target": "2.8.3-rc24",
+  "contract_id": "videobatch-fast.portable-runtime/2.8.3-rc25-v1",
+  "release_target": "2.8.3-rc25",
   "platform": "linux-x86_64",
   "python": {
     "version": "3.13.5",

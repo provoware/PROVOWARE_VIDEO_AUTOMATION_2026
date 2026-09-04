@@ -1,6 +1,6 @@
 {
   "schema_version": 7,
-  "version": "2.8.3-rc24",
+  "version": "2.8.3-rc25",
   "components": {
     "dashboard.header": {
       "module": "ui_dashboard_project_mixin",

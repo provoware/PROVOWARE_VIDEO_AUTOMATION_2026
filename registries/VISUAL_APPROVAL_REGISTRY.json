@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "id": "visual-desktop-approval-contract",
-  "version": "2.8.3-rc24",
+  "version": "2.8.3-rc25",
   "algorithm": "ed25519",
   "storage": {
     "manifest": "VISUAL_INSPECTION_MANIFEST.json",
