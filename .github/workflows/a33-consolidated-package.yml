@@ -1,98 +1,207 @@
-name: A33 Consolidated Package
+name: Iteration 39A · A33 rebased package hygiene
 
 on:
   push:
     branches:
-      - iteration/a33-consolidated-start-ui-fault-hardening-20260904
+      - iteration/39a-a33-rebased-packaging-hygiene-20260904
 
 permissions:
   contents: read
 
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: '1'
+  PIP_NO_INPUT: '1'
+  PYTHONHASHSEED: '0'
+  PYTHONUTF8: '1'
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/scripts
+
 jobs:
   validate-package:
     runs-on: ubuntu-24.04
+    timeout-minutes: 35
     steps:
       - name: Quellen holen
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-toolchain.lock
 
       - name: Systempakete
         run: |
+          set -Eeuo pipefail
           sudo apt-get update
-          sudo apt-get install -y python3-tk xvfb ffmpeg zip
+          sudo apt-get install -y python3-tk xvfb ffmpeg
 
-      - name: Python-Abhängigkeiten
+      - name: Exakt gesperrte Toolchain installieren
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-          python -m pip install pytest
+          set -Eeuo pipefail
+          python -m pip install --requirement requirements-toolchain.lock
+          test "$(python -m pytest --version | awk '{print $2}')" = "9.0.2"
+          test "$(python -m coverage --version | awk 'NR==1 {print $2}')" = "7.13.3"
 
       - name: Startvertrag prüfen
         run: |
+          set -Eeuo pipefail
           bash -n start.sh STARTEN.sh
-          bash start.sh --help > /tmp/a33-help.txt
-          grep -F -- '--doctor' /tmp/a33-help.txt
-          grep -F -- '--hilfe' /tmp/a33-help.txt
+          bash start.sh --help > "$RUNNER_TEMP/39a-help.txt"
+          grep -F -- '--doctor' "$RUNNER_TEMP/39a-help.txt"
+          grep -F -- '--hilfe' "$RUNNER_TEMP/39a-help.txt"
           set +e
-          VIDEOBATCH_BOOTSTRAP_PYTHON=python3-existiert-nicht bash STARTEN.sh >/tmp/a33-start-out.txt 2>/tmp/a33-start-err.txt
+          VIDEOBATCH_BOOTSTRAP_PYTHON=python3-existiert-nicht bash STARTEN.sh >"$RUNNER_TEMP/39a-start-out.txt" 2>"$RUNNER_TEMP/39a-start-err.txt"
           rc=$?
           set -e
           test "$rc" -eq 127
-          grep -F 'Python 3 wurde nicht gefunden' /tmp/a33-start-err.txt
+          grep -F 'Python 3 wurde nicht gefunden' "$RUNNER_TEMP/39a-start-err.txt"
 
       - name: Kompilierung
-        run: python -m compileall -q scripts src tests
+        env:
+          PYTHONPYCACHEPREFIX: ${{ runner.temp }}/39a-pycache
+        run: |
+          set -Eeuo pipefail
+          python -m compileall -q -f scripts src tests
 
       - name: A33 Fokusregression
         run: |
-          xvfb-run -a env PYTHONPATH=src:. pytest -q \
+          set -Eeuo pipefail
+          xvfb-run -a python -m pytest -q -p no:cacheprovider \
             tests/test_a33_consolidation.py \
+            tests/test_a33_packaging_hygiene.py \
             tests/test_canonical_application_shell_contract.py \
             tests/test_canonical_layout_resilience.py \
             tests/test_canonical_kpi_contract.py \
             tests/test_debug_runtime_contract.py \
             tests/test_ui_ready_handshake_contract.py \
-            tests/test_rc24_selected_media_crash.py
+            tests/test_rc24_selected_media_crash.py \
+            | tee "$RUNNER_TEMP/39a-focus.log"
 
       - name: Vollregression
-        run: xvfb-run -a env PYTHONPATH=src:. pytest -q
+        run: |
+          set -Eeuo pipefail
+          xvfb-run -a python -m pytest -q -p no:cacheprovider \
+            | tee "$RUNNER_TEMP/39a-full.log"
+
+      - name: Coverage messen und 80/65-Vertrag auswerten
+        run: |
+          set -Eeuo pipefail
+          xvfb-run -a python -m pytest -q -p no:cacheprovider \
+            --cov=videobatch_fast \
+            --cov-branch \
+            --cov-report=term \
+            --cov-report=json:coverage.json \
+            | tee "$RUNNER_TEMP/39a-coverage.log"
+          set +e
+          python scripts/coverage_policy.py coverage.json 80 65 \
+            | tee "$RUNNER_TEMP/39a-coverage-policy.log"
+          coverage_rc=${PIPESTATUS[0]}
+          set -e
+          echo "COVERAGE_GATE_RC=$coverage_rc" >> "$GITHUB_ENV"
+          printf '%s\n' "$coverage_rc" > "$RUNNER_TEMP/coverage-gate-rc.txt"
 
       - name: Architektur-Audit
-        run: PYTHONPATH=src:. python scripts/architecture_audit.py
-
-      - name: Manifest aktualisieren
-        run: PYTHONPATH=src:. python scripts/build_release_manifest.py
-
-      - name: Prüfbericht erzeugen
         run: |
-          cat > A33_PRUEFBERICHT.txt <<EOF
-          PROVOWARE VideoBatch Fast A33 – Konsolidierungsprüfung
-          Commit: $GITHUB_SHA
-          Startvertrag: PASS
-          Python-Preflight: PASS
-          Kompilierung: PASS
-          A33-Fokusregression: PASS
-          Vollregression: PASS
-          Architektur-Audit: PASS
-          ZIP-Integrität: wird nach Paketbau geprüft
-          EOF
+          set -Eeuo pipefail
+          python scripts/architecture_audit.py
 
-      - name: Vollständige ZIP bauen
+      - name: Manifest kanonisch erzeugen und prüfen
         run: |
-          ZIP=PROVOWARE_VideoBatch_Fast_A33_CURRENT_CONSOLIDATED_2026-09-04.zip
-          zip -qr "$ZIP" . -x '.git/*' "$ZIP"
-          unzip -t "$ZIP"
+          set -Eeuo pipefail
+          python scripts/build_release_manifest.py
+          python scripts/build_release_manifest.py --check --json
+          python scripts/validate_release_manifest.py
+
+      - name: CI-Evidence erzeugen
+        run: |
+          set -Eeuo pipefail
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          coverage = json.loads(Path('coverage.json').read_text(encoding='utf-8'))
+          totals = coverage['totals']
+          statements = int(totals.get('num_statements', 0) or 0)
+          covered_lines = int(totals.get('covered_lines', 0) or 0)
+          branches = int(totals.get('num_branches', 0) or 0)
+          covered_branches = int(totals.get('covered_branches', 0) or 0)
+          line_percent = covered_lines / statements * 100.0 if statements else 0.0
+          branch_percent = covered_branches / branches * 100.0 if branches else 100.0
+          report = {
+              'schema_version': 1,
+              'iteration': '39A',
+              'commit': os.environ['GITHUB_SHA'],
+              'focus_regression': 'passed',
+              'full_regression': 'passed',
+              'architecture_audit': 'passed',
+              'manifest': 'passed',
+              'coverage': {
+                  'line_percent': round(line_percent, 2),
+                  'branch_percent': round(branch_percent, 2),
+                  'minimum_line_percent': 80.0,
+                  'minimum_branch_percent': 65.0,
+                  'gate': 'passed' if os.environ.get('COVERAGE_GATE_RC') == '0' else 'failed',
+              },
+              'packaging_contract': 'deterministic manifest-driven zip; Backup/cache/transient quality files excluded',
+          }
+          target = Path(os.environ['RUNNER_TEMP']) / 'ITERATION_39A_CI_REPORT.json'
+          target.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          print(json.dumps(report, ensure_ascii=False, indent=2))
+          PY
+
+      - name: Deterministisches, cachefreies Projekt-ZIP bauen
+        id: package
+        run: |
+          set -Eeuo pipefail
+          ZIP=PROVOWARE_VideoBatch_Fast_ITER39A_A33_REBASED_HYGIENE_2026-09-04.zip
+          echo "ZIP_NAME=$ZIP" >> "$GITHUB_ENV"
+          python scripts/package_release.py --output "$ZIP"
+          python scripts/verify_release_zip.py "$ZIP"
+          python scripts/package_release.py --output "$RUNNER_TEMP/39a-repro.zip"
+          cmp -s "$ZIP" "$RUNNER_TEMP/39a-repro.zip"
+          python - "$ZIP" <<'PY'
+          import sys
+          import zipfile
+          from pathlib import PurePosixPath
+
+          banned_parts = {'Backup', '__pycache__', '.pytest_cache', '.mypy_cache', '.ruff_cache'}
+          with zipfile.ZipFile(sys.argv[1]) as archive:
+              bad = []
+              for name in archive.namelist():
+                  parts = set(PurePosixPath(name).parts)
+                  if parts & banned_parts or name.endswith(('.pyc', '.pyo')):
+                      bad.append(name)
+              if bad:
+                  raise SystemExit('Unerlaubte Paketartefakte: ' + ', '.join(bad[:20]))
+          print('PAKETHYGIENE BESTANDEN · keine Backups, Caches oder Bytecode-Dateien')
+          PY
           sha256sum "$ZIP" > "$ZIP.sha256.txt"
 
-      - name: Artefakt hochladen
+      - name: Artefakte hochladen
+        if: always() && steps.package.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
-          name: PROVOWARE_VideoBatch_Fast_A33_CURRENT_CONSOLIDATED_2026-09-04
+          name: PROVOWARE_VideoBatch_Fast_ITER39A_A33_REBASED_HYGIENE_2026-09-04
           path: |
-            PROVOWARE_VideoBatch_Fast_A33_CURRENT_CONSOLIDATED_2026-09-04.zip
-            PROVOWARE_VideoBatch_Fast_A33_CURRENT_CONSOLIDATED_2026-09-04.zip.sha256.txt
+            ${{ env.ZIP_NAME }}
+            ${{ env.ZIP_NAME }}.sha256.txt
+            coverage.json
+            ${{ runner.temp }}/ITERATION_39A_CI_REPORT.json
+            ${{ runner.temp }}/39a-focus.log
+            ${{ runner.temp }}/39a-full.log
+            ${{ runner.temp }}/39a-coverage.log
+            ${{ runner.temp }}/39a-coverage-policy.log
           if-no-files-found: error
+          retention-days: 30
+
+      - name: Coverage-Gate final erzwingen
+        if: always() && steps.package.outcome == 'success'
+        run: |
+          set -Eeuo pipefail
+          test "${COVERAGE_GATE_RC:-2}" -eq 0
