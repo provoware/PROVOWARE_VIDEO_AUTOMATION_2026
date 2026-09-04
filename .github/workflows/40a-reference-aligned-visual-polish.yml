@@ -1,0 +1,105 @@
+name: Iteration 40A · Reference-aligned visual polish
+
+on:
+  push:
+    branches:
+      - iteration/40a-reference-aligned-visual-polish-20260904
+  pull_request:
+    branches:
+      - iteration/39b-pyside6-qml-transfer-matrix-20260904
+
+permissions:
+  contents: read
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: '1'
+  PIP_NO_INPUT: '1'
+  PYTHONHASHSEED: '0'
+  PYTHONUTF8: '1'
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONPATH: ${{ github.workspace }}/src
+
+jobs:
+  validate-40a:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Quellen holen
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-toolchain.lock
+
+      - name: Systempakete
+        run: |
+          set -Eeuo pipefail
+          sudo apt-get update
+          sudo apt-get install -y python3-tk xvfb ffmpeg
+
+      - name: Exakt gesperrte Toolchain
+        run: |
+          set -Eeuo pipefail
+          python -m pip install --requirement requirements-toolchain.lock
+
+      - name: Kompilierung
+        env:
+          PYTHONPYCACHEPREFIX: ${{ runner.temp }}/40a-pycache
+        run: |
+          set -Eeuo pipefail
+          python -m compileall -q -f scripts src tests
+
+      - name: Reference-Alignment-Vertrag
+        run: |
+          set -Eeuo pipefail
+          python -m pytest -q -p no:cacheprovider \
+            tests/test_reference_aligned_midnight_blue.py \
+            tests/test_canonical_application_shell_contract.py \
+            tests/test_design_manifest_contract.py
+          python scripts/validate_design_manifest.py --json
+
+      - name: Vollregression unter Xvfb
+        run: |
+          set -Eeuo pipefail
+          xvfb-run -a python -m pytest -q -p no:cacheprovider
+
+      - name: Architektur-Audit
+        run: |
+          set -Eeuo pipefail
+          python scripts/architecture_audit.py
+
+      - name: Kanonisches Release-Manifest prüfen
+        run: |
+          set -Eeuo pipefail
+          python scripts/build_release_manifest.py --check --json
+          python scripts/validate_release_manifest.py
+
+      - name: Deterministisches 40A-Paket prüfen
+        id: package
+        run: |
+          set -Eeuo pipefail
+          ZIP="PROVOWARE_VideoBatch_Fast_ITER40A_REFERENCE_ALIGNED_VISUAL_2026-09-04.zip"
+          ZIP2="$RUNNER_TEMP/PROVOWARE_VideoBatch_Fast_ITER40A_REFERENCE_ALIGNED_VISUAL_repro.zip"
+          python scripts/package_release.py --output "$ZIP"
+          python scripts/verify_release_zip.py "$ZIP"
+          python scripts/package_release.py --output "$ZIP2"
+          cmp -s "$ZIP" "$ZIP2"
+          sha256sum "$ZIP" | tee "$ZIP.sha256.txt"
+          echo "ZIP_NAME=$ZIP" >> "$GITHUB_ENV"
+
+      - name: 40A-Evidence hochladen
+        if: always() && steps.package.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: PROVOWARE_VideoBatch_Fast_ITER40A_REFERENCE_ALIGNED_VISUAL_2026-09-04
+          path: |
+            ${{ env.ZIP_NAME }}
+            ${{ env.ZIP_NAME }}.sha256.txt
+          if-no-files-found: error
+          retention-days: 30
