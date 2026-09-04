@@ -11,17 +11,45 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 35
     env:
       PYTHONDONTWRITEBYTECODE: '1'
       PYTHONUTF8: '1'
       PYTHONPATH: src
+      XDG_SESSION_TYPE: x11
     steps:
       - name: Check out exact branch head
         uses: actions/checkout@v4
         with:
           ref: fix/post-merge-contract-regressions-20260904
           fetch-depth: 0
+
+      - name: Prepare cached Kubuntu dependencies
+        uses: ./.github/actions/kubuntu-package-cache
+        with:
+          os: ubuntu-24.04
+          session: x11
+          mode: matrix
+
+      - name: Start deterministic X11 display
+        run: |
+          set -Eeuo pipefail
+          Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
+          echo 'DISPLAY=:99' >> "$GITHUB_ENV"
+          sleep 2
+
+      - name: Bind system FFmpeg runtime
+        run: |
+          set -Eeuo pipefail
+          ffmpeg_path="$(readlink -f "$(command -v ffmpeg)")"
+          ffprobe_path="$(readlink -f "$(command -v ffprobe)")"
+          test -x "$ffmpeg_path"
+          test -x "$ffprobe_path"
+          media_dir="$RUNNER_TEMP/ffmpeg-system/bin"
+          mkdir -p "$media_dir"
+          ln -sfn "$ffmpeg_path" "$media_dir/ffmpeg"
+          ln -sfn "$ffprobe_path" "$media_dir/ffprobe"
+          echo "VIDEOBATCH_STATIC_MEDIA_DIR=$media_dir" >> "$GITHUB_ENV"
 
       - name: Prepare pinned Python toolchain
         uses: actions/setup-python@v6
@@ -63,5 +91,6 @@ jobs:
           path: |
             ${{ runner.temp }}/full-pytest.log
             ${{ runner.temp }}/release-literal-hygiene.json
+            /tmp/xvfb.log
           if-no-files-found: warn
           retention-days: 14
