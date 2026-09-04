@@ -41,3 +41,11 @@ def test_semantic_status_layer_is_presentation_only() -> None:
     assert "status_text.trace_add" in source
     assert "ShellSemanticStatus" in source
     assert "ShellSemanticSidebar" in source
+
+
+def test_semantic_status_fonts_follow_low_vision_scale_contract() -> None:
+    source = inspect.getsource(CanonicalSemanticStatusMixin)
+    assert "visual_scale_factor(scale)" in source
+    assert "max(VISUAL_PASS2_MIN_HINT_FONT, round(10 * factor))" in source
+    assert 'font=("DejaVu Sans", status_font, "bold")' in source
+    assert 'font=("DejaVu Sans", 9, "bold")' not in source
