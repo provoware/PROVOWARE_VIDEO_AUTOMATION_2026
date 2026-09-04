@@ -14,7 +14,7 @@ env:
   PYTHONHASHSEED: '0'
   PYTHONUTF8: '1'
   PYTHONDONTWRITEBYTECODE: '1'
-  PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/scripts
+  PYTHONPATH: ${{ github.workspace }}/src
 
 jobs:
   validate-package:
