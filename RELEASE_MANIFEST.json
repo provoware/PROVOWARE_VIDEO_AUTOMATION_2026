@@ -1,7 +1,7 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 444,
+  "file_count": 450,
   "files": [
     {
       "mode": "0o644",
@@ -20,6 +20,12 @@
       "path": ".github/ci/kubuntu-packages.txt",
       "sha256": "84f415d0a0e6e2cea1d3c9886d137014c177f429445911a85abc7ec39ce7e189",
       "size": 76
+    },
+    {
+      "mode": "0o644",
+      "path": ".github/workflows/a33-consolidated-package.yml",
+      "sha256": "4caf6accaca1782ae725cec710324c10bd548bcf70ae653b94d933cc96613c02",
+      "size": 8731
     },
     {
       "mode": "0o644",
@@ -95,6 +101,12 @@
     },
     {
       "mode": "0o644",
+      "path": "A33_CURRENT_CANONICAL_CONSOLIDATION_2026-09-04.md",
+      "sha256": "bcf8f9c5312f9a0571ffeed8ec4141c4f66ecbdbf4bd5027207c688085b8c23c",
+      "size": 1459
+    },
+    {
+      "mode": "0o644",
       "path": "AGENTS.md",
       "sha256": "73a8f5897c32e9da2c55d0927921dffde0e8046bf73d9a66cc59302e4e3dfcb6",
       "size": 10451
@@ -120,8 +132,8 @@
     {
       "mode": "0o644",
       "path": "CHANGELOG.md",
-      "sha256": "9653e3c3fd3a3cedc87dc76c5d90da536750b61127819729f0c062c0d8e91344",
-      "size": 3450
+      "sha256": "93688046f4613f9c43ec1441a2d6d57ded394f4d111b1ad690af88e0d33d3fcb",
+      "size": 4537
     },
     {
       "mode": "0o644",
@@ -203,6 +215,12 @@
     },
     {
       "mode": "0o644",
+      "path": "ITERATION_39A_A33_REBASE_PACKAGING_HYGIENE_2026-09-04.md",
+      "sha256": "4dbb25389ecb2edcc1805d8706c2eeac8bd92c8abac6b6fc4879eee3de75c37a",
+      "size": 4961
+    },
+    {
+      "mode": "0o644",
       "path": "KEY_ARCHIVE.md",
       "sha256": "84c2cb7e8df6ed6f92d822d97e6c9cecbbf3e28d5f5938b5f9b785e672bf5de8",
       "size": 572
@@ -236,6 +254,12 @@
       "path": "PROJEKTORDNERSTRUKTUR_save_.md",
       "sha256": "b21ab763f305a89a9a03c2d23f676045ee1e43c43aced1b28dc032830563b622",
       "size": 10608
+    },
+    {
+      "mode": "0o644",
+      "path": "PROJEKTSTATUS.json",
+      "sha256": "32c89ce254eb2703599dbae05db541d615052eb0fcec4a395e116eff86767e89",
+      "size": 1716
     },
     {
       "mode": "0o644",
@@ -294,8 +318,8 @@
     {
       "mode": "0o644",
       "path": "STARTEN.sh",
-      "sha256": "09e2e453d2a165b5112aaf71c9257acd3646bc5f5a742ee679c65c118cc329ae",
-      "size": 232
+      "sha256": "b7fb123048eec28879b4c45a68e533fe9af0d7d4b7f1c2ebb644ecc654e3de7a",
+      "size": 709
     },
     {
       "mode": "0o644",
@@ -906,8 +930,8 @@
     {
       "mode": "0o644",
       "path": "scripts/architecture_audit.py",
-      "sha256": "fc65f758a26076d9edef20e3bd264904f4d37af10c1b399d1e2595057b4b179a",
-      "size": 2038
+      "sha256": "edcadf69b99d5d1143360831a71f7d0732d6155b2d0b76b7c47ee2c52e025e1b",
+      "size": 3559
     },
     {
       "mode": "0o644",
@@ -1128,8 +1152,8 @@
     {
       "mode": "0o644",
       "path": "scripts/release_file_contract.py",
-      "sha256": "a543b7a5c315ed409060f8a40581244b2b3676e0d4a1c315a8ab5c19f6e56223",
-      "size": 1860
+      "sha256": "a03633b56ded93f8a831acd2899328cd8f0a4d75292ba393760d3558d2e9d7b0",
+      "size": 1992
     },
     {
       "mode": "0o644",
@@ -1452,20 +1476,20 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/canonical_shell_contract.py",
-      "sha256": "082f3b60ea88283f29276cdd69415dd57536abf882658dee1733dee85ebcd2c0",
-      "size": 2091
+      "sha256": "9dc04c8d1cb4e72006557bcb7a99aefd41a6d209d8c26c997ad5d390395a65bb",
+      "size": 1989
     },
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/canonical_shell_workspace.py",
-      "sha256": "7ac55ad63830e1fa45134f92b38d292ed41d9ac6d63c9ea8ae833db4a19db2bc",
-      "size": 7206
+      "sha256": "186c6cd25769700d871a85334b15e32ac98d86417206668cdddc04b3a236a085",
+      "size": 8385
     },
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/canonical_ui.py",
-      "sha256": "c429178ea7433deaa7b268a2e4ec8ec33469830e6431fcbf244c0c551effd59e",
-      "size": 3810
+      "sha256": "b1acaf13b83d41960771419fc496648040e62e48c99c3a285f43d42cdb4bd7ee",
+      "size": 4446
     },
     {
       "mode": "0o644",
@@ -2040,8 +2064,8 @@
     {
       "mode": "0o644",
       "path": "start.sh",
-      "sha256": "d0370b9de5fea58aa665c16d35db4872a1b43abeba5b5554fe35e78a4fc218b1",
-      "size": 763
+      "sha256": "1274ef1ba0e8eeb6705d4741e6ce5a3bbbc3a83c9db4f0cbc0b6b87012c38f73",
+      "size": 1673
     },
     {
       "mode": "0o755",
@@ -2198,6 +2222,18 @@
       "path": "tests/generated_media/video_zu_kurz.mp4",
       "sha256": "dd791ec4b7bbb5fdb7eb103e62ec9e5722f481ab44d47f51a0e55ede92aa71cb",
       "size": 18214
+    },
+    {
+      "mode": "0o644",
+      "path": "tests/test_a33_consolidation.py",
+      "sha256": "a9352008728f79444ccb859d28b42745e9a5695a57a0ccf1589d1b20a361a012",
+      "size": 2210
+    },
+    {
+      "mode": "0o644",
+      "path": "tests/test_a33_packaging_hygiene.py",
+      "sha256": "a5bd9615f044de898555716597953fc27f07153ca2e791acff14a174407f4457",
+      "size": 2535
     },
     {
       "mode": "0o644",
