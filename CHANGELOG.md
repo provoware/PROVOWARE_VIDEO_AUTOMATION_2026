@@ -12,6 +12,8 @@ Alle wichtigen Änderungen dieses Projekts werden hier in zusammengefasster, chr
 - Coverage neu gemessen: 73,16 % Zeilen und 58,82 % Branch; 80/65-Schwellen unverändert und weiterhin blockierend;
 - Architektur-Audit: 115 Module, 1.139 Funktionen, 140 Klassen, größte Python-Datei 699 Zeilen, 0 Befunde;
 - deterministischen Zweitbau, Manifest-Verifikation und expliziten Paket-Hygienetest ergänzt;
+- finaler PR-Diff-Audit: sechs redundante Quellkopien unter `Backup/A32.2_vor_A33/` aus der Integrations-Lineage entfernt; Rückrollbarkeit erfolgt über Git-Historie und dokumentierte Basis-SHA;
+- Draft-Child-PR #101 gegen die weiterhin offene PR-84-Lineage angelegt; kein Merge durchgeführt;
 - `main` und der Merge von PR #84 nach `main` blieben unangetastet.
 
 ## Unveröffentlicht · RC24-Finalbereinigung
