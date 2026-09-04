@@ -38,9 +38,7 @@ def test_current_full_regression_is_canonical_release_evidence() -> None:
     assert "full_regression_artifact_id" not in provenance
     assert "full_regression_artifact_sha256" not in provenance
 
-
-def test_internal_quality_keeps_generator_schema_and_current_architecture_separate() -> None:
-    quality = _evidence()["internal_quality"]
+    quality = data["internal_quality"]
     for key in (
         "architecture_findings",
         "internal_files_checked",
