@@ -1,3 +1,4 @@
+# second-push trigger; self-removes before candidate validation
 name: UX116 manifest refresh
 
 on:
