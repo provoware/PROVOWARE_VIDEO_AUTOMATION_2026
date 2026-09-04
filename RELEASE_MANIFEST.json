@@ -378,8 +378,8 @@
     {
       "mode": "0o644",
       "path": "START_HIER_save_.md",
-      "sha256": "92d1268ab7f34323c70a8231d7aada6b05506e07a7712196961e51c454985488",
-      "size": 6591
+      "sha256": "4495819cbb16503e3796fbafac2731dbaeb64a93993cac630f78ef2e1c2cf66c",
+      "size": 7717
     },
     {
       "mode": "0o644",
@@ -2682,8 +2682,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_release_docs.py",
-      "sha256": "6ba34115d699da9b348a215a5c69585497e9afa34a853acac3aa52d28b929b38",
-      "size": 2992
+      "sha256": "60e53b2b8eac61fc2de5b29d1a481660c6beb78772f54109a4a4e1addd54ff49",
+      "size": 3548
     },
     {
       "mode": "0o644",
