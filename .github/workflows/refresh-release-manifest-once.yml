@@ -1,0 +1,46 @@
+name: One-shot release manifest refresh
+
+on:
+  push:
+    branches:
+      - fix/post-merge-smoke-contracts-20260904
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      PYTHONPATH: src
+    steps:
+      - name: Check out repair branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/post-merge-smoke-contracts-20260904
+          fetch-depth: 0
+
+      - name: Generate and validate canonical manifest
+        run: |
+          set -Eeuo pipefail
+          git rm --cached --ignore-unmatch .github/workflows/refresh-release-manifest-once.yml
+          python3 scripts/build_release_manifest.py
+          python3 scripts/build_release_manifest.py --check --json
+          python3 -m pytest -q \
+            tests/test_repository_finalization.py \
+            tests/test_release_literal_hygiene.py
+          git restore --staged .github/workflows/refresh-release-manifest-once.yml 2>/dev/null || true
+
+          if git diff --quiet -- RELEASE_MANIFEST.json; then
+            echo 'RELEASE_MANIFEST already canonical.'
+            exit 0
+          fi
+
+          git config user.name 'provoware-release-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add RELEASE_MANIFEST.json
+          git commit -m 'chore: refresh Git-backed release manifest'
+          git push origin HEAD:fix/post-merge-smoke-contracts-20260904
