@@ -1,0 +1,167 @@
+from __future__ import annotations
+
+from pathlib import Path
+from tkinter import BooleanVar, StringVar, ttk
+
+from .execution_control import RAM_LIMIT_PRESETS_GB
+from .system_resources import SystemResourceMonitor, format_bytes
+
+
+class UiResourceControlsMixin:
+    """Compact process controls and honest Linux system-load telemetry."""
+
+    def _build_resource_process_panel(self, parent, *, row: int) -> None:
+        panel = ttk.Frame(parent, style="ShellCard.TFrame", padding=(0, 9, 0, 0))
+        panel.grid(row=row, column=0, sticky="ew")
+        panel.columnconfigure(0, weight=1)
+        self._resource_monitor = SystemResourceMonitor()
+        self._resource_vars = {
+            key: StringVar(value=f"{label} –")
+            for key, label in (
+                ("cpu", "CPU"),
+                ("ram", "RAM"),
+                ("swap", "SWAP"),
+                ("zram", "ZRAM"),
+                ("disk", "Frei"),
+            )
+        }
+        self._process_progress_text = StringVar(value="Gesamt 0,0 % · Job 0,0 % · wartet")
+        self._process_control_text = StringVar(value="Prozesskontrolle: bereit")
+        self._cpu_limit_50_var = BooleanVar(value=bool(self.config.get("cpu_limit_50", False)))
+        configured_ram = float(self.config.get("ram_limit_gb", 0) or 0)
+        self._ram_limit_vars = {
+            value: BooleanVar(value=configured_ram == value) for value in RAM_LIMIT_PRESETS_GB
+        }
+        self.runner.set_cpu_limit_50(self._cpu_limit_50_var.get())
+        self.runner.set_memory_limit_gb(configured_ram if configured_ram in RAM_LIMIT_PRESETS_GB else None)
+        self._build_progress_strip(panel)
+        self._build_load_strip(panel)
+        self._build_limit_strip(panel)
+        self.root.after(250, self._poll_resource_process_panel)
+
+    def _build_progress_strip(self, parent) -> None:
+        progress = ttk.Frame(parent, style="ShellCard.TFrame")
+        progress.grid(row=0, column=0, sticky="ew")
+        progress.columnconfigure(0, weight=1)
+        progress.columnconfigure(1, weight=1)
+        ttk.Label(progress, text="Prozess", style="SectionHeader.TLabel").grid(
+            row=0, column=0, sticky="w"
+        )
+        ttk.Label(progress, textvariable=self._process_control_text, style="Hint.TLabel").grid(
+            row=0, column=1, sticky="e"
+        )
+        ttk.Progressbar(progress, variable=self.total_progress, maximum=100).grid(
+            row=1, column=0, sticky="ew", padx=(0, 4), pady=(5, 2)
+        )
+        ttk.Progressbar(progress, variable=self.job_progress, maximum=100).grid(
+            row=1, column=1, sticky="ew", padx=(4, 0), pady=(5, 2)
+        )
+        ttk.Label(progress, textvariable=self._process_progress_text, style="Hint.TLabel").grid(
+            row=2, column=0, columnspan=2, sticky="w"
+        )
+
+    def _build_load_strip(self, parent) -> None:
+        load = ttk.Frame(parent, style="ShellCard.TFrame")
+        load.grid(row=1, column=0, sticky="ew", pady=(6, 4))
+        for index, key in enumerate(("cpu", "ram", "swap", "zram", "disk")):
+            load.columnconfigure(index, weight=1)
+            ttk.Label(load, textvariable=self._resource_vars[key], style="Hint.TLabel").grid(
+                row=0, column=index, sticky="w", padx=(0 if index == 0 else 6, 0)
+            )
+
+    def _build_limit_strip(self, parent) -> None:
+        controls = ttk.Frame(parent, style="ShellCard.TFrame")
+        controls.grid(row=2, column=0, sticky="ew", pady=(3, 0))
+        ttk.Checkbutton(
+            controls,
+            text="CPU 50 %",
+            variable=self._cpu_limit_50_var,
+            command=self._toggle_cpu_limit,
+        ).pack(side="left", padx=(0, 7))
+        for value in RAM_LIMIT_PRESETS_GB:
+            label = f"RAM {value:g} GB" if value != 1.5 and value != 2.5 else f"RAM {str(value).replace('.', ',')} GB"
+            ttk.Checkbutton(
+                controls,
+                text=label,
+                variable=self._ram_limit_vars[value],
+                command=lambda selected=value: self._toggle_ram_limit(selected),
+            ).pack(side="left", padx=(0, 5))
+        self._pause_render_button = ttk.Button(
+            controls, text="⏸ Pausieren", command=self._pause_render, state="disabled"
+        )
+        self._pause_render_button.pack(side="right", padx=(5, 0))
+        self._resume_render_button = ttk.Button(
+            controls, text="▶ Fortsetzen", command=self._resume_render, state="disabled"
+        )
+        self._resume_render_button.pack(side="right")
+
+    def _toggle_cpu_limit(self) -> None:
+        enabled = bool(self._cpu_limit_50_var.get())
+        self.runner.set_cpu_limit_50(enabled)
+        self.config["cpu_limit_50"] = enabled
+        self._persist_resource_settings()
+
+    def _toggle_ram_limit(self, selected: float) -> None:
+        enabled = bool(self._ram_limit_vars[selected].get())
+        for value, variable in self._ram_limit_vars.items():
+            if value != selected:
+                variable.set(False)
+        limit = selected if enabled else None
+        self.runner.set_memory_limit_gb(limit)
+        self.config["ram_limit_gb"] = limit or 0
+        self._persist_resource_settings()
+
+    def _persist_resource_settings(self) -> None:
+        save = getattr(self, "_save_settings", None)
+        if callable(save):
+            save()
+
+    def _pause_render(self) -> None:
+        if self.runner.running:
+            self.runner.pause()
+            self._process_control_text.set("Prozesskontrolle: pausiert · Zustand bleibt erhalten")
+
+    def _resume_render(self) -> None:
+        self.runner.resume()
+        self._process_control_text.set("Prozesskontrolle: läuft weiter")
+
+    def _poll_resource_process_panel(self) -> None:
+        if not hasattr(self, "_resource_monitor"):
+            return
+        try:
+            path = Path(self.output_dir.get()).expanduser()
+            snapshot = self._resource_monitor.sample(path)
+            self._update_resource_labels(snapshot)
+            self._update_process_labels()
+        finally:
+            self.root.after(1000, self._poll_resource_process_panel)
+
+    def _update_resource_labels(self, snapshot) -> None:
+        self._resource_vars["cpu"].set(f"CPU {snapshot.cpu_percent:.0f} %")
+        self._resource_vars["ram"].set(
+            f"RAM {format_bytes(snapshot.ram_used)} / {format_bytes(snapshot.ram_total)}"
+        )
+        self._resource_vars["swap"].set(
+            f"SWAP {format_bytes(snapshot.swap_used)} / {format_bytes(snapshot.swap_total)}"
+        )
+        self._resource_vars["zram"].set(
+            f"ZRAM {format_bytes(snapshot.zram_used)} / {format_bytes(snapshot.zram_total)}"
+        )
+        self._resource_vars["disk"].set(f"Frei {format_bytes(snapshot.disk_free)}")
+
+    def _update_process_labels(self) -> None:
+        total = float(self.total_progress.get())
+        job = float(self.job_progress.get())
+        self._process_progress_text.set(
+            f"Gesamt {total:.1f} % · Job {job:.1f} % · {self.phase.get()} · ETA {self.eta.get()}"
+        )
+        running = bool(self.runner.running)
+        paused = bool(self.runner.paused)
+        self._pause_render_button.configure(state="normal" if running and not paused else "disabled")
+        self._resume_render_button.configure(state="normal" if running and paused else "disabled")
+        if not running:
+            self._process_control_text.set("Prozesskontrolle: bereit")
+        elif paused:
+            self._process_control_text.set("Prozesskontrolle: pausiert · Zustand bleibt erhalten")
+        else:
+            self._process_control_text.set("Prozesskontrolle: aktiv")
