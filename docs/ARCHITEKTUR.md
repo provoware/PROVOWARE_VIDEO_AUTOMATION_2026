@@ -7,6 +7,8 @@
 - `runner.py`: Prozess, Echtzeitfortschritt, Abbruch und genau ein Fallback
 - `verification.py`: schnelle Ergebnisprüfung
 - `ui.py`: moderne Ttk-Oberfläche ohne Fachlogik
+- `canonical_kpi.py`: getrennte Zustandsberechnung für Medien, Aufträge, Effekte und Startplanung
+- `canonical_help_status_mixin.py`: Hilfeseite und knappe Zustandszeile
 - `config.py`: atomische XDG-Konfiguration
 
 Die UI startet keine zusammengesetzten Shellbefehle. Alle FFmpeg-Aufrufe werden als Argumentlisten ausgeführt.

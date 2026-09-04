@@ -4,6 +4,9 @@ Alle wichtigen Änderungen dieses Projekts werden hier in zusammengefasster, chr
 
 ## Unveröffentlicht · RC24-Finalbereinigung
 
+- Hilfevertrag auf die tatsächlich zuständige Hilfeseite ausgerichtet
+- Zustandsberechnung für Medien, Aufträge und Effekte getrennt, ohne sichtbare Ausgabe zu ändern
+- Gestaltungsprüfung in kleine, gleichwertige Teilprüfungen gegliedert
 - `BatchRunner` vollständig auf direkte, versionierte `AppEvent`-Ausgabe migriert
 - typisierte Pflicht-Payloads für Start, Auftrag, Fehler und Stapelabschluss ergänzt
 - Legacy-Ereignisse auf `EventBuffer.put_legacy` als einzige Kompatibilitätsgrenze begrenzt

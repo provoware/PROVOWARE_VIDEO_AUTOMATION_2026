@@ -4,11 +4,19 @@
 **Zielgruppe:** Nutzer ohne technische Vorkenntnisse  
 **Wichtig:** Dies ist ein Release Candidate. Für wichtige Projekte zuerst mit Kopien der Medien testen.
 
-## 1. Ziel
+## Ziel
 
 Mit VideoBatch Fast werden aus Audiodateien, Bildern und Videos automatisiert fertige Videos erzeugt. Dieses Handbuch führt vom ersten Start bis zur Ergebnisprüfung und erklärt bei jedem kritischen Schritt, warum er notwendig ist und ob er ausgelassen werden darf.
 
-## 2. Vor dem ersten Start
+## Pflichtgrad
+
+Der sichere erste Start und die Ergebnisprüfung sind Pflicht. Zusätzliche Gestaltung und Komfortfunktionen sind optional.
+
+## Voraussetzungen
+
+Das vollständige Projektpaket, FFmpeg und FFprobe müssen vorhanden sein. Für den ersten Lauf werden Kopien der Medien empfohlen.
+
+## Schritt-für-Schritt-Anleitung
 
 ### Schritt 1: Projektpaket vollständig entpacken
 
@@ -244,7 +252,7 @@ Bei einem ungültigen oder nicht mehr verfügbaren Effekt:
 4. Anwendung normal schließen.
 5. Bei wichtigen Projekten Projektdatei und Medienliste sichern.
 
-## 12. Abschlussprüfung vor Veröffentlichung
+## Abschlussprüfung
 
 - richtige Medien verwendet
 - Ton vorhanden und verständlich
@@ -255,7 +263,7 @@ Bei einem ungültigen oder nicht mehr verfügbaren Effekt:
 - Originalmedien unverändert
 - Projekt gespeichert
 
-## 13. Nächste passende Anleitung
+## Nächster Schritt
 
 - Installation: `AUTOINSTALLATION_save_.md`
 - Dokumentationsübersicht: `docs/DOKUMENTATIONSINDEX.md`

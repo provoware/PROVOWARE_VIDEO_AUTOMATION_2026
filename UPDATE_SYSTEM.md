@@ -10,7 +10,7 @@ Diese Anleitung erklärt den sicheren Updateablauf mit signiertem Channel-Verzei
 - **Empfohlen:** Projekte und individuelle Konfigurationen vor einem größeren Update zusätzlich sichern.
 - **Optional:** Offline-Update über eine ausdrücklich gewählte lokale Quelle.
 
-## Vor dem Update
+## Voraussetzungen
 
 ### Schritt 1: Laufende Arbeiten abschließen
 
@@ -36,6 +36,10 @@ Diese Anleitung erklärt den sicheren Updateablauf mit signiertem Channel-Verzei
 
 **Kann entfallen?** Ja, wenn keine wichtigen lokalen Zustände vorhanden sind. Empfohlen bleibt die Sicherung trotzdem.
 
+## Sicherung und Rückweg
+
+Der aktive Programmstand bleibt beim Aufbau des neuen Standes unverändert. Bei einem fehlgeschlagenen Erststart wird auf diesen bestätigten Stand zurückgefallen. Wichtige Projekte und Einstellungen werden zusätzlich vor dem Update gesichert.
+
 ## Signiertes Channel-Verzeichnis
 
 `channel-index.json` wird mit Ed25519 signiert. Für `stable` und `rc` enthält es unter anderem:
@@ -49,7 +53,7 @@ Diese Anleitung erklärt den sicheren Updateablauf mit signiertem Channel-Verzei
 
 Remotequellen werden ausschließlich über HTTPS akzeptiert. Lokale `file://`-Quellen sind nur für bewusst gewählte Offline- und CI-Prüfungen zulässig.
 
-## Schritt-für-Schritt-Update
+## Schritt-für-Schritt-Anleitung
 
 ### Schritt 1: Channel-Index laden und prüfen
 

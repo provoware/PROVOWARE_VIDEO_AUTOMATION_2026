@@ -4,6 +4,14 @@
 
 Diese Anleitung erklärt, wie Meldungen sicher eingeordnet, behoben und abschließend geprüft werden. Sie richtet sich ausdrücklich auch an Nutzer ohne Linux- oder Entwicklerkenntnisse.
 
+## Pflichtgrad
+
+Bei blockierenden Fehlern ist diese Anleitung verpflichtend. Bei Warnungen ist sie empfohlen.
+
+## Voraussetzungen
+
+Die vollständige Meldung und der betroffene Projekt- oder Ausgabepfad müssen noch sichtbar oder im lokalen Diagnosebericht vorhanden sein.
+
 ## Grundregel
 
 Jeder VideoBatch-Fehler soll fünf Fragen beantworten:
@@ -40,7 +48,7 @@ Der betroffene Schritt wurde blockiert, damit keine unvollständige, unsichere o
 
 **Kann ignoriert werden?** Nein.
 
-## Schritt-für-Schritt-Fehlerbehebung
+## Schritt-für-Schritt-Anleitung
 
 ### Schritt 1: Meldung vollständig lesen
 
