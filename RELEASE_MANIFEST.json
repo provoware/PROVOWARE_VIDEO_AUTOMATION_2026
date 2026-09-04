@@ -240,7 +240,7 @@
     {
       "mode": "0o644",
       "path": "QUALITY_ENVIRONMENT_STATUS.json",
-      "sha256": "df65d649cc1fdd22487db9d863a6dc279ecf493b0b300302b3792eaafeeb2666",
+      "sha256": "19d0f318463c2b3ea641c17885d9f88cb5d8c744fa208690c5e3d3e042de9f02",
       "size": 2267
     },
     {
@@ -384,8 +384,8 @@
     {
       "mode": "0o644",
       "path": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
-      "sha256": "d49b18c117d2f1a6f9a76832a40fbb4a267011d3564dadc580764765d6609cf9",
-      "size": 3339
+      "sha256": "8466ec9ddd1e940eff9f74ce3460820bc4eecf987e4d0e6f518d436a69384789",
+      "size": 3261
     },
     {
       "mode": "0o644",
@@ -2256,8 +2256,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_current_release_evidence_contract.py",
-      "sha256": "c8bf405f442177897b9e6e64af91f099c39b84b7595365b47372083c4b3d80a1",
-      "size": 1778
+      "sha256": "1d0ae1ce1d1857c3a8806f3ea4d2f3dcf2597effb9aa8bdcc4ade6ba0b10e7c4",
+      "size": 1990
     },
     {
       "mode": "0o644",

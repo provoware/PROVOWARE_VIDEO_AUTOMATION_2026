@@ -48,7 +48,7 @@
     "release_archive_excluded": true,
     "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe"
   },
-  "release_manifest_files": 443,
+  "release_manifest_files": 444,
   "matrix": {
     "status": "passed",
     "passed_targets": 4,
@@ -77,12 +77,6 @@
     "targeted_rc24": "27/27 finalization and preview regressions",
     "selected_media_click_stress": "120 rapid selection changes, passed",
     "full_regression": "466 passed / 2 skipped / 468 collected",
-    "full_regression_groups": [
-      98,
-      89,
-      83,
-      55
-    ],
     "test_environment": "Ubuntu 24.04.4 LTS · Python 3.12.3 · Xvfb 1920x1080x24",
     "collected": 468
   }

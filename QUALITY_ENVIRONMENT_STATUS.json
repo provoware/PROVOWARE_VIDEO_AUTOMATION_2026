@@ -29,7 +29,7 @@
     "architecture_findings": 0,
     "internal_quality_findings": 0,
     "maximum_complexity": 29,
-    "release_manifest_files": 443,
+    "release_manifest_files": 444,
     "kubuntu_matrix": {
       "status": "passed",
       "passed_targets": 4,

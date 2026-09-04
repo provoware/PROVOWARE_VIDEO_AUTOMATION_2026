@@ -21,6 +21,9 @@ def test_current_full_regression_is_canonical_release_evidence() -> None:
     assert tests["skipped"] == 2
     assert tests["line_coverage_percent"] == 73.38
     assert tests["branch_coverage_percent"] == 59.01
+    assert "full_regression_groups" not in tests
+    assert data["manifest"]["file_count"] == 444
+    assert "superseded by full_regression_run_id 33805992774" in data["provenance"]["evidence_regression_method"]
     assert data["provenance"]["full_regression_run_id"] == 33805992774
     assert data["provenance"]["full_regression_verified_commit"] == "2e7d4350b0ccb0a5d0a69fa1033f0b1aded54e02"
 
