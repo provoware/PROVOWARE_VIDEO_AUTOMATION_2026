@@ -368,7 +368,8 @@ jobs:
         run: |
           set -Eeuo pipefail
           short_sha="${EXPECTED_HEAD_SHA:0:12}"
-          archive="PROVOWARE_VIDEO_AUTOMATION_2026_2.8.3-rc24_${short_sha}_verified.zip"
+          version="$(python3 -c 'import json; from pathlib import Path; data=json.loads(Path("VERSION.json").read_text(encoding="utf-8")); value=str(data.get("build") or data.get("version") or "").strip(); assert value, "VERSION.json: build/version fehlt"; print(value)')"
+          archive="PROVOWARE_VIDEO_AUTOMATION_2026_${version}_${short_sha}_verified.zip"
           git archive \
             --format=zip \
             --prefix=PROVOWARE_VIDEO_AUTOMATION_2026/ \
