@@ -1,7 +1,7 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 442,
+  "file_count": 441,
   "files": [
     {
       "mode": "0o644",
@@ -38,12 +38,6 @@
       "path": ".github/workflows/design-manifest-gate.yml",
       "sha256": "0a0255b4c0fecde4096dcbc84b9184cb501f0cae2491e530c1e5a489b06f4844",
       "size": 2090
-    },
-    {
-      "mode": "0o644",
-      "path": ".github/workflows/fix-post-merge-smoke-once.yml",
-      "sha256": "704d99ad169ffa8e955dafd0508164b81c8b3bb6b996e008c62f14bc1b5f3281",
-      "size": 4068
     },
     {
       "mode": "0o644",
@@ -978,8 +972,8 @@
     {
       "mode": "0o644",
       "path": "scripts/build_release_manifest.py",
-      "sha256": "44fbaf185600bf1b1f1aa6ae5c8fed14033cc4fbbb82607869a265768bd39d82",
-      "size": 8513
+      "sha256": "a78a4f446dd0c4d9240a0b32216e5e4daa1261b66d2a18eb95b9c355083af9e8",
+      "size": 8452
     },
     {
       "mode": "0o644",
@@ -1128,8 +1122,8 @@
     {
       "mode": "0o644",
       "path": "scripts/release_file_contract.py",
-      "sha256": "a543b7a5c315ed409060f8a40581244b2b3676e0d4a1c315a8ab5c19f6e56223",
-      "size": 1860
+      "sha256": "d725cf96916833ef1cc5a8297c0108385d04b23da4694fb96d34ecde345cda92",
+      "size": 3848
     },
     {
       "mode": "0o755",
@@ -1260,8 +1254,8 @@
     {
       "mode": "0o644",
       "path": "scripts/validate_release_manifest.py",
-      "sha256": "2b7868cf393a6693b82771b5e429153326973dfa9b89e59b41d71e7f8fe84786",
-      "size": 2103
+      "sha256": "ad910a9af1a0ebd85e019baf51f6cc87cb8f7b7274c70249118302fffe0ba351",
+      "size": 2072
     },
     {
       "mode": "0o644",
@@ -2526,8 +2520,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_repository_finalization.py",
-      "sha256": "2503443fcd8e204968a9fedb4dc33194958f9a35c2ef84d4181d09293b4785c9",
-      "size": 2356
+      "sha256": "7c4ca4b2296f88da731ecce1484fdb78e933d3a989e4cff8490df4869cd44e85",
+      "size": 4101
     },
     {
       "mode": "0o644",
