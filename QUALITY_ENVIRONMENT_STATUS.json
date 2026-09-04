@@ -15,13 +15,13 @@
   },
   "internal_gates": {
     "tests": {
-      "passed": 325,
+      "passed": 466,
       "failed": 0,
-      "skipped": 0
+      "skipped": 2
     },
-    "line_coverage_percent": 82.43,
-    "branch_coverage_percent": 67.21,
-    "combined_coverage_percent": 79.46,
+    "line_coverage_percent": 73.38,
+    "branch_coverage_percent": 59.01,
+    "combined_coverage_percent": 70.54,
     "application_simulations": "12/12",
     "fault_lab": "12/12",
     "visual_scenarios": "18/18",
@@ -34,9 +34,9 @@
       "status": "passed",
       "passed_targets": 4,
       "total_targets": 4,
-      "workflow_run_id": 33791408050,
-      "verified_commit": "9823e790f8e67a6e0f406b132c37569e3b95d977",
-      "scope_note": "Canonical P0 head; deterministic headless CI matrix, not a substitute for physical KDE acceptance."
+      "workflow_run_id": 33806936870,
+      "verified_commit": "8c6691cfaffd371d39fa5696c78f67114f83a7aa",
+      "scope_note": "Current PR #84 head; deterministic headless CI matrix, not a substitute for physical KDE acceptance."
     }
   },
   "external_gates": {
@@ -44,9 +44,10 @@
     "mypy_2_3_0": "passed",
     "bandit_1_9_4": "passed",
     "pip_audit_2_10_1": "passed",
+    "coverage_80_65": "73,38 % Zeilenabdeckung bei geforderten 80,00 % und 59,01 % Branch-Abdeckung bei geforderten 65,00 %; scripts/coverage_policy.py blockiert.",
     "physical_kde_x11_wayland": "Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless",
     "large_media_soak": "Realer Lauf auf langsamem externem Ziel fehlt"
   },
   "stable_ready": false,
-  "stable_block_reason": "Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless; Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt"
+  "stable_block_reason": "Coverage-Vertrag 80/65: 73,38 % Zeilenabdeckung bei geforderten 80,00 % und 59,01 % Branch-Abdeckung bei geforderten 65,00 %; scripts/coverage_policy.py blockiert.; Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless; Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt"
 }

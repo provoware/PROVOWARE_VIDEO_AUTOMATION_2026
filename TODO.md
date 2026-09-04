@@ -88,6 +88,7 @@ Diese Punkte dürfen nicht durch Scrollen oder kleinere Schrift lediglich verdec
 
 ## Noch offene Stable-Gates
 
+- [ ] **Coverage-Vertrag 80/65:** aktuelle Messung 73,38 % Zeilen / 59,01 % Branch; Schwellen nicht absenken, sondern ungetestete kritische Pfade gezielt schließen.
 - [ ] **Physische KDE-Abnahme unter X11 und Wayland** für den finalen, korrigierten UI-Stand dokumentieren.
 - [ ] **Langzeitrender** mit großer Medienauswahl und langsamem externem Ziel durchführen.
 - [ ] `RELEASE_MANIFEST.json` erst **nach** finalem Code-/UI-/Startnachweis genau einmal regenerieren und anschließend read-only verifizieren.

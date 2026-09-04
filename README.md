@@ -5,14 +5,15 @@
 **Kanonische Quelle:** `diagnostics/release_readiness/RELEASE_EVIDENCE.json`  
 **Freigegebener Qualitätsbericht:** `VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json`
 
-- 325/325 automatisierte Tests bestanden
-- 82,43 % Zeilenabdeckung
-- 67,21 % Zweigabdeckung
+- 466/468 automatisierte Tests bestanden; 2 übersprungen
+- 73,38 % Zeilenabdeckung
+- 59,01 % Zweigabdeckung
 - 18/18 visuelle Szenarien bestanden
 - Kubuntu-CI-Matrix: 4/4 Kombinationen bestanden
 
 ### Offene Stable-Gates
 
+- Coverage-Vertrag 80/65: 73,38 % Zeilenabdeckung bei geforderten 80,00 % und 59,01 % Branch-Abdeckung bei geforderten 65,00 %; scripts/coverage_policy.py blockiert.
 - Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless
 - Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt
 <!-- release-status:end -->

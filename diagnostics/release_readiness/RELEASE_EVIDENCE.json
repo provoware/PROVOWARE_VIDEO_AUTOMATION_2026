@@ -23,7 +23,14 @@
     "offline_quality_artifact_id": 9912461944,
     "offline_quality_artifact_sha256": "7574b309911b3c067583510b7e418af1ceec999e59008ea1c07c1d12525a4c7c",
     "offline_quality_verified_at": "2026-09-03T20:52:37Z",
-    "offline_quality_artifact_name": "a32-pinned-offline-quality-evidence-934688e8"
+    "offline_quality_artifact_name": "a32-pinned-offline-quality-evidence-934688e8",
+    "current_a32_2_head": "8c6691cfaffd371d39fa5696c78f67114f83a7aa",
+    "full_regression_verified_commit": "2e7d4350b0ccb0a5d0a69fa1033f0b1aded54e02",
+    "full_regression_run_id": 33805992774,
+    "full_regression_artifact_name": "a32-full-suite-2e7d4350",
+    "full_regression_artifact_id": 9912964969,
+    "full_regression_artifact_sha256": "592d17cf5120bdd7a1920ddf8dc3e7db14f4cf7233541ea350f00da71d9b9e2a",
+    "full_regression_verified_at": "2026-09-03"
   },
   "manifest": {
     "path": "RELEASE_MANIFEST.json",
@@ -31,32 +38,33 @@
     "status": "passed"
   },
   "tests": {
-    "passed": 325,
+    "passed": 466,
     "failed": 0,
-    "skipped": 0,
-    "line_coverage_percent": 82.43,
-    "branch_coverage_percent": 67.21,
-    "combined_coverage_percent": 79.46,
+    "skipped": 2,
+    "line_coverage_percent": 73.38,
+    "branch_coverage_percent": 59.01,
+    "combined_coverage_percent": 70.54,
     "assurance_scenarios": "12/12",
     "fault_lab": "12/12",
     "visual_scenarios": "18/18",
     "targeted_rc24": "27/27 finalization and preview regressions",
     "selected_media_click_stress": "120 rapid selection changes, passed",
-    "full_regression": "325/325",
+    "full_regression": "466 passed / 2 skipped / 468 collected",
     "full_regression_groups": [
       98,
       89,
       83,
       55
     ],
-    "test_environment": "Xvfb X11 on exact exported PR tree"
+    "test_environment": "Ubuntu 24.04.4 LTS · Python 3.12.3 · Xvfb 1920x1080x24",
+    "collected": 468
   },
   "matrix": {
     "status": "passed",
     "passed_targets": 4,
     "total_targets": 4,
-    "workflow_run_id": 33791408050,
-    "verified_commit": "9823e790f8e67a6e0f406b132c37569e3b95d977",
+    "workflow_run_id": 33806936870,
+    "verified_commit": "8c6691cfaffd371d39fa5696c78f67114f83a7aa",
     "targets": [
       {
         "os": "ubuntu-22.04",
@@ -79,7 +87,7 @@
         "status": "passed"
       }
     ],
-    "scope_note": "Canonical P0 head; deterministic headless CI matrix, not a substitute for physical KDE acceptance."
+    "scope_note": "Current PR #84 head; deterministic headless CI matrix, not a substitute for physical KDE acceptance."
   },
   "runtime_start": {
     "status": "passed",
@@ -227,6 +235,12 @@
       "reason": "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md · Workflow 33804721216 · Commit 934688e8a2f9e1344a91a959396aaef361ee9b67 · Rückgabecode 0"
     },
     {
+      "id": "coverage_80_65",
+      "label": "Coverage-Vertrag 80/65",
+      "status": "failed",
+      "reason": "73,38 % Zeilenabdeckung bei geforderten 80,00 % und 59,01 % Branch-Abdeckung bei geforderten 65,00 %; scripts/coverage_policy.py blockiert."
+    },
+    {
       "id": "physical_kde_x11_wayland",
       "label": "Physische KDE-X11-/Wayland-Abnahme",
       "status": "open",
@@ -241,11 +255,11 @@
   ],
   "stable_ready": false,
   "progress": {
-    "percent": 93,
-    "completed": 28,
-    "open": 2,
+    "percent": 90,
+    "completed": 27,
+    "open": 3,
     "total": 30,
-    "current_todo": "Quality-Evidence auf aktuellem A32.2-Head bestätigt; physische KDE-Abnahme und Large-Media-Soak bleiben offen"
+    "current_todo": "Coverage-Vertrag 80/65 schließen; danach physische KDE-Abnahme und Large-Media-Soak auf demselben finalen Kandidaten."
   },
   "approved_quality_report": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
   "artifact_policy": "full-project-zip-before-stable",
