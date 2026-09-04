@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - iteration/39b-pyside6-qml-transfer-matrix-20260904
+  pull_request:
+    branches:
+      - iteration/39a-a33-rebased-packaging-hygiene-20260904
 
 permissions:
   contents: read
@@ -75,12 +78,25 @@ jobs:
           python scripts/validate_release_manifest.py
 
       - name: Deterministisches 39B-Paket prüfen
+        id: package
         run: |
           set -Eeuo pipefail
-          ZIP="$RUNNER_TEMP/PROVOWARE_VideoBatch_Fast_ITER39B_TRANSFER_MATRIX.zip"
+          ZIP="PROVOWARE_VideoBatch_Fast_ITER39B_TRANSFER_MATRIX_2026-09-04.zip"
           ZIP2="$RUNNER_TEMP/PROVOWARE_VideoBatch_Fast_ITER39B_TRANSFER_MATRIX_repro.zip"
           python scripts/package_release.py --output "$ZIP"
           python scripts/verify_release_zip.py "$ZIP"
           python scripts/package_release.py --output "$ZIP2"
           cmp -s "$ZIP" "$ZIP2"
-          sha256sum "$ZIP"
+          sha256sum "$ZIP" | tee "$ZIP.sha256.txt"
+          echo "ZIP_NAME=$ZIP" >> "$GITHUB_ENV"
+
+      - name: 39B-Evidence hochladen
+        if: always() && steps.package.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: PROVOWARE_VideoBatch_Fast_ITER39B_TRANSFER_MATRIX_2026-09-04
+          path: |
+            ${{ env.ZIP_NAME }}
+            ${{ env.ZIP_NAME }}.sha256.txt
+          if-no-files-found: error
+          retention-days: 30
