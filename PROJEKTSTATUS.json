@@ -3,12 +3,12 @@
   "projektname": "PROVOWARE VideoBatch Fast",
   "aliasnamen": ["VideoBatch Fast", "PROVOWARE Video Automation 2026"],
   "programmversion": "2.8.3-rc24",
-  "entwicklungsiteration": "39A",
+  "entwicklungsiteration": "39B",
   "repository": "provoware/PROVOWARE_VIDEO_AUTOMATION_2026",
   "hauptdatei": "src/videobatch_fast/app.py",
   "startdatei": "start.sh",
-  "status": "39A A33-Rebase und Packaging-Hygiene technisch validiert; Coverage-Gate blockiert Stable",
-  "lineage_base_sha": "8755d5333b2f53ff8080655f8af39727db9b8c48",
+  "status": "39B Core-vs.-Tk-Transfermatrix für PySide6/QML definiert; Validierung läuft; Stable weiterhin durch Coverage und physische Gates blockiert",
+  "lineage_base_sha": "121211244d90932775348ac26039b3d7315e60b2",
   "referenz_ci_sha": "d787b824688b73de1a96c6cfa2ce7bd276728486",
   "referenz_ci_run": 33827615114,
   "letztes_validiertes_release": "2.8.3-rc24",
@@ -22,7 +22,8 @@
     "fokus_bestanden": 47,
     "vollregression_bestanden": 477,
     "vollregression_uebersprungen": 2,
-    "vollregression_fehlgeschlagen": 0
+    "vollregression_fehlgeschlagen": 0,
+    "39b_transfermatrix_status": "pending_ci"
   },
   "coverage": {
     "zeilen_prozent": 73.16,
@@ -38,6 +39,13 @@
     "groesste_python_datei_zeilen": 699,
     "befunde": 0
   },
+  "pyside6_qml_transfer": {
+    "matrix": "docs/architecture/PYSIDE6_QML_TRANSFER_MATRIX.json",
+    "klasse_a_direkt": 9,
+    "klasse_b_adapter": 4,
+    "klasse_c_neubau": 3,
+    "regel": "Keine Tk-Widget-/Layout-/Mainloop-Implementierung direkt in die Qt-Linie portieren"
+  },
   "packaging": {
     "deterministisch": true,
     "manifestgefuehrt": true,
@@ -49,5 +57,5 @@
     "physische KDE-X11-/Wayland-Abnahme",
     "realer Langzeitrender mit großer Medienauswahl und langsamem Ziel"
   ],
-  "naechster_schritt": "A33-Core-/Startup-/Fault-Hardening gegen Tk-spezifische UI klassifizieren und Transfermatrix für PySide6/QML erstellen"
+  "naechster_schritt": "39C Toolkit-neutralen Runtime-Error-Core aus runtime_error_hooks.py extrahieren und Tk-/Qt-Präsentationsadapter trennen"
 }
