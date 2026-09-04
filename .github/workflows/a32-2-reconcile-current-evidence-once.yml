@@ -164,9 +164,9 @@ jobs:
         run: |
           set -Eeuo pipefail
           rm .github/workflows/a32-2-reconcile-current-evidence-once.yml
-          python scripts/build_release_manifest.py
-          python scripts/build_release_manifest.py --check --json
-          python scripts/validate_release_manifest.py
+          PYTHONPATH=src python scripts/build_release_manifest.py
+          PYTHONPATH=src python scripts/build_release_manifest.py --check --json
+          PYTHONPATH=src python scripts/validate_release_manifest.py
           git diff --check
 
       - name: Commit canonical reconciliation result
