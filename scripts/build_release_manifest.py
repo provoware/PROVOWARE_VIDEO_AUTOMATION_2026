@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-from release_file_contract import included_release_file
+from release_file_contract import selected_release_files
 from videobatch_fast.versioning import version_info
 from videobatch_fast.visual_approval import (
     approval_fingerprint,
@@ -38,11 +38,7 @@ def file_record(path: Path) -> dict[str, Any]:
 
 
 def expected_files() -> list[dict[str, Any]]:
-    return [
-        file_record(path)
-        for path in sorted(ROOT.rglob("*"))
-        if included_release_file(ROOT, path)
-    ]
+    return [file_record(path) for path in selected_release_files(ROOT)]
 
 
 def files_digest(files: Sequence[Mapping[str, Any]]) -> str:
