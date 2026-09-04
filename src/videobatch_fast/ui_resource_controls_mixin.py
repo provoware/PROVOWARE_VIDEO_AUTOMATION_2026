@@ -32,11 +32,11 @@ class UiResourceControlsMixin:
         self._ram_limit_vars = {
             value: BooleanVar(value=configured_ram == value) for value in RAM_LIMIT_PRESETS_GB
         }
-        self.runner.set_cpu_limit_50(self._cpu_limit_50_var.get())
-        self.runner.set_memory_limit_gb(configured_ram if configured_ram in RAM_LIMIT_PRESETS_GB else None)
+        self._configured_ram_limit = configured_ram if configured_ram in RAM_LIMIT_PRESETS_GB else None
         self._build_progress_strip(panel)
         self._build_load_strip(panel)
         self._build_limit_strip(panel)
+        self.root.after(50, self._apply_initial_resource_limits)
         self.root.after(250, self._poll_resource_process_panel)
 
     def _build_progress_strip(self, parent) -> None:
@@ -69,6 +69,10 @@ class UiResourceControlsMixin:
                 row=0, column=index, sticky="w", padx=(0 if index == 0 else 6, 0)
             )
 
+    @staticmethod
+    def _ram_label(value: float) -> str:
+        return f"RAM {str(value).replace('.', ',')} GB" if value % 1 else f"RAM {int(value)} GB"
+
     def _build_limit_strip(self, parent) -> None:
         controls = ttk.Frame(parent, style="ShellCard.TFrame")
         controls.grid(row=2, column=0, sticky="ew", pady=(3, 0))
@@ -79,10 +83,9 @@ class UiResourceControlsMixin:
             command=self._toggle_cpu_limit,
         ).pack(side="left", padx=(0, 7))
         for value in RAM_LIMIT_PRESETS_GB:
-            label = f"RAM {value:g} GB" if value != 1.5 and value != 2.5 else f"RAM {str(value).replace('.', ',')} GB"
             ttk.Checkbutton(
                 controls,
-                text=label,
+                text=self._ram_label(value),
                 variable=self._ram_limit_vars[value],
                 command=lambda selected=value: self._toggle_ram_limit(selected),
             ).pack(side="left", padx=(0, 5))
@@ -94,6 +97,10 @@ class UiResourceControlsMixin:
             controls, text="▶ Fortsetzen", command=self._resume_render, state="disabled"
         )
         self._resume_render_button.pack(side="right")
+
+    def _apply_initial_resource_limits(self) -> None:
+        self.runner.set_cpu_limit_50(bool(self._cpu_limit_50_var.get()))
+        self.runner.set_memory_limit_gb(self._configured_ram_limit)
 
     def _toggle_cpu_limit(self) -> None:
         enabled = bool(self._cpu_limit_50_var.get())
