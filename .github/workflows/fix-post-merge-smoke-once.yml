@@ -1,0 +1,140 @@
+name: One-shot post-merge smoke contract repair
+
+on:
+  push:
+    branches:
+      - fix/post-merge-smoke-contracts-20260904
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out repair branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/post-merge-smoke-contracts-20260904
+          fetch-depth: 0
+
+      - name: Apply bounded canonical-version repair
+        run: |
+          set -Eeuo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          release = "2.8.3" + "-rc24"
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              target = Path(path)
+              text = target.read_text(encoding="utf-8")
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{path}: erwartete genau 1 Fundstelle, gefunden {count}: {old!r}")
+              target.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+          bounded = ".github/workflows/bounded-long-render-rehearsal.yml"
+          replace_once(
+              bounded,
+              f"'docs/LONG_RENDER_{release}.md'",
+              "'docs/LONG_RENDER_*.md'",
+          )
+          replace_once(
+              bounded,
+              f"'candidate': '{release}',",
+              "'candidate': version,",
+          )
+          replace_once(
+              bounded,
+              "          root = Path('rehearsal').resolve()\n          inputs = root / 'inputs'\n",
+              "          repository = Path.cwd()\n"
+              "          version_payload = json.loads((repository / 'VERSION.json').read_text(encoding='utf-8'))\n"
+              "          version = str(version_payload.get('build') or version_payload.get('version') or '').strip()\n"
+              "          if not version:\n"
+              "              raise SystemExit('VERSION.json: build/version fehlt')\n"
+              "          root = Path('rehearsal').resolve()\n"
+              "          inputs = root / 'inputs'\n",
+          )
+
+          dynamic_version = "$(python3 -c 'import json; from pathlib import Path; data=json.loads(Path(\"VERSION.json\").read_text(encoding=\"utf-8\")); value=str(data.get(\"build\") or data.get(\"version\") or \"\").strip(); assert value, \"VERSION.json: build/version fehlt\"; print(value)')"
+
+          matrix = ".github/workflows/kubuntu-pr-matrix.yml"
+          replace_once(
+              matrix,
+              '          archive="${project}_' + release + '_${short_sha}_verified.zip"',
+              '          version="' + dynamic_version + '"\n'
+              '          archive="${project}_${version}_${short_sha}_verified.zip"',
+          )
+
+          validation = ".github/workflows/kubuntu-pr-validation.yml"
+          replace_once(
+              validation,
+              '          archive="PROVOWARE_VIDEO_AUTOMATION_2026_' + release + '_${short_sha}_verified.zip"',
+              '          version="' + dynamic_version + '"\n'
+              '          archive="PROVOWARE_VIDEO_AUTOMATION_2026_${version}_${short_sha}_verified.zip"',
+          )
+
+          builder = "scripts/build_long_render_contract.py"
+          anchor = "from videobatch_fast.probe import AUDIO_EXTENSIONS, IMAGE_EXTENSIONS\n\n\n"
+          helper = (
+              anchor
+              + "ROOT = Path(__file__).resolve().parents[1]\n\n\n"
+              + "def _candidate_version() -> str:\n"
+              + "    try:\n"
+              + "        payload = json.loads((ROOT / 'VERSION.json').read_text(encoding='utf-8'))\n"
+              + "    except (OSError, json.JSONDecodeError) as exc:\n"
+              + "        raise SystemExit(f'FEHLER: VERSION.json kann nicht gelesen werden: {exc}') from exc\n"
+              + "    candidate = str(payload.get('build') or payload.get('version') or '').strip()\n"
+              + "    if not candidate:\n"
+              + "        raise SystemExit('FEHLER: VERSION.json enthält weder build noch version.')\n"
+              + "    return candidate\n\n\n"
+          )
+          replace_once(builder, anchor, helper)
+          replace_once(
+              builder,
+              'argparse.ArgumentParser(description="Fest gebundenen RC24-Langzeitrender-Vertrag erzeugen.")',
+              'argparse.ArgumentParser(description="Versionsgebundenen Langzeitrender-Vertrag erzeugen.")',
+          )
+          replace_once(
+              builder,
+              f'        "candidate": "{release}",',
+              '        "candidate": _candidate_version(),',
+          )
+
+          test_path = Path("tests/test_release_literal_hygiene.py")
+          test_text = test_path.read_text(encoding="utf-8")
+          regression = (
+              "\n\ndef test_canonical_repository_has_no_operational_release_literals() -> None:\n"
+              "    violations, _ = MODULE.scan_repository(ROOT)\n"
+              "    assert violations == []\n"
+          )
+          if "test_canonical_repository_has_no_operational_release_literals" in test_text:
+              raise SystemExit("Regressionstest ist unerwartet bereits vorhanden.")
+          test_path.write_text(test_text.rstrip() + regression + "\n", encoding="utf-8")
+          PY
+
+          git rm .github/workflows/fix-post-merge-smoke-once.yml
+          python3 -m py_compile scripts/build_long_render_contract.py tests/test_release_literal_hygiene.py
+          python3 scripts/check_release_literal_hygiene.py --report "$RUNNER_TEMP/release-literal-hygiene.json"
+
+          git config user.name "provoware-release-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add \
+            .github/workflows/bounded-long-render-rehearsal.yml \
+            .github/workflows/kubuntu-pr-matrix.yml \
+            .github/workflows/kubuntu-pr-validation.yml \
+            scripts/build_long_render_contract.py \
+            tests/test_release_literal_hygiene.py \
+            .github/workflows/fix-post-merge-smoke-once.yml
+          git commit -m "fix: derive release identifiers from canonical metadata"
+
+          python3 scripts/build_release_manifest.py
+          python3 scripts/build_release_manifest.py --check --json
+          git add RELEASE_MANIFEST.json
+          git commit -m "chore: refresh release manifest after smoke repair"
+
+          python3 scripts/check_release_literal_hygiene.py --report "$RUNNER_TEMP/release-literal-hygiene-final.json"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          git push origin HEAD:fix/post-merge-smoke-contracts-20260904
