@@ -1,0 +1,194 @@
+name: Exact post-merge smoke fa695f5f
+
+on:
+  push:
+    branches:
+      - ops/post-merge-smoke-fa695f5f
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONUTF8: '1'
+  PYTHONPATH: src
+  EXACT_MAIN_SHA: fa695f5f706de8e7db678f9516cf789e86198a7f
+  EXACT_MAIN_TREE: dc2e77c42b6a99d1c8139a8af0f10159a91b1d35
+
+jobs:
+  smoke:
+    name: Exact main post-merge qualification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out exact canonical main commit
+        uses: actions/checkout@v4
+        with:
+          ref: fa695f5f706de8e7db678f9516cf789e86198a7f
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Prove exact source identity
+        run: |
+          set -Eeuo pipefail
+          actual_sha="$(git rev-parse HEAD)"
+          actual_tree="$(git rev-parse HEAD^{tree})"
+          test "$actual_sha" = "$EXACT_MAIN_SHA"
+          test "$actual_tree" = "$EXACT_MAIN_TREE"
+          printf 'POST_MERGE_SHA=%s\nPOST_MERGE_TREE=%s\n' "$actual_sha" "$actual_tree" \
+            | tee "$RUNNER_TEMP/source-identity.txt"
+
+      - name: Prepare cached Kubuntu dependencies
+        uses: ./.github/actions/kubuntu-package-cache
+        with:
+          os: ubuntu-24.04
+          session: x11
+          mode: matrix
+
+      - name: Start deterministic X11 display
+        run: |
+          set -Eeuo pipefail
+          Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
+          echo 'DISPLAY=:99' >> "$GITHUB_ENV"
+          sleep 2
+
+      - name: Provision and attest system FFmpeg
+        run: |
+          set -Eeuo pipefail
+          ffmpeg_path="$(readlink -f "$(command -v ffmpeg)")"
+          ffprobe_path="$(readlink -f "$(command -v ffprobe)")"
+          test -x "$ffmpeg_path"
+          test -x "$ffprobe_path"
+          media_dir="$RUNNER_TEMP/ffmpeg-system/bin"
+          mkdir -p "$media_dir"
+          ln -sfn "$ffmpeg_path" "$media_dir/ffmpeg"
+          ln -sfn "$ffprobe_path" "$media_dir/ffprobe"
+          echo "VIDEOBATCH_STATIC_MEDIA_DIR=$media_dir" >> "$GITHUB_ENV"
+          {
+            printf 'ffmpeg=%s\n' "$ffmpeg_path"
+            printf 'ffprobe=%s\n' "$ffprobe_path"
+            "$ffmpeg_path" -version | sed -n '1p'
+            "$ffprobe_path" -version | sed -n '1p'
+          } | tee "$RUNNER_TEMP/ffmpeg-attestation.txt"
+
+      - name: Check release manifest and compile focused contracts
+        run: |
+          set -Eeuo pipefail
+          python3 scripts/build_release_manifest.py --check --json \
+            | tee "$RUNNER_TEMP/release-manifest-check.json"
+          python3 -m compileall -q -f src scripts diagnostics tests
+          python3 -m pytest -q \
+            tests/test_design_manifest_contract.py \
+            tests/test_canonical_application_shell_contract.py \
+            tests/test_canonical_kpi_contract.py \
+            tests/test_visual_pass2_contract.py \
+            tests/test_repository_finalization.py \
+            tests/test_release_literal_hygiene.py \
+            | tee "$RUNNER_TEMP/focused-pytest.log"
+
+      - name: Run repository-owned Kubuntu smoke unchanged
+        run: |
+          set -Eeuo pipefail
+          bash scripts/kubuntu_matrix_smoke.sh \
+            2>&1 | tee "$RUNNER_TEMP/kubuntu-matrix-smoke.log"
+
+      - name: Prove tracked checkout remained unchanged
+        run: |
+          set -Eeuo pipefail
+          status="$(git status --porcelain --untracked-files=no)"
+          if [[ -n "$status" ]]; then
+            printf '%s\n' "$status"
+            echo '::error title=Tracked source drift::Post-merge smoke modified versioned project files.'
+            exit 1
+          fi
+          git diff --exit-code
+          git diff --cached --exit-code
+          echo 'TRACKED_WORKTREE_READ_ONLY=PASS' | tee "$RUNNER_TEMP/read-only-proof.txt"
+
+      - name: Build verified complete project ZIP
+        run: |
+          set -Eeuo pipefail
+          version="$(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path('VERSION.json').read_text(encoding='utf-8'))
+          value = str(data.get('build') or data.get('version') or '').strip()
+          if not value:
+              raise SystemExit('VERSION.json: build/version fehlt')
+          print(value)
+          PY
+          )"
+          short_sha="${EXACT_MAIN_SHA:0:12}"
+          project='PROVOWARE_VIDEO_AUTOMATION_2026'
+          archive="${project}_${version}_${short_sha}_POST_MERGE_VERIFIED.zip"
+          git archive \
+            --format=zip \
+            --prefix="${project}/" \
+            --output="$RUNNER_TEMP/$archive" \
+            "$EXACT_MAIN_SHA"
+          unzip -t "$RUNNER_TEMP/$archive" | tee "$RUNNER_TEMP/zip-integrity.log"
+          archive_sha256="$(sha256sum "$RUNNER_TEMP/$archive" | awk '{print $1}')"
+          archive_size="$(stat -c '%s' "$RUNNER_TEMP/$archive")"
+          printf '%s  %s\n' "$archive_sha256" "$archive" \
+            > "$RUNNER_TEMP/$archive.sha256"
+          export archive archive_sha256 archive_size
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          payload = {
+              'schema_version': 1,
+              'status': 'post-merge-verified',
+              'commit': os.environ['EXACT_MAIN_SHA'],
+              'tree': os.environ['EXACT_MAIN_TREE'],
+              'archive': os.environ['archive'],
+              'archive_size': int(os.environ['archive_size']),
+              'archive_sha256': os.environ['archive_sha256'],
+              'contracts': {
+                  'release_manifest_check': 'passed',
+                  'focused_contracts': 'passed',
+                  'repository_kubuntu_smoke': 'passed',
+                  'tracked_worktree_read_only': 'passed',
+                  'zip_integrity': 'passed',
+              },
+          }
+          Path(os.environ['RUNNER_TEMP'], 'POST_MERGE_VERIFICATION.json').write_text(
+              json.dumps(payload, ensure_ascii=False, indent=2) + '\n',
+              encoding='utf-8',
+          )
+          PY
+          echo "VERIFIED_ARCHIVE=$archive" >> "$GITHUB_ENV"
+
+      - name: Upload verified project and evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-merge-verified-fa695f5f
+          path: |
+            ${{ runner.temp }}/${{ env.VERIFIED_ARCHIVE }}
+            ${{ runner.temp }}/${{ env.VERIFIED_ARCHIVE }}.sha256
+            ${{ runner.temp }}/POST_MERGE_VERIFICATION.json
+            ${{ runner.temp }}/source-identity.txt
+            ${{ runner.temp }}/release-manifest-check.json
+            ${{ runner.temp }}/focused-pytest.log
+            ${{ runner.temp }}/kubuntu-matrix-smoke.log
+            ${{ runner.temp }}/read-only-proof.txt
+            ${{ runner.temp }}/ffmpeg-attestation.txt
+            ${{ runner.temp }}/zip-integrity.log
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-merge-failure-fa695f5f
+          path: |
+            ${{ runner.temp }}/source-identity.txt
+            ${{ runner.temp }}/release-manifest-check.json
+            ${{ runner.temp }}/focused-pytest.log
+            ${{ runner.temp }}/kubuntu-matrix-smoke.log
+            ${{ runner.temp }}/read-only-proof.txt
+            ${{ runner.temp }}/ffmpeg-attestation.txt
+            /tmp/xvfb.log
+          if-no-files-found: warn
+          retention-days: 14
