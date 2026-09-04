@@ -1470,8 +1470,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/canonical_visual_polish_mixin.py",
-      "sha256": "3c622d11a82360d150effa5a3065a926c919099cbcbc928268f8eabc1528a9c9",
-      "size": 9122
+      "sha256": "c7e749b8dc69f01f5839cd50f746c53e1c943d68ea1c19afea1f76d99089577b",
+      "size": 9991
     },
     {
       "mode": "0o644",
@@ -2214,8 +2214,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_autonomous_bootstrap_2_8_3_rc8.py",
-      "sha256": "41e547622765eeccd0b37fb25607de59c15c93f7ceff262770ca058f71353d94",
-      "size": 4252
+      "sha256": "592fbfaa25638cf19b02272c27ad77569d5a9912c6dfba73164871eeca0dd579",
+      "size": 4474
     },
     {
       "mode": "0o644",
@@ -2304,8 +2304,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_kubuntu_main_comment_dispatch.py",
-      "sha256": "0f55ea991e420467e53346fdf17120f0399de1fe88db714d3c7e9a77f2c0cdd3",
-      "size": 1840
+      "sha256": "38fe9be22024b45e89198b002a981c0f1c682f508768ff0af66c27a63adde751",
+      "size": 2112
     },
     {
       "mode": "0o644",
@@ -2346,8 +2346,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_predictive_bootstrap_2_8_3_rc10.py",
-      "sha256": "89b368a974cef27010943c642a8817d29dc97e5431972257e93607f2ade023b2",
-      "size": 4698
+      "sha256": "b0785f77f51d656e6442c8bf49b96f20bbcfc729cbe0c69aa7f90d8daf7919b8",
+      "size": 4897
     },
     {
       "mode": "0o644",
@@ -2496,8 +2496,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_release_file_status.py",
-      "sha256": "b1a8b65ee5847ae502be9502c7f17f49af7b803e4dc87d6f27541153d9bcd41e",
-      "size": 989
+      "sha256": "4f000f80d6509b03904ad311fa351accb3d00bc29612d30194e5fb8fa715f157",
+      "size": 1540
     },
     {
       "mode": "0o644",
@@ -2598,8 +2598,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_unified_toolchain_2_8_3_rc7.py",
-      "sha256": "dc509887154d042885ede9c24efe66ffc205da550c32946e652b6a63c02f65f5",
-      "size": 4583
+      "sha256": "d62e348544870c56c881f852a8b1df0b7fe06da7efc5cf1fed2f9586f63934b2",
+      "size": 4748
     },
     {
       "mode": "0o644",
@@ -2628,8 +2628,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_visual_pass2_contract.py",
-      "sha256": "16aeae96e8ddbf79c3f7ff5f429cb83fe51434197360c66c26fc13a3c1b875a2",
-      "size": 2288
+      "sha256": "23717f0c071f12a7b26a3933d4dd1e64bccd7bfea29e4363d403bbb2ac7bf58d",
+      "size": 3231
     },
     {
       "mode": "0o644",
