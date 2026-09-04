@@ -1,7 +1,7 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 450,
+  "file_count": 454,
   "files": [
     {
       "mode": "0o644",
@@ -20,6 +20,12 @@
       "path": ".github/ci/kubuntu-packages.txt",
       "sha256": "84f415d0a0e6e2cea1d3c9886d137014c177f429445911a85abc7ec39ce7e189",
       "size": 76
+    },
+    {
+      "mode": "0o644",
+      "path": ".github/workflows/39b-pyside6-qml-transfer-matrix.yml",
+      "sha256": "6cc94eef9992ed2b1005de6a11cf4ca466372442a18d328256dc31628e6e02c5",
+      "size": 2501
     },
     {
       "mode": "0o644",
@@ -132,8 +138,8 @@
     {
       "mode": "0o644",
       "path": "CHANGELOG.md",
-      "sha256": "a98558b952cf904c87651808c97c2dd03b87f8c89aac00558c915d33ff25af94",
-      "size": 4832
+      "sha256": "ed769a6b62cd5c5cf66f4ed3891421d665669995ead3e1f7bcca46e46044c23c",
+      "size": 6039
     },
     {
       "mode": "0o644",
@@ -221,6 +227,12 @@
     },
     {
       "mode": "0o644",
+      "path": "ITERATION_39B_PYSIDE6_QML_TRANSFER_MATRIX_2026-09-04.md",
+      "sha256": "c807f3f1d5bff49e65d2754a494b6b130f0275efa6caa925213392c497117b8e",
+      "size": 7135
+    },
+    {
+      "mode": "0o644",
       "path": "KEY_ARCHIVE.md",
       "sha256": "84c2cb7e8df6ed6f92d822d97e6c9cecbbf3e28d5f5938b5f9b785e672bf5de8",
       "size": 572
@@ -258,8 +270,8 @@
     {
       "mode": "0o644",
       "path": "PROJEKTSTATUS.json",
-      "sha256": "32c89ce254eb2703599dbae05db541d615052eb0fcec4a395e116eff86767e89",
-      "size": 1716
+      "sha256": "92fc879628175e992ee717ffa2282ac2d110f83571751eabc03ea63f33306338",
+      "size": 2094
     },
     {
       "mode": "0o644",
@@ -632,6 +644,12 @@
       "path": "docs/WORKSPACE_VISUAL_REGRESSION.md",
       "sha256": "fd5aec10b76d2a6d301e96e72be3328fe3547d73710090d71415dd566211db7f",
       "size": 485
+    },
+    {
+      "mode": "0o644",
+      "path": "docs/architecture/PYSIDE6_QML_TRANSFER_MATRIX.json",
+      "sha256": "e04f3faaf20ecc9d610c63e020c7a2fec03fa06f3bef25e4cae1befb4176f960",
+      "size": 9154
     },
     {
       "mode": "0o644",
@@ -2414,6 +2432,12 @@
       "path": "tests/test_project_state.py",
       "sha256": "7d5ba794882e38618c5e4562c437b5e6954d0ae781a863cbda3d494e8247b2b7",
       "size": 264
+    },
+    {
+      "mode": "0o644",
+      "path": "tests/test_pyside6_qml_transfer_matrix.py",
+      "sha256": "5f503b1f2d1bfec38fffdb0409dea5bb85fe9dba03bbefc34472590abcb4951c",
+      "size": 3153
     },
     {
       "mode": "0o644",
