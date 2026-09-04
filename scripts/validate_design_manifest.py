@@ -13,6 +13,8 @@ MANIFEST_PATH = DESIGN_DIR / "VIDEOBATCH_GRAPHICS_MANIFEST.md"
 PLAN_PATH = DESIGN_DIR / "VIDEOBATCH_DESIGN_IMPLEMENTATION_PLAN.md"
 REFERENCE_PATH = DESIGN_DIR / "VIDEOBATCH_CANONICAL_UI_REFERENCE.svg"
 POSTER_PATH = DESIGN_DIR / "VIDEOBATCH_GRAPHICS_MANIFEST_POSTER.svg"
+TEXT_MANIFEST_PATH = ROOT / "resources" / "texts" / "de.json"
+RESOURCE_TEXT_PATH = ROOT / "resources" / "texts" / "ui-resources.json"
 SHELL_PATHS = (
     ROOT / "src" / "videobatch_fast" / "canonical_ui.py",
     ROOT / "src" / "videobatch_fast" / "canonical_kpi.py",
@@ -69,21 +71,30 @@ REQUIRED_RESPONSIVE_TOKENS = (
     "two_columns",
     "stacked",
 )
-REQUIRED_RESOURCE_TOKENS = (
-    "PROZESS & FORTSCHRITT",
-    "SYSTEMLAST",
-    "RESSOURCENLIMITS",
-    "CPU auf 50 % begrenzen",
+REQUIRED_RESOURCE_CODE_TOKENS = (
+    "ui.resources.process_header",
+    "ui.resources.system_load",
+    "ui.resources.resource_limits",
+    "ui.resources.cpu_limit_50",
+    "ui.resources.label_zram",
+    "ui.resources.pause",
+    "ui.resources.resume",
     "RAM_LIMIT_PRESETS_GB",
-    "ZRAM",
-    "Pausieren",
-    "Fortsetzen",
     "total_progress",
     "job_progress",
     "SIGSTOP",
     "SIGCONT",
     "prlimit",
 )
+EXPECTED_RESOURCE_TEXTS = {
+    "ui.resources.process_header": "PROZESS & FORTSCHRITT",
+    "ui.resources.system_load": "SYSTEMLAST",
+    "ui.resources.resource_limits": "RESSOURCENLIMITS",
+    "ui.resources.cpu_limit_50": "CPU auf 50 % begrenzen",
+    "ui.resources.label_zram": "ZRAM",
+    "ui.resources.pause": "⏸ Pausieren",
+    "ui.resources.resume": "▶ Fortsetzen",
+}
 REQUIRED_HELP_INTENTS = (
     "Ich möchte …",
     "Erstes Video erstellen",
@@ -135,11 +146,26 @@ def _validate_python_syntax(paths: tuple[Path, ...], root: Path, errors: list[st
             errors.append(f"PYTHON_SYNTAX_UNGUELTIG: {path.relative_to(root)}: {exc}")
 
 
+def _validate_resource_text_contract(root: Path, errors: list[str]) -> None:
+    try:
+        manifest = json.loads((root / TEXT_MANIFEST_PATH.relative_to(ROOT)).read_text(encoding="utf-8"))
+        catalog = json.loads((root / RESOURCE_TEXT_PATH.relative_to(ROOT)).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        errors.append(f"Ressourcen-Textvertrag unlesbar: {exc}")
+        return
+    if RESOURCE_TEXT_PATH.name not in manifest.get("files", []):
+        errors.append(f"Ressourcen-Textkatalog nicht registriert: {RESOURCE_TEXT_PATH.name}")
+    texts = catalog.get("texts", {})
+    for key, expected in EXPECTED_RESOURCE_TEXTS.items():
+        if texts.get(key) != expected:
+            errors.append(f"Ressourcen-Textvertrag weicht ab: {key}={texts.get(key)!r}")
+
+
 def _validate_shell_labels(shell: str, errors: list[str]) -> None:
     _require_values(shell, REQUIRED_SHELL_LABELS, errors, "Shell-Navigation fehlt: {value}")
     _require_values(shell, REQUIRED_DASHBOARD_ZONES, errors, "Dashboard-Zone fehlt: {value}")
     _require_values(shell, REQUIRED_RESPONSIVE_TOKENS, errors, "Responsive Shell-Kopplung fehlt: {value}")
-    _require_values(shell, REQUIRED_RESOURCE_TOKENS, errors, "Ressourcen-/Prozessvertrag fehlt: {value}")
+    _require_values(shell, REQUIRED_RESOURCE_CODE_TOKENS, errors, "Ressourcen-/Prozessvertrag fehlt: {value}")
     _require_values(shell, REQUIRED_HELP_INTENTS, errors, "Hilfeabsicht fehlt: {value}")
     _require_values(shell, EXPECTED_THEMES.values(), errors, "Shell-Theme fehlt: {value}")
     _require_values(shell, REQUIRED_KPI_ACTIONS, errors, "KPI-Aktion fehlt: {value}")
@@ -200,6 +226,8 @@ def validate(root: Path = ROOT) -> list[str]:
         design_dir / TOKENS_PATH.name,
         design_dir / REFERENCE_PATH.name,
         design_dir / POSTER_PATH.name,
+        root / TEXT_MANIFEST_PATH.relative_to(ROOT),
+        root / RESOURCE_TEXT_PATH.relative_to(ROOT),
         *(root / path.relative_to(ROOT) for path in SHELL_PATHS),
         root / APP_PATH.relative_to(ROOT),
     ]
@@ -256,6 +284,7 @@ def validate(root: Path = ROOT) -> list[str]:
         if f"Checkpoint {number}" not in plan:
             errors.append(f"Checkpoint fehlt: {number}")
 
+    _validate_resource_text_contract(root, errors)
     _validate_shell(root, errors)
     return errors
 
