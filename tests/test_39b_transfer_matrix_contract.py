@@ -120,7 +120,10 @@ def test_long_render_target_remains_blocked_until_real_evidence_exists() -> None
     assert component is not None
     assert component["classification"] == "A_DIRECT"
     assert component["transfer_status"] == "BLOCKED_TEST_GAP"
-    assert "Slow-Target" in component["test_gate"]
+    gate = component["test_gate"].casefold()
+    assert "large-media" in gate
+    assert "slow" in gate
+    assert "soak" in gate
 
 
 def test_selection_preview_is_not_wholesale_direct_transfer() -> None:
@@ -147,7 +150,8 @@ def test_recommended_first_candidate_is_direct_and_not_test_blocked() -> None:
 
 def test_stable_release_blockers_are_not_erased_by_transfer_governance() -> None:
     matrix = _matrix()
-    blockers = "\n".join(matrix["stable_blockers_unchanged"])
+    blockers = "\n".join(matrix["stable_blockers_unchanged"]).casefold()
     assert "80" in blockers and "65" in blockers
-    assert "X11" in blockers and "Wayland" in blockers
-    assert "Slow" in blockers or "slow" in blockers
+    assert "x11" in blockers and "wayland" in blockers
+    assert "long-render" in blockers
+    assert "langsam" in blockers
