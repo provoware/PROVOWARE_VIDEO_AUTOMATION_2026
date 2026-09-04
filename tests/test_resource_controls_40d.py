@@ -85,6 +85,14 @@ def test_cpu_50_duty_cycle_stops_and_continues_process(monkeypatch) -> None:
     assert signals == [signal.SIGSTOP, signal.SIGCONT]
 
 
+def test_system_resource_monitor_cpu_delta_is_deterministic(monkeypatch) -> None:
+    ticks = iter(((100, 40), (200, 70)))
+    monkeypatch.setattr("videobatch_fast.system_resources._cpu_ticks", lambda: next(ticks))
+    monitor = SystemResourceMonitor()
+    assert monitor._cpu_percent() == 60.0
+    assert monitor._cpu_percent() == 70.0
+
+
 def test_system_resource_monitor_reports_bounded_live_values(tmp_path) -> None:
     monitor = SystemResourceMonitor()
     monitor.sample(tmp_path)
