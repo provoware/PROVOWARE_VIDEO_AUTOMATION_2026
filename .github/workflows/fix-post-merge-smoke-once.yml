@@ -22,6 +22,7 @@ jobs:
       - name: Apply bounded canonical-version repair
         run: |
           set -Eeuo pipefail
+          export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
           python3 - <<'PY'
           from pathlib import Path
 
