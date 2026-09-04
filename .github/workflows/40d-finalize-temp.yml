@@ -342,8 +342,29 @@ jobs:
           test ! -e .github/workflows/40d-finalize-temp.yml
           test ! -e coverage.json
           test ! -e .coverage
-          find . -path ./.git -prune -o \( -name '__pycache__' -o -name '*.pyc' -o -name '*.pyo' -o -name '*.tmp' \) -print | tee "$RUNNER_TEMP/hygiene.txt"
-          test ! -s "$RUNNER_TEMP/hygiene.txt"
+
+          tracked_transients="$(git ls-files | grep -E '(^|/)(__pycache__|\.pytest_cache|\.mypy_cache|\.ruff_cache)(/|$)|\.(pyc|pyo|tmp)$' || true)"
+          if [[ -n "$tracked_transients" ]]; then
+            printf 'TRACKED_TRANSIENTS_BLOCKED:\n%s\n' "$tracked_transients"
+            exit 1
+          fi
+
+          find . -path ./.git -prune -o -type d \( -name '__pycache__' -o -name '.pytest_cache' -o -name '.mypy_cache' -o -name '.ruff_cache' \) -print > "$RUNNER_TEMP/hygiene-before-dirs.txt"
+          find . -path ./.git -prune -o -type f \( -name '*.pyc' -o -name '*.pyo' -o -name '*.tmp' \) -print > "$RUNNER_TEMP/hygiene-before-files.txt"
+          echo 'Laufzeitcaches vor Bereinigung:'
+          cat "$RUNNER_TEMP/hygiene-before-dirs.txt" "$RUNNER_TEMP/hygiene-before-files.txt"
+
+          while IFS= read -r path; do
+            [[ -n "$path" ]] && rm -rf -- "$path"
+          done < "$RUNNER_TEMP/hygiene-before-dirs.txt"
+          while IFS= read -r path; do
+            [[ -n "$path" ]] && rm -f -- "$path"
+          done < "$RUNNER_TEMP/hygiene-before-files.txt"
+
+          find . -path ./.git -prune -o \( -type d \( -name '__pycache__' -o -name '.pytest_cache' -o -name '.mypy_cache' -o -name '.ruff_cache' \) -o -type f \( -name '*.pyc' -o -name '*.pyo' -o -name '*.tmp' \) \) -print > "$RUNNER_TEMP/hygiene-after.txt"
+          cat "$RUNNER_TEMP/hygiene-after.txt"
+          test ! -s "$RUNNER_TEMP/hygiene-after.txt"
+
           python - <<'PY'
           import subprocess
           allowed={
