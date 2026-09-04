@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "contract_version": "code-quality-2.8.3-rc11-v2",
+  "contract_version": "code-quality-2.8.3-rc11-v3",
   "status": "pass",
   "metrics": {
-    "files": 203,
-    "functions": 1602,
-    "classes": 161,
+    "files": 276,
+    "functions": 2311,
+    "classes": 231,
     "max_lines": 1265,
     "max_complexity": 29
   },

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "generated_from": "diagnostics/release_readiness/RELEASE_EVIDENCE.json",
-  "version": "2.8.3-rc24",
+  "version": "2.8.3-rc25",
   "scope": "standalone_release_deliverables",
   "ready_suffix": "_save_",
   "policy": "Only standalone user and release deliverables receive _save_. Source modules, CI workflows, canonical manifests, entrypoints and README retain stable technical names.",
@@ -76,22 +76,22 @@
     {
       "path": "docs/LONG_RENDER_2.8.3-rc24.md",
       "label": "Langzeitrender",
-      "reason": "Realer Langzeitrender mit großer Auswahl und langsamem Ziel fehlt"
+      "reason": "Large-Media-/Slow-Target-Soak wurde am 2026-09-04 bewusst übersprungen und ist kein Stable-Blocker."
     },
     {
       "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
       "label": "Stable-Abnahmenachweis",
-      "reason": "Physische Desktop- und Langzeitnachweise fehlen"
+      "reason": "Nur die physische KDE-X11-Zielsystem-Abnahme bleibt als Stable-Gate offen."
     },
     {
       "path": "VISUAL_DESKTOP_APPROVAL.md",
       "label": "Desktop-Sichtprüfung",
-      "reason": "Physische KDE-X11-/Wayland-Abnahme bleibt offen"
+      "reason": "Physische KDE-X11-Abnahme bleibt offen; Wayland ist nicht erforderlich."
     },
     {
       "path": "VISUAL_INSPECTION_MANIFEST.json",
       "label": "Visuelles Prüfmanifest",
-      "reason": "Aktueller physischer Lauf ist nicht vollständig bestätigt"
+      "reason": "Physischer X11-Lauf ist noch nicht vollständig bestätigt; Wayland ist nicht erforderlich."
     }
   ]
 }

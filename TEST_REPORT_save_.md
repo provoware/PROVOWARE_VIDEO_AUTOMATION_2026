@@ -1,3 +1,11 @@
+<!-- 40d-final:start -->
+## 40D · finaler automatisierter Nachweis
+
+513/515 Tests bestanden, 2 übersprungen · Coverage 80.65% Zeilen / 65.20% Branch.
+
+Wayland ist gemäß Freigabeentscheidung nicht erforderlich. Der Large-Media-/Slow-Target-Soak wurde bewusst übersprungen und nicht als bestanden gewertet. Als einziges physisches Stable-Gate bleibt die KDE-X11-Zielsystem-Abnahme offen.
+<!-- 40d-final:end -->
+
 # Testbericht · VideoBatch Fast 2.8.3-rc25
 
 ## Aktueller Vollregressionsnachweis · Iteration 40D

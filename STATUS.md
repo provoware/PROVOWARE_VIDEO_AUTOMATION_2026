@@ -3,19 +3,17 @@
 
 **Kanal:** RC – noch keine Stable-Freigabe  
 **Kanonische Quelle:** `diagnostics/release_readiness/RELEASE_EVIDENCE.json`  
-**Letzter freigegebener Qualitätsbericht:** `VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json`
+**Freigegebener Qualitätsbericht:** `VideoBatch_Fast_2.8.3-rc25_BUILD_REPORT_save_.json`
 
-- 503/505 automatisierte Tests bestanden; 2 übersprungen
-- 81,06 % Zeilenabdeckung · Mindestwert 80,00 % bestanden
-- 65,79 % Zweigabdeckung · Mindestwert 65,00 % bestanden
-- Coverage-Vertrag 80/65: **BESTANDEN** · Workflow `33845125393`
+- 513/515 automatisierte Tests bestanden; 2 übersprungen
+- 80,65 % Zeilenabdeckung
+- 65,20 % Zweigabdeckung
 - 18/18 visuelle Szenarien bestanden
 - Kubuntu-CI-Matrix: 4/4 Kombinationen bestanden
 
 ### Offene Stable-Gates
 
-- Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless
-- Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt
+- Physische KDE-X11-Abnahme: Reale KDE-X11-Zielsystem-Abnahme fehlt; Wayland ist gemäß Freigabeentscheidung vom 2026-09-04 nicht erforderlich.
 <!-- release-status:end -->
 
 <!-- release-files:start -->
@@ -27,10 +25,10 @@ Der Zusatz `_save_` kennzeichnet ausschließlich eigenständige, freigabefähige
 |---|---|
 | `START_HIER_save_.md`<br>Schnellstart | `TODO.md`<br>Offene Arbeitsliste: Enthält bewusst die verbleibenden Stable-Gates |
 | `AUTOINSTALLATION_save_.md`<br>Installationsanleitung | `STABLE_GATE_ITERATION_2.8.3-rc24_2026-08-04.md`<br>Stable-Freigabeiteration: Stable-Freigabe ist ausdrücklich noch blockiert |
-| `PROJEKTORDNERSTRUKTUR_save_.md`<br>Projektübersicht | `docs/LONG_RENDER_2.8.3-rc24.md`<br>Langzeitrender: Realer Langzeitrender mit großer Auswahl und langsamem Ziel fehlt |
-| `RELEASE_NOTES_save_.md`<br>Releasehinweise | `docs/STABLE_ACCEPTANCE_EVIDENCE.md`<br>Stable-Abnahmenachweis: Physische Desktop- und Langzeitnachweise fehlen |
-| `TEST_REPORT_save_.md`<br>Testbericht | `VISUAL_DESKTOP_APPROVAL.md`<br>Desktop-Sichtprüfung: Physische KDE-X11-/Wayland-Abnahme bleibt offen |
-| `FRESH_PACKAGE_REPORT_save_.md`<br>Paketbericht | `VISUAL_INSPECTION_MANIFEST.json`<br>Visuelles Prüfmanifest: Aktueller physischer Lauf ist nicht vollständig bestätigt |
+| `PROJEKTORDNERSTRUKTUR_save_.md`<br>Projektübersicht | `docs/LONG_RENDER_2.8.3-rc24.md`<br>Langzeitrender: Large-Media-/Slow-Target-Soak wurde am 2026-09-04 bewusst übersprungen und ist kein Stable-Blocker. |
+| `RELEASE_NOTES_save_.md`<br>Releasehinweise | `docs/STABLE_ACCEPTANCE_EVIDENCE.md`<br>Stable-Abnahmenachweis: Nur die physische KDE-X11-Zielsystem-Abnahme bleibt als Stable-Gate offen. |
+| `TEST_REPORT_save_.md`<br>Testbericht | `VISUAL_DESKTOP_APPROVAL.md`<br>Desktop-Sichtprüfung: Physische KDE-X11-Abnahme bleibt offen; Wayland ist nicht erforderlich. |
+| `FRESH_PACKAGE_REPORT_save_.md`<br>Paketbericht | `VISUAL_INSPECTION_MANIFEST.json`<br>Visuelles Prüfmanifest: Physischer X11-Lauf ist noch nicht vollständig bestätigt; Wayland ist nicht erforderlich. |
 | `CODE_QUALITY_REPORT_2.8.3-rc24_save_.md`<br>Codequalitätsbericht | — |
 | `QUALITY_GATE_REPORT_2.8.3-rc24_save_.md`<br>Offline-Qualitätsbericht | — |
 | `IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md`<br>Implementierungsbericht | — |

@@ -2,18 +2,16 @@
   "schema_version": 2,
   "generated_from": "diagnostics/release_readiness/RELEASE_EVIDENCE.json",
   "iteration": 40,
-  "iteration_label": "40D",
   "version": "2.8.3-rc25",
-  "progress_percent": 93,
-  "completed": 28,
-  "open": 2,
-  "current_todo": "Physische KDE-X11-/Wayland-Abnahme und Large-Media-Soak auf demselben finalen Kandidaten durchführen.",
+  "progress_percent": 97,
+  "completed": 29,
+  "open": 1,
+  "current_todo": "Physische KDE-X11-Abnahme auf dem finalen Kandidaten durchführen.",
   "status": "yellow",
   "stable_ready": false,
-  "approved_quality_report": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
+  "approved_quality_report": "VideoBatch_Fast_2.8.3-rc25_BUILD_REPORT_save_.json",
   "stable_blockers": [
-    "Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless",
-    "Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt"
+    "Physische KDE-X11-Abnahme: Reale KDE-X11-Zielsystem-Abnahme fehlt; Wayland ist gemäß Freigabeentscheidung vom 2026-09-04 nicht erforderlich."
   ],
   "total": 30
 }

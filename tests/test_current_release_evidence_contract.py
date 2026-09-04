@@ -97,16 +97,18 @@ def test_coverage_policy_is_closed_but_stable_remains_fail_closed() -> None:
     assert gate["status"] == "passed"
     assert data["stable_ready"] is False
     assert data["progress"] == {
-        "percent": 93,
-        "completed": 28,
-        "open": 2,
+        "percent": 97,
+        "completed": 29,
+        "open": 1,
         "total": 30,
-        "current_todo": "Physische KDE-X11-/Wayland-Abnahme und Large-Media-Soak auf demselben finalen Kandidaten durchführen.",
+        "current_todo": "Physische KDE-X11-Abnahme auf dem finalen Kandidaten durchführen.",
     }
     assert [item["id"] for item in data["stable_gates"] if item["status"] == "open"] == [
         "physical_kde_x11_wayland",
-        "large_media_soak",
     ]
+    waived = {item["id"]: item for item in data["waived_gates"]}
+    assert waived["large_media_soak"]["status"] == "waived"
+    assert waived["physical_kde_wayland"]["status"] == "not_required"
 
 
 def test_active_status_uses_real_rc25_report_and_current_40d_numbers() -> None:

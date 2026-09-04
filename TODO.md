@@ -1,3 +1,15 @@
+<!-- 40d-final:start -->
+## 40D · finale Freigabepolitik
+
+- [x] Coverage-Vertrag 80/65.
+- [x] Interne Qualität und Architektur.
+- [x] Wayland: nicht erforderlich.
+- [x] Large-Media-/Slow-Target-Soak: bewusst übersprungen (Waiver, kein PASS).
+- [ ] Physische KDE-X11-Abnahme auf dem finalen Kandidaten.
+
+**Stable bleibt bis zur realen KDE-X11-Abnahme fail-closed.**
+<!-- 40d-final:end -->
+
 # TODO – aktueller Arbeitsplan
 
 ## Schwerpunkt

@@ -1,0 +1,83 @@
+{
+  "schema_version": 2,
+  "generated_from": "diagnostics/release_readiness/RELEASE_EVIDENCE.json",
+  "name": "VideoBatch Fast",
+  "version": "2.8.3-rc25",
+  "release_channel": "rc",
+  "build_date": "2026-09-04",
+  "artifact_policy": "full-project-zip-before-stable",
+  "deterministic_build": "passed; two independent builds byte-identical",
+  "critical_fix": {
+    "area": "already-selected project media list",
+    "root_cause": "unbounded per-click preview threads and FFmpeg processes plus unvalidated direct Tk image decoding",
+    "resolution": [
+      "single serial preview controller",
+      "180 ms debounce",
+      "generation tokens",
+      "Pillow validation before ImageTk",
+      "main-thread-only Tk updates",
+      "explicit PNG output for FFmpeg 7+ atomic partial files",
+      "invalid cache targets removed before regeneration"
+    ]
+  },
+  "runtime_start": {
+    "status": "passed",
+    "architecture": "content-addressed user environment",
+    "quality_tools_block_start": false,
+    "interactive_questions": false,
+    "ffmpeg_aac_detection": "real smoke test",
+    "ui_ready_handshake": true,
+    "safe_mode_retry": true,
+    "system_python_fallback": "verified imports only",
+    "existing_instance_focus": true
+  },
+  "fresh_package_verification": "passed from complete tracked source audit; 513 tests passed under Xvfb",
+  "quality": {
+    "architecture_findings": 0,
+    "internal_files_checked": 276,
+    "internal_findings": 0,
+    "internal_function_count": 2311,
+    "largest_python_file_lines": 1265,
+    "max_complexity": 29
+  },
+  "release_cleanup": {
+    "historical_reports_archived": 56,
+    "obsolete_visual_baselines_removed": 16,
+    "ready_deliverables": 11,
+    "unfinished_gate_files": 6,
+    "release_archive_excluded": true,
+    "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe",
+    "tracked_temp_leftovers": 0,
+    "repo_cleanup_status": "passed"
+  },
+  "release_manifest_files": 475,
+  "matrix": {
+    "status": "passed",
+    "passed_targets": 4,
+    "total_targets": 4,
+    "workflow_run_id": 33806936870,
+    "verified_commit": "8c6691cfaffd371d39fa5696c78f67114f83a7aa",
+    "scope_note": "Current PR #84 head; deterministic headless CI matrix, not a substitute for physical KDE acceptance."
+  },
+  "stable_blockers": [
+    "Physische KDE-X11-Abnahme: Reale KDE-X11-Zielsystem-Abnahme fehlt; Wayland ist gemäß Freigabeentscheidung vom 2026-09-04 nicht erforderlich."
+  ],
+  "stable_ready": false,
+  "status": "passed",
+  "tests": {
+    "passed": 513,
+    "failed": 0,
+    "skipped": 2,
+    "line_coverage_percent": 80.65,
+    "branch_coverage_percent": 65.2,
+    "combined_coverage_percent": 77.61,
+    "assurance_scenarios": "12/12",
+    "fault_lab": "12/12",
+    "visual_scenarios": "18/18",
+    "targeted_rc24": "27/27 finalization and preview regressions",
+    "selected_media_click_stress": "120 rapid selection changes, passed",
+    "full_regression": "513 passed / 2 skipped / 515 collected",
+    "test_environment": "Ubuntu 24.04 · Python 3.12.14 · Xvfb",
+    "collected": 515
+  }
+}

@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
-  "modules": 115,
-  "functions": 1140,
-  "classes": 140,
+  "modules": 121,
+  "functions": 1191,
+  "classes": 148,
   "max_file": {
     "name": "ui_workspace_grid_mixin.py",
     "lines": 699

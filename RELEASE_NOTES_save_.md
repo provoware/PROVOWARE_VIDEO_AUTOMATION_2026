@@ -1,3 +1,11 @@
+<!-- 40d-final:start -->
+## 2.8.3-rc25 · 40D Abschlussstand
+
+513/515 Tests bestanden, 2 übersprungen · Coverage 80.65% Zeilen / 65.20% Branch.
+
+Freigabepolitik: Wayland ist nicht erforderlich; der Large-Media-/Slow-Target-Soak ist ausdrücklich waived. Physische KDE-X11-Abnahme bleibt offen.
+<!-- 40d-final:end -->
+
 # Release Notes 2.8.3-rc24
 
 ## Kritische Stabilitätskorrektur

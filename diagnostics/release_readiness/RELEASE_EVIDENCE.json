@@ -25,37 +25,38 @@
     "offline_quality_verified_at": "2026-09-03T20:52:37Z",
     "offline_quality_artifact_name": "a32-pinned-offline-quality-evidence-934688e8",
     "current_a32_2_head": "8c6691cfaffd371d39fa5696c78f67114f83a7aa",
-    "full_regression_verified_commit": "58a8a06b5eae6992a6dd6e20ed3d4d0a982c7d4c",
-    "full_regression_run_id": 33845125393,
-    "full_regression_artifact_name": "a32-full-suite-2e7d4350",
-    "full_regression_artifact_id": 9912964969,
-    "full_regression_artifact_sha256": "592d17cf5120bdd7a1920ddf8dc3e7db14f4cf7233541ea350f00da71d9b9e2a",
+    "full_regression_verified_commit": "d657cf9ac6824e426a1f141fc2ba94771a61ed18",
+    "full_regression_run_id": 33869325241,
     "full_regression_verified_at": "2026-09-04",
-    "current_40d_head": "58a8a06b5eae6992a6dd6e20ed3d4d0a982c7d4c",
-    "coverage_contract_run_id": 33845125393,
-    "coverage_contract_verified_commit": "58a8a06b5eae6992a6dd6e20ed3d4d0a982c7d4c",
-    "coverage_contract_verified_at": "2026-09-04"
+    "current_40d_head": "d657cf9ac6824e426a1f141fc2ba94771a61ed18",
+    "coverage_contract_run_id": 33869325241,
+    "coverage_contract_verified_commit": "d657cf9ac6824e426a1f141fc2ba94771a61ed18",
+    "coverage_contract_verified_at": "2026-09-04",
+    "evidence_normalization_run_id": 33869325241,
+    "legacy_a32_full_regression": {
+      "status": "historical_superseded"
+    }
   },
   "manifest": {
     "path": "RELEASE_MANIFEST.json",
-    "file_count": 465,
+    "file_count": 475,
     "status": "passed"
   },
   "tests": {
-    "passed": 503,
+    "passed": 513,
     "failed": 0,
     "skipped": 2,
-    "line_coverage_percent": 81.06,
-    "branch_coverage_percent": 65.79,
-    "combined_coverage_percent": 78.04,
+    "line_coverage_percent": 80.65,
+    "branch_coverage_percent": 65.2,
+    "combined_coverage_percent": 77.61,
     "assurance_scenarios": "12/12",
     "fault_lab": "12/12",
     "visual_scenarios": "18/18",
     "targeted_rc24": "27/27 finalization and preview regressions",
     "selected_media_click_stress": "120 rapid selection changes, passed",
-    "full_regression": "503 passed / 2 skipped / 505 collected",
-    "test_environment": "Ubuntu 24.04.4 LTS · Python 3.12.14 · Xvfb",
-    "collected": 505
+    "full_regression": "513 passed / 2 skipped / 515 collected",
+    "test_environment": "Ubuntu 24.04 · Python 3.12.14 · Xvfb",
+    "collected": 515
   },
   "matrix": {
     "status": "passed",
@@ -100,11 +101,21 @@
   },
   "internal_quality": {
     "architecture_findings": 0,
-    "internal_files_checked": 203,
+    "internal_files_checked": 276,
     "internal_findings": 0,
-    "internal_function_count": 1602,
-    "largest_python_file_lines": 683,
-    "maximum_complexity": 29
+    "internal_function_count": 2311,
+    "largest_python_file_lines": 1265,
+    "maximum_complexity": 29,
+    "measurement_source": "scripts/internal_quality_gate.py",
+    "measurement_scope": "src+scripts+tests",
+    "current_architecture": {
+      "modules_checked": 121,
+      "function_count": 1191,
+      "class_count": 148,
+      "largest_python_file": "ui_workspace_grid_mixin.py",
+      "largest_python_file_lines": 699,
+      "architecture_findings": 0
+    }
   },
   "release_cleanup": {
     "historical_reports_archived": 56,
@@ -112,7 +123,9 @@
     "ready_deliverables": 11,
     "unfinished_gate_files": 6,
     "release_archive_excluded": true,
-    "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe"
+    "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe",
+    "tracked_temp_leftovers": 0,
+    "repo_cleanup_status": "passed"
   },
   "release_files": {
     "ready_suffix": "_save_",
@@ -188,22 +201,22 @@
       {
         "path": "docs/LONG_RENDER_2.8.3-rc24.md",
         "label": "Langzeitrender",
-        "reason": "Realer Langzeitrender mit großer Auswahl und langsamem Ziel fehlt"
+        "reason": "Large-Media-/Slow-Target-Soak wurde am 2026-09-04 bewusst übersprungen und ist kein Stable-Blocker."
       },
       {
         "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
         "label": "Stable-Abnahmenachweis",
-        "reason": "Physische Desktop- und Langzeitnachweise fehlen"
+        "reason": "Nur die physische KDE-X11-Zielsystem-Abnahme bleibt als Stable-Gate offen."
       },
       {
         "path": "VISUAL_DESKTOP_APPROVAL.md",
         "label": "Desktop-Sichtprüfung",
-        "reason": "Physische KDE-X11-/Wayland-Abnahme bleibt offen"
+        "reason": "Physische KDE-X11-Abnahme bleibt offen; Wayland ist nicht erforderlich."
       },
       {
         "path": "VISUAL_INSPECTION_MANIFEST.json",
         "label": "Visuelles Prüfmanifest",
-        "reason": "Aktueller physischer Lauf ist nicht vollständig bestätigt"
+        "reason": "Physischer X11-Lauf ist noch nicht vollständig bestätigt; Wayland ist nicht erforderlich."
       }
     ]
   },
@@ -236,30 +249,24 @@
       "id": "coverage_80_65",
       "label": "Coverage-Vertrag 80/65",
       "status": "passed",
-      "reason": "81,06 % Zeilenabdeckung und 65,79 % Branch-Abdeckung; scripts/coverage_policy.py bestanden · Workflow 33845125393 · Python 3.12.14."
+      "reason": "80.65 % Zeilenabdeckung und 65.20 % Branch-Abdeckung; scripts/coverage_policy.py bestanden · Workflow 33869325241 · Python 3.12.14."
     },
     {
       "id": "physical_kde_x11_wayland",
-      "label": "Physische KDE-X11-/Wayland-Abnahme",
+      "label": "Physische KDE-X11-Abnahme",
       "status": "open",
-      "reason": "Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless"
-    },
-    {
-      "id": "large_media_soak",
-      "label": "Langzeitrender mit großer Medienauswahl",
-      "status": "open",
-      "reason": "Realer Lauf auf langsamem externem Ziel fehlt"
+      "reason": "Reale KDE-X11-Zielsystem-Abnahme fehlt; Wayland ist gemäß Freigabeentscheidung vom 2026-09-04 nicht erforderlich."
     }
   ],
   "stable_ready": false,
   "progress": {
-    "percent": 93,
-    "completed": 28,
-    "open": 2,
+    "percent": 97,
+    "completed": 29,
+    "open": 1,
     "total": 30,
-    "current_todo": "Physische KDE-X11-/Wayland-Abnahme und Large-Media-Soak auf demselben finalen Kandidaten durchführen."
+    "current_todo": "Physische KDE-X11-Abnahme auf dem finalen Kandidaten durchführen."
   },
-  "approved_quality_report": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
+  "approved_quality_report": "VideoBatch_Fast_2.8.3-rc25_BUILD_REPORT_save_.json",
   "artifact_policy": "full-project-zip-before-stable",
   "deterministic_build": "passed; two independent builds byte-identical",
   "critical_fix": {
@@ -274,5 +281,19 @@
       "explicit PNG output for FFmpeg 7+ atomic partial files",
       "invalid cache targets removed before regeneration"
     ]
-  }
+  },
+  "waived_gates": [
+    {
+      "id": "large_media_soak",
+      "label": "Langzeitrender mit großer Medienauswahl",
+      "status": "waived",
+      "reason": "Gemäß Freigabeentscheidung vom 2026-09-04 bewusst übersprungen; nicht als bestanden gewertet und kein Stable-Blocker."
+    },
+    {
+      "id": "physical_kde_wayland",
+      "label": "Physische KDE-Wayland-Abnahme",
+      "status": "not_required",
+      "reason": "Wayland ist gemäß Freigabeentscheidung vom 2026-09-04 kein Ziel- oder Pflicht-Gate."
+    }
+  ]
 }
