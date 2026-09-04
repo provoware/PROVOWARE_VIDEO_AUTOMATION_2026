@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from tkinter import TclError
+
 from videobatch_fast.canonical_kpi import build_kpi_snapshots
 from videobatch_fast.canonical_kpi_detail_mixin import CanonicalKpiDetailMixin
 from videobatch_fast.canonical_kpi_state import merge_kpi_history, normalize_kpi_history
+from videobatch_fast.canonical_shell_chrome import CanonicalShellChromeMixin
 
 
 def _snapshots(**overrides):
@@ -20,6 +23,33 @@ def _snapshots(**overrides):
     }
     values.update(overrides)
     return build_kpi_snapshots(**values)
+
+
+class _PollRoot:
+    def __init__(self, *, exists: bool = True, fail_exists: bool = False, fail_after: bool = False):
+        self.exists = exists
+        self.fail_exists = fail_exists
+        self.fail_after = fail_after
+        self.after_calls = []
+
+    def winfo_exists(self):
+        if self.fail_exists:
+            raise TclError("window already destroyed")
+        return self.exists
+
+    def after(self, delay, callback):
+        if self.fail_after:
+            raise TclError("scheduler already destroyed")
+        self.after_calls.append((delay, callback))
+        return "poll-id"
+
+
+def _poll_shell(root: _PollRoot):
+    shell = object.__new__(CanonicalShellChromeMixin)
+    shell.root = root
+    shell._refresh_kpi_calls = []
+    shell._refresh_kpi_cards = lambda: shell._refresh_kpi_calls.append("kpi")
+    return shell
 
 
 def test_media_kpi_distinguishes_empty_warning_error_loading_and_success() -> None:
@@ -139,3 +169,45 @@ def test_rapid_import_loss_queue_error_and_effect_changes_remain_deterministic()
     assert hasattr(CanonicalKpiDetailMixin, "_kpi_remove_missing_sources")
     assert hasattr(CanonicalKpiDetailMixin, "_kpi_load_retry_queue")
     assert hasattr(CanonicalKpiDetailMixin, "_kpi_reset_effects")
+
+
+def test_shell_kpi_poll_success_refreshes_kpis_dashboard_and_reschedules() -> None:
+    root = _PollRoot()
+    shell = _poll_shell(root)
+    shell._refresh_dashboard_calls = []
+    shell._refresh_canonical_dashboard = lambda: shell._refresh_dashboard_calls.append("dashboard")
+    shell._poll_shell_kpis()
+    assert shell._refresh_kpi_calls == ["kpi"]
+    assert shell._refresh_dashboard_calls == ["dashboard"]
+    assert len(root.after_calls) == 1
+    assert root.after_calls[0][0] == 1000
+    assert root.after_calls[0][1].__self__ is shell
+
+
+def test_shell_kpi_poll_without_dashboard_still_reschedules() -> None:
+    root = _PollRoot()
+    shell = _poll_shell(root)
+    shell._poll_shell_kpis()
+    assert shell._refresh_kpi_calls == ["kpi"]
+    assert len(root.after_calls) == 1
+
+
+def test_shell_kpi_poll_returns_when_window_no_longer_exists() -> None:
+    root = _PollRoot(exists=False)
+    shell = _poll_shell(root)
+    shell._poll_shell_kpis()
+    assert shell._refresh_kpi_calls == []
+    assert root.after_calls == []
+
+
+def test_shell_kpi_poll_absorbs_tclerror_from_window_or_scheduler() -> None:
+    failed_window = _PollRoot(fail_exists=True)
+    shell = _poll_shell(failed_window)
+    shell._poll_shell_kpis()
+    assert shell._refresh_kpi_calls == []
+
+    failed_scheduler = _PollRoot(fail_after=True)
+    shell = _poll_shell(failed_scheduler)
+    shell._poll_shell_kpis()
+    assert shell._refresh_kpi_calls == ["kpi"]
+    assert failed_scheduler.after_calls == []
