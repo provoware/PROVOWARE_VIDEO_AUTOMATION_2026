@@ -29,349 +29,6 @@ jobs:
           fetch-depth: 1
           persist-credentials: true
 
-      - name: Visual-Hierarchy-Pass fail-closed anwenden
-        run: |
-          set -Eeuo pipefail
-          python - <<'PY'
-          from __future__ import annotations
-          import json
-          from pathlib import Path
-
-          ROOT = Path('.')
-
-          def replace_once(path: str, old: str, new: str) -> None:
-              p = ROOT / path
-              text = p.read_text(encoding='utf-8')
-              count = text.count(old)
-              if count != 1:
-                  raise SystemExit(f'{path}: erwartete genau 1 Fundstelle, gefunden {count}')
-              p.write_text(text.replace(old, new, 1), encoding='utf-8')
-
-          p = ROOT / 'resources/themes/toxic_candy.json'
-          theme = json.loads(p.read_text(encoding='utf-8'))
-          theme['name'] = 'Violet Pulse'
-          theme['label'] = 'Violet Pulse'
-          theme['colors'] = {
-              'background_main': '#061426',
-              'background_surface': '#0A1830',
-              'background_elevated': '#171B3E',
-              'background_preview': '#030A12',
-              'background_toolbar': '#07172A',
-              'text_primary': '#EEF0FF',
-              'text_secondary': '#C5C9E8',
-              'text_muted': '#979DBF',
-              'border_default': '#3E4775',
-              'border_subtle': '#202A4A',
-              'border_focus': '#9B8CFF',
-              'action_primary': '#6C52D8',
-              'action_primary_text': '#FFFFFF',
-              'action_secondary': '#111F3A',
-              'status_success': '#72E39B',
-              'status_information': '#65A4FF',
-              'status_active': '#9B8CFF',
-              'status_warning': '#E9AE42',
-              'status_attention': '#D89345',
-              'status_error': '#FF6B86',
-              'state_selected': '#2C3268',
-              'state_hover': '#252B5A',
-              'state_disabled': '#536079',
-              'tile_gold': '#C79B43',
-              'tile_magenta': '#A34782',
-              'tile_green': '#3F7A50',
-              'tile_blue': '#2B6F99',
-          }
-          p.write_text(json.dumps(theme, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-
-          replace_once(
-              'src/videobatch_fast/theme.py',
-              '        bordercolor=COLORS["border"],\n        lightcolor=COLORS["border_subtle"],\n        darkcolor=COLORS["border"],',
-              '        bordercolor=COLORS["border_subtle"],\n        lightcolor=COLORS["border_subtle"],\n        darkcolor=COLORS["border_subtle"],',
-          )
-          replace_once(
-              'src/videobatch_fast/theme.py',
-              '    style.configure("QuickModeSelected.TButton", background=COLORS["accent2"], foreground=best_text_color(COLORS["accent2"]), padding=(9, 10), anchor="center", font=("DejaVu Sans", base, "bold"), borderwidth=0)\n\n    style.configure("TEntry", fieldbackground=COLORS["panel2"], foreground=field_text, insertcolor=field_text, bordercolor=COLORS["border"], padding=(8, 7))',
-              '    style.configure("QuickModeSelected.TButton", background=COLORS["selection"], foreground=selected_text, padding=(9, 10), anchor="center", font=("DejaVu Sans", base, "bold"), borderwidth=1, bordercolor=COLORS["accent2"])\n    style.map("QuickModeSelected.TButton", background=[("active", COLORS["hover"]), ("focus", COLORS["selection"])], bordercolor=[("focus", COLORS["accent2"])])\n\n    style.configure("TEntry", fieldbackground=COLORS["panel2"], foreground=field_text, insertcolor=field_text, bordercolor=COLORS["border_subtle"], padding=(8, 7))',
-          )
-          replace_once(
-              'src/videobatch_fast/theme.py',
-              '    style.configure("TCombobox", fieldbackground=COLORS["panel2"], foreground=field_text, arrowcolor=COLORS["accent2"], bordercolor=COLORS["border"], padding=(7, 6))',
-              '    style.configure("TCombobox", fieldbackground=COLORS["panel2"], foreground=field_text, arrowcolor=COLORS["accent2"], bordercolor=COLORS["border_subtle"], padding=(7, 6))',
-          )
-          replace_once(
-              'src/videobatch_fast/theme.py',
-              '    style.configure("TCheckbutton", background=COLORS["panel"], foreground=panel_text)\n\n    style.configure("Treeview"',
-              '    style.configure("TCheckbutton", background=COLORS["panel"], foreground=panel_text)\n\n    style.configure("TSeparator", background=COLORS["border_subtle"])\n    style.configure("Treeview"',
-          )
-          replace_once(
-              'src/videobatch_fast/theme.py',
-              '    style.map("TNotebook.Tab", background=[("selected", COLORS["accent2"]), ("active", COLORS["hover"])], foreground=[("selected", best_text_color(COLORS["accent2"])), ("active", best_text_color(COLORS["hover"]))], bordercolor=[("selected", COLORS["accent2"]), ("active", COLORS["border"])])',
-              '    style.map("TNotebook.Tab", background=[("selected", COLORS["selection"]), ("active", COLORS["hover"])], foreground=[("selected", selected_text), ("active", best_text_color(COLORS["hover"]))], bordercolor=[("selected", COLORS["accent2"]), ("active", COLORS["border_subtle"])])',
-          )
-
-          chrome = 'src/videobatch_fast/canonical_shell_chrome.py'
-          replace_once(chrome,
-              '        style.configure(\n            "ShellSidebar.TFrame",\n            background=COLORS["toolbar"],\n            relief="solid",\n            borderwidth=1,\n        )',
-              '        style.configure(\n            "ShellSidebar.TFrame",\n            background=COLORS["toolbar"],\n            relief="solid",\n            borderwidth=1,\n            bordercolor=COLORS["border_subtle"],\n        )')
-          replace_once(chrome,
-              '        style.configure(\n            "ShellHeader.TFrame",\n            background=COLORS["toolbar"],\n            relief="solid",\n            borderwidth=1,\n        )',
-              '        style.configure(\n            "ShellHeader.TFrame",\n            background=COLORS["toolbar"],\n            relief="solid",\n            borderwidth=1,\n            bordercolor=COLORS["border_subtle"],\n        )\n        style.configure(\n            "ShellActionBar.TFrame",\n            background=COLORS["panel"],\n            relief="solid",\n            borderwidth=1,\n            bordercolor=COLORS["border_subtle"],\n        )')
-          replace_once(chrome,
-              '        style.configure(\n            "ShellCard.TFrame",\n            background=COLORS["panel"],\n            relief="solid",\n            borderwidth=1,\n        )',
-              '        style.configure(\n            "ShellCard.TFrame",\n            background=COLORS["panel"],\n            relief="solid",\n            borderwidth=1,\n            bordercolor=COLORS["border_subtle"],\n        )')
-          replace_once(chrome,
-              '        style.configure(\n            "ShellKpiHint.TLabel",\n            background=COLORS["panel"],\n            foreground=panel_muted,\n            font=("DejaVu Sans", max(9, round(10 * factor))),\n        )',
-              '        style.configure(\n            "ShellKpiHint.TLabel",\n            background=COLORS["panel"],\n            foreground=panel_muted,\n            font=("DejaVu Sans", max(9, round(10 * factor))),\n        )\n        style.configure(\n            "ShellKpiMeta.TLabel",\n            background=COLORS["panel"],\n            foreground=safe_text_color(COLORS["panel"], COLORS["text_muted"]),\n            font=("DejaVu Sans", max(8, round(9 * factor))),\n        )')
-          replace_once(chrome,
-              '        style.configure(\n            "ShellNav.TButton",\n            background=COLORS["toolbar"],\n            foreground=toolbar_text,\n            padding=(12, nav_padding_y),\n            anchor="w",\n            relief="flat",\n            borderwidth=0,\n        )',
-              '        style.configure(\n            "ShellNav.TButton",\n            background=COLORS["toolbar"],\n            foreground=toolbar_text,\n            padding=(12, nav_padding_y),\n            anchor="w",\n            relief="flat",\n            borderwidth=0,\n        )\n        style.map(\n            "ShellNav.TButton",\n            background=[("active", COLORS["hover"]), ("focus", COLORS["toolbar"])],\n            foreground=[("focus", safe_text_color(COLORS["toolbar"], COLORS["accent2"]))],\n        )')
-          replace_once(chrome,
-              '        style.configure(\n            "ShellNavActive.TButton",\n            background=COLORS["selection"],\n            foreground=best_text_color(COLORS["selection"]),\n            padding=(12, nav_padding_y),\n            anchor="w",\n            relief="flat",\n            borderwidth=0,\n        )',
-              '        style.configure(\n            "ShellNavActive.TButton",\n            background=COLORS["selection"],\n            foreground=best_text_color(COLORS["selection"]),\n            padding=(12, nav_padding_y),\n            anchor="w",\n            relief="flat",\n            borderwidth=0,\n        )\n        style.map(\n            "ShellNavActive.TButton",\n            background=[("active", COLORS["selection"]), ("focus", COLORS["selection"])],\n            foreground=[("active", best_text_color(COLORS["selection"])), ("focus", best_text_color(COLORS["selection"]))],\n        )')
-          replace_once(chrome,
-              '        bar = ttk.Frame(parent, style="ShellHeader.TFrame", padding=(7, 5))',
-              '        bar = ttk.Frame(parent, style="ShellActionBar.TFrame", padding=(9, 6))')
-          replace_once(chrome,
-              '            ("◷ Startzeituhr · Checkpoint 5", lambda: None, "Ghost.TButton", "disabled"),\n',
-              '')
-          replace_once(chrome,
-              '        columns = max(1, min(len(buttons), available // max(145, requested))) if available else 1',
-              '        if available >= 1380 and len(buttons) <= 6:\n            columns = len(buttons)\n        else:\n            columns = max(1, min(len(buttons), available // max(145, requested))) if available else 1')
-          replace_once(chrome,
-              '                padx=3,\n                pady=3,',
-              '                padx=4,\n                pady=4,')
-
-          kpi = 'src/videobatch_fast/canonical_kpi_detail_mixin.py'
-          replace_once(kpi,
-              '        self._shell_kpi_updated_vars = {key: StringVar(value="Aktualisiert: –") for key in keys}\n        for key in keys:',
-              '        self._shell_kpi_updated_vars = {key: StringVar(value="Aktualisiert: –") for key in keys}\n        self._shell_kpi_meta_vars = {key: StringVar(value="Stand wird ermittelt") for key in keys}\n        for key in keys:')
-          replace_once(kpi,
-              '            ttk.Label(\n                card,\n                textvariable=self._shell_kpi_cause_vars[key],\n                style="ShellKpiHint.TLabel",\n                wraplength=220,\n                justify="left",\n            ).pack(anchor="w", pady=(0, 4))\n            ttk.Label(\n                card,\n                textvariable=self._shell_kpi_updated_vars[key],\n                style="ShellKpiHint.TLabel",\n                wraplength=220,\n                justify="left",\n            ).pack(anchor="w", pady=(0, 5))',
-              '            ttk.Label(\n                card,\n                textvariable=self._shell_kpi_meta_vars[key],\n                style="ShellKpiMeta.TLabel",\n                wraplength=240,\n                justify="left",\n            ).pack(anchor="w", pady=(0, 6))')
-          replace_once(kpi,
-              '                self._shell_kpi_updated_vars[key].set(f"Aktualisiert: {updated}")',
-              '                self._shell_kpi_updated_vars[key].set(f"Aktualisiert: {updated}")\n                if hasattr(self, "_shell_kpi_meta_vars"):\n                    if snapshot.state in {"warning", "error"}:\n                        self._shell_kpi_meta_vars[key].set(f"{cause} · {updated}")\n                    else:\n                        self._shell_kpi_meta_vars[key].set(f"Stand {updated}")')
-
-          replace_once(
-              'src/videobatch_fast/canonical_shell_workspace.py',
-              '            active = item.page_index == selected_index and item.action != "disabled"',
-              '            active = item.page_index == selected_index and item.action not in {"disabled", "settings"}',
-          )
-          replace_once(
-              'scripts/checkpoint2_shell_smoke.py',
-              '    assert len(app._shell_action_buttons) == 7',
-              '    assert len(app._shell_action_buttons) == 6',
-          )
-
-          p = ROOT / 'manifest.json'
-          manifest = json.loads(p.read_text(encoding='utf-8'))
-          manifest['build_date'] = '2026-09-04'
-          p.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-
-          changelog = ROOT / 'CHANGELOG.md'
-          text = changelog.read_text(encoding='utf-8')
-          marker = 'Alle wichtigen Änderungen dieses Projekts werden hier in zusammengefasster, chronologischer Form dokumentiert. Die vollständige frühere Detailhistorie liegt unter `docs/archive/release-history/CHANGELOG_FULL_PRE_FINALIZATION.md`.\n'
-          if '## Iteration 40B · Real-Screenshot Visual Hierarchy' in text:
-              raise SystemExit('CHANGELOG: 40B-Eintrag existiert unerwartet bereits')
-          entry = '''\n## Iteration 40B · Real-Screenshot Visual Hierarchy · 2026-09-04\n\n- realen 1858×1080-Programmzustand gegen `VIDEOBATCH_CANONICAL_UI_REFERENCE.svg` und Design-Tokens geprüft;\n- erkannt, dass der Screenshot das gespeicherte Theme `toxic_candy` verwendet, obwohl es öffentlich bereits `Violet Pulse` heißt;\n- Legacy-Grün/Türkis-Palette deshalb auf eine echte Navy/Violet-Palette mit kanonischem Grundhintergrund und klaren Kontraststufen umgestellt;\n- helle Konturen aus normalen Containern, Eingabefeldern und Tabs zurückgenommen und für Fokus, Auswahl und Status reserviert;\n- Shell-Header, Sidebar, KPI-Karten und Aktionsleiste auf dezente `border_subtle`-Konturen vereinheitlicht;\n- Schnellmodus-Auswahl von vollflächigem Informations-Cyan auf ruhige Auswahlfläche mit separatem Fokusakzent umgestellt;\n- zwei technische KPI-Metazeilen zu einer tertiären, zustandsabhängigen Zeile verdichtet, ohne Ursachen-/Zeitstempel-Daten oder Recovery-Verträge zu entfernen;\n- Doppelmarkierung in der linken Navigation verhindert; redundanten deaktivierten Scheduler aus der Primäraktionsleiste entfernt und sechs reale Hauptaktionen auf breiten Fenstern bevorzugt einzeilig angeordnet;\n- keine Render-, Queue-, Medien-, FFmpeg- oder Fehlerbehandlungslogik verändert.\n'''
-          if marker not in text:
-              raise SystemExit('CHANGELOG-Marker fehlt')
-          changelog.write_text(text.replace(marker, marker + entry, 1), encoding='utf-8')
-          PY
-
-          cat > tests/test_real_screenshot_visual_hierarchy.py <<'PY'
-          from __future__ import annotations
-
-          import json
-          from pathlib import Path
-
-          from videobatch_fast.theme import contrast_ratio
-
-          ROOT = Path(__file__).resolve().parents[1]
-
-          def _violet() -> dict:
-              return json.loads((ROOT / "resources/themes/toxic_candy.json").read_text(encoding="utf-8"))
-
-          def test_violet_pulse_uses_canonical_navy_foundation() -> None:
-              theme = _violet(); colors = theme["colors"]
-              assert theme["name"] == theme["label"] == "Violet Pulse"
-              assert colors["background_main"] == "#061426"
-              assert colors["background_toolbar"] == "#07172A"
-              assert colors["action_primary"] == "#6C52D8"
-              assert colors["border_subtle"] != colors["status_information"]
-              assert colors["state_selected"] != colors["status_information"]
-
-          def test_violet_pulse_core_contrast_is_wcag_aa() -> None:
-              colors = _violet()["colors"]
-              assert contrast_ratio(colors["background_surface"], colors["text_primary"]) >= 4.5
-              assert contrast_ratio(colors["background_elevated"], colors["text_secondary"]) >= 4.5
-              assert contrast_ratio(colors["action_primary"], colors["action_primary_text"]) >= 4.5
-
-          def test_theme_reserves_bright_color_for_focus_and_selection_semantics() -> None:
-              source = (ROOT / "src/videobatch_fast/theme.py").read_text(encoding="utf-8")
-              assert 'QuickModeSelected.TButton", background=COLORS["selection"]' in source
-              assert 'TEntry", fieldbackground=COLORS["panel2"]' in source
-              assert 'bordercolor=COLORS["border_subtle"]' in source
-              assert 'background=[("selected", COLORS["selection"])' in source
-
-          def test_canonical_shell_uses_subtle_container_borders() -> None:
-              source = (ROOT / "src/videobatch_fast/canonical_shell_chrome.py").read_text(encoding="utf-8")
-              assert source.count('bordercolor=COLORS["border_subtle"]') >= 4
-              assert '"ShellActionBar.TFrame"' in source
-              assert 'style="ShellActionBar.TFrame"' in source
-
-          def test_kpi_diagnostics_are_preserved_but_visually_compacted() -> None:
-              source = (ROOT / "src/videobatch_fast/canonical_kpi_detail_mixin.py").read_text(encoding="utf-8")
-              assert '_shell_kpi_cause_vars' in source
-              assert '_shell_kpi_updated_vars' in source
-              assert '_shell_kpi_meta_vars' in source
-              assert 'style="ShellKpiMeta.TLabel"' in source
-              assert 'snapshot.state in {"warning", "error"}' in source
-
-          def test_sidebar_focus_does_not_look_like_second_active_page() -> None:
-              source = (ROOT / "src/videobatch_fast/canonical_shell_chrome.py").read_text(encoding="utf-8")
-              assert '("focus", COLORS["toolbar"])' in source
-              assert '("focus", COLORS["selection"])' in source
-
-          def test_redundant_disabled_scheduler_is_not_in_primary_action_strip() -> None:
-              source = (ROOT / "src/videobatch_fast/canonical_shell_chrome.py").read_text(encoding="utf-8")
-              action_block = source.split("actions: tuple", 1)[1].split("self._shell_action_buttons", 1)[0]
-              assert "Startzeituhr · Checkpoint 5" not in action_block
-              assert action_block.count("TButton") == 6
-
-          def test_settings_shortcut_is_not_rendered_as_second_active_nav_item() -> None:
-              source = (ROOT / "src/videobatch_fast/canonical_shell_workspace.py").read_text(encoding="utf-8")
-              assert 'item.action not in {"disabled", "settings"}' in source
-
-          def test_wide_action_strip_prefers_single_row_for_six_primary_actions() -> None:
-              source = (ROOT / "src/videobatch_fast/canonical_shell_chrome.py").read_text(encoding="utf-8")
-              assert 'available >= 1380 and len(buttons) <= 6' in source
-              assert 'columns = len(buttons)' in source
-          PY
-
-          cat > ITERATION_40B_REAL_SCREENSHOT_VISUAL_HIERARCHY_2026-09-04.md <<'MD'
-          # Iteration 40B · Real-Screenshot Visual Hierarchy
-
-          Datum: 2026-09-04  
-          Basis: Iteration 40A · `3f88a4411c34b6c1c6ba11576cfa669d1a2dcd02`  
-          Version: `2.8.3-rc24`
-
-          ## Ausgangsevidence
-
-          Der reale Nutzer-Screenshot (1858 × 1080) zeigt die Canonical-Shell im Bereich **Effekte**. Die dominanten Flächenfarben entsprechen dem Legacy-Theme `toxic_candy` (`#0D2927`, `#0B2220`, `#173B37`) und nicht dem 40A-Standard `Midnight Blue`. Damit war die sichtbare Abweichung reproduzierbar erklärt: Die Theme-ID blieb aus gespeicherten Nutzereinstellungen aktiv, während nur der öffentliche Name bereits `Violet Pulse` lautete.
-
-          ## Vergleich zur kanonischen SVG
-
-          Die Referenz verwendet einen ruhigen Navy-Grund (`#061426`), subtile Containerkonturen (`#193756`/`#214361`), erhöhte Kartenflächen und helle Akzentfarben nur für Auswahl, Status und Primäraktionen. Der reale Screenshot zeigte dagegen durch `#36BFA6`/`#256B60` nahezu jede Fläche gleich stark gerahmt. Dadurch gingen Hierarchie, Weißraum und Fokus verloren.
-
-          ## 40B-Korrektur
-
-          1. `Violet Pulse` erhält eine echte Navy/Violet-Palette statt der alten Toxic-Candy-Grünpalette.
-          2. Normale Rahmen verwenden `border_subtle`; helle Farben bleiben Fokus/Status vorbehalten.
-          3. Header, Sidebar, KPI-Karten und Aktionsleiste erhalten konsistente, ruhige Surface-Grenzen.
-          4. Schnellmodus-Auswahl nutzt `selection` statt vollflächigem Informations-Cyan.
-          5. Eingabefelder und Comboboxen sind im Ruhezustand dezent und werden erst bei Fokus deutlich.
-          6. KPI-Metadaten bleiben vollständig im internen Vertrag erhalten, erscheinen aber als eine tertiäre Zeile statt als zwei gleichgewichtete technische Zeilen.
-          7. Der Einstellungen-Shortcut wird nicht als zweite aktive Seite markiert; Tastaturfokus erhält keine aktive Vollfläche.
-          8. Der deaktivierte Scheduler wird aus der Primäraktionsleiste entfernt; die verbleibenden sechs Hauptaktionen werden auf breiten Fenstern bevorzugt in einer Zeile angeordnet.
-
-          ## Bewusst nicht verändert
-
-          Render-/FFmpeg-Pipeline, Queue-/Retry-Logik, Medienimport, Fehlerbehandlungsverträge, Scheduler-Funktionalität, Screenshot-Harness/Baselines und PySide6/QML-Transferlinie bleiben unverändert.
-          MD
-
-          cat > .github/workflows/40b-real-screenshot-visual-hierarchy.yml <<'YAML2'
-          name: Iteration 40B · Real-Screenshot Visual Hierarchy
-
-          on:
-            pull_request:
-              branches:
-                - iteration/40a-reference-aligned-visual-polish-20260904
-
-          permissions:
-            contents: read
-
-          env:
-            PIP_DISABLE_PIP_VERSION_CHECK: '1'
-            PIP_NO_INPUT: '1'
-            PYTHONHASHSEED: '0'
-            PYTHONUTF8: '1'
-            PYTHONDONTWRITEBYTECODE: '1'
-            PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/src
-
-          jobs:
-            validate-40b:
-              runs-on: ubuntu-24.04
-              timeout-minutes: 40
-              steps:
-                - name: Exakten PR-Head holen
-                  uses: actions/checkout@v5
-                  with:
-                    ref: ${{ github.event.pull_request.head.sha }}
-                    fetch-depth: 1
-                    persist-credentials: false
-                - name: Head-Lineage bestätigen
-                  run: |
-                    set -Eeuo pipefail
-                    test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
-                - name: Python 3.12
-                  uses: actions/setup-python@v6
-                  with:
-                    python-version: '3.12'
-                    cache: pip
-                    cache-dependency-path: requirements-toolchain.lock
-                - name: Systempakete
-                  run: |
-                    set -Eeuo pipefail
-                    sudo apt-get update
-                    sudo apt-get install -y python3-tk xvfb ffmpeg
-                - name: Exakt gesperrte Toolchain
-                  run: python -m pip install --requirement requirements-toolchain.lock
-                - name: Kompilierung
-                  env:
-                    PYTHONPYCACHEPREFIX: ${{ runner.temp }}/40b-pycache
-                  run: python -m compileall -q -f scripts src tests
-                - name: Real-Screenshot-Hierarchievertrag
-                  run: |
-                    set -Eeuo pipefail
-                    python -m pytest -q -p no:cacheprovider tests/test_real_screenshot_visual_hierarchy.py tests/test_reference_aligned_midnight_blue.py tests/test_canonical_application_shell_contract.py tests/test_design_manifest_contract.py
-                    python scripts/validate_design_manifest.py --json
-                - name: Canonical-Shell GUI-Smoke
-                  run: xvfb-run -a python scripts/checkpoint2_shell_smoke.py
-                - name: Vollregression unter Xvfb
-                  run: xvfb-run -a python -m pytest -q -p no:cacheprovider
-                - name: Architektur-Audit
-                  run: python scripts/architecture_audit.py
-                - name: Kanonisches Release-Manifest prüfen
-                  run: |
-                    set -Eeuo pipefail
-                    python scripts/build_release_manifest.py --check --json
-                    python scripts/validate_release_manifest.py
-                - name: Deterministisches 40B-Paket prüfen
-                  id: package
-                  run: |
-                    set -Eeuo pipefail
-                    ZIP="PROVOWARE_VideoBatch_Fast_ITER40B_REAL_SCREENSHOT_VISUAL_2026-09-04.zip"
-                    ZIP2="$RUNNER_TEMP/PROVOWARE_VideoBatch_Fast_ITER40B_REAL_SCREENSHOT_VISUAL_repro.zip"
-                    python scripts/package_release.py --output "$ZIP"
-                    python scripts/verify_release_zip.py "$ZIP"
-                    python scripts/package_release.py --output "$ZIP2"
-                    cmp -s "$ZIP" "$ZIP2"
-                    sha256sum "$ZIP" | tee "$ZIP.sha256.txt"
-                    echo "ZIP_NAME=$ZIP" >> "$GITHUB_ENV"
-                - name: 40B-Evidence hochladen
-                  if: always() && steps.package.outcome == 'success'
-                  uses: actions/upload-artifact@v4
-                  with:
-                    name: PROVOWARE_VideoBatch_Fast_ITER40B_REAL_SCREENSHOT_VISUAL_2026-09-04
-                    path: |
-                      ${{ env.ZIP_NAME }}
-                      ${{ env.ZIP_NAME }}.sha256.txt
-                    if-no-files-found: error
-                    retention-days: 30
-          YAML2
-
-          rm -f .github/workflows/40b-one-shot-apply.yml
-
       - name: Python 3.12
         uses: actions/setup-python@v6
         with:
@@ -388,12 +45,20 @@ jobs:
       - name: Exakt gesperrte Toolchain
         run: python -m pip install --requirement requirements-toolchain.lock
 
-      - name: Vorab-Manifest und fokussierte Gates
+      - name: 40B fail-closed anwenden
         run: |
           set -Eeuo pipefail
+          python scripts/40b_apply_once.py
+          rm -f scripts/40b_apply_once.py .github/workflows/40b-one-shot-apply.yml
           python scripts/build_release_manifest.py
           python scripts/validate_release_manifest.py
-          PYTHONPYCACHEPREFIX="$RUNNER_TEMP/40b-pycache" python -m compileall -q -f scripts src tests
+
+      - name: Kompilierung und fokussierter Visual-Vertrag
+        env:
+          PYTHONPYCACHEPREFIX: ${{ runner.temp }}/40b-pycache
+        run: |
+          set -Eeuo pipefail
+          python -m compileall -q -f scripts src tests
           python -m pytest -q -p no:cacheprovider tests/test_real_screenshot_visual_hierarchy.py tests/test_reference_aligned_midnight_blue.py tests/test_canonical_application_shell_contract.py tests/test_design_manifest_contract.py
           python scripts/validate_design_manifest.py --json
           xvfb-run -a python scripts/checkpoint2_shell_smoke.py
@@ -416,12 +81,15 @@ jobs:
           passed = tests - failures - skipped
           p = Path('PROJEKTSTATUS.json')
           data = json.loads(p.read_text(encoding='utf-8'))
-          data['entwicklungsiteration'] = '40B'
           data['status'] = '40B Real-Screenshot Visual Hierarchy vollständig regressionsgeprüft; Stable weiterhin durch unveränderte Release-Gates blockiert'
-          data['lineage_base_sha'] = '3f88a4411c34b6c1c6ba11576cfa669d1a2dcd02'
-          data.setdefault('tests', {}).update({'40b_fokus_bestanden': 24, '40b_real_gui_smoke': 'passed', 'vollregression_bestanden': passed, 'vollregression_uebersprungen': skipped, 'vollregression_fehlgeschlagen': failures})
-          appearance = data.setdefault('erscheinungsbild', {})
-          appearance.update({'current_screenshot_theme_id': 'toxic_candy', 'current_screenshot_theme_label': 'Violet Pulse', 'violet_pulse_reference_alignment': 'validated', 'visual_hierarchy': 'subtle container borders; focus/status colors reserved for state; compact KPI meta line'})
+          data.setdefault('tests', {}).update({
+              '40b_fokus_bestanden': 24,
+              '40b_real_gui_smoke': 'passed',
+              'vollregression_bestanden': passed,
+              'vollregression_uebersprungen': skipped,
+              'vollregression_fehlgeschlagen': failures,
+          })
+          data.setdefault('erscheinungsbild', {})['violet_pulse_reference_alignment'] = 'validated'
           data.setdefault('packaging', {})['status'] = 'validated_after_manifest_sync'
           data['naechster_schritt'] = '40C Screenshot-Harness separat auf CanonicalVideoBatchFastUI umstellen und zunächst capture-only gegen die Repo-Referenzen prüfen'
           p.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
@@ -430,7 +98,7 @@ jobs:
           python scripts/build_release_manifest.py --check --json
           python scripts/validate_release_manifest.py
 
-      - name: Finalen Baum committen
+      - name: Finalen 40B-Baum committen
         run: |
           set -Eeuo pipefail
           git config user.name 'provoware-release-orchestrator'
