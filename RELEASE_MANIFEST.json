@@ -102,8 +102,8 @@
     {
       "mode": "0o644",
       "path": "A33_CURRENT_CANONICAL_CONSOLIDATION_2026-09-04.md",
-      "sha256": "bcf8f9c5312f9a0571ffeed8ec4141c4f66ecbdbf4bd5027207c688085b8c23c",
-      "size": 1459
+      "sha256": "a1a8a789e8d210abeced96625bb8c972e8a61b0582d30574bb698bc452b14df3",
+      "size": 2005
     },
     {
       "mode": "0o644",
@@ -132,8 +132,8 @@
     {
       "mode": "0o644",
       "path": "CHANGELOG.md",
-      "sha256": "93688046f4613f9c43ec1441a2d6d57ded394f4d111b1ad690af88e0d33d3fcb",
-      "size": 4537
+      "sha256": "a98558b952cf904c87651808c97c2dd03b87f8c89aac00558c915d33ff25af94",
+      "size": 4832
     },
     {
       "mode": "0o644",
@@ -216,8 +216,8 @@
     {
       "mode": "0o644",
       "path": "ITERATION_39A_A33_REBASE_PACKAGING_HYGIENE_2026-09-04.md",
-      "sha256": "4dbb25389ecb2edcc1805d8706c2eeac8bd92c8abac6b6fc4879eee3de75c37a",
-      "size": 4961
+      "sha256": "8a1aabef2df550917fcf48b803d0e6c87dfd26a45422c8ef82c90d25b7d35676",
+      "size": 4976
     },
     {
       "mode": "0o644",
