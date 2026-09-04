@@ -6,7 +6,7 @@ on:
       - fix/post-merge-smoke-contracts-20260904
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   repair:
@@ -19,7 +19,7 @@ jobs:
           ref: fix/post-merge-smoke-contracts-20260904
           fetch-depth: 0
 
-      - name: Build and validate bounded repair
+      - name: Finalize script regression and canonical manifest
         run: |
           set -Eeuo pipefail
           export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
@@ -35,37 +35,6 @@ jobs:
               if count != 1:
                   raise SystemExit(f"{path}: erwartete genau 1 Fundstelle, gefunden {count}: {old!r}")
               target.write_text(text.replace(old, new, 1), encoding="utf-8")
-
-          bounded = ".github/workflows/bounded-long-render-rehearsal.yml"
-          replace_once(bounded, f"'docs/LONG_RENDER_{release}.md'", "'docs/LONG_RENDER_*.md'")
-          replace_once(bounded, f"'candidate': '{release}',", "'candidate': version,")
-          replace_once(
-              bounded,
-              "          root = Path('rehearsal').resolve()\n          inputs = root / 'inputs'\n",
-              "          repository = Path.cwd()\n"
-              "          version_payload = json.loads((repository / 'VERSION.json').read_text(encoding='utf-8'))\n"
-              "          version = str(version_payload.get('build') or version_payload.get('version') or '').strip()\n"
-              "          if not version:\n"
-              "              raise SystemExit('VERSION.json: build/version fehlt')\n"
-              "          root = Path('rehearsal').resolve()\n"
-              "          inputs = root / 'inputs'\n",
-          )
-
-          dynamic_version = "$(python3 -c 'import json; from pathlib import Path; data=json.loads(Path(\"VERSION.json\").read_text(encoding=\"utf-8\")); value=str(data.get(\"build\") or data.get(\"version\") or \"\").strip(); assert value, \"VERSION.json: build/version fehlt\"; print(value)')"
-          matrix = ".github/workflows/kubuntu-pr-matrix.yml"
-          replace_once(
-              matrix,
-              '          archive="${project}_' + release + '_${short_sha}_verified.zip"',
-              '          version="' + dynamic_version + '"\n'
-              '          archive="${project}_${version}_${short_sha}_verified.zip"',
-          )
-          validation = ".github/workflows/kubuntu-pr-validation.yml"
-          replace_once(
-              validation,
-              '          archive="PROVOWARE_VIDEO_AUTOMATION_2026_' + release + '_${short_sha}_verified.zip"',
-              '          version="' + dynamic_version + '"\n'
-              '          archive="PROVOWARE_VIDEO_AUTOMATION_2026_${version}_${short_sha}_verified.zip"',
-          )
 
           builder = "scripts/build_long_render_contract.py"
           anchor = "from videobatch_fast.probe import AUDIO_EXTENSIONS, IMAGE_EXTENSIONS\n\n\n"
@@ -102,27 +71,16 @@ jobs:
           test_path.write_text(test_text.rstrip() + regression + "\n", encoding="utf-8")
           PY
 
-          git rm .github/workflows/fix-post-merge-smoke-once.yml
           python3 -m py_compile scripts/build_long_render_contract.py tests/test_release_literal_hygiene.py
+          git rm --cached .github/workflows/fix-post-merge-smoke-once.yml
           python3 scripts/check_release_literal_hygiene.py --report "$RUNNER_TEMP/release-literal-hygiene.json"
           python3 scripts/build_release_manifest.py
           python3 scripts/build_release_manifest.py --check --json
-          python3 scripts/check_release_literal_hygiene.py --report "$RUNNER_TEMP/release-literal-hygiene-final.json"
+          git restore --staged .github/workflows/fix-post-merge-smoke-once.yml
 
-          mkdir -p "$RUNNER_TEMP/smoke-repair/.github/workflows" "$RUNNER_TEMP/smoke-repair/scripts" "$RUNNER_TEMP/smoke-repair/tests"
-          cp .github/workflows/bounded-long-render-rehearsal.yml "$RUNNER_TEMP/smoke-repair/.github/workflows/"
-          cp .github/workflows/kubuntu-pr-matrix.yml "$RUNNER_TEMP/smoke-repair/.github/workflows/"
-          cp .github/workflows/kubuntu-pr-validation.yml "$RUNNER_TEMP/smoke-repair/.github/workflows/"
-          cp scripts/build_long_render_contract.py "$RUNNER_TEMP/smoke-repair/scripts/"
-          cp tests/test_release_literal_hygiene.py "$RUNNER_TEMP/smoke-repair/tests/"
-          cp RELEASE_MANIFEST.json "$RUNNER_TEMP/smoke-repair/"
-          cp "$RUNNER_TEMP/release-literal-hygiene-final.json" "$RUNNER_TEMP/smoke-repair/RELEASE_LITERAL_HYGIENE.json"
-
-      - name: Upload validated repair package
-        uses: actions/upload-artifact@v4
-        with:
-          name: validated-post-merge-smoke-repair
-          path: ${{ runner.temp }}/smoke-repair/
-          include-hidden-files: true
-          if-no-files-found: error
-          retention-days: 7
+          git config user.name "provoware-release-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add scripts/build_long_render_contract.py tests/test_release_literal_hygiene.py RELEASE_MANIFEST.json
+          git commit -m "fix: centralize release identifiers for post-merge smoke"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          git push origin HEAD:fix/post-merge-smoke-contracts-20260904
