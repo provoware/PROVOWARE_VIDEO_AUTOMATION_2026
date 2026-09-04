@@ -126,8 +126,7 @@ jobs:
             .github/workflows/kubuntu-pr-matrix.yml \
             .github/workflows/kubuntu-pr-validation.yml \
             scripts/build_long_render_contract.py \
-            tests/test_release_literal_hygiene.py \
-            .github/workflows/fix-post-merge-smoke-once.yml
+            tests/test_release_literal_hygiene.py
           git commit -m "fix: derive release identifiers from canonical metadata"
 
           python3 scripts/build_release_manifest.py
