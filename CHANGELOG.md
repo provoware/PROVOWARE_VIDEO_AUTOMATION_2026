@@ -2,6 +2,17 @@
 
 Alle wichtigen Änderungen dieses Projekts werden hier in zusammengefasster, chronologischer Form dokumentiert. Die vollständige frühere Detailhistorie liegt unter `docs/archive/release-history/CHANGELOG_FULL_PRE_FINALIZATION.md`.
 
+## Iteration 40A · Reference-Aligned Visual Polish · 2026-09-04
+
+- Gesamtprojekt gegen kanonische SVG-Referenz, Design-Tokens, UI-Blueprint, Einsteigerreferenz und aktuelle Shell-Verträge auditiert;
+- historische Theme-ID `neon_gravity` kompatibel beibehalten, sichtbaren Produktnamen jedoch konsistent auf `Midnight Blue` vereinheitlicht;
+- Standardpalette von violett-schwarzem Legacy-Look auf die kanonische Navy-/Blue-Palette mit klaren Surface-Ebenen, Cyan-Fokus, Grün-Erfolg und gezieltem Gold/Magenta-Akzent umgestellt;
+- Primärbutton-Hover von Warnfarbe entkoppelt und Fokuszustände für Standard-/Primärbuttons deutlicher abgesichert;
+- vier öffentlichen Theme-Namen in `theme.py` exakt an den kanonischen Shellvertrag angeglichen;
+- Reference-Alignment-Regressionsprüfung ergänzt: Name, Kernpalette in SVG, WCAG-AA-Hauptkontraste, Statusdifferenzierung und vier semantische Einsteiger-Aktionsfarben;
+- alten visuellen Capture-Harness als Evidence-Lücke dokumentiert, da er noch `VideoBatchFastUI` statt der aktiven `CanonicalVideoBatchFastUI` erfasst; Baselines deshalb nicht automatisch ersetzt;
+- keine Render-, Queue-, Medien-, Fehler- oder sonstige Fachlogik geändert und kein Merge durchgeführt.
+
 ## Iteration 39B · Core-vs.-Tk-Transfermatrix für PySide6/QML · 2026-09-04
 
 - finalen 39A-Head `121211244d90932775348ac26039b3d7315e60b2` als alleinige Transferbasis festgelegt;
