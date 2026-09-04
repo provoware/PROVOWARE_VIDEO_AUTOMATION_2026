@@ -8,6 +8,10 @@ from videobatch_fast.canonical_visual_polish_mixin import (
     VISUAL_PASS2_CARD_PADDING,
     VISUAL_PASS2_GAP,
     VISUAL_PASS2_HALF_GAP,
+    VISUAL_PASS2_MIN_BUTTON_PAD_Y,
+    VISUAL_PASS2_MIN_HINT_FONT,
+    VISUAL_PASS2_MIN_ROW_HEIGHT,
+    visual_scale_factor,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -55,6 +59,26 @@ def test_visual_pass2_keeps_responsive_layout_delegated_to_existing_shell() -> N
     assert 'mode == "three_columns"' in source
     assert 'mode == "two_columns"' in source
     assert 'mode == "stacked"' in source
+
+
+def test_visual_pass2_honors_full_low_vision_zoom_range() -> None:
+    assert visual_scale_factor(60) == 0.8
+    assert visual_scale_factor(80) == 0.8
+    assert visual_scale_factor(100) == 1.0
+    assert visual_scale_factor(150) == 1.5
+    assert visual_scale_factor(200) == 2.0
+    assert visual_scale_factor(240) == 2.0
+
+
+def test_visual_pass2_keeps_controls_readable_and_focus_visible() -> None:
+    source = inspect.getsource(CanonicalVisualPolishMixin)
+    assert VISUAL_PASS2_MIN_ROW_HEIGHT >= 32
+    assert VISUAL_PASS2_MIN_HINT_FONT >= 10
+    assert VISUAL_PASS2_MIN_BUTTON_PAD_Y >= 7
+    assert 'borderwidth=2' in source
+    assert '("focus", COLORS["accent2"])' in source
+    assert 'style.configure("Treeview", rowheight=row_height)' in source
+    assert 'padding=(button_pad_x, button_pad_y)' in source
 
 
 def test_canonical_ui_activates_visual_polish_before_shell_mixins() -> None:
