@@ -2,7 +2,7 @@
 
 ## Vollständige Abschlussprüfung
 
-- **323/323 automatisierte Tests bestanden** unter realem Xvfb
+- **325/325 automatisierte Tests bestanden** unter realem Xvfb
 - 0 übersprungene Tests im finalen Lauf
 - 82,43 % Statement-/Zeilenabdeckung
 - 67,21 % Branch-Abdeckung

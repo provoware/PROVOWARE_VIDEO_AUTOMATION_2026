@@ -32,7 +32,7 @@ git rev-parse HEAD
 
 **Kann entfallen?** Nein. Ohne Ausgangsnachweis ist eine spätere Fehlerzuordnung unzuverlässig.
 
-## Schritt-für-Schritt-Entwicklungsablauf
+## Schritt-für-Schritt-Anleitung
 
 ### Schritt 1: Aktuellen `main`-Stand prüfen
 

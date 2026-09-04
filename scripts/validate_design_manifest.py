@@ -100,18 +100,7 @@ def _file_sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _validate_shell(root: Path, errors: list[str]) -> None:
-    shell_paths = [root / path.relative_to(ROOT) for path in SHELL_PATHS]
-    app_path = root / APP_PATH.relative_to(ROOT)
-    shell = "\n".join(path.read_text(encoding="utf-8") for path in shell_paths)
-    app = app_path.read_text(encoding="utf-8")
-
-    for path in (*shell_paths, app_path):
-        try:
-            ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-        except SyntaxError as exc:
-            errors.append(f"PYTHON_SYNTAX_UNGUELTIG: {path.relative_to(root)}: {exc}")
-
+def _validate_required_shell_content(shell: str, errors: list[str]) -> None:
     for label in REQUIRED_SHELL_LABELS:
         if label not in shell:
             errors.append(f"Shell-Navigation fehlt: {label}")
@@ -127,6 +116,9 @@ def _validate_shell(root: Path, errors: list[str]) -> None:
     for builder in REQUIRED_PAGE_BUILDERS:
         if f"self.{builder}(" not in shell:
             errors.append(f"Bestehende Funktionsseite nicht eingebunden: {builder}")
+
+
+def _validate_shell_controls(shell: str, errors: list[str]) -> None:
     for callback in (
         "self._new_project",
         "self._add_audio",
@@ -149,6 +141,9 @@ def _validate_shell(root: Path, errors: list[str]) -> None:
     for action in REQUIRED_KPI_ACTIONS:
         if action not in shell:
             errors.append(f"KPI-Aktion fehlt: {action}")
+
+
+def _validate_shell_connections(shell: str, app: str, errors: list[str]) -> None:
     if "build_kpi_snapshots(" not in shell or "self._refresh_kpi_cards()" not in shell:
         errors.append("KPI-Karten sind nicht an den realen Zustandsvertrag gebunden")
     if "CanonicalKpiCompactMixin" not in shell or "ShellKpiLink.TButton" not in shell:
@@ -159,6 +154,23 @@ def _validate_shell(root: Path, errors: list[str]) -> None:
         errors.append("App-Einstieg verwendet nicht die kanonische Shell")
     if "from .ui import run_app" in app:
         errors.append("App-Einstieg umgeht die kanonische Shell")
+
+
+def _validate_shell(root: Path, errors: list[str]) -> None:
+    shell_paths = [root / path.relative_to(ROOT) for path in SHELL_PATHS]
+    app_path = root / APP_PATH.relative_to(ROOT)
+    shell = "\n".join(path.read_text(encoding="utf-8") for path in shell_paths)
+    app = app_path.read_text(encoding="utf-8")
+
+    for path in (*shell_paths, app_path):
+        try:
+            ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        except SyntaxError as exc:
+            errors.append(f"PYTHON_SYNTAX_UNGUELTIG: {path.relative_to(root)}: {exc}")
+
+    _validate_required_shell_content(shell, errors)
+    _validate_shell_controls(shell, errors)
+    _validate_shell_connections(shell, app, errors)
 
 
 def validate(root: Path = ROOT) -> list[str]:

@@ -73,8 +73,8 @@ Diese Punkte dürfen nicht durch Scrollen oder kleinere Schrift lediglich verdec
 - [x] **DEV-003 – Workflow-Proliferation untersagt:** lokale Design-/Dokumentations-/Bildprüfungen werden nicht ohne echten Bedarf zu neuen Required-Checks.
 - [x] **DEV-004 – Release-Manifest auf einen finalen Lauf begrenzt:** keine Regeneration zwischen Einzelpatches.
 - [x] **DEV-005 – Codesparsamkeit priorisiert:** bestehende Module/Tests wiederverwenden; neue Datei/Mixin/Abstraktion nur bei klarer Verantwortungsgrenze.
-- [ ] **DEV-006 – Ab nächstem Codepatch Patchbudget anwenden:** bevorzugt höchstens 3 Produktdateien + 1 fokussierte Testdatei pro Einzelbefund.
-- [ ] **DEV-007 – Ab nächstem Codepatch reale Ursache zuerst:** kein neuer struktureller Umbau, solange ein aktueller Crashbericht oder Screenshotbefund noch nicht eingegrenzt ist.
+- [x] **DEV-006 – Patchbudget angewendet:** Hilfevertrag und Zustandsberechnung wurden in getrennten Kleinständerungen mit vorhandenen Prüfungen bearbeitet.
+- [x] **DEV-007 – Bestätigte Ursache zuerst bearbeitet:** falsche Hilfetextquelle und gemeldete Verzweigungsgrenzen wurden ohne Nebenumbau korrigiert.
 
 ## Bereits vorhandene technische Grundlagen
 
@@ -88,6 +88,10 @@ Diese Punkte dürfen nicht durch Scrollen oder kleinere Schrift lediglich verdec
 
 ## Noch offene Stable-Gates
 
+- [ ] **TEST-P1-001 – Bestehende Startverträge mit `videobatch.sh` abgleichen:** Drei Prüfungen erwarten weiterhin den früheren direkten Aufruf von `scripts/bootstrap.py`.
+- [ ] **TEST-P1-002 – Hauptzweig-Ablauf prüfen:** Zwei Prüfungen erwarten eine feste Hauptzweig-Auswahl und zwölf begrenzte Abfrageversuche, die im aktuellen Ablauf fehlen.
+- [ ] **TEST-P1-003 – Zielumgebung vervollständigen:** FFmpeg, eine echte Bildschirmsitzung und die isolierte Python-Laufzeit im Wurzelbereich fehlen in der aktuellen Prüfumgebung.
+- [ ] **TEST-P1-004 – Beschädigte Testmedien erneut prüfen:** Die Erkennung einer beschädigten Videodatei muss mit vorhandenem FFprobe reproduziert und eingegrenzt werden.
 - [ ] **Physische KDE-Abnahme unter X11 und Wayland** für den finalen, korrigierten UI-Stand dokumentieren.
 - [ ] **Langzeitrender** mit großer Medienauswahl und langsamem externem Ziel durchführen.
 - [ ] `RELEASE_MANIFEST.json` erst **nach** finalem Code-/UI-/Startnachweis genau einmal regenerieren und anschließend read-only verifizieren.

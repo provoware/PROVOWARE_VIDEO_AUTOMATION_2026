@@ -4,19 +4,19 @@
 **Kanal:** rc
 **Freigegebener Qualitätsbericht:** `VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json`
 
-- 323/323 automatisierte Tests bestanden
+- 325/325 automatisierte Tests bestanden
 - 82,43 % Zeilenabdeckung
 - 67,21 % Zweigabdeckung
 - 18/18 visuelle Szenarien bestanden
 
 ### Offene Stable-Gates
 
-- Ruff 0.16.1
-- MyPy 2.3.0
-- Bandit 1.9.4
-- pip-audit 2.10.1
-- physische KDE-X11-/Wayland-Abnahme
-- Langzeitrender mit großer Medienauswahl und langsamem externem Ziel
+- Ruff 0.16.1: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen
+- MyPy 2.3.0: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen
+- Bandit 1.9.4: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen
+- pip-audit 2.10.1: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen
+- Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless
+- Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt
 <!-- release-status:end -->
 
 <!-- release-files:start -->
@@ -31,9 +31,8 @@ Der Zusatz `_save_` kennzeichnet ausschließlich eigenständige, freigabefähige
 | `PROJEKTORDNERSTRUKTUR_save_.md`<br>Projektübersicht | `docs/LONG_RENDER_2.8.3-rc24.md`<br>Langzeitrender: Realer Langzeitrender mit großer Auswahl und langsamem Ziel fehlt |
 | `RELEASE_NOTES_save_.md`<br>Releasehinweise | `docs/STABLE_ACCEPTANCE_EVIDENCE.md`<br>Stable-Abnahmenachweis: Physische Desktop- und Langzeitnachweise fehlen |
 | `TEST_REPORT_save_.md`<br>Testbericht | `VISUAL_DESKTOP_APPROVAL.md`<br>Desktop-Sichtprüfung: Physische KDE-X11-/Wayland-Abnahme bleibt offen |
-| `FRESH_PACKAGE_REPORT_save_.md`<br>Paketbericht | `VISUAL_INSPECTION_MANIFEST.json`<br>Visuelles Prüfmanifest: Aktueller physischer Lauf ist nicht vollständig bestätigt |
-| `CODE_QUALITY_REPORT_2.8.3-rc24_save_.md`<br>Codequalitätsbericht | — |
-| `QUALITY_GATE_REPORT_2.8.3-rc24_save_.md`<br>Exakter Offline-Qualitätsbericht | — |
+| `FRESH_PACKAGE_REPORT_save_.md`<br>Paketbericht | `QUALITY_ENVIRONMENT_STATUS.json`<br>Qualitätsumgebung: Exakte Offline-Werkzeugumgebung ist nicht vollständig freigegeben |
+| `CODE_QUALITY_REPORT_2.8.3-rc24_save_.md`<br>Codequalitätsbericht | `VISUAL_INSPECTION_MANIFEST.json`<br>Visuelles Prüfmanifest: Aktueller physischer Lauf ist nicht vollständig bestätigt |
 | `IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md`<br>Implementierungsbericht | — |
 | `FINAL_AUDIT_2.8.3-rc24_save_.md`<br>RC-Abschlussaudit | — |
 | `VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json`<br>Maschinenlesbarer Buildbericht | — |
