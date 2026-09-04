@@ -1,7 +1,7 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 439,
+  "file_count": 441,
   "files": [
     {
       "mode": "0o644",
@@ -30,14 +30,14 @@
     {
       "mode": "0o644",
       "path": ".github/workflows/checkpoint2-shell-matrix.yml",
-      "sha256": "3797fcb1067f2c0df1c57a5b7ec7eb4242cefa80b64caa27a029078d179e6bae",
-      "size": 16825
+      "sha256": "d2e3e7e8f8b61d92154348f52c061d24b78478e088696fe9b201f7be8446371d",
+      "size": 18429
     },
     {
       "mode": "0o644",
       "path": ".github/workflows/design-manifest-gate.yml",
-      "sha256": "e9bebfcd16669c470954555258d890be1de9072662ce1b1616911cd06b84a88a",
-      "size": 1892
+      "sha256": "0a0255b4c0fecde4096dcbc84b9184cb501f0cae2491e530c1e5a489b06f4844",
+      "size": 2090
     },
     {
       "mode": "0o644",
@@ -858,8 +858,8 @@
     {
       "mode": "0o644",
       "path": "resources/themes/neon_gravity.json",
-      "sha256": "f6267760407dc439a1eadb3c4d4f92983b7eb079f804e22042d3587e4c3ffc46",
-      "size": 1214
+      "sha256": "1220f8c86005ff07a6db8e832ca69f35027c5d8eb19b808cf4477eebf76fe9a8",
+      "size": 1216
     },
     {
       "mode": "0o644",
@@ -1458,8 +1458,14 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/canonical_ui.py",
-      "sha256": "100e1ae486955322951cea660755add7024f2a57d388e135e87aba056a38f25f",
-      "size": 6963
+      "sha256": "999a0af2788b5ef6529ab123a0427a5e9a57de1f2eeaafe1af5185a95f814938",
+      "size": 7065
+    },
+    {
+      "mode": "0o644",
+      "path": "src/videobatch_fast/canonical_visual_polish_mixin.py",
+      "sha256": "3c622d11a82360d150effa5a3065a926c919099cbcbc928268f8eabc1528a9c9",
+      "size": 9122
     },
     {
       "mode": "0o644",
@@ -1848,8 +1854,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/theme.py",
-      "sha256": "5d63eff84388a0128fc7f4319aeaf3871c6b8a5da5a92cd2f7d43cc0b4664685",
-      "size": 17281
+      "sha256": "3a5eb4cc4669101fa98c33f253b4c6b3716c1c9beb78319d31e9b5b94a9c3171",
+      "size": 17516
     },
     {
       "mode": "0o644",
@@ -2606,6 +2612,12 @@
       "path": "tests/test_visual_and_plugin_signing_2_5.py",
       "sha256": "27a89cea5ce95cecdff000249da85149625eacf2640a12de9c5eef006788f048",
       "size": 5035
+    },
+    {
+      "mode": "0o644",
+      "path": "tests/test_visual_pass2_contract.py",
+      "sha256": "16aeae96e8ddbf79c3f7ff5f429cb83fe51434197360c66c26fc13a3c1b875a2",
+      "size": 2288
     },
     {
       "mode": "0o644",
