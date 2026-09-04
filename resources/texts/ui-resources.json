@@ -1,0 +1,31 @@
+{
+  "catalog_version": "1.0",
+  "schema_version": 1,
+  "texts": {
+    "ui.resources.process_header": "PROZESS & FORTSCHRITT",
+    "ui.resources.total": "Gesamt",
+    "ui.resources.current_job": "Aktueller Job",
+    "ui.resources.system_load": "SYSTEMLAST",
+    "ui.resources.resource_limits": "RESSOURCENLIMITS",
+    "ui.resources.cpu_limit_50": "CPU auf 50 % begrenzen",
+    "ui.resources.pause_help": "Pause hält den laufenden FFmpeg-Prozess an derselben Stelle.",
+    "ui.resources.resume": "▶ Fortsetzen",
+    "ui.resources.pause": "⏸ Pausieren",
+    "ui.resources.status_ready": "Bereit",
+    "ui.resources.status_paused": "Pausiert · Zustand bleibt erhalten",
+    "ui.resources.status_active": "Aktiv",
+    "ui.resources.status_resumed": "Läuft weiter",
+    "ui.resources.progress_initial": "Gesamt 0,0 % · Job 0,0 % · wartet",
+    "ui.resources.progress": "Gesamt {total} % · Job {job} % · {phase} · ETA {eta}",
+    "ui.resources.metric_pending": "{label} –",
+    "ui.resources.metric_cpu": "CPU  {percent} %",
+    "ui.resources.metric_usage": "{label}  {used} / {total}",
+    "ui.resources.metric_disk_free": "FREI  {free}",
+    "ui.resources.ram_limit": "RAM {value} GB",
+    "ui.resources.label_cpu": "CPU",
+    "ui.resources.label_ram": "RAM",
+    "ui.resources.label_swap": "SWAP",
+    "ui.resources.label_zram": "ZRAM",
+    "ui.resources.label_disk_free": "Frei"
+  }
+}
