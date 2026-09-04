@@ -147,19 +147,33 @@ jobs:
           python - <<'PY'
           import json, os, platform, xml.etree.ElementTree as ET
           from pathlib import Path
+
+          def junit_counts(path: Path) -> tuple[int, int, int, int]:
+              root = ET.parse(path).getroot()
+              tag = root.tag.rsplit('}', 1)[-1]
+              if tag == 'testsuite':
+                  suites = [root]
+              elif tag == 'testsuites':
+                  suites = [child for child in root if child.tag.rsplit('}', 1)[-1] == 'testsuite']
+              else:
+                  raise AssertionError(f'Unerwarteter JUnit-Root: {root.tag}')
+              if not suites:
+                  raise AssertionError('JUnit enthält keine testsuite')
+              names = ('tests', 'failures', 'errors', 'skipped')
+              return tuple(sum(int(suite.attrib.get(name, 0)) for suite in suites) for name in names)
+
           root=Path('.')
           runner=Path(os.environ['RUNNER_TEMP'])
           evidence_path=root/'diagnostics/release_readiness/RELEASE_EVIDENCE.json'
           data=json.loads(evidence_path.read_text(encoding='utf-8'))
           cov=json.loads((runner/'initial-coverage.json').read_text(encoding='utf-8'))['totals']
-          suite=ET.parse(runner/'initial-junit.xml').getroot()
-          total=int(suite.attrib.get('tests',0)); failures=int(suite.attrib.get('failures',0)); errors=int(suite.attrib.get('errors',0)); skipped=int(suite.attrib.get('skipped',0))
+          total, failures, errors, skipped = junit_counts(runner/'initial-junit.xml')
           passed=total-failures-errors-skipped
           statements=int(cov.get('num_statements',0)); covered=int(cov.get('covered_lines',0)); branches=int(cov.get('num_branches',0)); covered_branches=int(cov.get('covered_branches',0))
           line=covered/statements*100 if statements else 0.0
           branch=covered_branches/branches*100 if branches else 100.0
           combined=float(cov.get('percent_covered',0.0))
-          assert failures==0 and errors==0 and line >= 80 and branch >= 65
+          assert total > 0 and passed > 0 and failures==0 and errors==0 and line >= 80 and branch >= 65
           tests=data['tests']
           tests.update({
               'passed':passed,'failed':failures+errors,'skipped':skipped,'collected':total,
@@ -263,15 +277,31 @@ jobs:
           import json, xml.etree.ElementTree as ET
           from pathlib import Path
           import os
+
+          def junit_counts(path: Path) -> tuple[int, int, int, int]:
+              root = ET.parse(path).getroot()
+              tag = root.tag.rsplit('}', 1)[-1]
+              if tag == 'testsuite':
+                  suites = [root]
+              elif tag == 'testsuites':
+                  suites = [child for child in root if child.tag.rsplit('}', 1)[-1] == 'testsuite']
+              else:
+                  raise AssertionError(f'Unerwarteter JUnit-Root: {root.tag}')
+              if not suites:
+                  raise AssertionError('JUnit enthält keine testsuite')
+              names = ('tests', 'failures', 'errors', 'skipped')
+              return tuple(sum(int(suite.attrib.get(name, 0)) for suite in suites) for name in names)
+
           runner=Path(os.environ['RUNNER_TEMP'])
           data=json.loads(Path('diagnostics/release_readiness/RELEASE_EVIDENCE.json').read_text(encoding='utf-8'))
           totals=json.loads((runner/'final-coverage.json').read_text(encoding='utf-8'))['totals']
-          suite=ET.parse(runner/'final-junit.xml').getroot()
-          total=int(suite.attrib.get('tests',0)); failures=int(suite.attrib.get('failures',0)); errors=int(suite.attrib.get('errors',0)); skipped=int(suite.attrib.get('skipped',0)); passed=total-failures-errors-skipped
+          total, failures, errors, skipped = junit_counts(runner/'final-junit.xml')
+          passed=total-failures-errors-skipped
           statements=int(totals.get('num_statements',0)); covered=int(totals.get('covered_lines',0)); branches=int(totals.get('num_branches',0)); covered_branches=int(totals.get('covered_branches',0))
           line=round(covered/statements*100 if statements else 0.0,2); branch=round(covered_branches/branches*100 if branches else 100.0,2); combined=round(float(totals.get('percent_covered',0.0)),2)
           expected=data['tests']
           actual={'passed':passed,'failed':failures+errors,'skipped':skipped,'collected':total,'line_coverage_percent':line,'branch_coverage_percent':branch,'combined_coverage_percent':combined}
+          assert total > 0 and passed > 0
           for key,value in actual.items():
               assert expected[key]==value, (key, expected[key], value)
           assert line >= 80 and branch >= 65 and failures+errors == 0
