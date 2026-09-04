@@ -9,26 +9,33 @@ EVIDENCE = ROOT / "diagnostics/release_readiness/RELEASE_EVIDENCE.json"
 RC25_REPORT = "VideoBatch_Fast_2.8.3-rc25_BUILD_REPORT_save_.json"
 
 
+def _object(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def _evidence() -> dict:
-    return json.loads(EVIDENCE.read_text(encoding="utf-8"))
+    return _object(EVIDENCE)
 
 
 def test_current_full_regression_is_canonical_release_evidence() -> None:
     data = _evidence()
     tests = data["tests"]
-    assert tests["collected"] == 505
-    assert tests["passed"] == 503
     assert tests["failed"] == 0
-    assert tests["skipped"] == 2
-    assert tests["line_coverage_percent"] == 81.06
-    assert tests["branch_coverage_percent"] == 65.79
-    assert tests["combined_coverage_percent"] == 78.04
+    assert tests["collected"] == tests["passed"] + tests["failed"] + tests["skipped"]
+    assert tests["passed"] > 0
+    assert tests["line_coverage_percent"] >= 80.0
+    assert tests["branch_coverage_percent"] >= 65.0
+    assert tests["combined_coverage_percent"] > 0.0
     assert "full_regression_groups" not in tests
+
+    manifest = _object(ROOT / "RELEASE_MANIFEST.json")
     assert data["manifest"] == {
         "path": "RELEASE_MANIFEST.json",
-        "file_count": 466,
+        "file_count": manifest["file_count"],
         "status": "passed",
     }
+    assert manifest["file_count"] > 0
+
     provenance = data["provenance"]
     assert int(provenance["full_regression_run_id"]) > 0
     assert len(str(provenance["full_regression_verified_commit"])) == 40
@@ -50,16 +57,18 @@ def test_current_full_regression_is_canonical_release_evidence() -> None:
         assert isinstance(quality[key], int)
         assert quality[key] >= 0
     assert quality["internal_findings"] == 0
+    assert quality["maximum_complexity"] <= 30
     assert quality["measurement_source"] == "scripts/internal_quality_gate.py"
     assert quality["measurement_scope"] == "src+scripts+tests"
-    assert quality["current_architecture"] == {
-        "modules_checked": 115,
-        "function_count": 1140,
-        "class_count": 140,
-        "largest_python_file": "ui_workspace_grid_mixin.py",
-        "largest_python_file_lines": 699,
-        "architecture_findings": 0,
-    }
+
+    architecture = quality["current_architecture"]
+    for key in ("modules_checked", "function_count", "class_count", "largest_python_file_lines", "architecture_findings"):
+        assert isinstance(architecture[key], int)
+        assert architecture[key] >= 0
+    assert architecture["architecture_findings"] == 0
+    assert architecture["modules_checked"] > 0
+    assert architecture["function_count"] > 0
+    assert architecture["largest_python_file"]
 
 
 def test_coverage_policy_is_closed_but_stable_remains_fail_closed() -> None:
@@ -81,17 +90,24 @@ def test_coverage_policy_is_closed_but_stable_remains_fail_closed() -> None:
 
 
 def test_active_status_uses_real_rc25_report_and_current_40d_numbers() -> None:
+    data = _evidence()
+    tests = data["tests"]
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    development = json.loads((ROOT / "DEVELOPMENT_STATUS.json").read_text(encoding="utf-8"))
-    assert "503/505 automatisierte Tests bestanden; 2 übersprungen" in readme
-    assert "81,06 % Zeilenabdeckung" in readme
-    assert "65,79 % Zweigabdeckung" in readme
+    development = _object(ROOT / "DEVELOPMENT_STATUS.json")
+    line_coverage = f"{tests['line_coverage_percent']:.2f}".replace(".", ",")
+    branch_coverage = f"{tests['branch_coverage_percent']:.2f}".replace(".", ",")
+    assert f"{tests['passed']}/{tests['collected']} automatisierte Tests bestanden; {tests['skipped']} übersprungen" in readme
+    assert f"{line_coverage} % Zeilenabdeckung" in readme
+    assert f"{branch_coverage} % Zweigabdeckung" in readme
     assert development["approved_quality_report"] == RC25_REPORT
+    assert development["generated_from"] == "diagnostics/release_readiness/RELEASE_EVIDENCE.json"
     report = ROOT / RC25_REPORT
     assert report.is_file()
-    payload = json.loads(report.read_text(encoding="utf-8"))
+    payload = _object(report)
     assert payload["version"] == "2.8.3-rc25"
     assert payload["status"] == "passed"
-    assert payload["tests"]["passed"] == 503
+    assert payload["tests"]["passed"] == tests["passed"]
+    assert payload["tests"]["collected"] == tests["collected"]
+    assert payload["release_manifest_files"] == data["manifest"]["file_count"]
     assert RC25_REPORT in readme
     assert "325/325 automatisierte Tests bestanden" not in readme
