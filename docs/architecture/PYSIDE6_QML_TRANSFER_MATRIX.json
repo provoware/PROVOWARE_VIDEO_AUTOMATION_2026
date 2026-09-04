@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "iteration": "39B",
+  "source_branch": "iteration/39a-a33-rebased-packaging-hygiene-20260904",
+  "source_sha": "121211244d90932775348ac26039b3d7315e60b2",
+  "target": "PySide6/QML",
+  "classes": {
+    "A": "Direkt wiederverwendbar: toolkit-neutraler Vertrag oder Core; keine Tk-UI-Abhängigkeit im übertragenen Anteil.",
+    "B": "Vor Übernahme entkoppeln: fachlich wertvoll, aber UI-/Toolkit- oder Prozessadapter sind vermischt.",
+    "C": "Nicht portieren: Tk-spezifische Darstellung, Widget-/Layout-/Skalierungslogik; nativ in PySide6/QML neu bauen."
+  },
+  "items": [
+    {
+      "path": "start.sh",
+      "origin": "A33",
+      "class": "A",
+      "decision": "Shell-Vertrag beibehalten",
+      "reason": "CLI-Routing, Hilfe und Doctor/Repair/Quality-Modi sind toolkit-neutral; der GUI-Einstieg bleibt über STARTEN.sh austauschbar.",
+      "qt_action": "Unverändert übernehmen; Qt-Ziel nur hinter der bestehenden Startkette verdrahten.",
+      "gate": "bash -n; --help/--doctor-Vertrag; kein direkter Import eines GUI-Toolkits"
+    },
+    {
+      "path": "STARTEN.sh",
+      "origin": "A33",
+      "class": "A",
+      "decision": "Python-Preflight beibehalten",
+      "reason": "Pfadauflösung, Python-Erkennung und verständlicher Fehlerpfad sind toolkit-neutral.",
+      "qt_action": "Beibehalten; scripts/debug_launcher.py bleibt separater Adapterpunkt.",
+      "gate": "bash -n; fehlendes Python liefert 127; keine Tk/PySide-Imports"
+    },
+    {
+      "path": "scripts/architecture_audit.py",
+      "origin": "A33",
+      "class": "A",
+      "decision": "Never-Crash-Audit direkt weiterverwenden",
+      "reason": "AST-/Datei-Audit ist GUI-unabhängig und behandelt Syntax-/Lesefehler als Befund.",
+      "qt_action": "Auf neue Qt-Python-Module erweitern, Grundlogik unverändert lassen.",
+      "gate": "defekte Quelldatei darf Audit nicht abstürzen lassen; <1000-Zeilen-Projektregel zusätzlich prüfen"
+    },
+    {
+      "path": "scripts/release_file_contract.py",
+      "origin": "39A",
+      "class": "A",
+      "decision": "Release-Dateivertrag direkt weiterverwenden",
+      "reason": "Backup-/Cache-/Bytecode-/Coverage-Ausschlüsse sind toolkit-neutral.",
+      "qt_action": "QML-/Qt-Dateien als reguläre Nutzdateien aufnehmen; Ausschlüsse unverändert anwenden.",
+      "gate": "keine Backup-, Cache- oder Bytecode-Dateien im Release-Dateisatz"
+    },
+    {
+      "path": "scripts/package_release.py",
+      "origin": "39A-inherited",
+      "class": "A",
+      "decision": "Deterministischen Packager weiterverwenden",
+      "reason": "Manifestgeführter Paketbau ist unabhängig von Tk oder Qt.",
+      "qt_action": "Qt/QML-Ressourcen über denselben Release-Dateivertrag paketieren.",
+      "gate": "zwei Builds byteidentisch; ZIP-Verifikation PASS"
+    },
+    {
+      "path": "scripts/verify_release_zip.py",
+      "origin": "39A-inherited",
+      "class": "A",
+      "decision": "ZIP-Verifikation weiterverwenden",
+      "reason": "Integritätsprüfung ist toolkit-neutral.",
+      "qt_action": "Unverändert als Release-Gate behalten.",
+      "gate": "Manifest-/ZIP-Parität und Hygiene PASS"
+    },
+    {
+      "path": "src/videobatch_fast/error_handling.py",
+      "origin": "A32.2-inherited",
+      "class": "A",
+      "decision": "Fehlerdomänenmodell direkt übernehmen",
+      "reason": "ErrorDefinition, Registry-Fallbacks und Severity-Vertrag enthalten keine Tk-Abhängigkeit.",
+      "qt_action": "Als backend-neutrale Quelle für Qt-Fehlerpräsentation verwenden.",
+      "gate": "keine GUI-Toolkit-Imports; Registry-Ausfall liefert sicheren Fallback"
+    },
+    {
+      "path": "src/videobatch_fast/runtime_error_guidance.py",
+      "origin": "A32.2-inherited",
+      "class": "A",
+      "decision": "Klassifikation und Fingerprints direkt übernehmen",
+      "reason": "Exception-Klassifikation, Position und Fingerprint sind UI-unabhängig.",
+      "qt_action": "Scope-Begriff um qt/qml ergänzen, ohne Klassifikationskern zu duplizieren.",
+      "gate": "stabile Codes/Fingerprints; maximal zwei menschenlesbare Lösungen"
+    },
+    {
+      "path": "registries/RUNTIME_ERROR_REGISTRY.json",
+      "origin": "A32.2-inherited",
+      "class": "A",
+      "decision": "Fehlertexte und Aktionen weiterverwenden",
+      "reason": "Maschinenlesbarer Fehlervertrag ist nicht an Tk gebunden.",
+      "qt_action": "Qt-Aktionsadapter auf dieselben Action-IDs abbilden.",
+      "gate": "Schema gültig; unbekannter Code fällt sicher zurück"
+    },
+    {
+      "path": "scripts/debug_launcher.py",
+      "origin": "A33-startup-line",
+      "class": "B",
+      "decision": "Prozess-/Log-Wächter behalten, Dialogausgabe entkoppeln",
+      "reason": "PID-, Log-, UI_READY- und Clean-Shutdown-Überwachung sind wiederverwendbar; show_incident_dialog bindet die Präsentation an die aktuelle UI-Schicht.",
+      "qt_action": "Monitoring-Core in toolkit-neutrales Modul ziehen; Incident-Präsentation über Interface/Callback bzw. Qt-Adapter anschließen.",
+      "gate": "Second-instance-Handoff darf nie als Absturz gelten; Monitoring ohne GUI importier-/testbar"
+    },
+    {
+      "path": "src/videobatch_fast/runtime_error_hooks.py",
+      "origin": "A32.2-inherited",
+      "class": "B",
+      "decision": "Capture/Dedupe extrahieren, Tk-Hooks ersetzen",
+      "reason": "Klassifikation, Fingerprint-Dedupe und Reporting sind wertvoll; SolutionDialog und tk_exception_handler sind explizit Tk-spezifisch.",
+      "qt_action": "runtime_error_core + QtExceptionBridge/QtIncidentPresenter bilden; QML erhält Daten statt Python-Widgetdialoge.",
+      "gate": "Core ohne tkinter/ui_components importierbar; Thread-Exceptions weiterhin fail-safe"
+    },
+    {
+      "path": "src/videobatch_fast/canonical_shell_contract.py",
+      "origin": "A33",
+      "class": "B",
+      "decision": "Semantik übernehmen, Geometrie/Page-Indizes neu modellieren",
+      "reason": "Navigation-Keys, Labels und responsive Absicht sind nützlich; feste Notebook-Indizes, Pixelbreiten und Tk-Shell-Annahmen gehören nicht in QML.",
+      "qt_action": "Toolkit-neutrales NavigationModel mit IDs/Labels/Capabilities extrahieren; QML-Routen statt Notebook-Indizes verwenden.",
+      "gate": "keine Widget-/Notebook-Indizes im neuen Core-Vertrag; stabile semantische Route-IDs"
+    },
+    {
+      "path": ".github/workflows/a33-consolidated-package.yml",
+      "origin": "39A",
+      "class": "B",
+      "decision": "Governance behalten, Tk-Testumgebung ersetzen",
+      "reason": "Toolchain-, Coverage-, Manifest- und Packaging-Gates sind wertvoll; python3-tk, xvfb und Tk-Fokustests sind Übergangsdetails.",
+      "qt_action": "Qt/PySide6-Abhängigkeiten exakt pinnen; headless Qt-Tests plus reale X11/Wayland-Gates ergänzen.",
+      "gate": "80/65 bleibt unverändert; keine Schwellenabsenkung; Qt-Matrix auf exakt einem Head"
+    },
+    {
+      "path": "src/videobatch_fast/canonical_shell_workspace.py",
+      "origin": "A33",
+      "class": "C",
+      "decision": "Nicht portieren",
+      "reason": "ttk.Frame, grid, ttk.Notebook, Tk-Bindings, trace_add und Widgetzustände sind konkrete Tk-Implementierung.",
+      "qt_action": "Arbeitsfläche nativ in QML mit StackLayout/Loader, Models und Signals neu bauen; nur fachliche Navigationsabsicht übernehmen.",
+      "gate": "kein kopierter ttk/grid/Notebook-Code in Qt-Linie"
+    },
+    {
+      "path": "src/videobatch_fast/canonical_shell_chrome.py",
+      "origin": "A32.2/A33-shell",
+      "class": "C",
+      "decision": "Nicht portieren",
+      "reason": "ttk.Style, StringVar, TclError und Tk-Widgetaufbau sind Darstellungstechnik, kein Core.",
+      "qt_action": "Design-Tokens und Informationshierarchie separat ableiten; Darstellung nativ in QML Controls/Themes umsetzen.",
+      "gate": "keine ttk/Tcl-Abhängigkeit in Qt-Shell"
+    },
+    {
+      "path": "src/videobatch_fast/canonical_ui.py",
+      "origin": "A33",
+      "class": "C",
+      "decision": "Tk-App-Shell nicht portieren",
+      "reason": "Tk(), mainloop, report_callback_exception, Tk-Scaling und Mixin-Komposition bilden die konkrete alte GUI-Laufzeit.",
+      "qt_action": "Neue PySide6 Application/QQmlApplicationEngine-Composition erstellen; UI_READY, Clean-Shutdown und Fehler-Core nur über Adapter wiederverwenden.",
+      "gate": "Qt-Einstieg importiert kein tkinter; VIDEOBATCH_TK_SCALING wird nicht in Qt übernommen"
+    }
+  ],
+  "recommended_transfer_order": [
+    "A: Fehlerdomänenmodell + Registry + Guidance",
+    "A: Release-/Packaging-/Audit-Governance",
+    "A: Shell-Startvertrag und Python-Preflight",
+    "B: Runtime-Error-Core von Tk-Präsentation entkoppeln",
+    "B: Debug-Monitoring von Incident-Präsentation entkoppeln",
+    "B: semantisches NavigationModel aus canonical_shell_contract extrahieren",
+    "C: PySide6/QML-App-Shell nativ neu bauen",
+    "C: QML-Workspace/Chrome/Theming nativ neu bauen"
+  ],
+  "stable_gates_unchanged": [
+    "coverage lines >= 80%",
+    "coverage branches >= 65%",
+    "physical Kubuntu KDE X11 acceptance",
+    "physical Kubuntu KDE Wayland acceptance",
+    "large-media long-render soak on slow external target"
+  ]
+}
