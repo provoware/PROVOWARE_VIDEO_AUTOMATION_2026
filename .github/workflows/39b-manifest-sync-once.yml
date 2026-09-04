@@ -1,0 +1,47 @@
+name: 39B final one-shot canonical manifest sync
+
+on:
+  push:
+    branches:
+      - iteration/39b-pyside6-qml-transfer-matrix-20260904
+
+permissions:
+  contents: write
+
+jobs:
+  sync-manifest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: iteration/39b-pyside6-qml-transfer-matrix-20260904
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements.lock
+      - name: Runtime installieren
+        run: |
+          set -Eeuo pipefail
+          python -m pip install --disable-pip-version-check --requirement requirements.txt
+      - name: Helper entfernen und finales Manifest erzeugen
+        run: |
+          set -Eeuo pipefail
+          rm .github/workflows/39b-manifest-sync-once.yml
+          PYTHONPATH=src python scripts/build_release_manifest.py
+          PYTHONPATH=src python scripts/build_release_manifest.py --check --json
+          PYTHONPATH=src python scripts/validate_release_manifest.py
+          git diff --check
+      - name: Finalen Manifeststand committen
+        run: |
+          set -Eeuo pipefail
+          git config user.name 'provoware-release-orchestrator'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A
+          git diff --cached --name-status
+          git diff --cached --quiet && { echo 'Kein Manifest-Drift vorhanden.'; exit 0; }
+          git commit -m '39B: finalize canonical release manifest'
+          git push origin HEAD:iteration/39b-pyside6-qml-transfer-matrix-20260904
