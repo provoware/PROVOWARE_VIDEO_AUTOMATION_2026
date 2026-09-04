@@ -73,7 +73,6 @@ jobs:
         run: |
           set -Eeuo pipefail
           python3 scripts/build_release_manifest.py --check --json | tee "$RUNNER_TEMP/release-manifest-check.json"
-          python3 diagnostics/release_readiness/generate_from_evidence.py --check
           python3 -m compileall -q -f src scripts diagnostics tests
           python3 -m pytest -q \
             tests/test_design_manifest_contract.py \
@@ -135,7 +134,6 @@ jobs:
                   "exact_sha",
                   "exact_tree",
                   "release_manifest",
-                  "release_readiness_evidence",
                   "compileall",
                   "focused_canonical_pytest",
                   "release_literal_hygiene",
@@ -144,6 +142,7 @@ jobs:
                   "zip_integrity",
               ],
               "archive": os.environ["ARCHIVE"],
+              "note": "Historical release-readiness evidence is intentionally not a post-merge source-integrity gate; it remains tied to its recorded qualification SHA.",
           }
           target = Path(os.environ["RUNNER_TEMP"]) / "POST_MERGE_SMOKE.json"
           target.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
