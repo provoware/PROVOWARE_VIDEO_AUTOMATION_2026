@@ -3,14 +3,13 @@
   "projektname": "PROVOWARE VideoBatch Fast",
   "aliasnamen": ["VideoBatch Fast", "PROVOWARE Video Automation 2026"],
   "programmversion": "2.8.3-rc24",
-  "entwicklungsiteration": "39A",
+  "entwicklungsiteration": "39B",
   "repository": "provoware/PROVOWARE_VIDEO_AUTOMATION_2026",
   "hauptdatei": "src/videobatch_fast/app.py",
   "startdatei": "start.sh",
-  "status": "39A A33-Rebase und Packaging-Hygiene technisch validiert; Coverage-Gate blockiert Stable",
-  "lineage_base_sha": "8755d5333b2f53ff8080655f8af39727db9b8c48",
-  "referenz_ci_sha": "d787b824688b73de1a96c6cfa2ce7bd276728486",
-  "referenz_ci_run": 33827615114,
+  "status": "39B Core-vs-Tk-Transfermatrix erstellt; branch-spezifische Governance-Validierung läuft",
+  "lineage_base_sha": "121211244d90932775348ac26039b3d7315e60b2",
+  "lineage_parent_iteration": "39A",
   "letztes_validiertes_release": "2.8.3-rc24",
   "stable_freigabe": false,
   "fortschritt": {
@@ -18,11 +17,19 @@
     "erledigt": 27,
     "gesamt": 30
   },
+  "transfer_governance": {
+    "matrix": "A33_PYSIDE6_TRANSFER_MATRIX.json",
+    "ziel": "PySide6/QML",
+    "komponentengruppen": 18,
+    "status": "validating",
+    "produkt_runtime_durch_39b_geaendert": false
+  },
   "tests": {
-    "fokus_bestanden": 47,
+    "39b_matrix_gate": "pending",
     "vollregression_bestanden": 477,
     "vollregression_uebersprungen": 2,
-    "vollregression_fehlgeschlagen": 0
+    "vollregression_fehlgeschlagen": 0,
+    "hinweis": "Vollregressionswerte stammen bis zum Abschluss des 39B-Laufs aus dem bereinigten 39A-Referenzlauf."
   },
   "coverage": {
     "zeilen_prozent": 73.16,
@@ -31,23 +38,10 @@
     "branches_minimum": 65.0,
     "status": "failed"
   },
-  "architektur": {
-    "module": 115,
-    "funktionen": 1139,
-    "klassen": 140,
-    "groesste_python_datei_zeilen": 699,
-    "befunde": 0
-  },
-  "packaging": {
-    "deterministisch": true,
-    "manifestgefuehrt": true,
-    "backup_cache_bytecode_ausgeschlossen": true,
-    "status": "passed"
-  },
   "offene_stable_gates": [
     "Coverage-Vertrag 80/65",
     "physische KDE-X11-/Wayland-Abnahme",
     "realer Langzeitrender mit großer Medienauswahl und langsamem Ziel"
   ],
-  "naechster_schritt": "A33-Core-/Startup-/Fault-Hardening gegen Tk-spezifische UI klassifizieren und Transfermatrix für PySide6/QML erstellen"
+  "naechster_schritt": "39B-Governance testen; danach Benutzerentscheidung über den ersten einzelnen A_DIRECT-Transfer-Slice"
 }
