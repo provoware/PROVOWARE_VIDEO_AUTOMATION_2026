@@ -52,3 +52,15 @@ def test_release_evidence_atomic_write_normalizes_file_mode(tmp_path: Path) -> N
     assert target.read_text(encoding="utf-8") == "new\n"
     if os.name != "nt":
         assert stat.S_IMODE(target.stat().st_mode) == 0o644
+
+
+def test_beginner_guide_points_to_current_rc25_quick_start() -> None:
+    root = Path(__file__).resolve().parents[1]
+    guide = (root / "START_HIER_save_.md").read_text(encoding="utf-8")
+    assert guide.startswith("# VideoBatch Fast 2.8.3-rc25 – hier beginnen\n")
+    assert "## 30-Sekunden-Orientierung" in guide
+    assert "./schnellstart.sh" in guide
+    assert "chmod +x schnellstart.sh" in guide
+    assert "`ERROR_HANDLING.md`" in guide
+    assert "`docs/DOKUMENTATIONSINDEX.md`" in guide
+    assert "# VideoBatch Fast 2.8.3-rc24" not in guide
