@@ -1,8 +1,20 @@
-# VideoBatch Fast 2.8.3-rc24 – hier beginnen
+# VideoBatch Fast 2.8.3-rc25 – hier beginnen
 
 ## Ziel
 
 Diese Anleitung führt ohne Vorwissen vom entpackten Projektpaket bis zum ersten geprüften Testvideo.
+
+## 30-Sekunden-Orientierung
+
+| Wenn du gerade ... | Dann mache jetzt ... | Nicht nötig |
+|---|---|---|
+| VideoBatch zum ersten Mal startest | `./schnellstart.sh` ausführen | Einzelne Python-Module manuell starten |
+| nur schnell ein Testvideo erstellen willst | Audio + Bild/Video hinzufügen, Ausgabeordner wählen, Automatik starten | Erweiterte Einstellungen verändern |
+| eine gelbe Meldung siehst | Hinweis vollständig lesen und genannten Wert prüfen | blind erneut auf Start klicken |
+| eine rote Meldung siehst | Vorgang stoppen lassen und `ERROR_HANDLING.md` verwenden | `sudo`, `chmod -R 777` oder Besitzrechte rekursiv ändern |
+| nicht weißt, welche Anleitung passt | `docs/DOKUMENTATIONSINDEX.md` öffnen | mehrere Anleitungen parallel durchsuchen |
+
+**Merksatz:** Für den normalen Start immer zuerst `schnellstart.sh` verwenden. Der Schnellstarter leitet intern an den vorhandenen geprüften Starter weiter und verändert keine Renderlogik.
 
 ## Pflichtgrad
 
@@ -32,7 +44,7 @@ Für den ersten Test Kopien der Medien verwenden. VideoBatch verändert Original
 
 **Kann entfallen?** Nein. Ein Start direkt aus dem Archiv ist nicht zuverlässig.
 
-**Erwartetes Ergebnis:** Im Ordner sind `videobatch.sh`, `README.md`, `src`, `scripts` und diese Anleitung sichtbar.
+**Erwartetes Ergebnis:** Im Ordner sind `schnellstart.sh`, `videobatch.sh`, `README.md`, `src`, `scripts` und diese Anleitung sichtbar.
 
 ### Schritt 2: Terminal im Projektordner öffnen
 
@@ -40,10 +52,10 @@ Für den ersten Test Kopien der Medien verwenden. VideoBatch verändert Original
 
 **Erwartetes Ergebnis:** Das Terminal befindet sich im VideoBatch-Projektordner.
 
-### Schritt 3: Starter ausführbar machen
+### Schritt 3: Schnellstarter ausführbar machen
 
 ```bash
-chmod +x videobatch.sh
+chmod +x schnellstart.sh
 ```
 
 **Warum notwendig?** Linux benötigt die Ausführungsberechtigung für einen direkten Skriptstart.
@@ -53,10 +65,10 @@ chmod +x videobatch.sh
 ### Schritt 4: VideoBatch starten
 
 ```bash
-./videobatch.sh
+./schnellstart.sh
 ```
 
-**Warum notwendig?** Der Starter prüft Laufzeit, FFmpeg, Projektzustand und benötigte Benutzerordner, bevor die Oberfläche geöffnet wird.
+**Warum notwendig?** Der Schnellstarter verwendet die vorhandene geprüfte Startkette und hält den Einstieg für Laien eindeutig. Die eigentliche Startprüfung kontrolliert Laufzeit, FFmpeg, Projektzustand und benötigte Benutzerordner, bevor die Oberfläche geöffnet wird.
 
 **Kann entfallen?** Nein. Den Starter nicht durch einen direkten Modulaufruf umgehen.
 
