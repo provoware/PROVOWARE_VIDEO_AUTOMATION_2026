@@ -10,8 +10,21 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_release_file_contract_is_complete_and_consistent() -> None:
     contract = validate(ROOT)
-    assert len(contract["ready"]) == 11
-    assert len(contract["unfinished"]) == 6
+    assert contract["scope"] == "standalone_release_deliverables"
+    assert contract["ready_suffix"] == "_save_"
+
+    ready = {item["path"] for item in contract["ready"]}
+    unfinished = {item["path"] for item in contract["unfinished"]}
+    assert ready
+    assert unfinished
+    assert ready.isdisjoint(unfinished)
+
+    assert "START_HIER_save_.md" in ready
+    assert "RELEASE_NOTES_save_.md" in ready
+    assert "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json" in ready
+    assert "TODO.md" in unfinished
+    assert "docs/STABLE_ACCEPTANCE_EVIDENCE.md" in unfinished
+    assert "VISUAL_INSPECTION_MANIFEST.json" in unfinished
 
 
 def test_ready_files_use_save_marker_and_unfinished_files_do_not() -> None:
