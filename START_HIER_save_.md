@@ -53,7 +53,7 @@ Vor dem ersten Start müssen nur diese vier Punkte stimmen:
 
 **Erwartetes Ergebnis:** Das Terminal befindet sich im VideoBatch-Projektordner.
 
-### Schritt 3: Starter ausführbar machen
+### Schritt 3: Optional – Starter direkt ausführbar machen
 
 ```bash
 chmod +x videobatch.sh
