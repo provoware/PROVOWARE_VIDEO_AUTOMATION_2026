@@ -1,0 +1,49 @@
+name: Temporary manifest repair
+
+on:
+  push:
+    branches:
+      - automation/quick-preflight-card-20260904-2307
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repair branch
+        uses: actions/checkout@v4
+        with:
+          ref: automation/quick-preflight-card-20260904-2307
+          fetch-depth: 0
+
+      - name: Verify isolated repair scope
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git merge-base --is-ancestor bed3c2aedcfe5fe3ea2adbb11a0671d544ff4e7e HEAD
+          test "$(git diff --name-only bed3c2aedcfe5fe3ea2adbb11a0671d544ff4e7e..HEAD)" = ".github/workflows/manifest-repair-temp.yml"
+
+      - name: Regenerate and validate canonical manifest
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git rm .github/workflows/manifest-repair-temp.yml
+          python3 scripts/build_release_manifest.py
+          python3 scripts/build_release_manifest.py --check --json
+          python3 scripts/validate_documentation.py
+          changed="$(git diff HEAD --name-only | sort)"
+          expected=$(printf '%s\n' '.github/workflows/manifest-repair-temp.yml' 'RELEASE_MANIFEST.json' | sort)
+          test "$changed" = "$expected"
+
+      - name: Commit validated manifest and remove helper
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore(release): sync manifest after step 7 help check"
+          git push origin HEAD:automation/quick-preflight-card-20260904-2307
