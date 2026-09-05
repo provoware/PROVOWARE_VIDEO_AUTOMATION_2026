@@ -113,6 +113,8 @@ Beide Varianten verwenden denselben zentralen Starter und umgehen keine Vorprüf
 
 **Kann entfallen?** Der manuelle Modus kann entfallen; die Zielordnerprüfung nicht.
 
+**Erwartetes Ergebnis:** Automatikmodus ist aktiv, der gewählte Ausgabeordner ist beschreibbar und die angezeigten Quellenzahlen entsprechen der Auswahl.
+
 ### Schritt 8: Testproduktion starten
 
 1. `Automatisch prüfen und Videos erstellen` wählen.
