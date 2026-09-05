@@ -1,0 +1,52 @@
+name: One-shot manifest sync
+
+on:
+  push:
+    branches:
+      - automation/quick-preflight-card-20260904-2307
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONHASHSEED: '0'
+      PYTHONUTF8: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/scripts
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+        with:
+          ref: automation/quick-preflight-card-20260904-2307
+          fetch-depth: 0
+
+      - name: Guard scope and regenerate canonical manifest
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git merge-base --is-ancestor ccab4624db3810be4298317aaff2fca9fb506b8d HEAD
+          changed="$(git diff --name-only ccab4624db3810be4298317aaff2fca9fb506b8d..HEAD | sort)"
+          expected=$(printf '%s\n' '.github/workflows/manifest-sync-once.yml' 'START_HIER_save_.md' | sort)
+          test "$changed" = "$expected"
+          git rm .github/workflows/manifest-sync-once.yml
+          python3 scripts/build_release_manifest.py
+          python3 scripts/build_release_manifest.py --check --json
+          python3 scripts/validate_documentation.py
+          changed_final="$(git diff HEAD --name-only | sort)"
+          expected_final=$(printf '%s\n' '.github/workflows/manifest-sync-once.yml' 'RELEASE_MANIFEST.json' | sort)
+          test "$changed_final" = "$expected_final"
+
+      - name: Commit manifest and self-remove helper
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add RELEASE_MANIFEST.json
+          git add -u .github/workflows/manifest-sync-once.yml
+          git commit -m "chore(release): sync manifest for final help acceptance"
+          git push origin HEAD:automation/quick-preflight-card-20260904-2307
