@@ -8,6 +8,12 @@ on:
 permissions:
   contents: write
 
+env:
+  PYTHONHASHSEED: "0"
+  PYTHONUTF8: "1"
+  PYTHONDONTWRITEBYTECODE: "1"
+  PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/scripts
+
 jobs:
   repair:
     if: github.actor != 'github-actions[bot]'
