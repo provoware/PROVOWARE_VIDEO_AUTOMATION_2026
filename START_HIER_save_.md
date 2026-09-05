@@ -219,4 +219,4 @@ Die Prüfung extrahiert und startet keine Datei.
 
 ## Nächster Schritt
 
-Für die vollständige Bedienung `docs/BENUTZERHANDBUCH.md` öffnen. Für Installation `AUTOINSTALLATION_save_.md`, für Fehler `ERROR_HANDLING.md` und für die Dokumentationsübersicht `docs/DOKUMENTATIONSINDEX.md` verwenden.
+Für die vollständige Bedienung [`docs/BENUTZERHANDBUCH.md`](docs/BENUTZERHANDBUCH.md) öffnen. Für Installation [`AUTOINSTALLATION_save_.md`](AUTOINSTALLATION_save_.md), für Fehler [`ERROR_HANDLING.md`](ERROR_HANDLING.md) und für die Dokumentationsübersicht [`docs/DOKUMENTATIONSINDEX.md`](docs/DOKUMENTATIONSINDEX.md) verwenden.
