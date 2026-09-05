@@ -85,7 +85,7 @@ Beide Varianten verwenden denselben zentralen Starter und umgehen keine Vorprüf
 
 **Erwartetes Ergebnis:** Die VideoBatch-Oberfläche öffnet sich ohne rote Startmeldung.
 
-**Bei einem Fehler:** Nicht mit `sudo`, `chmod -R 777` oder rekursiven Besitzänderungen reagieren. Die vollständige Meldung lesen und `ERROR_HANDLING.md` verwenden.
+**Bei einem Fehler:** Nicht mit `sudo`, `chmod -R 777` oder rekursiven Besitzänderungen reagieren. Die vollständige Meldung lesen und direkt [`ERROR_HANDLING.md` – Protokolle für eine Fehlermeldung sammeln](ERROR_HANDLING.md#protokolle-für-eine-fehlermeldung-sammeln) verwenden.
 
 ### Schritt 5: Audiodatei hinzufügen
 
