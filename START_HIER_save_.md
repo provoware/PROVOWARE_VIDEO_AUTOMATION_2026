@@ -60,15 +60,11 @@ chmod +x videobatch.sh
 
 **Warum notwendig?** Linux benötigt die Ausführungsberechtigung für einen direkten Skriptstart mit `./videobatch.sh`.
 
-**Kann entfallen?** Ja. Wenn die Datei nicht ausführbar ist oder keine Berechtigung geändert werden soll, kann der vorhandene Bash-Starter direkt so aufgerufen werden:
-
-```bash
-bash ./videobatch.sh
-```
-
-Dieser Aufruf verwendet denselben zentralen Starter und umgeht keine Vorprüfung.
+**Kann entfallen?** Ja. Wenn die Dateiberechtigung nicht geändert werden soll, in Schritt 4 die dort gezeigte Bash-Alternative verwenden.
 
 ### Schritt 4: VideoBatch starten
+
+Direkter Start bei ausführbarer Datei:
 
 ```bash
 ./videobatch.sh
@@ -79,6 +75,8 @@ Alternativ ohne Änderung der Dateiberechtigung:
 ```bash
 bash ./videobatch.sh
 ```
+
+Beide Varianten verwenden denselben zentralen Starter und umgehen keine Vorprüfung.
 
 **Warum notwendig?** Der Starter prüft Laufzeit, FFmpeg, Projektzustand und benötigte Benutzerordner, bevor die Oberfläche geöffnet wird.
 
