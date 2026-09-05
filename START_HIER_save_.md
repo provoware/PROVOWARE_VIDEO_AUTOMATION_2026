@@ -22,9 +22,9 @@ Diese Anleitung führt ohne Vorwissen vom entpackten Projektpaket bis zum ersten
 
 Für den ersten Test Kopien der Medien verwenden. VideoBatch verändert Originalquellen nicht, aber eine zusätzliche Kopie schützt vor Bedienfehlern außerhalb der Anwendung.
 
-## 30-Sekunden-Startcheck
+## 30-Sekunden-Check vor dem Programmstart
 
-Vor dem ersten Start müssen nur diese vier Punkte stimmen:
+Spätestens direkt vor Schritt 4 müssen diese vier Punkte stimmen:
 
 - [ ] Projekt vollständig entpackt – nicht direkt aus dem ZIP gestartet.
 - [ ] Terminal befindet sich im entpackten Projektordner.
@@ -33,7 +33,7 @@ Vor dem ersten Start müssen nur diese vier Punkte stimmen:
 
 **Sicherheitsregel beim Start:** Erscheint eine rote Meldung, nicht blind erneut starten, sondern zuerst die Ursache lesen.
 
-**Wenn alle vier Punkte erfüllt sind:** mit Schritt 1 fortfahren. Fehlt ein Punkt, zuerst genau diesen Punkt korrigieren; weitere Einstellungen sind für den ersten Test nicht nötig.
+**So verwenden:** Jetzt mit Schritt 1 beginnen. Direkt vor Schritt 4 die vier Punkte kurz abgleichen; fehlt dann ein Punkt, zuerst genau diesen korrigieren.
 
 ## Schritt-für-Schritt-Anleitung
 
