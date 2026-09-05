@@ -152,6 +152,8 @@ Gelb bedeutet: Der Vorgang benötigt Aufmerksamkeit, ist aber nicht zwingend end
 
 Rot bedeutet: Der betroffene Vorgang wurde zum Schutz gestoppt. Originalmedien und gespeicherte Projekte bleiben unverändert.
 
+Wenn die Ursache nicht direkt lösbar ist, führt [`ERROR_HANDLING.md` – Protokolle für eine Fehlermeldung sammeln](ERROR_HANDLING.md#protokolle-für-eine-fehlermeldung-sammeln) direkt zu den Angaben, die für eine sichere Diagnose benötigt werden.
+
 ## Mehrere Auswahlrunden
 
 1. Im Medienbrowser Dateien markieren.
