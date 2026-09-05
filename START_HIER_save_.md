@@ -24,15 +24,16 @@ Für den ersten Test Kopien der Medien verwenden. VideoBatch verändert Original
 
 ## 30-Sekunden-Startcheck
 
-Vor dem ersten Start müssen nur diese fünf Punkte stimmen:
+Vor dem ersten Start müssen nur diese vier Punkte stimmen:
 
 - [ ] Projekt vollständig entpackt – nicht direkt aus dem ZIP gestartet.
 - [ ] Terminal befindet sich im entpackten Projektordner.
 - [ ] Mindestens eine Audio- und eine Bild- oder Videodatei liegt bereit.
-- [ ] Ein eigener beschreibbarer Ausgabeordner ist ausgewählt oder vorbereitet.
-- [ ] Bei einer roten Meldung wird nicht blind erneut gestartet, sondern zuerst die Ursache gelesen.
+- [ ] Ein eigener beschreibbarer Ausgabeordner ist vorbereitet; ausgewählt wird er später in Schritt 7.
 
-**Wenn alle fünf Punkte erfüllt sind:** mit Schritt 1 fortfahren. Fehlt ein Punkt, zuerst genau diesen Punkt korrigieren; weitere Einstellungen sind für den ersten Test nicht nötig.
+**Sicherheitsregel beim Start:** Erscheint eine rote Meldung, nicht blind erneut starten, sondern zuerst die Ursache lesen.
+
+**Wenn alle vier Punkte erfüllt sind:** mit Schritt 1 fortfahren. Fehlt ein Punkt, zuerst genau diesen Punkt korrigieren; weitere Einstellungen sind für den ersten Test nicht nötig.
 
 ## Schritt-für-Schritt-Anleitung
 
