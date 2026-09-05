@@ -134,6 +134,8 @@ Beide Varianten verwenden denselben zentralen Starter und umgehen keine Vorprüf
 
 **Kann entfallen?** Vor Veröffentlichung oder Archivierung: nein.
 
+**Erwartetes Ergebnis:** Anfang, Mitte und Ende wurden ohne auffällige Bild- oder Tonfehler geprüft; Dateiname und Inhalt entsprechen dem vorgesehenen Auftrag.
+
 ## Gelbe oder rote Meldungen
 
 ### Gelb
