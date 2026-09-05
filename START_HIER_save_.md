@@ -22,6 +22,19 @@ Diese Anleitung führt ohne Vorwissen vom entpackten Projektpaket bis zum ersten
 
 Für den ersten Test Kopien der Medien verwenden. VideoBatch verändert Originalquellen nicht, aber eine zusätzliche Kopie schützt vor Bedienfehlern außerhalb der Anwendung.
 
+## 30-Sekunden-Check vor dem Programmstart
+
+Spätestens direkt vor Schritt 4 müssen diese vier Punkte stimmen:
+
+- [ ] Projekt vollständig entpackt – nicht direkt aus dem ZIP gestartet.
+- [ ] Terminal befindet sich im entpackten Projektordner.
+- [ ] Mindestens eine Audio- und eine Bild- oder Videodatei liegt bereit.
+- [ ] Ein eigener beschreibbarer Ausgabeordner ist vorbereitet; ausgewählt wird er später in Schritt 7.
+
+**Sicherheitsregel beim Start:** Erscheint eine rote Meldung, nicht blind erneut starten, sondern zuerst die Ursache lesen.
+
+**So verwenden:** Jetzt mit Schritt 1 beginnen. Direkt vor Schritt 4 die vier Punkte kurz abgleichen; fehlt dann ein Punkt, zuerst genau diesen korrigieren.
+
 ## Schritt-für-Schritt-Anleitung
 
 ### Schritt 1: Projektpaket entpacken
@@ -40,21 +53,31 @@ Für den ersten Test Kopien der Medien verwenden. VideoBatch verändert Original
 
 **Erwartetes Ergebnis:** Das Terminal befindet sich im VideoBatch-Projektordner.
 
-### Schritt 3: Starter ausführbar machen
+### Schritt 3: Optional – Starter direkt ausführbar machen
 
 ```bash
 chmod +x videobatch.sh
 ```
 
-**Warum notwendig?** Linux benötigt die Ausführungsberechtigung für einen direkten Skriptstart.
+**Warum notwendig?** Linux benötigt die Ausführungsberechtigung für einen direkten Skriptstart mit `./videobatch.sh`.
 
-**Kann entfallen?** Ja, wenn die Datei bereits ausführbar ist. Ein erneuter Aufruf ist unschädlich.
+**Kann entfallen?** Ja. Wenn die Dateiberechtigung nicht geändert werden soll, in Schritt 4 die dort gezeigte Bash-Alternative verwenden.
 
 ### Schritt 4: VideoBatch starten
+
+Direkter Start bei ausführbarer Datei:
 
 ```bash
 ./videobatch.sh
 ```
+
+Alternativ ohne Änderung der Dateiberechtigung:
+
+```bash
+bash ./videobatch.sh
+```
+
+Beide Varianten verwenden denselben zentralen Starter und umgehen keine Vorprüfung.
 
 **Warum notwendig?** Der Starter prüft Laufzeit, FFmpeg, Projektzustand und benötigte Benutzerordner, bevor die Oberfläche geöffnet wird.
 
@@ -62,7 +85,7 @@ chmod +x videobatch.sh
 
 **Erwartetes Ergebnis:** Die VideoBatch-Oberfläche öffnet sich ohne rote Startmeldung.
 
-**Bei einem Fehler:** Nicht mit `sudo`, `chmod -R 777` oder rekursiven Besitzänderungen reagieren. Die vollständige Meldung lesen und `ERROR_HANDLING.md` verwenden.
+**Bei einem Fehler:** Nicht mit `sudo`, `chmod -R 777` oder rekursiven Besitzänderungen reagieren. Die vollständige Meldung lesen und direkt [`ERROR_HANDLING.md` – Protokolle für eine Fehlermeldung sammeln](ERROR_HANDLING.md#protokolle-für-eine-fehlermeldung-sammeln) verwenden.
 
 ### Schritt 5: Audiodatei hinzufügen
 
@@ -90,6 +113,8 @@ chmod +x videobatch.sh
 
 **Kann entfallen?** Der manuelle Modus kann entfallen; die Zielordnerprüfung nicht.
 
+**Erwartetes Ergebnis:** Automatikmodus ist aktiv, der gewählte Ausgabeordner ist beschreibbar und die angezeigten Quellenzahlen entsprechen der Auswahl.
+
 ### Schritt 8: Testproduktion starten
 
 1. `Automatisch prüfen und Videos erstellen` wählen.
@@ -108,6 +133,8 @@ chmod +x videobatch.sh
 **Warum notwendig?** Ein technisch abgeschlossener Render garantiert noch nicht die gewünschte inhaltliche Wirkung.
 
 **Kann entfallen?** Vor Veröffentlichung oder Archivierung: nein.
+
+**Erwartetes Ergebnis:** Anfang, Mitte und Ende wurden ohne auffällige Bild- oder Tonfehler geprüft; Dateiname und Inhalt entsprechen dem vorgesehenen Auftrag.
 
 ## Gelbe oder rote Meldungen
 
@@ -128,6 +155,8 @@ Gelb bedeutet: Der Vorgang benötigt Aufmerksamkeit, ist aber nicht zwingend end
 - Quellen, Ziel und Queue danach erneut prüfen.
 
 Rot bedeutet: Der betroffene Vorgang wurde zum Schutz gestoppt. Originalmedien und gespeicherte Projekte bleiben unverändert.
+
+Wenn die Ursache nicht direkt lösbar ist, führt [`ERROR_HANDLING.md` – Protokolle für eine Fehlermeldung sammeln](ERROR_HANDLING.md#protokolle-für-eine-fehlermeldung-sammeln) direkt zu den Angaben, die für eine sichere Diagnose benötigt werden.
 
 ## Mehrere Auswahlrunden
 
@@ -194,4 +223,4 @@ Die Prüfung extrahiert und startet keine Datei.
 
 ## Nächster Schritt
 
-Für die vollständige Bedienung `docs/BENUTZERHANDBUCH.md` öffnen. Für Installation `AUTOINSTALLATION_save_.md`, für Fehler `ERROR_HANDLING.md` und für die Dokumentationsübersicht `docs/DOKUMENTATIONSINDEX.md` verwenden.
+Für die vollständige Bedienung [`docs/BENUTZERHANDBUCH.md`](docs/BENUTZERHANDBUCH.md) öffnen. Für Installation [`AUTOINSTALLATION_save_.md`](AUTOINSTALLATION_save_.md), für Fehler [`ERROR_HANDLING.md`](ERROR_HANDLING.md) und für die Dokumentationsübersicht [`docs/DOKUMENTATIONSINDEX.md`](docs/DOKUMENTATIONSINDEX.md) verwenden.
