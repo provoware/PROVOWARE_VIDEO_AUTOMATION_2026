@@ -32,7 +32,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           git rm .github/workflows/temp-pr121-evidence-sync.yml
-          python diagnostics/release_readiness/generate_from_evidence.py
+          python diagnostics/release_readiness/generate_from_evidence.py --write
           mapfile -t changed < <(git diff --name-only | sort)
           expected=(
             "README.md"
