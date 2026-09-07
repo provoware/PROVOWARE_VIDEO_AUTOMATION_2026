@@ -62,10 +62,10 @@ jobs:
           git diff --check
           files="$(git status --porcelain | awk '{print $2}' | sort)"
           printf '%s\n' "$files"
-          expected=$'RELEASE_MANIFEST.json\nsrc/videobatch_fast/canonical_dashboard_mixin.py\ntests/test_compact_responsive_ui_contract.py'
+          expected=$'.github/workflows/temp-queue-field-consistency.yml\nRELEASE_MANIFEST.json\nsrc/videobatch_fast/canonical_dashboard_mixin.py\ntests/test_compact_responsive_ui_contract.py'
           test "$files" = "$expected"
           git config user.name 'provoware-ui-validation'
           git config user.email 'actions@users.noreply.github.com'
-          git add RELEASE_MANIFEST.json src/videobatch_fast/canonical_dashboard_mixin.py tests/test_compact_responsive_ui_contract.py .github/workflows/temp-queue-field-consistency.yml
+          git add -A
           git commit -m 'ux: label queue filter without increasing dashboard height'
           git push origin HEAD:ui/queue-field-consistency-20260907
