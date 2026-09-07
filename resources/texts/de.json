@@ -8,6 +8,7 @@
     "ui-media.json",
     "ui-workflow.json",
     "ui-rc22.json",
-    "ui-slideshow.json"
+    "ui-slideshow.json",
+    "ui-recovery.json"
   ]
 }

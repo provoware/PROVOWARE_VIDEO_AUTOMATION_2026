@@ -1,0 +1,17 @@
+{
+  "catalog_version": "1.0",
+  "schema_version": 1,
+  "texts": {
+    "recovery.found.title": "Unterbrochene Verarbeitung erkannt",
+    "recovery.dialog.heading": "Wiederherstellbare Projekte",
+    "recovery.dialog.action_restore": "Wiederherstellen",
+    "recovery.dialog.action_later": "Später",
+    "recovery.dialog.action_clear": "Liste leeren",
+    "recovery.clear.confirm_title": "Wiederherstellungsliste leeren?",
+    "recovery.clear.confirm_body": "Die Einträge werden aus der aktiven Wiederherstellungsliste entfernt und sicher im Verlauf archiviert. Quelldateien und erzeugte Medien werden nicht gelöscht.",
+    "recovery.cleared.guidance": "Wiederherstellungsliste geleert: {journals} Einträge sicher archiviert.",
+    "recovery.cleared.title": "Wiederherstellungsliste geleert",
+    "recovery.cleared.detail": "{journals} Wiederherstellungseinträge wurden in den Verlauf verschoben.",
+    "recovery.cleared.solution": "Quelldateien bleiben unverändert; bei Bedarf kann der Verlauf geprüft werden."
+  }
+}

@@ -95,7 +95,7 @@
     "historical_reports_archived": 56,
     "obsolete_visual_baselines_removed": 16,
     "ready_deliverables": 10,
-    "unfinished_gate_files": 8,
+    "unfinished_gate_files": 7,
     "release_archive_excluded": true,
     "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe"
   },
@@ -159,11 +159,6 @@
         "path": "TODO.md",
         "label": "Offene Arbeitsliste",
         "reason": "Enthält bewusst die verbleibenden Stable-Gates"
-      },
-      {
-        "path": "QUALITY_GATE_ATTEMPT_2.8.3-rc24.md",
-        "label": "Externe Qualitätswerkzeuge",
-        "reason": "Ruff, MyPy, Bandit und pip-audit sind noch nicht abschließend ausgeführt"
       },
       {
         "path": "STABLE_GATE_ITERATION_2.8.3-rc24_2026-08-04.md",

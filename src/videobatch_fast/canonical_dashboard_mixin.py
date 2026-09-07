@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from tkinter import Canvas, StringVar, TclError, ttk
 
-from .canonical_shell_contract import (
-    CANONICAL_THEME_LABELS,
-    DASHBOARD_COLUMN_WEIGHTS,
-    FONT_PROFILES,
-    dashboard_layout_mode,
+from .canonical_dashboard_cards import (
+    build_dashboard_appearance_card,
+    build_dashboard_scheduler_card,
 )
+from .canonical_shell_contract import DASHBOARD_COLUMN_WEIGHTS, dashboard_layout_mode
 from .theme import COLORS
 
 
@@ -308,84 +307,10 @@ class CanonicalDashboardMixin:
         return card
 
     def _build_dashboard_scheduler_card(self, parent):
-        card = ttk.Frame(parent, style="ShellCard.TFrame", padding=(14, 12))
-        ttk.Label(card, text="Startzeituhr", style="SectionHeader.TLabel").pack(anchor="w")
-        self._dashboard_scheduler_summary = StringVar(
-            value="Deaktiviert bis Checkpoint 5 · kein automatischer Start"
-        )
-        scheduler = ttk.Label(
-            card,
-            textvariable=self._dashboard_scheduler_summary,
-            style="Hint.TLabel",
-            justify="left",
-        )
-        scheduler.pack(anchor="w", fill="x", pady=(7, 8))
-        scheduler.bind(
-            "<Configure>",
-            lambda event: scheduler.configure(wraplength=max(180, event.width - 4)),
-            add="+",
-        )
-        ttk.Button(
-            card,
-            text="◷ Startzeituhr · Checkpoint 5",
-            state="disabled",
-        ).pack(fill="x")
-        return card
+        return build_dashboard_scheduler_card(self, parent)
 
     def _build_dashboard_appearance_card(self, parent):
-        card = ttk.Frame(parent, style="ShellCard.TFrame", padding=(14, 12))
-        card.columnconfigure(0, weight=1)
-        ttk.Label(card, text="Darstellung", style="SectionHeader.TLabel").grid(
-            row=0,
-            column=0,
-            sticky="w",
-        )
-        appearance_hint = ttk.Label(
-            card,
-            text="Theme und Schrift wirken sofort und werden gespeichert.",
-            style="Hint.TLabel",
-        )
-        appearance_hint.grid(row=1, column=0, sticky="ew", pady=(3, 6))
-        self._dashboard_appearance_hint = appearance_hint
-        appearance_hint.bind(
-            "<Configure>",
-            lambda event: appearance_hint.configure(wraplength=max(180, event.width - 4)),
-            add="+",
-        )
-
-        theme_reverse = {label: key for key, label in CANONICAL_THEME_LABELS.items()}
-        controls = ttk.Frame(card, style="ShellCard.TFrame")
-        controls.grid(row=2, column=0, sticky="ew")
-        controls.columnconfigure(0, weight=1)
-        controls.columnconfigure(1, weight=1)
-        ttk.Label(controls, text="Theme", style="Hint.TLabel").grid(row=0, column=0, sticky="w", padx=(0, 4))
-        ttk.Label(controls, text="Schrift", style="Hint.TLabel").grid(row=0, column=1, sticky="w", padx=(4, 0))
-        self.shell_theme_combo = ttk.Combobox(controls, values=list(theme_reverse), state="readonly")
-        self.shell_theme_combo.set(
-            CANONICAL_THEME_LABELS.get(self.theme_name.get(), "Midnight Blue")
-        )
-        self.shell_theme_combo.grid(row=1, column=0, sticky="ew", padx=(0, 4))
-        self.shell_theme_combo.bind(
-            "<<ComboboxSelected>>",
-            lambda _event: self._set_canonical_theme(
-                theme_reverse[self.shell_theme_combo.get()]
-            ),
-        )
-
-        self.shell_font_combo = ttk.Combobox(
-            controls,
-            values=list(FONT_PROFILES),
-            state="readonly",
-        )
-        self.shell_font_combo.set(self._font_profile_for_scale(self.global_font_scale.get()))
-        self.shell_font_combo.grid(row=1, column=1, sticky="ew", padx=(4, 0))
-        self.shell_font_combo.bind(
-            "<<ComboboxSelected>>",
-            lambda _event: self._set_global_zoom(
-                FONT_PROFILES[self.shell_font_combo.get()]
-            ),
-        )
-        return card
+        return build_dashboard_appearance_card(self, parent)
 
     def _on_dashboard_canvas_configure(self, event) -> None:
         width = max(1, int(event.width))
