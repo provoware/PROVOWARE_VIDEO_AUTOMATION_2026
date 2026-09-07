@@ -41,6 +41,58 @@ class CanonicalVideoBatchFastUI(
         self._show_help_center()
         return "break"
 
+    def _build_shell_sidebar(self, parent) -> None:
+        super()._build_shell_sidebar(parent)
+        scheduler = self._shell_nav_buttons.get("scheduler")
+        if scheduler is not None:
+            scheduler.configure(text="◷  Scheduler · noch nicht verfügbar")
+
+    def _build_shell_header(self, parent) -> None:
+        super()._build_shell_header(parent)
+        for child in self._shell_header_identity.winfo_children():
+            try:
+                current = str(child.cget("text"))
+            except Exception:
+                continue
+            if "VB-GFX" in current:
+                child.configure(text="VideoBatch Fast")
+
+    def _build_shell_kpis(self, parent) -> None:
+        super()._build_shell_kpis(parent)
+        buttons = getattr(self, "_shell_kpi_buttons", {})
+        if isinstance(buttons, dict):
+            scheduler = buttons.get("scheduler")
+        elif isinstance(buttons, (list, tuple)) and buttons:
+            scheduler = buttons[-1]
+        else:
+            scheduler = None
+        if scheduler is not None:
+            scheduler.configure(text="Noch nicht verfügbar")
+
+    def _build_shell_actions(self, parent) -> None:
+        super()._build_shell_actions(parent)
+        buttons = getattr(self, "_shell_action_buttons", ())
+        if buttons:
+            buttons[-1].configure(text="◷ Startzeituhr · noch nicht verfügbar")
+
+    def _build_dashboard_scheduler_card(self, parent):
+        card = super()._build_dashboard_scheduler_card(parent)
+        self._dashboard_scheduler_summary.set(
+            "Automatischer Start ist in dieser Version noch nicht verfügbar."
+        )
+        for child in card.winfo_children():
+            if child.winfo_class() == "TButton":
+                child.configure(text="◷ Startzeituhr · noch nicht verfügbar")
+        return card
+
+    def _refresh_canonical_dashboard(self) -> None:
+        super()._refresh_canonical_dashboard()
+        if hasattr(self, "_dashboard_scheduler_summary"):
+            jobs = tuple(getattr(self, "jobs", ()))
+            self._dashboard_scheduler_summary.set(
+                f"Noch nicht verfügbar · {len(jobs)} Aufträge vorbereitet · kein automatischer Start"
+            )
+
 
 def _tk_exception_handler(root: Tk):
     def handle(exc_type, exc, tb) -> None:

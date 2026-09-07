@@ -28,8 +28,8 @@ def test_dashboard_breakpoints_are_complete_and_stable() -> None:
     assert dashboard_layout_mode(0) == "stacked"
     assert dashboard_layout_mode(759) == "stacked"
     assert dashboard_layout_mode(760) == "two_columns"
-    assert dashboard_layout_mode(1119) == "two_columns"
-    assert dashboard_layout_mode(1120) == "three_columns"
+    assert dashboard_layout_mode(1099) == "two_columns"
+    assert dashboard_layout_mode(1100) == "three_columns"
 
 
 def test_responsive_column_count_never_returns_invalid_values() -> None:
