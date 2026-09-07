@@ -41,6 +41,15 @@ class CanonicalVideoBatchFastUI(
         self._show_help_center()
         return "break"
 
+    def _layout_canonical_dashboard(self, width: int) -> None:
+        """Keep the desktop core workspace on one row without dashboard scrolling."""
+        CanonicalDashboardMixin._layout_canonical_dashboard(self, width)
+        if getattr(self, "_dashboard_layout_mode", "") != "three_columns":
+            return
+        self._dashboard_scheduler_card.grid_remove()
+        self._dashboard_appearance_card.grid_remove()
+        self.root.after_idle(self._sync_dashboard_scrollbar)
+
 
 def _tk_exception_handler(root: Tk):
     def handle(exc_type, exc, tb) -> None:
