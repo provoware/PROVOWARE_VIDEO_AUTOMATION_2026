@@ -42,13 +42,13 @@ class CanonicalVideoBatchFastUI(
         return "break"
 
     def _build_shell_sidebar(self, parent) -> None:
-        CanonicalShellChromeMixin._build_shell_sidebar(self, parent)
+        super()._build_shell_sidebar(parent)
         scheduler = self._shell_nav_buttons.get("scheduler")
         if scheduler is not None:
             scheduler.configure(text="◷  Scheduler · noch nicht verfügbar")
 
     def _build_shell_header(self, parent) -> None:
-        CanonicalShellChromeMixin._build_shell_header(self, parent)
+        super()._build_shell_header(parent)
         for child in self._shell_header_identity.winfo_children():
             try:
                 current = str(child.cget("text"))
@@ -58,7 +58,7 @@ class CanonicalVideoBatchFastUI(
                 child.configure(text="VideoBatch Fast")
 
     def _build_shell_kpis(self, parent) -> None:
-        CanonicalShellChromeMixin._build_shell_kpis(self, parent)
+        super()._build_shell_kpis(parent)
         buttons = getattr(self, "_shell_kpi_buttons", {})
         if isinstance(buttons, dict):
             scheduler = buttons.get("scheduler")
@@ -70,13 +70,13 @@ class CanonicalVideoBatchFastUI(
             scheduler.configure(text="Noch nicht verfügbar")
 
     def _build_shell_actions(self, parent) -> None:
-        CanonicalShellChromeMixin._build_shell_actions(self, parent)
+        super()._build_shell_actions(parent)
         buttons = getattr(self, "_shell_action_buttons", ())
         if buttons:
             buttons[-1].configure(text="◷ Startzeituhr · noch nicht verfügbar")
 
     def _build_dashboard_scheduler_card(self, parent):
-        card = CanonicalDashboardMixin._build_dashboard_scheduler_card(self, parent)
+        card = super()._build_dashboard_scheduler_card(parent)
         self._dashboard_scheduler_summary.set(
             "Automatischer Start ist in dieser Version noch nicht verfügbar."
         )
@@ -86,7 +86,7 @@ class CanonicalVideoBatchFastUI(
         return card
 
     def _refresh_canonical_dashboard(self) -> None:
-        CanonicalDashboardMixin._refresh_canonical_dashboard(self)
+        super()._refresh_canonical_dashboard()
         if hasattr(self, "_dashboard_scheduler_summary"):
             jobs = tuple(getattr(self, "jobs", ()))
             self._dashboard_scheduler_summary.set(
