@@ -1,7 +1,7 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 443,
+  "file_count": 444,
   "files": [
     {
       "mode": "0o644",
@@ -2240,6 +2240,12 @@
       "path": "tests/test_canonical_layout_resilience.py",
       "sha256": "7e18d59c240257859f6df3bf9029d1564787d5d0affedcb40d0b34ae558fdb49",
       "size": 5157
+    },
+    {
+      "mode": "0o644",
+      "path": "tests/test_compact_responsive_ui_contract.py",
+      "sha256": "bb9f0ed6ffe502aa28a25c3edf715e5d800eefbfe35fc723ada1e1ee6e7b743e",
+      "size": 1937
     },
     {
       "mode": "0o644",
