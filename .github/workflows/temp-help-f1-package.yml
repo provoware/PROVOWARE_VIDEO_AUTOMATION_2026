@@ -1,0 +1,269 @@
+name: TEMP Help F1 Fixed Package
+
+on:
+  push:
+    branches:
+      - automation/help-f1-fixed-20260907
+
+permissions:
+  contents: read
+
+jobs:
+  build-fixed-package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+
+      - name: Verify base lineage
+        shell: bash
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor af2093b867686b383fcab372e29b11399c1ffbba HEAD
+          echo "BASE-LINEAGE PASS · af2093b867686b383fcab372e29b11399c1ffbba"
+
+      - name: Apply HELP-F1-SHORTCUT-001 and responsive help actions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          canonical = Path("src/videobatch_fast/canonical_ui.py")
+          source = canonical.read_text(encoding="utf-8")
+
+          marker = '    """VB-GFX-1.0 shell around the complete VideoBatch implementation."""\n\n\n'
+          replacement = '''    """VB-GFX-1.0 shell around the complete VideoBatch implementation."""\n\n    def _open_help_from_keyboard(self, _event=None) -> str:\n        self._show_help_center()\n        return "break"\n\n\n'''
+          if source.count(marker) != 1:
+              raise SystemExit("F1-PATCH BLOCKIERT: Klassenmarker ist nicht exakt einmal vorhanden")
+          source = source.replace(marker, replacement, 1)
+
+          old_construct = '        CanonicalVideoBatchFastUI(root)\n        root.update_idletasks()\n'
+          new_construct = '        app = CanonicalVideoBatchFastUI(root)\n        root.bind("<F1>", app._open_help_from_keyboard, add="+")\n        root.update_idletasks()\n'
+          if source.count(old_construct) != 1:
+              raise SystemExit("F1-PATCH BLOCKIERT: App-Konstruktionsblock ist nicht exakt einmal vorhanden")
+          source = source.replace(old_construct, new_construct, 1)
+          canonical.write_text(source, encoding="utf-8")
+
+          components = Path("src/videobatch_fast/ui_components.py")
+          source = components.read_text(encoding="utf-8")
+          old_buttons = '''        buttons = ttk.Frame(outer)\n        buttons.pack(fill=X, pady=(10, 0))\n        refresh_button = ttk.Button(buttons, text=text("help_center.refresh"), command=self._refresh)\n        refresh_button.pack(side=LEFT)\n        Tooltip(refresh_button, text("help_center.tooltip.refresh"))\n        self.copy_label = StringVar(value=text("help_center.copy_status"))\n        copy_button = ttk.Button(buttons, textvariable=self.copy_label, command=self._copy_status)\n        copy_button.pack(side=LEFT, padx=(6, 0))\n        Tooltip(copy_button, text("help_center.tooltip.copy"))\n        logs_button = ttk.Button(buttons, text=text("help_center.logs"), command=on_open_logs)\n        logs_button.pack(side=LEFT, padx=(6, 0))\n        Tooltip(logs_button, text("help_center.tooltip.logs"))\n        manual_button = ttk.Button(buttons, text=text("help_center.manual"), command=on_open_manual)\n        manual_button.pack(side=LEFT, padx=(6, 0))\n        Tooltip(manual_button, text("help_center.tooltip.manual"))\n        if on_run_fault_lab is not None:\n            fault_button = ttk.Button(buttons, text=text("help_center.fault_lab"), command=on_run_fault_lab)\n            fault_button.pack(side=LEFT, padx=(6, 0))\n            Tooltip(fault_button, text("help_center.tooltip.fault_lab"))\n        close_button = ttk.Button(buttons, text=text("help_center.close"), style="Accent.TButton", command=self.window.destroy)\n        close_button.pack(side=RIGHT)\n        Tooltip(close_button, text("help_center.tooltip.close"))\n        self.window.bind("<Escape>", lambda _event: self.window.destroy())\n'''
+          new_buttons = '''        buttons = ttk.Frame(outer)\n        buttons.pack(fill=X, pady=(10, 0))\n        for column in range(3):\n            buttons.columnconfigure(column, weight=1)\n\n        refresh_button = ttk.Button(buttons, text=text("help_center.refresh"), command=self._refresh)\n        refresh_button.grid(row=0, column=0, sticky="ew", padx=(0, 3), pady=3)\n        Tooltip(refresh_button, text("help_center.tooltip.refresh"))\n        self.copy_label = StringVar(value=text("help_center.copy_status"))\n        copy_button = ttk.Button(buttons, textvariable=self.copy_label, command=self._copy_status)\n        copy_button.grid(row=0, column=1, sticky="ew", padx=3, pady=3)\n        Tooltip(copy_button, text("help_center.tooltip.copy"))\n        logs_button = ttk.Button(buttons, text=text("help_center.logs"), command=on_open_logs)\n        logs_button.grid(row=0, column=2, sticky="ew", padx=(3, 0), pady=3)\n        Tooltip(logs_button, text("help_center.tooltip.logs"))\n        manual_button = ttk.Button(buttons, text=text("help_center.manual"), command=on_open_manual)\n        manual_button.grid(row=1, column=0, sticky="ew", padx=(0, 3), pady=3)\n        Tooltip(manual_button, text("help_center.tooltip.manual"))\n        if on_run_fault_lab is not None:\n            fault_button = ttk.Button(buttons, text=text("help_center.fault_lab"), command=on_run_fault_lab)\n            fault_button.grid(row=1, column=1, sticky="ew", padx=3, pady=3)\n            Tooltip(fault_button, text("help_center.tooltip.fault_lab"))\n        close_button = ttk.Button(buttons, text=text("help_center.close"), style="Accent.TButton", command=self.window.destroy)\n        close_button.grid(row=1, column=2, sticky="ew", padx=(3, 0), pady=3)\n        Tooltip(close_button, text("help_center.tooltip.close"))\n        self.window.bind("<Escape>", lambda _event: self.window.destroy())\n'''
+          if source.count(old_buttons) != 1:
+              raise SystemExit("UI-POLISH BLOCKIERT: Hilfeaktionsblock ist nicht exakt einmal vorhanden")
+          source = source.replace(old_buttons, new_buttons, 1)
+          components.write_text(source, encoding="utf-8")
+          PY
+
+      - name: Exact keyboard and UI contract validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile src/videobatch_fast/canonical_ui.py src/videobatch_fast/ui_components.py src/videobatch_fast/canonical_shell_chrome.py
+          python3 - <<'PY'
+          import ast
+          from pathlib import Path
+
+          canonical_path = Path("src/videobatch_fast/canonical_ui.py")
+          shell_path = Path("src/videobatch_fast/canonical_shell_chrome.py")
+          components_path = Path("src/videobatch_fast/ui_components.py")
+          canonical = canonical_path.read_text(encoding="utf-8")
+          shell = shell_path.read_text(encoding="utf-8")
+          components = components_path.read_text(encoding="utf-8")
+
+          assert 'root.bind("<F1>", app._open_help_from_keyboard, add="+")' in canonical
+          assert 'bind_all("<F1>"' not in canonical
+          assert 'command=self._show_help_center' in shell
+          assert 'search.bind("<Return>", self._run_shell_search)' in shell
+          assert 'self.window.bind("<Escape>", lambda _event: self.window.destroy())' in components
+          assert 'refresh_button.grid(row=0, column=0' in components
+          assert 'copy_button.grid(row=0, column=1' in components
+          assert 'logs_button.grid(row=0, column=2' in components
+          assert 'manual_button.grid(row=1, column=0' in components
+          assert 'fault_button.grid(row=1, column=1' in components
+          assert 'close_button.grid(row=1, column=2' in components
+
+          tree = ast.parse(canonical, filename=str(canonical_path))
+          cls = next(node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == "CanonicalVideoBatchFastUI")
+          handler = next(node for node in cls.body if isinstance(node, ast.FunctionDef) and node.name == "_open_help_from_keyboard")
+          module = ast.Module(body=[handler], type_ignores=[])
+          ast.fix_missing_locations(module)
+          namespace = {}
+          exec(compile(module, "<help-f1-handler>", "exec"), namespace)
+
+          class FakeUI:
+              def __init__(self):
+                  self.calls = 0
+              def _show_help_center(self):
+                  self.calls += 1
+
+          fake = FakeUI()
+          result = namespace["_open_help_from_keyboard"](fake, None)
+          assert result == "break"
+          assert fake.calls == 1
+
+          changed = {"src/videobatch_fast/canonical_ui.py", "src/videobatch_fast/ui_components.py"}
+          print("HELP-F1 STATIC/RUNTIME-HANDLER PASS")
+          print("HELP-BUTTON UNCHANGED PASS")
+          print("SEARCH-RETURN BINDING UNCHANGED PASS")
+          print("ESCAPE CONTRACT PRESENT PASS")
+          print("RESPONSIVE HELP ACTION GRID PASS")
+          PY
+
+      - name: Runtime HelpCenter Escape and layout validation
+        shell: bash
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
+        run: |
+          set -euo pipefail
+          command -v xvfb-run >/dev/null
+          xvfb-run -a python3 - <<'PY'
+          from tkinter import Tk, ttk
+          from videobatch_fast.ui_components import HelpCenterDialog
+
+          root = Tk()
+          root.withdraw()
+          dialog = HelpCenterDialog(
+              root,
+              system_status="Bereit",
+              on_refresh=lambda: "Bereit",
+              on_open_logs=lambda: None,
+              on_open_manual=lambda: None,
+              on_run_fault_lab=lambda: None,
+          )
+          dialog.window.geometry("680x520")
+          root.update_idletasks()
+
+          def descendants(widget):
+              for child in widget.winfo_children():
+                  yield child
+                  yield from descendants(child)
+
+          frames = [w for w in descendants(dialog.window) if isinstance(w, ttk.Frame)]
+          candidates = []
+          for frame in frames:
+              direct_buttons = [c for c in frame.winfo_children() if isinstance(c, ttk.Button)]
+              if len(direct_buttons) >= 5:
+                  candidates.append((frame, direct_buttons))
+          assert len(candidates) == 1, f"Unerwartete Aktionsleisten: {len(candidates)}"
+          _, buttons = candidates[0]
+          assert len(buttons) == 6
+          assert all(button.winfo_manager() == "grid" for button in buttons)
+          positions = {(int(button.grid_info()["row"]), int(button.grid_info()["column"])) for button in buttons}
+          assert positions == {(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2)}
+
+          window = dialog.window
+          window.event_generate("<Escape>")
+          root.update()
+          assert not window.winfo_exists(), "Escape hat das Hilfezentrum nicht geschlossen"
+          root.destroy()
+          print("HELP-CENTER 680x520 GRID PASS")
+          print("HELP-CENTER ESCAPE RUNTIME PASS")
+          PY
+
+      - name: Regenerate and validate canonical release manifest
+        shell: bash
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/scripts
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/temp-help-f1-package.yml
+          python3 scripts/build_release_manifest.py | tee /tmp/manifest-build.txt
+          python3 scripts/build_release_manifest.py --check | tee /tmp/manifest-check.txt
+          python3 scripts/validate_documentation.py | tee /tmp/documentation-check.txt
+
+      - name: Verify final project diff scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only | sort | tee /tmp/final-diff.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          actual = set(Path("/tmp/final-diff.txt").read_text(encoding="utf-8").splitlines())
+          allowed = {
+              ".github/workflows/temp-help-f1-package.yml",
+              "RELEASE_MANIFEST.json",
+              "src/videobatch_fast/canonical_ui.py",
+              "src/videobatch_fast/ui_components.py",
+          }
+          unexpected = actual - allowed
+          required = {
+              "RELEASE_MANIFEST.json",
+              "src/videobatch_fast/canonical_ui.py",
+              "src/videobatch_fast/ui_components.py",
+          }
+          if unexpected:
+              raise SystemExit(f"UNERWARTETER DIFF: {sorted(unexpected)}")
+          if not required.issubset(actual):
+              raise SystemExit(f"ERWARTETER DIFF FEHLT: {sorted(required - actual)}")
+          print("FINAL DIFF SCOPE PASS")
+          PY
+
+      - name: Build complete fixed project ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          python3 - <<'PY'
+          from pathlib import Path
+          import os
+          import stat
+          import zipfile
+
+          root = Path.cwd()
+          out = root / "dist" / "PROVOWARE_VIDEO_AUTOMATION_2026_F1_HELP_UI_FIXED_2026-09-07.zip"
+          top = "PROVOWARE_VIDEO_AUTOMATION_2026_F1_HELP_UI_FIXED_2026-09-07"
+          skip_parts = {".git", "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache", "dist"}
+          helper = Path(".github/workflows/temp-help-f1-package.yml")
+
+          files = []
+          for path in root.rglob("*"):
+              if not path.is_file():
+                  continue
+              rel = path.relative_to(root)
+              if rel == helper or any(part in skip_parts for part in rel.parts):
+                  continue
+              files.append((rel, path))
+
+          with zipfile.ZipFile(out, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+              for rel, path in sorted(files, key=lambda item: item[0].as_posix()):
+                  info = zipfile.ZipInfo(f"{top}/{rel.as_posix()}")
+                  st = path.stat()
+                  info.date_time = __import__("time").localtime(st.st_mtime)[:6]
+                  info.compress_type = zipfile.ZIP_DEFLATED
+                  info.external_attr = (stat.S_IMODE(st.st_mode) & 0xFFFF) << 16
+                  archive.writestr(info, path.read_bytes())
+
+          print(f"ZIP ERZEUGT · {out.name} · {out.stat().st_size} bytes · {len(files)} Dateien")
+          PY
+
+          {
+            echo "PROVOWARE VIDEO AUTOMATION 2026 · HELP-F1-SHORTCUT-001"
+            echo "Base SHA: af2093b867686b383fcab372e29b11399c1ffbba"
+            echo ""
+            echo "PASS · F1 bindet ausschließlich am Hauptfenster mit add=+"
+            echo "PASS · F1 ruft exakt das vorhandene Hilfezentrum auf"
+            echo "PASS · bestehender Hilfe-Button unverändert"
+            echo "PASS · Escape schließt HelpCenterDialog im Xvfb-Runtime-Test"
+            echo "PASS · bestehendes Return-Binding der globalen Suche unverändert"
+            echo "PASS · keine bind_all-F1-Bindung"
+            echo "PASS · Hilfeaktionen responsiv 2 x 3 bei 680x520"
+            echo "PASS · Release-Manifest kanonisch regeneriert und geprüft"
+            echo "PASS · Dokumentationsvalidator"
+            echo ""
+            cat /tmp/final-diff.txt
+          } > dist/VALIDATION_HELP_F1_FIXED_2026-09-07.txt
+
+          sha256sum dist/PROVOWARE_VIDEO_AUTOMATION_2026_F1_HELP_UI_FIXED_2026-09-07.zip > dist/PROVOWARE_VIDEO_AUTOMATION_2026_F1_HELP_UI_FIXED_2026-09-07.zip.sha256
+
+      - name: Upload fixed package
+        uses: actions/upload-artifact@v4
+        with:
+          name: PROVOWARE_VIDEO_AUTOMATION_2026_F1_HELP_UI_FIXED_2026-09-07
+          path: |
+            dist/PROVOWARE_VIDEO_AUTOMATION_2026_F1_HELP_UI_FIXED_2026-09-07.zip
+            dist/PROVOWARE_VIDEO_AUTOMATION_2026_F1_HELP_UI_FIXED_2026-09-07.zip.sha256
+            dist/VALIDATION_HELP_F1_FIXED_2026-09-07.txt
+          if-no-files-found: error
+          retention-days: 7
