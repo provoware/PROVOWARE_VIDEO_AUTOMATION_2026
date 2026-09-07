@@ -17,6 +17,7 @@ from .canonical_shell_workspace import CanonicalShellWorkspaceMixin
 from .canonical_shell_chrome import CanonicalShellChromeMixin
 from .debug_runtime import RUNTIME, show_incident_dialog
 from .error_handling import error_definition
+from .failure_intelligence import capture_exception_with_intelligence
 from .startup_handshake import signal_ui_ready
 from .ui import VideoBatchFastUI
 from .ui_components import SolutionDialog
@@ -96,16 +97,18 @@ class CanonicalVideoBatchFastUI(
 
 def _tk_exception_handler(root: Tk):
     def handle(exc_type, exc, tb) -> None:
-        incident = RUNTIME.capture_exception(
+        incident = capture_exception_with_intelligence(
+            RUNTIME,
             exc_type,
             exc,
             tb,
+            operation_id="ui-callback",
             what="In der laufenden Oberfläche ist ein Fehler aufgetreten.",
             how=(
                 "Tkinter hat eine Ausnahme in einer Schaltfläche, einem Ereignis oder einer "
                 "automatischen UI-Aktualisierung gemeldet."
             ),
-            where="Tkinter-Callback · genauer Python-Ort steht im Bericht",
+            where="Tkinter-Callback",
             solutions=(
                 "Den automatisch geöffneten TXT-Bericht prüfen.",
                 "Die zuletzt verwendete Schaltfläche oder Auswahl notieren und den Schritt reproduzieren.",
@@ -127,10 +130,12 @@ def _install_thread_debug_hook() -> None:
     previous = threading.excepthook
 
     def handle(args: threading.ExceptHookArgs) -> None:
-        incident = RUNTIME.capture_exception(
+        incident = capture_exception_with_intelligence(
+            RUNTIME,
             args.exc_type,
             args.exc_value,
             args.exc_traceback,
+            operation_id=f"thread:{args.thread.name}",
             what=f"Ein Hintergrundprozess ist unerwartet abgebrochen: {args.thread.name}.",
             how="Python hat eine unbehandelte Ausnahme in einem Hintergrund-Thread gemeldet.",
             where=f"Thread: {args.thread.name}",
@@ -195,16 +200,18 @@ def run_app() -> None:
         RUNTIME.mark_clean_shutdown()
     except BaseException as exc:
         exc_type = type(exc)
-        incident = RUNTIME.capture_exception(
+        incident = capture_exception_with_intelligence(
+            RUNTIME,
             exc_type,
             exc,
             exc.__traceback__,
+            operation_id="application-main",
             what="VideoBatch konnte die grafische Anwendung nicht stabil weiter ausführen.",
             how=(
                 "Der Fehler trat während Fensteraufbau, Oberflächenkonstruktion oder Hauptschleife auf "
                 "und wurde vom zentralen Absturzfänger abgefangen."
             ),
-            where="canonical_ui.run_app · genauer Python-Ort steht im Bericht",
+            where="canonical_ui.run_app",
             solutions=(
                 "Den automatisch geöffneten TXT-Bericht vollständig prüfen.",
                 "Im Bericht unter WO IST ES PASSIERT den Dateinamen und die Zeilennummer notieren.",
