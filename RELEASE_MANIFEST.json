@@ -1398,8 +1398,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/canonical_dashboard_mixin.py",
-      "sha256": "8e46507218a17347cc7e8eb7b7bc6588a0781bce6799374f4fd0ca7181f1d03a",
-      "size": 29061
+      "sha256": "34b97cb1d73424e60b8016377e1e133292666a572d01a41b7d358d39cc476438",
+      "size": 29374
     },
     {
       "mode": "0o644",
@@ -2244,8 +2244,8 @@
     {
       "mode": "0o644",
       "path": "tests/test_compact_responsive_ui_contract.py",
-      "sha256": "bb9f0ed6ffe502aa28a25c3edf715e5d800eefbfe35fc723ada1e1ee6e7b743e",
-      "size": 1937
+      "sha256": "ccd63a2c745d21bfa8fbbe53a4a0658144128eab8a7421bc9888a0fd00b65bf6",
+      "size": 2044
     },
     {
       "mode": "0o644",
