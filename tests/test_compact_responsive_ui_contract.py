@@ -22,6 +22,8 @@ def test_dashboard_has_compact_density_and_compact_appearance_controls():
     assert 'self._dashboard_preview_canvas.configure(height=104 if compact else 164)' in source
     assert 'text="Theme"' in source and 'text="Schrift"' in source
     assert 'self._sync_dashboard_scrollbar' in source
+    assert 'text="Queue filtern"' in source
+    assert 'filter_row.columnconfigure(1, weight=1)' in source
 
 
 def test_recovery_clear_is_safe_archive_not_source_delete():

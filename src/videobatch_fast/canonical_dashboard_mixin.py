@@ -197,8 +197,14 @@ class CanonicalDashboardMixin:
         ).pack(side="right")
 
         self._dashboard_queue_filter = StringVar(value="")
-        search = ttk.Entry(card, textvariable=self._dashboard_queue_filter)
-        search.grid(row=1, column=0, sticky="ew", pady=(7, 4))
+        filter_row = ttk.Frame(card, style="ShellCard.TFrame")
+        filter_row.grid(row=1, column=0, sticky="ew", pady=(7, 4))
+        filter_row.columnconfigure(1, weight=1)
+        ttk.Label(filter_row, text="Queue filtern", style="Hint.TLabel").grid(
+            row=0, column=0, sticky="w", padx=(0, 7)
+        )
+        search = ttk.Entry(filter_row, textvariable=self._dashboard_queue_filter)
+        search.grid(row=0, column=1, sticky="ew")
         search.bind("<KeyRelease>", lambda _event: self._refresh_canonical_dashboard())
         queue_hint = ttk.Label(
             card,
