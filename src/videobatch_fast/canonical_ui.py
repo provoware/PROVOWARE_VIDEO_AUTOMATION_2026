@@ -37,6 +37,10 @@ class CanonicalVideoBatchFastUI(
 ):
     """VB-GFX-1.0 shell around the complete VideoBatch implementation."""
 
+    def _open_help_from_keyboard(self, _event=None) -> str:
+        self._show_help_center()
+        return "break"
+
 
 def _tk_exception_handler(root: Tk):
     def handle(exc_type, exc, tb) -> None:
@@ -124,7 +128,8 @@ def run_app() -> None:
             "CanonicalVideoBatchFastUI(root)",
             "Bei einem Konstruktionsfehler bleibt der vollständige Python-Ort im Absturzbericht erhalten.",
         )
-        CanonicalVideoBatchFastUI(root)
+        app = CanonicalVideoBatchFastUI(root)
+        root.bind("<F1>", app._open_help_from_keyboard, add="+")
         root.update_idletasks()
         signal_ui_ready()
         RUNTIME.verbose(
