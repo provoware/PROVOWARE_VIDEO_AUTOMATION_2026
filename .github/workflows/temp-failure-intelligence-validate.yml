@@ -1,0 +1,63 @@
+name: TEMP Failure Intelligence Validation
+
+on:
+  push:
+    branches:
+      - debug/failure-intelligence-20260907
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install test dependency
+        run: python -m pip install --disable-pip-version-check pytest==9.0.2
+
+      - name: Compile changed Python files
+        run: |
+          python -m py_compile \
+            src/videobatch_fast/failure_intelligence.py \
+            src/videobatch_fast/canonical_ui.py \
+            tests/test_failure_intelligence.py
+
+      - name: Run failure-intelligence regression tests
+        env:
+          PYTHONPATH: src
+        run: python -m pytest -q tests/test_failure_intelligence.py --tb=long
+
+      - name: Run existing debug and recovery regression tests
+        env:
+          PYTHONPATH: src
+        run: |
+          python -m pytest -q \
+            tests/test_debug_runtime_contract.py \
+            tests/test_event_registry.py \
+            tests/test_retry_queue_diagnostics.py \
+            tests/test_retry_queue_resilience.py \
+            tests/test_recovery_consistency.py \
+            --tb=long
+
+      - name: Run event architecture checks
+        env:
+          PYTHONPATH: src
+        run: |
+          python scripts/check_event_registry.py
+          python scripts/check_event_architecture.py
+
+      - name: Show exact diff scope
+        run: |
+          git diff --name-status 81f9616a7d05455f5805f78b547b753b065ded37...HEAD
