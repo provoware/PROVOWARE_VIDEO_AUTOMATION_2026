@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout exact branch
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Verify base lineage
         shell: bash
@@ -103,7 +105,6 @@ jobs:
           assert result == "break"
           assert fake.calls == 1
 
-          changed = {"src/videobatch_fast/canonical_ui.py", "src/videobatch_fast/ui_components.py"}
           print("HELP-F1 STATIC/RUNTIME-HANDLER PASS")
           print("HELP-BUTTON UNCHANGED PASS")
           print("SEARCH-RETURN BINDING UNCHANGED PASS")
@@ -207,7 +208,6 @@ jobs:
           mkdir -p dist
           python3 - <<'PY'
           from pathlib import Path
-          import os
           import stat
           import zipfile
 
