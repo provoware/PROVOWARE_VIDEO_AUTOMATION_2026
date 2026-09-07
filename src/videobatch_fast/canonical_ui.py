@@ -68,7 +68,13 @@ class CanonicalVideoBatchFastUI(
 
     def _build_shell_kpis(self, parent) -> None:
         CanonicalShellChromeMixin._build_shell_kpis(self, parent)
-        scheduler = self._shell_kpi_buttons.get("scheduler")
+        buttons = getattr(self, "_shell_kpi_buttons", {})
+        if isinstance(buttons, dict):
+            scheduler = buttons.get("scheduler")
+        elif isinstance(buttons, (list, tuple)) and buttons:
+            scheduler = buttons[-1]
+        else:
+            scheduler = None
         if scheduler is not None:
             scheduler.configure(text="Noch nicht verfügbar")
 
