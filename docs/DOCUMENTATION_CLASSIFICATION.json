@@ -16,6 +16,7 @@
     "KEY_ARCHIVE.md": {"category": "technical"},
     "PLUGIN_SYSTEM.md": {"category": "technical"},
     "PROJEKTORDNERSTRUKTUR_save_.md": {"category": "technical"},
+    "QUALITY_GATE_ATTEMPT_2.8.3-rc24.md": {"category": "historical"},
     "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md": {"category": "historical"},
     "README.md": {"category": "active", "required_sections": ["Dokumentation", "Schnellstart", "Abschlussprüfung"]},
     "REGISTRY_MANIFEST.md": {"category": "technical"},
