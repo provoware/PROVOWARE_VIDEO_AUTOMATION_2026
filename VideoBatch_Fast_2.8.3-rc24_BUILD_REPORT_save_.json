@@ -48,7 +48,7 @@
     "release_archive_excluded": true,
     "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe"
   },
-  "release_manifest_files": 398,
+  "release_manifest_files": 446,
   "matrix": {
     "status": "passed",
     "passed_targets": 4,
