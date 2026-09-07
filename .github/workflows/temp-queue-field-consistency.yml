@@ -1,0 +1,71 @@
+name: TEMP Queue Field Consistency
+
+on:
+  push:
+    branches:
+      - ui/queue-field-consistency-20260907
+
+permissions:
+  contents: write
+
+jobs:
+  patch-validate-commit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: src
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify exact main base
+        run: git merge-base --is-ancestor 5a64d9894b3b5a6dcb75edf311022c0a475b33ea HEAD
+      - name: Install locked test toolchain
+        run: python3 -m pip install --disable-pip-version-check --no-input -r requirements-toolchain.lock
+      - name: Apply compact queue field consistency slice
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          dashboard = Path('src/videobatch_fast/canonical_dashboard_mixin.py')
+          source = dashboard.read_text(encoding='utf-8')
+          old = '''        self._dashboard_queue_filter = StringVar(value="")\n        search = ttk.Entry(card, textvariable=self._dashboard_queue_filter)\n        search.grid(row=1, column=0, sticky="ew", pady=(7, 4))\n        search.bind("<KeyRelease>", lambda _event: self._refresh_canonical_dashboard())\n'''
+          new = '''        self._dashboard_queue_filter = StringVar(value="")\n        filter_row = ttk.Frame(card, style="ShellCard.TFrame")\n        filter_row.grid(row=1, column=0, sticky="ew", pady=(7, 4))\n        filter_row.columnconfigure(1, weight=1)\n        ttk.Label(filter_row, text="Queue filtern", style="Hint.TLabel").grid(\n            row=0, column=0, sticky="w", padx=(0, 7)\n        )\n        search = ttk.Entry(filter_row, textvariable=self._dashboard_queue_filter)\n        search.grid(row=0, column=1, sticky="ew")\n        search.bind("<KeyRelease>", lambda _event: self._refresh_canonical_dashboard())\n'''
+          if source.count(old) != 1:
+              raise SystemExit(f'queue filter block expected once, got {source.count(old)}')
+          dashboard.write_text(source.replace(old, new, 1), encoding='utf-8')
+
+          test = Path('tests/test_compact_responsive_ui_contract.py')
+          source = test.read_text(encoding='utf-8')
+          marker = '''    assert 'self._sync_dashboard_scrollbar' in source\n'''
+          replacement = marker + '''    assert 'text="Queue filtern"' in source\n    assert 'filter_row.columnconfigure(1, weight=1)' in source\n'''
+          if source.count(marker) != 1:
+              raise SystemExit('compact UI test marker not unique')
+          test.write_text(source.replace(marker, replacement, 1), encoding='utf-8')
+          PY
+      - name: Remove temporary workflow from final tree
+        run: git rm .github/workflows/temp-queue-field-consistency.yml
+      - name: Validate source and focused regressions
+        run: |
+          python3 -m py_compile src/videobatch_fast/canonical_dashboard_mixin.py
+          python3 -m pytest -q tests/test_compact_responsive_ui_contract.py tests/test_canonical_layout_resilience.py tests/test_canonical_application_shell_contract.py
+      - name: Regenerate and verify release manifest
+        run: |
+          python3 scripts/build_release_manifest.py
+          python3 scripts/build_release_manifest.py --check --json
+          python3 scripts/validate_documentation.py --json
+      - name: Audit final diff and commit
+        run: |
+          set -euo pipefail
+          git diff --check
+          files="$(git status --porcelain | awk '{print $2}' | sort)"
+          printf '%s\n' "$files"
+          expected=$'RELEASE_MANIFEST.json\nsrc/videobatch_fast/canonical_dashboard_mixin.py\ntests/test_compact_responsive_ui_contract.py'
+          test "$files" = "$expected"
+          git config user.name 'provoware-ui-validation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add RELEASE_MANIFEST.json src/videobatch_fast/canonical_dashboard_mixin.py tests/test_compact_responsive_ui_contract.py .github/workflows/temp-queue-field-consistency.yml
+          git commit -m 'ux: label queue filter without increasing dashboard height'
+          git push origin HEAD:ui/queue-field-consistency-20260907
