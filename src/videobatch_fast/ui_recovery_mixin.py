@@ -71,7 +71,8 @@ class UiRecoveryMixin:
         )
 
     def _choose_recovery_action(self, payloads: list[dict[str, object]], count: int) -> str:
-        choice = StringVar(value="later")
+        choice = StringVar()
+        choice.set("later")
         dialog = Toplevel(self.root)
         dialog.title(text("recovery.dialog.title"))
         dialog.transient(self.root)
@@ -79,7 +80,7 @@ class UiRecoveryMixin:
         dialog.resizable(False, False)
         body = ttk.Frame(dialog, padding=16)
         body.pack(fill="both", expand=True)
-        ttk.Label(body, text="Wiederherstellbare Projekte", style="DialogTitle.TLabel").pack(anchor="w")
+        ttk.Label(body, text=text("recovery.dialog.heading"), style="DialogTitle.TLabel").pack(anchor="w")
         ttk.Label(
             body,
             text=text("recovery.dialog.body", batches=len(payloads), jobs=count),
@@ -94,9 +95,9 @@ class UiRecoveryMixin:
         def finish(value: str) -> None:
             choice.set(value)
             dialog.destroy()
-        ttk.Button(actions, text="Wiederherstellen", style="Accent.TButton", command=lambda: finish("restore")).grid(row=0, column=0, sticky="ew", padx=(0, 3))
-        ttk.Button(actions, text="Später", command=lambda: finish("later")).grid(row=0, column=1, sticky="ew", padx=3)
-        ttk.Button(actions, text="Liste leeren", style="Danger.TButton", command=lambda: finish("clear")).grid(row=0, column=2, sticky="ew", padx=(3, 0))
+        ttk.Button(actions, text=text("recovery.dialog.restore"), style="Accent.TButton", command=lambda: finish("restore")).grid(row=0, column=0, sticky="ew", padx=(0, 3))
+        ttk.Button(actions, text=text("recovery.dialog.later"), command=lambda: finish("later")).grid(row=0, column=1, sticky="ew", padx=3)
+        ttk.Button(actions, text=text("recovery.dialog.clear"), style="Danger.TButton", command=lambda: finish("clear")).grid(row=0, column=2, sticky="ew", padx=(3, 0))
         dialog.protocol("WM_DELETE_WINDOW", lambda: finish("later"))
         dialog.bind("<Escape>", lambda _event: finish("later"))
         dialog.update_idletasks()
@@ -108,8 +109,8 @@ class UiRecoveryMixin:
 
     def _clear_recoverable_projects(self, payloads: list[dict[str, object]]) -> bool:
         if not messagebox.askyesno(
-            "Wiederherstellungsliste leeren?",
-            "Die Einträge werden aus der aktiven Wiederherstellungsliste entfernt und sicher im Verlauf archiviert. Quelldateien und erzeugte Medien werden nicht gelöscht.",
+            text("recovery.clear.confirm_title"),
+            text("recovery.clear.confirm_body"),
             parent=self.root,
         ):
             return False
