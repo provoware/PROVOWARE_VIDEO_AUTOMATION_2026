@@ -75,9 +75,11 @@ class CanonicalDashboardMixin:
         surface = ttk.Frame(canvas, style="Shell.TFrame", padding=(2, 2, 5, 12))
         window_id = canvas.create_window((0, 0), window=surface, anchor="nw")
         self._dashboard_canvas = canvas
+        self._dashboard_scrollbar = scrollbar
         self._dashboard_surface = surface
         self._dashboard_window_id = window_id
         self._dashboard_layout_mode = ""
+        self._dashboard_density = "comfortable"
 
         surface.bind(
             "<Configure>",
@@ -150,6 +152,7 @@ class CanonicalDashboardMixin:
         sources.column("state", width=80, minwidth=70, stretch=False)
         sources.grid(row=4, column=0, sticky="nsew", pady=(8, 8))
         self._dashboard_source_tree = sources
+        self._dashboard_source_card = card
 
         actions = ttk.Frame(card, style="ShellCard.TFrame")
         actions.grid(row=5, column=0, sticky="ew")
@@ -197,11 +200,13 @@ class CanonicalDashboardMixin:
         search = ttk.Entry(card, textvariable=self._dashboard_queue_filter)
         search.grid(row=1, column=0, sticky="ew", pady=(7, 4))
         search.bind("<KeyRelease>", lambda _event: self._refresh_canonical_dashboard())
-        ttk.Label(
+        queue_hint = ttk.Label(
             card,
             text="Reale Aufträge aus dem aktuellen Projekt; keine Musterwerte.",
             style="Hint.TLabel",
-        ).grid(row=2, column=0, sticky="w", pady=(0, 7))
+        )
+        queue_hint.grid(row=2, column=0, sticky="w", pady=(0, 7))
+        self._dashboard_queue_hint = queue_hint
 
         tree = ttk.Treeview(
             card,
@@ -220,6 +225,7 @@ class CanonicalDashboardMixin:
         tree.grid(row=3, column=0, sticky="nsew")
         tree.bind("<<TreeviewSelect>>", self._select_dashboard_job, add="+")
         self._dashboard_queue_tree = tree
+        self._dashboard_queue_card_ref = card
         self._dashboard_tree_job_map = {}
 
         actions = ttk.Frame(card, style="ShellCard.TFrame")
@@ -266,6 +272,7 @@ class CanonicalDashboardMixin:
         preview.grid(row=1, column=0, sticky="ew", pady=(8, 9))
         preview.bind("<Configure>", lambda _event: self._refresh_dashboard_preview(), add="+")
         self._dashboard_preview_canvas = preview
+        self._dashboard_details_card_ref = card
 
         self._dashboard_detail_summary = StringVar(value="Noch kein Auftrag ausgewählt")
         detail_label = ttk.Label(
@@ -332,7 +339,8 @@ class CanonicalDashboardMixin:
             text="Theme und Schrift wirken sofort und werden gespeichert.",
             style="Hint.TLabel",
         )
-        appearance_hint.grid(row=1, column=0, sticky="ew", pady=(3, 8))
+        appearance_hint.grid(row=1, column=0, sticky="ew", pady=(3, 6))
+        self._dashboard_appearance_hint = appearance_hint
         appearance_hint.bind(
             "<Configure>",
             lambda event: appearance_hint.configure(wraplength=max(180, event.width - 4)),
@@ -340,11 +348,17 @@ class CanonicalDashboardMixin:
         )
 
         theme_reverse = {label: key for key, label in CANONICAL_THEME_LABELS.items()}
-        self.shell_theme_combo = ttk.Combobox(card, values=list(theme_reverse), state="readonly")
+        controls = ttk.Frame(card, style="ShellCard.TFrame")
+        controls.grid(row=2, column=0, sticky="ew")
+        controls.columnconfigure(0, weight=1)
+        controls.columnconfigure(1, weight=1)
+        ttk.Label(controls, text="Theme", style="Hint.TLabel").grid(row=0, column=0, sticky="w", padx=(0, 4))
+        ttk.Label(controls, text="Schrift", style="Hint.TLabel").grid(row=0, column=1, sticky="w", padx=(4, 0))
+        self.shell_theme_combo = ttk.Combobox(controls, values=list(theme_reverse), state="readonly")
         self.shell_theme_combo.set(
             CANONICAL_THEME_LABELS.get(self.theme_name.get(), "Midnight Blue")
         )
-        self.shell_theme_combo.grid(row=2, column=0, sticky="ew", pady=(0, 7))
+        self.shell_theme_combo.grid(row=1, column=0, sticky="ew", padx=(0, 4))
         self.shell_theme_combo.bind(
             "<<ComboboxSelected>>",
             lambda _event: self._set_canonical_theme(
@@ -353,12 +367,12 @@ class CanonicalDashboardMixin:
         )
 
         self.shell_font_combo = ttk.Combobox(
-            card,
+            controls,
             values=list(FONT_PROFILES),
             state="readonly",
         )
         self.shell_font_combo.set(self._font_profile_for_scale(self.global_font_scale.get()))
-        self.shell_font_combo.grid(row=3, column=0, sticky="ew")
+        self.shell_font_combo.grid(row=1, column=1, sticky="ew", padx=(4, 0))
         self.shell_font_combo.bind(
             "<<ComboboxSelected>>",
             lambda _event: self._set_global_zoom(
@@ -369,8 +383,50 @@ class CanonicalDashboardMixin:
 
     def _on_dashboard_canvas_configure(self, event) -> None:
         width = max(1, int(event.width))
+        height = max(1, int(event.height))
         self._dashboard_canvas.itemconfigure(self._dashboard_window_id, width=width)
+        self._apply_dashboard_density(height)
         self._layout_canonical_dashboard(width)
+
+    def _apply_dashboard_density(self, height: int) -> None:
+        density = "compact" if int(height) < 690 else "comfortable"
+        if density == getattr(self, "_dashboard_density", None):
+            return
+        self._dashboard_density = density
+        compact = density == "compact"
+        self._dashboard_source_tree.configure(height=4 if compact else 7)
+        self._dashboard_queue_tree.configure(height=5 if compact else 8)
+        self._dashboard_preview_canvas.configure(height=104 if compact else 164)
+        for card in (
+            getattr(self, "_dashboard_source_card", None),
+            getattr(self, "_dashboard_queue_card_ref", None),
+            getattr(self, "_dashboard_details_card_ref", None),
+            getattr(self, "_dashboard_scheduler_card", None),
+            getattr(self, "_dashboard_appearance_card", None),
+        ):
+            if card is not None:
+                card.configure(padding=(10, 8) if compact else (14, 12))
+        for hint_name in ("_dashboard_queue_hint", "_dashboard_appearance_hint"):
+            hint = getattr(self, hint_name, None)
+            if hint is not None:
+                (hint.grid_remove if compact else hint.grid)()
+        self.root.after_idle(self._sync_dashboard_scrollbar)
+
+    def _sync_dashboard_scrollbar(self) -> None:
+        if not hasattr(self, "_dashboard_canvas"):
+            return
+        self._dashboard_canvas.update_idletasks()
+        region = self._dashboard_canvas.bbox("all")
+        if not region:
+            return
+        needs_scroll = (region[3] - region[1]) > self._dashboard_canvas.winfo_height() + 2
+        scrollbar = getattr(self, "_dashboard_scrollbar", None)
+        if scrollbar is not None:
+            if needs_scroll:
+                scrollbar.grid()
+            else:
+                scrollbar.grid_remove()
+                self._dashboard_canvas.yview_moveto(0.0)
 
     def _scroll_dashboard(self, event) -> None:
         delta = int(getattr(event, "delta", 0))
@@ -485,6 +541,7 @@ class CanonicalDashboardMixin:
                 scrollregion=self._dashboard_canvas.bbox("all")
             )
         )
+        self.root.after_idle(self._sync_dashboard_scrollbar)
 
     def _update_dashboard_wraplengths(self, _event=None) -> None:
         for label in getattr(self, "_dashboard_wrapped_labels", ()):

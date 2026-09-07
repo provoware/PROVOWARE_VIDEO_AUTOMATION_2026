@@ -1398,8 +1398,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/canonical_dashboard_mixin.py",
-      "sha256": "fc8a70c4db9f3a8d8f9fe7230bb47b5419ac7683a72ae41d5b3cb4a8038a0ff9",
-      "size": 26203
+      "sha256": "8e46507218a17347cc7e8eb7b7bc6588a0781bce6799374f4fd0ca7181f1d03a",
+      "size": 29061
     },
     {
       "mode": "0o644",
@@ -1446,8 +1446,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/canonical_shell_chrome.py",
-      "sha256": "dfa43c2875097d6c193c60d3ad38c771ad741804a8b418f3e2c55bd13b2b88ea",
-      "size": 20367
+      "sha256": "a14a72e4f807204e5de86b4dba1ef09387a5dad3bca3d8643264c49504e89225",
+      "size": 20366
     },
     {
       "mode": "0o644",
@@ -1464,8 +1464,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/canonical_ui.py",
-      "sha256": "0967469a891a48f5ae5d2c9c24d8a3fa7b0602866ddffbe9479c87a0cddb331e",
-      "size": 7173
+      "sha256": "f649887817cc159139eea85de490b15e80158644545670edf221035c184740bc",
+      "size": 7361
     },
     {
       "mode": "0o644",
@@ -1884,14 +1884,14 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/ui_area_zoom_mixin.py",
-      "sha256": "b8e13554ce69f3e2dc67b0a1de3b778b277f86ccada13508a21ccf4221202daf",
-      "size": 7282
+      "sha256": "4e89c77d62a7567cb1bc02b38daa2bcc4cfecaa3ab31761c820326ca318c2ded",
+      "size": 7840
     },
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/ui_components.py",
-      "sha256": "066913c778345b6e71f5c530ca68f845120e64ed2845f6ecf1dd80425b343a55",
-      "size": 14200
+      "sha256": "8865bc3478a56a7b24bf90fe5fa0df5c63db1722e7e720d921eb0f166c2a5d65",
+      "size": 14472
     },
     {
       "mode": "0o644",
@@ -1926,8 +1926,8 @@
     {
       "mode": "0o644",
       "path": "src/videobatch_fast/ui_recovery_mixin.py",
-      "sha256": "b6f5c5f60cdb0bbe18e790f1a00488c61445cc6d32758113b66f865222d708ac",
-      "size": 4639
+      "sha256": "1ce1622fe2dd9c37c1505ec05c83e04a5b9b530500e8951879e5919c3c4b3113",
+      "size": 7826
     },
     {
       "mode": "0o644",

@@ -23,7 +23,7 @@ class UiAreaZoomMixin:
                 value = int(source.get(key, 100))
             except (TypeError, ValueError):
                 value = 100
-            self.area_zoom[key] = min(180, max(70, value))
+            self.area_zoom[key] = min(200, max(70, value))
         self.root.bind_all("<Control-MouseWheel>", self._on_ctrl_mousewheel, add="+")
         self.root.bind_all("<Control-Button-4>", lambda event: self._zoom_from_pointer(event, 10), add="+")
         self.root.bind_all("<Control-Button-5>", lambda event: self._zoom_from_pointer(event, -10), add="+")
@@ -93,7 +93,7 @@ class UiAreaZoomMixin:
         self._set_area_zoom(area, self.area_zoom.get(area, 100) + delta)
 
     def _set_area_zoom(self, area: str, value: int) -> None:
-        self.area_zoom[area] = min(180, max(70, int(value)))
+        self.area_zoom[area] = min(200, max(70, int(value)))
         label = self.area_zoom_labels.get(area)
         if label:
             label.configure(text=f"{self.area_zoom[area]} %")
@@ -115,6 +115,14 @@ class UiAreaZoomMixin:
         grid = getattr(self, "workflow_grids", {}).get(area) if hasattr(self, "workflow_grids") else None
         if grid is not None:
             self.root.after_idle(grid.refresh)
+        if hasattr(self, "_dashboard_canvas") and self._dashboard_canvas.winfo_exists():
+            self.root.after_idle(
+                lambda: self._layout_canonical_dashboard(max(1, self._dashboard_canvas.winfo_width()))
+            )
+        if hasattr(self, "_shell_kpi_row"):
+            self.root.after_idle(lambda: self._layout_shell_kpis(width=max(1, self._shell_kpi_row.winfo_width())))
+        if hasattr(self, "_shell_header"):
+            self.root.after_idle(lambda: self._layout_shell_header(width=max(1, self._shell_header.winfo_width())))
 
     def _apply_font_recursive(self, widget, normal_font, bold_font, area: str, percent: int) -> None:
         widget_class = widget.winfo_class()
