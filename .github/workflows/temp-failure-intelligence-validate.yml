@@ -6,7 +6,7 @@ on:
       - debug/failure-intelligence-20260907
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   validate:
@@ -34,7 +34,8 @@ jobs:
           python -m py_compile \
             src/videobatch_fast/failure_intelligence.py \
             src/videobatch_fast/canonical_ui.py \
-            tests/test_failure_intelligence.py
+            tests/test_failure_intelligence.py \
+            tests/test_debug_runtime_contract.py
 
       - name: Run failure-intelligence regression tests
         env:
@@ -60,6 +61,29 @@ jobs:
           python scripts/check_event_registry.py
           python scripts/check_event_architecture.py
 
-      - name: Show exact diff scope
+      - name: Prepare final release manifest without temporary gate
+        env:
+          PYTHONPATH: src
         run: |
-          git diff --name-status 81f9616a7d05455f5805f78b547b753b065ded37...HEAD
+          git rm .github/workflows/temp-failure-intelligence-validate.yml
+          python scripts/build_release_manifest.py
+          python scripts/build_release_manifest.py --check
+          git diff --check
+
+      - name: Audit and commit exact finalization scope
+        run: |
+          git add RELEASE_MANIFEST.json
+          printf '%s\n' '--- staged files ---'
+          git diff --cached --name-status
+          mapfile -t staged < <(git diff --cached --name-only | sort)
+          expected=(
+            ".github/workflows/temp-failure-intelligence-validate.yml"
+            "RELEASE_MANIFEST.json"
+          )
+          mapfile -t expected_sorted < <(printf '%s\n' "${expected[@]}" | sort)
+          test "${#staged[@]}" -eq "${#expected_sorted[@]}"
+          diff -u <(printf '%s\n' "${expected_sorted[@]}") <(printf '%s\n' "${staged[@]}")
+          git config user.name "provoware-ci"
+          git config user.email "actions@users.noreply.github.com"
+          git commit -m "DEBUG-REGRESSION-001: finalize manifest and remove temp validation"
+          git push origin HEAD:debug/failure-intelligence-20260907
