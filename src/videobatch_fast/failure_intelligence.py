@@ -14,18 +14,22 @@ from types import TracebackType
 from typing import Any
 
 from .event_logging import safe_text
+from .paths import state_dir
 from .safe_io import atomic_write_json, quarantine_file
 
 SCHEMA_VERSION = 1
 _LEDGER_NAME = "failure_regressions.json"
 _OCCURRENCE_LOG_NAME = "failure_occurrences.jsonl"
 _LOCK = threading.RLock()
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 _UUID_RE = re.compile(
     r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}\b"
 )
 _HEX_RE = re.compile(r"\b0x[0-9a-fA-F]+\b")
-_ISO_TIME_RE = re.compile(r"\b\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?\b")
+_ISO_TIME_RE = re.compile(
+    r"\b\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?\b"
+)
 _VOLATILE_ID_RE = re.compile(
     r"(?i)\b(pid|process|job|run|task|request|session|operation)[-_ ]?(id)?\s*[:=#]?\s*\d+\b"
 )
@@ -67,7 +71,9 @@ def _normalise_message(message: Any) -> str:
     text = _HEX_RE.sub("<hex>", text)
     text = _ISO_TIME_RE.sub("<timestamp>", text)
     text = _TMP_PATH_RE.sub("<tmp-path>", text)
-    text = _VOLATILE_ID_RE.sub(lambda match: f"{match.group(1).lower()}=<id>", text)
+    text = _VOLATILE_ID_RE.sub(
+        lambda match: f"{match.group(1).lower()}=<id>", text
+    )
     return " ".join(text.split())
 
 
@@ -91,10 +97,20 @@ def _trace_details(tb: TracebackType | None) -> tuple[str, int, str]:
     if not frames:
         return "<unknown>", 0, "<unknown>"
     frame = frames[-1]
-    return _portable_source_path(frame.filename), int(frame.lineno), safe_text(frame.name, 240)
+    return (
+        _portable_source_path(frame.filename),
+        int(frame.lineno),
+        safe_text(frame.name, 240),
+    )
 
 
-def _fingerprint(*, exception_type: str, message: str, source_file: str, source_function: str) -> str:
+def _fingerprint(
+    *,
+    exception_type: str,
+    message: str,
+    source_file: str,
+    source_function: str,
+) -> str:
     canonical = "\n".join((exception_type, message, source_file, source_function))
     return hashlib.sha256(canonical.encode("utf-8", errors="replace")).hexdigest()[:24]
 
@@ -107,21 +123,36 @@ def _validate_ledger(payload: Any) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise FailureLedgerError("Fehlergedächtnis ist kein JSON-Objekt.")
     if payload.get("schema_version") != SCHEMA_VERSION:
-        raise FailureLedgerError("Fehlergedächtnis besitzt eine unbekannte Schema-Version.")
+        raise FailureLedgerError(
+            "Fehlergedächtnis besitzt eine unbekannte Schema-Version."
+        )
     entries = payload.get("entries")
     if not isinstance(entries, dict):
-        raise FailureLedgerError("Fehlergedächtnis enthält keine gültige Eintragsliste.")
+        raise FailureLedgerError(
+            "Fehlergedächtnis enthält keine gültige Eintragsliste."
+        )
     for fingerprint, entry in entries.items():
         if not isinstance(fingerprint, str) or not isinstance(entry, dict):
-            raise FailureLedgerError("Fehlergedächtnis enthält einen ungültigen Eintrag.")
+            raise FailureLedgerError(
+                "Fehlergedächtnis enthält einen ungültigen Eintrag."
+            )
         if entry.get("fingerprint") != fingerprint:
-            raise FailureLedgerError("Fehlergedächtnis enthält einen inkonsistenten Fingerprint.")
+            raise FailureLedgerError(
+                "Fehlergedächtnis enthält einen inkonsistenten Fingerprint."
+            )
         if entry.get("state") not in {"new", "known", "resolved", "regressed"}:
-            raise FailureLedgerError("Fehlergedächtnis enthält einen unbekannten Regressionsstatus.")
+            raise FailureLedgerError(
+                "Fehlergedächtnis enthält einen unbekannten Regressionsstatus."
+            )
         if not isinstance(entry.get("count"), int) or entry["count"] < 1:
-            raise FailureLedgerError("Fehlergedächtnis enthält einen ungültigen Vorkommniszähler.")
-        if not isinstance(entry.get("regression_count", 0), int) or entry.get("regression_count", 0) < 0:
-            raise FailureLedgerError("Fehlergedächtnis enthält einen ungültigen Regressionszähler.")
+            raise FailureLedgerError(
+                "Fehlergedächtnis enthält einen ungültigen Vorkommniszähler."
+            )
+        regression_count = entry.get("regression_count", 0)
+        if not isinstance(regression_count, int) or regression_count < 0:
+            raise FailureLedgerError(
+                "Fehlergedächtnis enthält einen ungültigen Regressionszähler."
+            )
     return payload
 
 
@@ -138,14 +169,17 @@ def _load_ledger(path: Path) -> tuple[dict[str, Any], Path | None]:
             quarantined = quarantine_file(path, label="corrupt")
         except Exception as quarantine_exc:
             raise FailureLedgerError(
-                f"Beschädigtes Fehlergedächtnis konnte nicht sicher erhalten werden: {quarantine_exc}"
+                "Beschädigtes Fehlergedächtnis konnte nicht sicher erhalten werden: "
+                f"{quarantine_exc}"
             ) from exc
         return _empty_ledger(), quarantined
 
 
 def _append_occurrence(path: Path, occurrence: FailureOccurrence) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    payload = json.dumps(occurrence.as_dict(), ensure_ascii=False, sort_keys=True) + "\n"
+    payload = json.dumps(
+        occurrence.as_dict(), ensure_ascii=False, sort_keys=True
+    ) + "\n"
     data = payload.encode("utf-8", errors="replace")
     descriptor = os.open(path, os.O_CREAT | os.O_APPEND | os.O_WRONLY, 0o600)
     try:
@@ -157,6 +191,21 @@ def _append_occurrence(path: Path, occurrence: FailureOccurrence) -> None:
             pass
     finally:
         os.close(descriptor)
+
+
+def default_failure_directory() -> Path:
+    configured = os.environ.get("VIDEOBATCH_DEBUG_DIR", "").strip()
+    if configured:
+        return Path(configured).expanduser()
+    preferred = PROJECT_ROOT / "debugging"
+    try:
+        preferred.mkdir(parents=True, exist_ok=True)
+        probe = preferred / f".failure-intelligence-{os.getpid()}-{threading.get_ident()}"
+        probe.write_text("ok", encoding="utf-8")
+        probe.unlink(missing_ok=True)
+        return preferred
+    except OSError:
+        return state_dir() / "debugging"
 
 
 def record_exception(
@@ -195,12 +244,22 @@ def record_exception(
             count = 1
             regression_count = 0
             first_seen = timestamp
+            last_resolved_at = None
         else:
             previous_state = previous["state"]
-            state = "regressed" if previous_state == "resolved" else ("regressed" if previous_state == "regressed" else "known")
+            state = (
+                "regressed"
+                if previous_state in {"resolved", "regressed"}
+                else "known"
+            )
             count = int(previous["count"]) + 1
-            regression_count = int(previous.get("regression_count", 0)) + (1 if previous_state == "resolved" else 0)
+            regression_count = int(previous.get("regression_count", 0)) + (
+                1 if previous_state == "resolved" else 0
+            )
             first_seen = str(previous["first_seen"])
+            last_resolved_at = previous.get("resolved_at") or previous.get(
+                "last_resolved_at"
+            )
 
         occurrence = FailureOccurrence(
             timestamp=timestamp,
@@ -229,14 +288,17 @@ def record_exception(
             "count": count,
             "regression_count": regression_count,
             "state": state,
-            "resolved_at": None if state != "resolved" else previous.get("resolved_at") if previous else None,
+            "resolved_at": None,
+            "last_resolved_at": last_resolved_at,
             "last_occurrence_id": occurrence_id,
             "last_source_line": source_line,
             "last_operation_id": operation,
         }
         ledger["updated_at"] = timestamp
-        atomic_write_json(ledger_path, ledger, mode=0o600)
+        # Preserve the individual occurrence first. If the ledger write then fails,
+        # the primary failure evidence still exists in the append-only JSONL log.
         _append_occurrence(occurrence_path, occurrence)
+        atomic_write_json(ledger_path, ledger, mode=0o600)
         return occurrence, quarantined
 
 
@@ -246,7 +308,7 @@ def mark_resolved(
     directory: Path,
     resolution: str = "",
 ) -> dict[str, Any]:
-    """Mark a known failure as resolved. A later occurrence will be classified as a regression."""
+    """Mark a known failure as resolved. A later occurrence becomes a regression."""
     root = Path(directory).expanduser()
     ledger_path = root / _LEDGER_NAME
     clean_fingerprint = safe_text(fingerprint, 64).strip()
@@ -259,6 +321,7 @@ def mark_resolved(
         now = _now()
         entry["state"] = "resolved"
         entry["resolved_at"] = now
+        entry["last_resolved_at"] = now
         entry["resolution"] = safe_text(resolution, 2000)
         ledger["updated_at"] = now
         atomic_write_json(ledger_path, ledger, mode=0o600)
@@ -280,3 +343,56 @@ def load_summary(*, directory: Path) -> dict[str, Any]:
             "counts": counts,
             "quarantined": str(quarantined) if quarantined else "",
         }
+
+
+def capture_exception_with_intelligence(
+    runtime: Any,
+    exc_type: type[BaseException],
+    exc: BaseException,
+    tb: TracebackType | None,
+    *,
+    operation_id: str = "runtime",
+    **kwargs: Any,
+) -> Any:
+    """Enrich the existing human report without ever hiding the original exception."""
+    extra_context = dict(kwargs.pop("extra_context", None) or {})
+    original_where = str(kwargs.pop("where", "") or "").strip()
+    source_file, source_line, source_function = _trace_details(tb)
+    source = f"{source_file}:{source_line} · {source_function}()"
+    try:
+        occurrence, quarantined = record_exception(
+            exc_type,
+            exc,
+            tb,
+            directory=default_failure_directory(),
+            operation_id=operation_id,
+        )
+        extra_context.update(
+            {
+                "Ereignis-ID": occurrence.occurrence_id,
+                "Fehler-Fingerprint": occurrence.fingerprint,
+                "Regressionsstatus": occurrence.regression_state,
+                "Vorkommnisse": occurrence.occurrence_count,
+                "Regressionen": occurrence.regression_count,
+                "Quelldatei": occurrence.source_file,
+                "Zeile": occurrence.source_line,
+                "Funktion": occurrence.source_function,
+                "Operations-ID": occurrence.operation_id,
+            }
+        )
+        if quarantined is not None:
+            extra_context["Fehlergedächtnis-Wiederherstellung"] = (
+                f"Beschädigtes Ledger sicher quarantänisiert: {quarantined}"
+            )
+    except Exception as intelligence_error:
+        extra_context["Fehlergedächtnis-Status"] = (
+            "Diagnose konnte nicht dauerhaft aktualisiert werden; Originalfehler bleibt erhalten: "
+            f"{type(intelligence_error).__name__}: {safe_text(intelligence_error, 1000)}"
+        )
+    kwargs["where"] = (
+        f"{original_where} · Fehlerursprung: {source}"
+        if original_where
+        else source
+    )
+    kwargs["extra_context"] = extra_context
+    return runtime.capture_exception(exc_type, exc, tb, **kwargs)
