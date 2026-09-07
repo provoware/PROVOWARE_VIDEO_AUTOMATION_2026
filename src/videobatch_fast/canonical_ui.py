@@ -50,6 +50,46 @@ class CanonicalVideoBatchFastUI(
         self._dashboard_appearance_card.grid_remove()
         self.root.after_idle(self._sync_dashboard_scrollbar)
 
+    def _build_shell_sidebar(self, parent) -> None:
+        CanonicalShellChromeMixin._build_shell_sidebar(self, parent)
+        scheduler = self._shell_nav_buttons.get("scheduler")
+        if scheduler is not None:
+            scheduler.configure(text="◷  Scheduler · noch nicht verfügbar")
+
+    def _build_shell_header(self, parent) -> None:
+        CanonicalShellChromeMixin._build_shell_header(self, parent)
+        for child in self._shell_header_identity.winfo_children():
+            try:
+                current = str(child.cget("text"))
+            except Exception:
+                continue
+            if "VB-GFX" in current:
+                child.configure(text="VideoBatch Fast")
+
+    def _build_shell_kpis(self, parent) -> None:
+        CanonicalShellChromeMixin._build_shell_kpis(self, parent)
+        scheduler = self._shell_kpi_buttons.get("scheduler")
+        if scheduler is not None:
+            scheduler.configure(text="Noch nicht verfügbar")
+
+    def _build_dashboard_scheduler_card(self, parent):
+        card = CanonicalDashboardMixin._build_dashboard_scheduler_card(self, parent)
+        self._dashboard_scheduler_summary.set(
+            "Automatischer Start ist in dieser Version noch nicht verfügbar."
+        )
+        for child in card.winfo_children():
+            if child.winfo_class() == "TButton":
+                child.configure(text="◷ Startzeituhr · noch nicht verfügbar")
+        return card
+
+    def _refresh_canonical_dashboard(self) -> None:
+        CanonicalDashboardMixin._refresh_canonical_dashboard(self)
+        if hasattr(self, "_dashboard_scheduler_summary"):
+            jobs = tuple(getattr(self, "jobs", ()))
+            self._dashboard_scheduler_summary.set(
+                f"Noch nicht verfügbar · {len(jobs)} Aufträge vorbereitet · kein automatischer Start"
+            )
+
 
 def _tk_exception_handler(root: Tk):
     def handle(exc_type, exc, tb) -> None:
