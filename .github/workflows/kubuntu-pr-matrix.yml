@@ -41,8 +41,8 @@ jobs:
     timeout-minutes: 10
     env:
       PYTHONDONTWRITEBYTECODE: '1'
-      PYTHONPYCACHEPREFIX: ${{ runner.temp }}/videobatch-preflight-pycache
-      RUFF_CACHE_DIR: ${{ runner.temp }}/videobatch-preflight-ruff-cache
+      PYTHONPYCACHEPREFIX: /tmp/videobatch-preflight-pycache
+      RUFF_CACHE_DIR: /tmp/videobatch-preflight-ruff-cache
 
     steps:
       - name: Check out exact PR head
@@ -444,7 +444,7 @@ jobs:
     timeout-minutes: 15
     env:
       PYTHONDONTWRITEBYTECODE: '1'
-      PYTHONPYCACHEPREFIX: ${{ runner.temp }}/videobatch-archive-pycache
+      PYTHONPYCACHEPREFIX: /tmp/videobatch-archive-pycache
 
     steps:
       - name: Check out exact verified PR head
