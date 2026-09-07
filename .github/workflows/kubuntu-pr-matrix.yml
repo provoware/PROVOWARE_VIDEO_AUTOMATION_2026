@@ -29,6 +29,7 @@ env:
   PIP_NO_INPUT: '1'
   PYTHONHASHSEED: '0'
   PYTHONUTF8: '1'
+  PYTHONPATH: src
 
 concurrency:
   group: kubuntu-pr-matrix-${{ github.event.pull_request.number }}
