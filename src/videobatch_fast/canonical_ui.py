@@ -72,6 +72,12 @@ class CanonicalVideoBatchFastUI(
         if scheduler is not None:
             scheduler.configure(text="Noch nicht verfügbar")
 
+    def _build_shell_actions(self, parent) -> None:
+        CanonicalShellChromeMixin._build_shell_actions(self, parent)
+        buttons = getattr(self, "_shell_action_buttons", ())
+        if buttons:
+            buttons[-1].configure(text="◷ Startzeituhr · noch nicht verfügbar")
+
     def _build_dashboard_scheduler_card(self, parent):
         card = CanonicalDashboardMixin._build_dashboard_scheduler_card(self, parent)
         self._dashboard_scheduler_summary.set(
