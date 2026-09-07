@@ -85,8 +85,8 @@ jobs:
     timeout-minutes: 10
     env:
       PYTHONDONTWRITEBYTECODE: '1'
-      PYTHONPYCACHEPREFIX: ${{ runner.temp }}/preflight-pycache
-      RUFF_CACHE_DIR: ${{ runner.temp }}/preflight-ruff-cache
+      PYTHONPYCACHEPREFIX: /tmp/preflight-pycache
+      RUFF_CACHE_DIR: /tmp/preflight-ruff-cache
     steps:
       - name: Check out exact PR head
         uses: actions/checkout@v4
@@ -345,7 +345,7 @@ jobs:
     timeout-minutes: 15
     env:
       PYTHONDONTWRITEBYTECODE: '1'
-      PYTHONPYCACHEPREFIX: ${{ runner.temp }}/archive-pycache
+      PYTHONPYCACHEPREFIX: /tmp/archive-pycache
     steps:
       - name: Check out exact verified PR head
         uses: actions/checkout@v4
