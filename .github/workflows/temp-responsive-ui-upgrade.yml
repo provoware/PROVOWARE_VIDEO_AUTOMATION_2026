@@ -1,0 +1,190 @@
+name: TEMP Responsive UI Upgrade
+
+on:
+  push:
+    branches:
+      - ui/compact-responsive-zoom-recovery-20260907
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade-and-validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify exact base
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor af2093b867686b383fcab372e29b11399c1ffbba HEAD
+
+      - name: Install Tk test runtime
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends python3-tk xvfb
+
+      - name: Apply compact responsive UI slice
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new, label):
+              p = Path(path)
+              s = p.read_text(encoding="utf-8")
+              if s.count(old) != 1:
+                  raise SystemExit(f"{label}: expected exactly one match, got {s.count(old)}")
+              p.write_text(s.replace(old, new, 1), encoding="utf-8")
+
+          # HELP-F1-SHORTCUT-001: commit the previously validated package behavior to source.
+          replace_once(
+              "src/videobatch_fast/canonical_ui.py",
+              '    """VB-GFX-1.0 shell around the complete VideoBatch implementation."""\n\n\n',
+              '    """VB-GFX-1.0 shell around the complete VideoBatch implementation."""\n\n    def _open_help_from_keyboard(self, _event=None) -> str:\n        self._show_help_center()\n        return "break"\n\n\n',
+              "F1 method",
+          )
+          replace_once(
+              "src/videobatch_fast/canonical_ui.py",
+              '        CanonicalVideoBatchFastUI(root)\n        root.update_idletasks()\n',
+              '        app = CanonicalVideoBatchFastUI(root)\n        root.bind("<F1>", app._open_help_from_keyboard, add="+")\n        root.update_idletasks()\n',
+              "F1 root binding",
+          )
+
+          # Existing help actions: responsive 2 x 3 instead of a single crowded row.
+          p = Path("src/videobatch_fast/ui_components.py")
+          s = p.read_text(encoding="utf-8")
+          old = '''        buttons = ttk.Frame(outer)\n        buttons.pack(fill=X, pady=(10, 0))\n        refresh_button = ttk.Button(buttons, text=text("help_center.refresh"), command=self._refresh)\n        refresh_button.pack(side=LEFT)\n        Tooltip(refresh_button, text("help_center.tooltip.refresh"))\n        self.copy_label = StringVar(value=text("help_center.copy_status"))\n        copy_button = ttk.Button(buttons, textvariable=self.copy_label, command=self._copy_status)\n        copy_button.pack(side=LEFT, padx=(6, 0))\n        Tooltip(copy_button, text("help_center.tooltip.copy"))\n        logs_button = ttk.Button(buttons, text=text("help_center.logs"), command=on_open_logs)\n        logs_button.pack(side=LEFT, padx=(6, 0))\n        Tooltip(logs_button, text("help_center.tooltip.logs"))\n        manual_button = ttk.Button(buttons, text=text("help_center.manual"), command=on_open_manual)\n        manual_button.pack(side=LEFT, padx=(6, 0))\n        Tooltip(manual_button, text("help_center.tooltip.manual"))\n        if on_run_fault_lab is not None:\n            fault_button = ttk.Button(buttons, text=text("help_center.fault_lab"), command=on_run_fault_lab)\n            fault_button.pack(side=LEFT, padx=(6, 0))\n            Tooltip(fault_button, text("help_center.tooltip.fault_lab"))\n        close_button = ttk.Button(buttons, text=text("help_center.close"), style="Accent.TButton", command=self.window.destroy)\n        close_button.pack(side=RIGHT)\n        Tooltip(close_button, text("help_center.tooltip.close"))\n        self.window.bind("<Escape>", lambda _event: self.window.destroy())\n'''
+          new = '''        buttons = ttk.Frame(outer)\n        buttons.pack(fill=X, pady=(8, 0))\n        for column in range(2):\n            buttons.columnconfigure(column, weight=1)\n        refresh_button = ttk.Button(buttons, text=text("help_center.refresh"), command=self._refresh)\n        refresh_button.grid(row=0, column=0, sticky="ew", padx=(0, 3), pady=3)\n        Tooltip(refresh_button, text("help_center.tooltip.refresh"))\n        self.copy_label = StringVar(value=text("help_center.copy_status"))\n        copy_button = ttk.Button(buttons, textvariable=self.copy_label, command=self._copy_status)\n        copy_button.grid(row=0, column=1, sticky="ew", padx=(3, 0), pady=3)\n        Tooltip(copy_button, text("help_center.tooltip.copy"))\n        logs_button = ttk.Button(buttons, text=text("help_center.logs"), command=on_open_logs)\n        logs_button.grid(row=1, column=0, sticky="ew", padx=(0, 3), pady=3)\n        Tooltip(logs_button, text("help_center.tooltip.logs"))\n        manual_button = ttk.Button(buttons, text=text("help_center.manual"), command=on_open_manual)\n        manual_button.grid(row=1, column=1, sticky="ew", padx=(3, 0), pady=3)\n        Tooltip(manual_button, text("help_center.tooltip.manual"))\n        if on_run_fault_lab is not None:\n            fault_button = ttk.Button(buttons, text=text("help_center.fault_lab"), command=on_run_fault_lab)\n            fault_button.grid(row=2, column=0, sticky="ew", padx=(0, 3), pady=3)\n            Tooltip(fault_button, text("help_center.tooltip.fault_lab"))\n        close_button = ttk.Button(buttons, text=text("help_center.close"), style="Accent.TButton", command=self.window.destroy)\n        close_button.grid(row=2, column=1, sticky="ew", padx=(3, 0), pady=3)\n        Tooltip(close_button, text("help_center.tooltip.close"))\n        self.window.bind("<Escape>", lambda _event: self.window.destroy())\n'''
+          if s.count(old) != 1:
+              raise SystemExit("Help action layout block not unique")
+          p.write_text(s.replace(old, new, 1), encoding="utf-8")
+
+          # Ctrl+wheel already exists: extend validated range to 200% and force adaptive relayout.
+          p = Path("src/videobatch_fast/ui_area_zoom_mixin.py")
+          s = p.read_text(encoding="utf-8")
+          s = s.replace('min(180, max(70, value))', 'min(200, max(70, value))')
+          s = s.replace('min(180, max(70, int(value)))', 'min(200, max(70, int(value)))')
+          old = '''        if grid is not None:\n            self.root.after_idle(grid.refresh)\n'''
+          new = '''        if grid is not None:\n            self.root.after_idle(grid.refresh)\n        if hasattr(self, "_dashboard_canvas") and self._dashboard_canvas.winfo_exists():\n            self.root.after_idle(\n                lambda: self._layout_canonical_dashboard(max(1, self._dashboard_canvas.winfo_width()))\n            )\n        if hasattr(self, "_shell_kpi_row"):\n            self.root.after_idle(lambda: self._layout_shell_kpis(width=max(1, self._shell_kpi_row.winfo_width())))\n        if hasattr(self, "_shell_header"):\n            self.root.after_idle(lambda: self._layout_shell_header(width=max(1, self._shell_header.winfo_width())))\n'''
+          if s.count(old) != 1:
+              raise SystemExit("Area zoom refresh block not unique")
+          p.write_text(s.replace(old, new, 1), encoding="utf-8")
+
+          # Dashboard density: preserve fallback scrolling, but compact automatically when height is scarce.
+          p = Path("src/videobatch_fast/canonical_dashboard_mixin.py")
+          s = p.read_text(encoding="utf-8")
+          s = s.replace('        self._dashboard_layout_mode = ""\n', '        self._dashboard_layout_mode = ""\n        self._dashboard_density = "comfortable"\n')
+          s = s.replace('        self._dashboard_source_tree = sources\n', '        self._dashboard_source_tree = sources\n        self._dashboard_source_card = card\n')
+          s = s.replace('        search.bind("<KeyRelease>", lambda _event: self._refresh_canonical_dashboard())\n        ttk.Label(\n            card,\n            text="Reale Aufträge aus dem aktuellen Projekt; keine Musterwerte.",\n            style="Hint.TLabel",\n        ).grid(row=2, column=0, sticky="w", pady=(0, 7))\n', '        search.bind("<KeyRelease>", lambda _event: self._refresh_canonical_dashboard())\n        queue_hint = ttk.Label(\n            card,\n            text="Reale Aufträge aus dem aktuellen Projekt; keine Musterwerte.",\n            style="Hint.TLabel",\n        )\n        queue_hint.grid(row=2, column=0, sticky="w", pady=(0, 7))\n        self._dashboard_queue_hint = queue_hint\n')
+          s = s.replace('        self._dashboard_queue_tree = tree\n', '        self._dashboard_queue_tree = tree\n        self._dashboard_queue_card_ref = card\n')
+          s = s.replace('        self._dashboard_preview_canvas = preview\n', '        self._dashboard_preview_canvas = preview\n        self._dashboard_details_card_ref = card\n')
+          s = s.replace('        appearance_hint.grid(row=1, column=0, sticky="ew", pady=(3, 8))\n', '        appearance_hint.grid(row=1, column=0, sticky="ew", pady=(3, 6))\n        self._dashboard_appearance_hint = appearance_hint\n')
+          old = '''        self.shell_theme_combo = ttk.Combobox(card, values=list(theme_reverse), state="readonly")\n        self.shell_theme_combo.set(\n            CANONICAL_THEME_LABELS.get(self.theme_name.get(), "Midnight Blue")\n        )\n        self.shell_theme_combo.grid(row=2, column=0, sticky="ew", pady=(0, 7))\n        self.shell_theme_combo.bind(\n            "<<ComboboxSelected>>",\n            lambda _event: self._set_canonical_theme(\n                theme_reverse[self.shell_theme_combo.get()]\n            ),\n        )\n\n        self.shell_font_combo = ttk.Combobox(\n            card,\n            values=list(FONT_PROFILES),\n            state="readonly",\n        )\n        self.shell_font_combo.set(self._font_profile_for_scale(self.global_font_scale.get()))\n        self.shell_font_combo.grid(row=3, column=0, sticky="ew")\n'''
+          new = '''        controls = ttk.Frame(card, style="ShellCard.TFrame")\n        controls.grid(row=2, column=0, sticky="ew")\n        controls.columnconfigure(0, weight=1)\n        controls.columnconfigure(1, weight=1)\n        ttk.Label(controls, text="Theme", style="Hint.TLabel").grid(row=0, column=0, sticky="w", padx=(0, 4))\n        ttk.Label(controls, text="Schrift", style="Hint.TLabel").grid(row=0, column=1, sticky="w", padx=(4, 0))\n        self.shell_theme_combo = ttk.Combobox(controls, values=list(theme_reverse), state="readonly")\n        self.shell_theme_combo.set(\n            CANONICAL_THEME_LABELS.get(self.theme_name.get(), "Midnight Blue")\n        )\n        self.shell_theme_combo.grid(row=1, column=0, sticky="ew", padx=(0, 4))\n        self.shell_theme_combo.bind(\n            "<<ComboboxSelected>>",\n            lambda _event: self._set_canonical_theme(\n                theme_reverse[self.shell_theme_combo.get()]\n            ),\n        )\n\n        self.shell_font_combo = ttk.Combobox(\n            controls,\n            values=list(FONT_PROFILES),\n            state="readonly",\n        )\n        self.shell_font_combo.set(self._font_profile_for_scale(self.global_font_scale.get()))\n        self.shell_font_combo.grid(row=1, column=1, sticky="ew", padx=(4, 0))\n'''
+          if s.count(old) != 1:
+              raise SystemExit("Appearance controls block not unique")
+          s = s.replace(old, new, 1)
+          old = '''    def _on_dashboard_canvas_configure(self, event) -> None:\n        width = max(1, int(event.width))\n        self._dashboard_canvas.itemconfigure(self._dashboard_window_id, width=width)\n        self._layout_canonical_dashboard(width)\n'''
+          new = '''    def _on_dashboard_canvas_configure(self, event) -> None:\n        width = max(1, int(event.width))\n        height = max(1, int(event.height))\n        self._dashboard_canvas.itemconfigure(self._dashboard_window_id, width=width)\n        self._apply_dashboard_density(height)\n        self._layout_canonical_dashboard(width)\n\n    def _apply_dashboard_density(self, height: int) -> None:\n        density = "compact" if int(height) < 690 else "comfortable"\n        if density == getattr(self, "_dashboard_density", None):\n            return\n        self._dashboard_density = density\n        compact = density == "compact"\n        self._dashboard_source_tree.configure(height=4 if compact else 7)\n        self._dashboard_queue_tree.configure(height=5 if compact else 8)\n        self._dashboard_preview_canvas.configure(height=104 if compact else 164)\n        for card in (\n            getattr(self, "_dashboard_source_card", None),\n            getattr(self, "_dashboard_queue_card_ref", None),\n            getattr(self, "_dashboard_details_card_ref", None),\n            getattr(self, "_dashboard_scheduler_card", None),\n            getattr(self, "_dashboard_appearance_card", None),\n        ):\n            if card is not None:\n                card.configure(padding=(10, 8) if compact else (14, 12))\n        for hint_name in ("_dashboard_queue_hint", "_dashboard_appearance_hint"):\n            hint = getattr(self, hint_name, None)\n            if hint is not None:\n                (hint.grid_remove if compact else hint.grid)()\n        self.root.after_idle(self._sync_dashboard_scrollbar)\n\n    def _sync_dashboard_scrollbar(self) -> None:\n        if not hasattr(self, "_dashboard_canvas"):\n            return\n        self._dashboard_canvas.update_idletasks()\n        region = self._dashboard_canvas.bbox("all")\n        if not region:\n            return\n        needs_scroll = (region[3] - region[1]) > self._dashboard_canvas.winfo_height() + 2\n        scrollbar = getattr(self, "_dashboard_scrollbar", None)\n        if scrollbar is not None:\n            if needs_scroll:\n                scrollbar.grid()\n            else:\n                scrollbar.grid_remove()\n                self._dashboard_canvas.yview_moveto(0.0)\n'''
+          if s.count(old) != 1:
+              raise SystemExit("Dashboard configure block not unique")
+          s = s.replace(old, new, 1)
+          s = s.replace('        self._dashboard_canvas = canvas\n', '        self._dashboard_canvas = canvas\n        self._dashboard_scrollbar = scrollbar\n')
+          old = '''        self.root.after_idle(\n            lambda: self._dashboard_canvas.configure(\n                scrollregion=self._dashboard_canvas.bbox("all")\n            )\n        )\n'''
+          new = '''        self.root.after_idle(\n            lambda: self._dashboard_canvas.configure(\n                scrollregion=self._dashboard_canvas.bbox("all")\n            )\n        )\n        self.root.after_idle(self._sync_dashboard_scrollbar)\n'''
+          if s.count(old) != 1:
+              raise SystemExit("Dashboard layout tail not unique")
+          p.write_text(s.replace(old, new, 1), encoding="utf-8")
+
+          # Recovery: replace binary yes/no with explicit restore / later / clear-list dialog.
+          p = Path("src/videobatch_fast/ui_recovery_mixin.py")
+          s = p.read_text(encoding="utf-8")
+          s = s.replace('from tkinter import messagebox\n', 'from tkinter import StringVar, Toplevel, messagebox, ttk\n')
+          old = '''        accepted = messagebox.askyesno(\n            text("recovery.dialog.title"),\n            text("recovery.dialog.body", batches=len(payloads), jobs=count),\n        )\n        if not accepted:\n            self._event(\n                "BATCH_RECOVERY_DEFERRED",\n                text("recovery.deferred.title"),\n                text("recovery.deferred.detail"),\n                level="warning",\n                solution=text("recovery.deferred.solution"),\n            )\n            return\n'''
+          new = '''        action = self._choose_recovery_action(payloads, count)\n        if action == "clear":\n            if self._clear_recoverable_projects(payloads):\n                self.recoverable_batches = []\n            return\n        if action != "restore":\n            self._event(\n                "BATCH_RECOVERY_DEFERRED",\n                text("recovery.deferred.title"),\n                text("recovery.deferred.detail"),\n                level="warning",\n                solution=text("recovery.deferred.solution"),\n            )\n            return\n'''
+          if s.count(old) != 1:
+              raise SystemExit("Recovery ask block not unique")
+          s = s.replace(old, new, 1)
+          insert = '''\n    def _choose_recovery_action(self, payloads: list[dict[str, object]], count: int) -> str:\n        choice = StringVar(value="later")\n        dialog = Toplevel(self.root)\n        dialog.title(text("recovery.dialog.title"))\n        dialog.transient(self.root)\n        dialog.grab_set()\n        dialog.resizable(False, False)\n        body = ttk.Frame(dialog, padding=16)\n        body.pack(fill="both", expand=True)\n        ttk.Label(body, text="Wiederherstellbare Projekte", style="DialogTitle.TLabel").pack(anchor="w")\n        ttk.Label(\n            body,\n            text=text("recovery.dialog.body", batches=len(payloads), jobs=count),\n            style="Hint.TLabel",\n            wraplength=520,\n            justify="left",\n        ).pack(anchor="w", pady=(5, 12))\n        actions = ttk.Frame(body)\n        actions.pack(fill="x")\n        for column in range(3):\n            actions.columnconfigure(column, weight=1)\n        def finish(value: str) -> None:\n            choice.set(value)\n            dialog.destroy()\n        ttk.Button(actions, text="Wiederherstellen", style="Accent.TButton", command=lambda: finish("restore")).grid(row=0, column=0, sticky="ew", padx=(0, 3))\n        ttk.Button(actions, text="Später", command=lambda: finish("later")).grid(row=0, column=1, sticky="ew", padx=3)\n        ttk.Button(actions, text="Liste leeren", style="Danger.TButton", command=lambda: finish("clear")).grid(row=0, column=2, sticky="ew", padx=(3, 0))\n        dialog.protocol("WM_DELETE_WINDOW", lambda: finish("later"))\n        dialog.bind("<Escape>", lambda _event: finish("later"))\n        dialog.update_idletasks()\n        x = max(0, self.root.winfo_rootx() + (self.root.winfo_width() - dialog.winfo_reqwidth()) // 2)\n        y = max(0, self.root.winfo_rooty() + (self.root.winfo_height() - dialog.winfo_reqheight()) // 2)\n        dialog.geometry(f"+{x}+{y}")\n        self.root.wait_window(dialog)\n        return choice.get()\n\n    def _clear_recoverable_projects(self, payloads: list[dict[str, object]]) -> bool:\n        if not messagebox.askyesno(\n            "Wiederherstellungsliste leeren?",\n            "Die Einträge werden aus der aktiven Wiederherstellungsliste entfernt und sicher im Verlauf archiviert. Quelldateien und erzeugte Medien werden nicht gelöscht.",\n            parent=self.root,\n        ):\n            return False\n        archived = self._archive_recovery_journals_with_action(payloads, action="dismissed_by_user")\n        self.guidance_text.set(f"Wiederherstellungsliste geleert: {archived} Einträge sicher archiviert.")\n        self._event(\n            "BATCH_RECOVERY_CLEARED",\n            "Wiederherstellungsliste geleert",\n            f"{archived} Wiederherstellungseinträge wurden in den Verlauf verschoben.",\n            level="success",\n            solution="Quelldateien bleiben unverändert; bei Bedarf kann der Verlauf geprüft werden.",\n        )\n        return True\n\n    def _archive_recovery_journals_with_action(self, payloads: list[dict[str, object]], *, action: str) -> int:\n        archived = 0\n        for payload in payloads:\n            journal_path = payload.get("journal_path")\n            if not journal_path:\n                continue\n            try:\n                acknowledge_recovery(Path(str(journal_path)), action=action)\n                archived += 1\n            except (OSError, ValueError) as exc:\n                self._event(\n                    "BATCH_RECOVERY_JOURNAL_FAILED",\n                    text("recovery.journal_error.title"),\n                    str(exc),\n                    level="error",\n                    solution=text("recovery.journal_error.solution"),\n                )\n        return archived\n'''
+          marker = '\n    def _apply_recovery_options(self, options: dict[str, object]) -> None:\n'
+          if s.count(marker) != 1:
+              raise SystemExit("Recovery insert marker not unique")
+          s = s.replace(marker, insert + marker, 1)
+          old_archive = '''    def _archive_recovery_journals(self, payloads: list[dict[str, object]]) -> int:\n        archived = 0\n        for payload in payloads:\n            journal_path = payload.get("journal_path")\n            if not journal_path:\n                continue\n            try:\n                acknowledge_recovery(Path(str(journal_path)), action="controlled_requeue")\n                archived += 1\n            except (OSError, ValueError) as exc:\n                self._event(\n                    "BATCH_RECOVERY_JOURNAL_FAILED",\n                    text("recovery.journal_error.title"),\n                    str(exc),\n                    level="error",\n                    solution=text("recovery.journal_error.solution"),\n                )\n        return archived\n'''
+          new_archive = '''    def _archive_recovery_journals(self, payloads: list[dict[str, object]]) -> int:\n        return self._archive_recovery_journals_with_action(payloads, action="controlled_requeue")\n'''
+          if s.count(old_archive) != 1:
+              raise SystemExit("Recovery archive block not unique")
+          p.write_text(s.replace(old_archive, new_archive, 1), encoding="utf-8")
+
+          # Compact shell chrome while retaining existing dynamic column logic.
+          p = Path("src/videobatch_fast/canonical_shell_chrome.py")
+          s = p.read_text(encoding="utf-8")
+          s = s.replace('nav_padding_y = max(7, round(8 * factor))', 'nav_padding_y = max(5, round(6 * factor))')
+          s = s.replace('            pady=(2, 16),', '            pady=(2, 10),')
+          s = s.replace('            button.pack(fill="x", pady=2)', '            button.pack(fill="x", pady=1)')
+          s = s.replace('status = ttk.Frame(parent, style="ShellCard.TFrame", padding=10)', 'status = ttk.Frame(parent, style="ShellCard.TFrame", padding=8)')
+          s = s.replace('header = ttk.Frame(parent, style="ShellHeader.TFrame", padding=(12, 8))', 'header = ttk.Frame(parent, style="ShellHeader.TFrame", padding=(10, 6))')
+          s = s.replace('card = ttk.Frame(row, style="ShellCard.TFrame", padding=(13, 9))', 'card = ttk.Frame(row, style="ShellCard.TFrame", padding=(10, 7))')
+          s = s.replace('bar = ttk.Frame(parent, style="ShellHeader.TFrame", padding=(7, 5))', 'bar = ttk.Frame(parent, style="ShellHeader.TFrame", padding=(6, 4))')
+          p.write_text(s, encoding="utf-8")
+
+          # Focused contract tests for the new slice.
+          Path("tests/test_compact_responsive_ui_contract.py").write_text('''from pathlib import Path\n\n\ndef _read(name: str) -> str:\n    return Path(name).read_text(encoding="utf-8")\n\n\ndef test_ctrl_mousewheel_uses_existing_area_zoom_and_reaches_200_percent():\n    source = _read("src/videobatch_fast/ui_area_zoom_mixin.py")\n    assert 'bind_all("<Control-MouseWheel>"' in source\n    assert 'bind_all("<Control-Button-4>"' in source\n    assert 'bind_all("<Control-Button-5>"' in source\n    assert 'min(200, max(70' in source\n    assert '_layout_canonical_dashboard' in source\n\n\ndef test_dashboard_has_compact_density_and_compact_appearance_controls():\n    source = _read("src/videobatch_fast/canonical_dashboard_mixin.py")\n    assert 'density = "compact" if int(height) < 690 else "comfortable"' in source\n    assert 'self._dashboard_source_tree.configure(height=4 if compact else 7)' in source\n    assert 'self._dashboard_queue_tree.configure(height=5 if compact else 8)' in source\n    assert 'self._dashboard_preview_canvas.configure(height=104 if compact else 164)' in source\n    assert 'text="Theme"' in source and 'text="Schrift"' in source\n    assert 'self._sync_dashboard_scrollbar' in source\n\n\ndef test_recovery_clear_is_safe_archive_not_source_delete():\n    source = _read("src/videobatch_fast/ui_recovery_mixin.py")\n    assert 'text="Liste leeren"' in source\n    assert 'action="dismissed_by_user"' in source\n    assert 'Quelldateien und erzeugte Medien werden nicht gelöscht' in source\n    assert '.unlink(' not in source\n    assert 'shutil.rmtree' not in source\n\n\ndef test_f1_help_and_escape_contract_remain_present():\n    canonical = _read("src/videobatch_fast/canonical_ui.py")\n    components = _read("src/videobatch_fast/ui_components.py")\n    shell = _read("src/videobatch_fast/canonical_shell_chrome.py")\n    assert 'root.bind("<F1>", app._open_help_from_keyboard, add="+")' in canonical\n    assert 'command=self._show_help_center' in shell\n    assert 'self.window.bind("<Escape>"' in components\n''', encoding="utf-8")
+          PY
+
+      - name: Compile and targeted regression tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
+        run: |
+          set -euo pipefail
+          python3 -m py_compile src/videobatch_fast/canonical_ui.py src/videobatch_fast/ui_components.py src/videobatch_fast/ui_area_zoom_mixin.py src/videobatch_fast/ui_recovery_mixin.py src/videobatch_fast/canonical_dashboard_mixin.py src/videobatch_fast/canonical_shell_chrome.py
+          python3 -m pytest -q tests/test_compact_responsive_ui_contract.py tests/test_canonical_layout_resilience.py tests/test_rc19_visibility_zoom_slideshow.py tests/test_recovery_consistency.py tests/test_canonical_application_shell_contract.py
+
+      - name: Tk runtime F1, zoom binding and Help Escape gate
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
+        run: |
+          set -euo pipefail
+          xvfb-run -a python3 - <<'PY'
+          from tkinter import Tk, ttk
+          from videobatch_fast.ui_components import HelpCenterDialog
+          root = Tk(); root.geometry("1280x720"); root.tk.call("tk", "scaling", 1.4); root.update()
+          dialog = HelpCenterDialog(root, system_status="Bereit", on_refresh=lambda:"Bereit", on_open_logs=lambda:None, on_open_manual=lambda:None, on_run_fault_lab=lambda:None)
+          dialog.window.geometry("680x520"); dialog.window.update()
+          buttons=[]
+          def walk(w):
+              for c in w.winfo_children():
+                  if isinstance(c, ttk.Button): buttons.append(c)
+                  walk(c)
+          walk(dialog.window)
+          assert len(buttons) >= 6
+          window=dialog.window; window.event_generate("<Escape>"); root.update(); assert not window.winfo_exists()
+          root.destroy()
+          print("TK HELP ESCAPE PASS")
+          PY
+
+      - name: Regenerate manifest and documentation validation
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/scripts
+        run: |
+          set -euo pipefail
+          rm .github/workflows/temp-responsive-ui-upgrade.yml
+          python3 scripts/build_release_manifest.py
+          python3 scripts/build_release_manifest.py --check
+          python3 scripts/validate_documentation.py
+
+      - name: Commit validated source changes
+        run: |
+          set -euo pipefail
+          git config user.name "provoware-ui-validation"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git status --short
+          git commit -m "ux: compact responsive desktop shell and safe recovery controls"
+          git push origin HEAD:ui/compact-responsive-zoom-recovery-20260907
