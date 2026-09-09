@@ -12,12 +12,22 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from diagnostics.release_readiness.generate_from_evidence import (  # noqa: E402
+    FILES_BEGIN,
+    FILES_END,
+    STATUS_BEGIN,
+    STATUS_END,
     EvidenceContractError,
     release_files_block,
     release_status_block,
     render_readme,
     validate,
 )
+
+# Rückwärtskompatible Namen für bestehende Aufrufer und Tests. Die Marker
+# selbst bleiben ausschließlich im kanonischen Evidence-Generator definiert.
+README_START = STATUS_BEGIN
+README_END = STATUS_END
+FILES_START = FILES_BEGIN
 
 EVIDENCE_RELATIVE = Path("diagnostics/release_readiness/RELEASE_EVIDENCE.json")
 
