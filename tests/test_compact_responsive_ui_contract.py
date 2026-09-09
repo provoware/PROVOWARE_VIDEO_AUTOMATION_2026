@@ -28,9 +28,11 @@ def test_dashboard_has_compact_density_and_compact_appearance_controls():
 
 def test_recovery_clear_is_safe_archive_not_source_delete():
     source = _read("src/videobatch_fast/ui_recovery_mixin.py")
-    assert 'text="Liste leeren"' in source
+    catalog = _read("resources/texts/ui-recovery.json")
+    assert 'text=text("recovery.dialog.clear")' in source
+    assert '"recovery.dialog.clear": "Liste leeren"' in catalog
     assert 'action="dismissed_by_user"' in source
-    assert 'Quelldateien und erzeugte Medien werden nicht gelöscht' in source
+    assert 'Quelldateien und erzeugte Medien werden nicht gelöscht' in catalog
     assert '.unlink(' not in source
     assert 'shutil.rmtree' not in source
 
