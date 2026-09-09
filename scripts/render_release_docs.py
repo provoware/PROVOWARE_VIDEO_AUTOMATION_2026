@@ -3,14 +3,23 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-README_START = "<!-- release-status:start -->"
-README_END = "<!-- release-status:end -->"
-FILES_START = "<!-- release-files:start -->"
-FILES_END = "<!-- release-files:end -->"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from diagnostics.release_readiness.generate_from_evidence import (  # noqa: E402
+    EvidenceContractError,
+    release_files_block,
+    release_status_block,
+    render_readme,
+    validate,
+)
+
+EVIDENCE_RELATIVE = Path("diagnostics/release_readiness/RELEASE_EVIDENCE.json")
 
 
 def _object(path: Path) -> dict[str, Any]:
@@ -20,99 +29,62 @@ def _object(path: Path) -> dict[str, Any]:
     return value
 
 
-def _sources(root: Path) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
-    version = _object(root / "VERSION.json")
-    status = _object(root / "DEVELOPMENT_STATUS.json")
-    report_name = str(status.get("approved_quality_report", ""))
-    report = _object(root / report_name)
-    build = str(version.get("build", ""))
-    if status.get("version") != build or report.get("version") != build:
-        raise ValueError("Versionsbezug von Status oder Qualitätsbericht weicht von VERSION.json ab")
-    if report.get("status") != "passed":
-        raise ValueError("Der benannte Qualitätsbericht ist nicht freigegeben")
-    files = _object(root / "RELEASE_FILE_STATUS.json")
-    return version, status, report, files
-
-
-def _release_block(version: dict[str, Any], status: dict[str, Any], report: dict[str, Any]) -> str:
-    tests = report["tests"]
-    blockers = status.get("stable_blockers", [])
-    gate_lines = "\n".join(f"- {item}" for item in blockers) or "- keine"
-    line_coverage = f"{tests['line_coverage_percent']:.2f}".replace(".", ",")
-    branch_coverage = f"{tests['branch_coverage_percent']:.2f}".replace(".", ",")
-    return f"""{README_START}
-# {version['name']} · {version['build']}
-
-**Kanal:** {version['channel']}
-**Freigegebener Qualitätsbericht:** `{status['approved_quality_report']}`
-
-- {tests['passed']}/{tests['passed']} automatisierte Tests bestanden
-- {line_coverage} % Zeilenabdeckung
-- {branch_coverage} % Zweigabdeckung
-- {tests['visual_scenarios']} visuelle Szenarien bestanden
-
-### Offene Stable-Gates
-
-{gate_lines}
-{README_END}"""
-
-
-
-def _file_status_block(contract: dict[str, Any]) -> str:
-    ready = contract.get("ready", [])
-    unfinished = contract.get("unfinished", [])
-    rows = []
-    for index in range(max(len(ready), len(unfinished))):
-        left = ready[index] if index < len(ready) else {}
-        right = unfinished[index] if index < len(unfinished) else {}
-        left_text = f"`{left['path']}`<br>{left.get('label', '')}" if left else "—"
-        right_text = f"`{right['path']}`<br>{right.get('label', '')}: {right.get('reason', '')}" if right else "—"
-        rows.append(f"| {left_text} | {right_text} |")
-    return "\n".join([
-        FILES_START,
-        "## Release-Dateistatus",
-        "",
-        "Der Zusatz `_save_` kennzeichnet ausschließlich eigenständige, freigabefähige Nutzer- und Releaseunterlagen. Python-Module, CI-Workflows, technische Manifeste, Einstiegsskripte und die kanonische README behalten stabile technische Namen, damit Importe und Buildverträge nicht brechen.",
-        "",
-        "| Releasefertig (`_save_`) | Noch nicht releasefertig |",
-        "|---|---|",
-        *rows,
-        FILES_END,
-    ])
-
-def _replace_marked_block(text: str, start_marker: str, end_marker: str, block: str) -> str:
-    start, end = text.find(start_marker), text.find(end_marker)
-    if start < 0 or end < start:
-        raise ValueError(f"README-Markierungen fehlen oder sind vertauscht: {start_marker}")
-    return text[:start] + block + text[end + len(end_marker) :]
+def _evidence(root: Path) -> dict[str, Any]:
+    value = _object(root / EVIDENCE_RELATIVE)
+    validate(value)
+    return value
 
 
 def render(root: Path = ROOT) -> dict[Path, str]:
-    version, status, report, files = _sources(root)
-    block = _release_block(version, status, report)
-    file_block = _file_status_block(files)
-    readme = (root / "README.md").read_text(encoding="utf-8")
-    readme = _replace_marked_block(readme, README_START, README_END, block)
-    readme = _replace_marked_block(readme, FILES_START, FILES_END, file_block)
-    return {root / "README.md": readme, root / "STATUS.md": block + "\n\n" + file_block + "\n"}
+    value = _evidence(root)
+    readme_path = root / "README.md"
+    readme = render_readme(value, readme_path.read_text(encoding="utf-8"))
+    status = release_status_block(value) + "\n\n" + release_files_block(value) + "\n"
+    return {
+        readme_path: readme,
+        root / "STATUS.md": status,
+    }
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Leitet README und Status aus freigegebenen Daten ab.")
+    parser = argparse.ArgumentParser(
+        description="Leitet README und STATUS aus der kanonischen Release-Evidenz ab."
+    )
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--write", action="store_true")
     mode.add_argument("--check", action="store_true")
     args = parser.parse_args()
     try:
         rendered = render()
-        stale = [path for path, text in rendered.items() if path.read_text(encoding="utf-8") != text]
+        stale = [
+            path
+            for path, text in rendered.items()
+            if path.read_text(encoding="utf-8") != text
+        ]
         if args.check and stale:
-            raise ValueError("abgeleitete Datei ist veraltet: " + ", ".join(path.name for path in stale))
+            raise ValueError(
+                "abgeleitete Datei ist veraltet: "
+                + ", ".join(path.name for path in stale)
+            )
         if args.write:
             for path, text in rendered.items():
                 path.write_text(text, encoding="utf-8")
-    except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
-        print(f"DOKUMENTSTATUS BLOCKIERT\nUrsache: {exc}\nAuswirkung: README und Status sind nicht freigabefähig.\nSchutz: Dateien bleiben unverändert.\nLösung: Statusquelle und Bericht korrigieren.\nAlternative: Kandidat als nicht freigegeben belassen.")
+    except (
+        OSError,
+        KeyError,
+        TypeError,
+        ValueError,
+        json.JSONDecodeError,
+        EvidenceContractError,
+    ) as exc:
+        print(
+            "DOKUMENTSTATUS BLOCKIERT\n"
+            f"Ursache: {exc}\n"
+            "Auswirkung: README und Status sind nicht freigabefähig.\n"
+            "Schutz: Dateien bleiben unverändert.\n"
+            "Lösung: Kanonische Release-Evidenz korrigieren.\n"
+            "Alternative: Kandidat als nicht freigegeben belassen."
+        )
         return 1
     print("DOKUMENTSTATUS GESCHRIEBEN" if args.write else "DOKUMENTSTATUS BESTANDEN")
     return 0
