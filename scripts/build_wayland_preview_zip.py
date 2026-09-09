@@ -9,7 +9,8 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_NAME = "PROVOWARE_VideoBatch_2.8.3-rc24_Kubuntu-26.04_Wayland_Preview1.zip"
+VERSION_FILE = ROOT / "VERSION.json"
+PREVIEW_SUFFIX = "Kubuntu-26.04_Wayland_Preview1"
 EXCLUDED_DIRS = {
     ".git", ".venv", "venv", "__pycache__", ".pytest_cache", ".ruff_cache",
     ".mypy_cache", ".tox", "node_modules", "dist", "build", "debugging"
@@ -17,6 +18,23 @@ EXCLUDED_DIRS = {
 EXCLUDED_SUFFIXES = {".pyc", ".pyo", ".tmp", ".swp"}
 EXCLUDED_FILES = {".DS_Store"}
 FIXED_DATE = (2026, 9, 10, 0, 0, 0)
+
+
+def product_version() -> str:
+    try:
+        payload = json.loads(VERSION_FILE.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"VERSION.json konnte nicht gelesen werden: {exc}") from exc
+    version = str(payload.get("version") or payload.get("build") or "").strip()
+    if not version:
+        raise SystemExit("VERSION.json enthält weder eine gültige 'version' noch 'build'.")
+    if any(char in version for char in "/\\\0"):
+        raise SystemExit("VERSION.json enthält eine für Dateinamen unzulässige Versionskennung.")
+    return version
+
+
+def default_archive_name(version: str) -> str:
+    return f"PROVOWARE_VideoBatch_{version}_{PREVIEW_SUFFIX}.zip"
 
 
 def tracked_files() -> list[Path]:
@@ -54,8 +72,13 @@ def sha256(path: Path) -> str:
 
 
 def main() -> int:
+    version = product_version()
     parser = argparse.ArgumentParser()
-    parser.add_argument("--output", type=Path, default=ROOT / "dist" / DEFAULT_NAME)
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=ROOT / "dist" / default_archive_name(version),
+    )
     args = parser.parse_args()
     output = args.output if args.output.is_absolute() else ROOT / args.output
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -72,6 +95,8 @@ def main() -> int:
 
     manifest = {
         "schema_version": 1,
+        "product_version": version,
+        "version_source": VERSION_FILE.name,
         "archive": output.name,
         "files": len(files),
         "bytes": output.stat().st_size,
