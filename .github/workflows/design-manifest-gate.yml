@@ -67,3 +67,167 @@ jobs:
             echo "::error title=Preflight wrote repository files::The compatibility preflight must remain read-only."
             exit 1
           fi
+
+  prepare-ruff-wheelhouse:
+    name: Prepare exact Ruff 0.16.1 wheelhouse
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      PYTHONUTF8: '1'
+      EXPECTED_RUFF_WHEEL_SHA256: 39897739f112253ee4fdd2e8aa9a4f9ded99fb2be367d5f31dfa4ded6025584c
+
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Verify repository pin
+        run: |
+          set -Eeuo pipefail
+          test "$(grep -cx 'ruff==0.16.1' requirements-toolchain.lock)" = "1"
+
+      - name: Download exact standalone Ruff wheel
+        run: |
+          set -Eeuo pipefail
+          wheelhouse="$RUNNER_TEMP/ruff-wheelhouse"
+          mkdir -p "$wheelhouse"
+          python3 -m pip download \
+            --disable-pip-version-check \
+            --no-input \
+            --only-binary=:all: \
+            --no-deps \
+            --dest "$wheelhouse" \
+            ruff==0.16.1
+          wheel="$(find "$wheelhouse" -maxdepth 1 -type f -name 'ruff-0.16.1-*.whl' -print -quit)"
+          test -n "$wheel"
+          test "$(find "$wheelhouse" -maxdepth 1 -type f -name 'ruff-0.16.1-*.whl' | wc -l)" = "1"
+          actual="$(sha256sum "$wheel" | awk '{print $1}')"
+          test "$actual" = "$EXPECTED_RUFF_WHEEL_SHA256"
+          printf '%s  %s\n' "$actual" "$(basename "$wheel")" > "$wheelhouse/WHEELHOUSE_SHA256.txt"
+
+      - name: Upload immutable Ruff wheelhouse
+        uses: actions/upload-artifact@v4
+        with:
+          name: ruff-0.16.1-wheelhouse-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/ruff-wheelhouse/
+          if-no-files-found: error
+          retention-days: 14
+
+  offline-ruff-stable-gate:
+    name: Offline Ruff 0.16.1 stable gate
+    needs: prepare-ruff-wheelhouse
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      PYTHONUTF8: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+      PIP_DISABLE_PIP_VERSION_CHECK: '1'
+      PIP_NO_INPUT: '1'
+      PIP_NO_INDEX: '1'
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Download prepared Ruff wheelhouse
+        uses: actions/download-artifact@v4
+        with:
+          name: ruff-0.16.1-wheelhouse-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/ruff-wheelhouse
+
+      - name: Verify wheelhouse before offline install
+        run: |
+          set -Eeuo pipefail
+          cd "$RUNNER_TEMP/ruff-wheelhouse"
+          sha256sum -c WHEELHOUSE_SHA256.txt
+          test "$(find . -maxdepth 1 -type f -name 'ruff-0.16.1-*.whl' | wc -l)" = "1"
+
+      - name: Install Ruff with package index disabled
+        run: |
+          set -Eeuo pipefail
+          venv="$RUNNER_TEMP/ruff-offline-venv"
+          python3 -m venv "$venv"
+          "$venv/bin/python" -m pip install \
+            --no-index \
+            --find-links "$RUNNER_TEMP/ruff-wheelhouse" \
+            ruff==0.16.1
+          test "$("$venv/bin/ruff" --version)" = "ruff 0.16.1"
+          echo "RUFF_BIN=$venv/bin/ruff" >> "$GITHUB_ENV"
+
+      - name: Run complete repository Ruff contract
+        id: ruff
+        run: |
+          set -Eeuo pipefail
+          result="$RUNNER_TEMP/RUFF_STABLE_GATE_FINDINGS.json"
+          set +e
+          "$RUFF_BIN" check . --no-cache --output-format=json > "$result"
+          status=$?
+          set -e
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          python3 - "$result" "$status" <<'PY'
+          import json
+          import os
+          import sys
+          from pathlib import Path
+
+          findings_path = Path(sys.argv[1])
+          exit_code = int(sys.argv[2])
+          findings = json.loads(findings_path.read_text(encoding="utf-8") or "[]")
+          wheel_record = Path(
+              os.environ["RUNNER_TEMP"],
+              "ruff-wheelhouse",
+              "WHEELHOUSE_SHA256.txt",
+          ).read_text(encoding="utf-8").strip()
+          evidence = {
+              "schema_version": 1,
+              "gate": "ruff_0_16_1",
+              "status": "passed" if exit_code == 0 and not findings else "failed",
+              "tool": "ruff",
+              "tool_version": "0.16.1",
+              "repository_pin": "requirements-toolchain.lock: ruff==0.16.1",
+              "install_mode": "offline-pip-no-index-from-verified-wheelhouse",
+              "wheel_sha256_record": wheel_record,
+              "configuration": "pyproject.toml",
+              "scope": ".",
+              "findings": len(findings),
+              "exit_code": exit_code,
+              "commit": os.environ["SOURCE_SHA"],
+              "run_id": os.environ["GITHUB_RUN_ID"],
+              "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+          }
+          Path(os.environ["RUNNER_TEMP"], "RUFF_STABLE_GATE_EVIDENCE.json").write_text(
+              json.dumps(evidence, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps(evidence, ensure_ascii=False, indent=2, sort_keys=True))
+          PY
+          test "$status" = "0"
+
+      - name: Prove Ruff gate remained read-only
+        if: always()
+        run: |
+          set -Eeuo pipefail
+          status="$(git status --porcelain --untracked-files=all)"
+          if [[ -n "$status" ]]; then
+            printf '%s\n' "$status"
+            echo "::error title=Offline Ruff gate changed repository::Stable-gate validation must remain read-only."
+            exit 1
+          fi
+
+      - name: Upload Ruff stable-gate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ruff-stable-gate-evidence-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            ${{ runner.temp }}/RUFF_STABLE_GATE_EVIDENCE.json
+            ${{ runner.temp }}/RUFF_STABLE_GATE_FINDINGS.json
+            ${{ runner.temp }}/ruff-wheelhouse/WHEELHOUSE_SHA256.txt
+          if-no-files-found: error
+          retention-days: 30
