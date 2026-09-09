@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "product_version": "2.8.3-rc24",
+  "version_source": "VERSION.json",
   "preview_id": "kubuntu-26.04-wayland-preview1",
   "targets": {
     "kubuntu_26_04": {
