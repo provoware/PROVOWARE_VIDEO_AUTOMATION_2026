@@ -2,7 +2,7 @@
 
 ## Ziel
 
-VideoBatch Fast 2.8.3-rc24 bleibt mit X11 kompatibel und kann auf Kubuntu 26.04 in einer Plasma-Wayland-Sitzung betrieben werden.
+Die aktuelle VideoBatch-Fast-Version aus `VERSION.json` bleibt mit X11 kompatibel und kann auf Kubuntu 26.04 in einer Plasma-Wayland-Sitzung betrieben werden.
 
 ## Technisches Modell
 
