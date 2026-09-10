@@ -397,9 +397,20 @@ jobs:
           )
           assert safe_mode is True
           deadline = time.monotonic() + 15
-          while Path("/proc", str(pid)).exists() and time.monotonic() < deadline:
+          exited = False
+          while time.monotonic() < deadline:
+              try:
+                  waited_pid, _status = os.waitpid(pid, os.WNOHANG)
+              except ChildProcessError:
+                  exited = not Path("/proc", str(pid)).exists()
+                  if exited:
+                      break
+              else:
+                  if waited_pid == pid:
+                      exited = True
+                      break
               time.sleep(0.1)
-          assert not Path("/proc", str(pid)).exists(), "Safe-mode Qt process did not close"
+          assert exited, "Safe-mode Qt process did not close"
           assert clean.is_file(), "Qt safe-mode did not write clean-shutdown marker"
           print("SAFE_QT_UI_READY_AND_CLEAN_SHUTDOWN_OK")
           PY
