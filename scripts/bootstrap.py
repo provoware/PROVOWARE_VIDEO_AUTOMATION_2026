@@ -20,6 +20,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from videobatch_fast.linux_installation import normalize_linux_installation  # noqa: E402
 from videobatch_fast.startup_handshake import read_ready_marker  # noqa: E402
 
 CHECK_ONLY = "--check-only" in sys.argv
@@ -43,6 +44,7 @@ class EventSink:
 
     def log(self, text: str) -> None:
         with self._lock:
+            self.log_path.parent.mkdir(parents=True, exist_ok=True)
             with self.log_path.open("a", encoding="utf-8", errors="replace") as handle:
                 handle.write(text.rstrip() + "\n")
 
@@ -220,6 +222,7 @@ def verify_project() -> None:
         "scripts/toolchain.py",
         "scripts/startup_check.py",
         "src/videobatch_fast/qt_phase3.py",
+        "src/videobatch_fast/linux_installation.py",
     )
     missing = [name for name in required if not (ROOT / name).is_file()]
     if missing:
@@ -255,40 +258,14 @@ def load_startup_contract() -> dict[str, Any]:
 
 
 def install_user_launchers(sink: EventSink) -> None:
-    """Maintain menu and command launchers without requiring root privileges."""
+    """Maintain exactly one XDG menu entry and one stable user launcher."""
     try:
         launcher_value = os.environ.get("VIDEOBATCH_PORTABLE_LAUNCHER", "").strip()
         launcher = Path(launcher_value).expanduser().resolve() if launcher_value else (ROOT / "start.sh").resolve()
-        bin_dir = Path.home() / ".local/bin"
-        bin_dir.mkdir(parents=True, exist_ok=True)
-        wrapper = bin_dir / "videobatch-fast"
-        wrapper.write_text(
-            "#!/usr/bin/env bash\n"
-            "set -Eeuo pipefail\n"
-            f"exec {shlex.quote(str(launcher))} \"$@\"\n",
-            encoding="utf-8",
-        )
-        wrapper.chmod(0o755)
-
-        app_dir = Path.home() / ".local/share/applications"
-        app_dir.mkdir(parents=True, exist_ok=True)
-        desktop = app_dir / "videobatch-fast.desktop"
-        desktop.write_text(
-            "[Desktop Entry]\n"
-            "Type=Application\n"
-            "Name=VideoBatch Fast\n"
-            "Comment=Geführte Videoautomatisierung\n"
-            f"Exec={launcher}\n"
-            f"Path={launcher.parent if launcher_value else ROOT}\n"
-            "Terminal=false\n"
-            "Icon=video-x-generic\n"
-            "Categories=AudioVideo;Video;\n"
-            "StartupNotify=true\n",
-            encoding="utf-8",
-        )
-        desktop.chmod(0o755)
-    except OSError as exc:
-        sink.log(f"Launcher-Installation übersprungen: {exc}")
+        report = normalize_linux_installation(project_root=ROOT, launcher=launcher)
+        sink.log("INSTALLATION_HYGIENE " + json.dumps(report, ensure_ascii=False, sort_keys=True))
+    except (OSError, RuntimeError, ValueError) as exc:
+        sink.log(f"Launcher-/Installationsbereinigung übersprungen: {exc}")
 
 
 def toolchain_python(scope: str, sink: EventSink) -> Path:
@@ -419,6 +396,7 @@ def launch_application(
     token = f"{os.getpid()}-{time.time_ns()}-{'safe' if safe_mode else 'normal'}"
     marker = handshake_dir / f"{token}.json"
     app_log = LOG_DIR / f"application_{token}.log"
+    app_log.parent.mkdir(parents=True, exist_ok=True)
     child_env = {
         **environment,
         "VIDEOBATCH_UI_READY_FILE": str(marker),
