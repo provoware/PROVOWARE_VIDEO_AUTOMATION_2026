@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import queue
 import random
 import threading
 import time
 from pathlib import Path
 
-from PySide6.QtCore import QPointF, QSize, Qt, Signal
+from PySide6.QtCore import QPointF, QSize, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QIcon, QPainter, QPen, QPixmap, QPolygonF, QResizeEvent
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -22,6 +23,7 @@ from PySide6.QtWidgets import (
 )
 
 from .audio_waveform import WaveformAnalysis, analyze_audio
+from .event_buffer import EventBuffer
 from .probe import IMAGE_EXTENSIONS
 from .selection_preview_controller import SelectionPreviewController
 from .slideshow import (
@@ -61,9 +63,7 @@ def _duration_text(seconds: float | None) -> str:
 
 
 class PreviewPanel(QFrame):
-    """Thread-safe Qt preview that reuses the framework-independent preview controller."""
-
-    previewChanged = Signal(object)
+    """Thread-safe Qt preview using the canonical typed EventBuffer boundary."""
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -71,8 +71,12 @@ class PreviewPanel(QFrame):
         self._pixmap: QPixmap | None = None
         self._path: Path | None = None
         self._token = 0
-        self._controller = SelectionPreviewController(self.previewChanged.emit)
-        self.previewChanged.connect(self._handle_event)
+        self._events = EventBuffer(maxsize=64)
+        self._controller = SelectionPreviewController(self._events.put)
+        self._preview_timer = QTimer(self)
+        self._preview_timer.setInterval(40)
+        self._preview_timer.timeout.connect(self._poll_preview_events)
+        self._preview_timer.start()
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12, 12, 12, 12)
@@ -114,7 +118,16 @@ class PreviewPanel(QFrame):
         self._token = self._controller.request(self._path, width, include_image=include_image)
 
     def shutdown(self) -> bool:
+        self._preview_timer.stop()
         return self._controller.shutdown(timeout=3.0)
+
+    def _poll_preview_events(self) -> None:
+        for _ in range(16):
+            try:
+                event = self._events.get_nowait()
+            except queue.Empty:
+                break
+            self._handle_event(event)
 
     def _handle_event(self, event: object) -> None:
         name = getattr(event, "name", "")
