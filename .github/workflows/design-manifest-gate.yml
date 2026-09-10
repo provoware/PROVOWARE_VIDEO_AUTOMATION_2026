@@ -231,3 +231,158 @@ jobs:
             ${{ runner.temp }}/ruff-wheelhouse/WHEELHOUSE_SHA256.txt
           if-no-files-found: error
           retention-days: 30
+
+  offline-python-stable-gates:
+    name: Offline MyPy 2.3.0 · Bandit 1.9.4 · pip-audit 2.10.1 stable gates
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      PYTHONUTF8: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+      PIP_DISABLE_PIP_VERSION_CHECK: '1'
+      PIP_NO_INPUT: '1'
+      XDG_DATA_HOME: ${{ runner.temp }}/videobatch-quality/data
+      XDG_STATE_HOME: ${{ runner.temp }}/videobatch-quality/state
+      XDG_CACHE_HOME: ${{ runner.temp }}/videobatch-quality/cache
+      VIDEOBATCH_QUALITY_EVIDENCE_DIR: ${{ runner.temp }}/videobatch-quality/evidence
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Provide required Python Tk runtime
+        run: |
+          set -Eeuo pipefail
+          sudo env DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=5 update
+          sudo env DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=5 install -y --no-install-recommends python3-tk
+          python3 -c 'import tkinter; print("TKINTER_RUNTIME_OK")'
+
+      - name: Run exact hash-bound quality gate with offline enforcement
+        id: quality_gate
+        run: |
+          set -Eeuo pipefail
+          mkdir -p "$VIDEOBATCH_QUALITY_EVIDENCE_DIR"
+          set +e
+          bash scripts/run_offline_quality_gate.sh \
+            > >(tee "$VIDEOBATCH_QUALITY_EVIDENCE_DIR/ci-offline-quality.log") \
+            2>&1
+          status=$?
+          set -e
+          printf '%s\n' "$status" > "$VIDEOBATCH_QUALITY_EVIDENCE_DIR/ci-offline-quality.exit"
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+
+      - name: Build machine-readable stable-gate evidence
+        if: always()
+        run: |
+          set -Eeuo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          evidence_dir = Path(os.environ["VIDEOBATCH_QUALITY_EVIDENCE_DIR"])
+          report_path = evidence_dir / "diagnostics" / "external_quality_latest.json"
+          versions_path = evidence_dir / "installed-versions.json"
+          manifest_path = evidence_dir / "wheelhouse-manifest.json"
+          lock_path = evidence_dir / "requirements-toolchain-resolved.lock"
+          cache_inventory = evidence_dir / "pip-audit-cache-inventory.tsv"
+
+          def digest(path: Path) -> str:
+              return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else ""
+
+          report = json.loads(report_path.read_text(encoding="utf-8")) if report_path.is_file() else {}
+          versions = json.loads(versions_path.read_text(encoding="utf-8")) if versions_path.is_file() else {}
+          results = {
+              str(item.get("tool")): {
+                  "status": item.get("status"),
+                  "returncode": item.get("returncode"),
+                  "version": item.get("version"),
+              }
+              for item in report.get("results", [])
+              if isinstance(item, dict) and item.get("tool")
+          }
+          required = {
+              "ruff": "0.16.1",
+              "mypy": "2.3.0",
+              "bandit": "1.9.4",
+              "pip-audit": "2.10.1",
+          }
+          passed = (
+              report.get("offline") is True
+              and all(
+                  results.get(tool, {}).get("status") == "pass"
+                  and results.get(tool, {}).get("returncode") == 0
+                  and results.get(tool, {}).get("version") == version
+                  for tool, version in required.items()
+              )
+          )
+          payload = {
+              "schema_version": 1,
+              "status": "passed" if passed else "failed",
+              "source_sha": os.environ["SOURCE_SHA"],
+              "run_id": os.environ["GITHUB_RUN_ID"],
+              "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+              "install_contract": "toolchain.py --no-index --find-links --require-hashes",
+              "execution_contract": "run_external_quality.py --mode required --offline",
+              "network_guard": bool(report.get("offline")),
+              "required_versions": required,
+              "installed_versions": versions.get("packages", {}),
+              "results": results,
+              "wheelhouse_manifest_sha256": digest(manifest_path),
+              "resolved_lock_sha256": digest(lock_path),
+              "pip_audit_cache_inventory_sha256": digest(cache_inventory),
+          }
+          output = evidence_dir / "PYTHON_STABLE_GATES_EVIDENCE.json"
+          output.write_text(
+              json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+          PY
+
+      - name: Restore generated wheelhouse and prove repository read-only
+        if: always()
+        run: |
+          set -Eeuo pipefail
+          git clean -fdx -- toolchain_wheelhouse .quality-toolchain-backups
+          git checkout -- toolchain_wheelhouse
+          status="$(git status --porcelain --untracked-files=all)"
+          if [[ -n "$status" ]]; then
+            printf '%s\n' "$status"
+            echo "::error title=Offline Python gate changed repository::Stable-gate validation must leave the checkout unchanged."
+            exit 1
+          fi
+
+      - name: Upload complete Python stable-gate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-stable-gates-evidence-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ env.VIDEOBATCH_QUALITY_EVIDENCE_DIR }}/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Enforce MyPy, Bandit and pip-audit results
+        if: always()
+        run: |
+          set -Eeuo pipefail
+          test '${{ steps.quality_gate.outputs.exit_code }}' = '0'
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          path = Path(os.environ["VIDEOBATCH_QUALITY_EVIDENCE_DIR"]) / "PYTHON_STABLE_GATES_EVIDENCE.json"
+          payload = json.loads(path.read_text(encoding="utf-8"))
+          if payload.get("status") != "passed":
+              raise SystemExit("Python stable-gate evidence is not passed")
+          for tool in ("mypy", "bandit", "pip-audit"):
+              item = payload["results"].get(tool, {})
+              if item.get("status") != "pass" or item.get("returncode") != 0:
+                  raise SystemExit(f"{tool} stable gate failed: {item!r}")
+          print("PYTHON_STABLE_GATES_PASSED")
+          PY
