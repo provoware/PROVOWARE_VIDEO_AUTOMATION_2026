@@ -241,10 +241,6 @@ jobs:
       PYTHONDONTWRITEBYTECODE: '1'
       PIP_DISABLE_PIP_VERSION_CHECK: '1'
       PIP_NO_INPUT: '1'
-      XDG_DATA_HOME: ${{ runner.temp }}/videobatch-quality/data
-      XDG_STATE_HOME: ${{ runner.temp }}/videobatch-quality/state
-      XDG_CACHE_HOME: ${{ runner.temp }}/videobatch-quality/cache
-      VIDEOBATCH_QUALITY_EVIDENCE_DIR: ${{ runner.temp }}/videobatch-quality/evidence
       SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
     steps:
@@ -253,6 +249,16 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
+
+      - name: Isolate quality state outside the repository
+        run: |
+          set -Eeuo pipefail
+          {
+            echo "XDG_DATA_HOME=$RUNNER_TEMP/videobatch-quality/data"
+            echo "XDG_STATE_HOME=$RUNNER_TEMP/videobatch-quality/state"
+            echo "XDG_CACHE_HOME=$RUNNER_TEMP/videobatch-quality/cache"
+            echo "VIDEOBATCH_QUALITY_EVIDENCE_DIR=$RUNNER_TEMP/videobatch-quality/evidence"
+          } >> "$GITHUB_ENV"
 
       - name: Provide required Python Tk runtime
         run: |
@@ -363,7 +369,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: python-stable-gates-evidence-${{ github.event.pull_request.head.sha || github.sha }}
-          path: ${{ env.VIDEOBATCH_QUALITY_EVIDENCE_DIR }}/
+          path: ${{ runner.temp }}/videobatch-quality/evidence/
           if-no-files-found: error
           retention-days: 30
 
