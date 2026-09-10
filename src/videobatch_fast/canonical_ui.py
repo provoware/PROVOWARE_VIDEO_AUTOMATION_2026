@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import threading
 from pathlib import Path
-from tkinter import Tk
+from tkinter import TclError, Tk
 
 from .canonical_dashboard_mixin import CanonicalDashboardMixin
 from .canonical_debug_mixin import CanonicalDebugMixin
@@ -53,8 +53,8 @@ class CanonicalVideoBatchFastUI(
         for child in self._shell_header_identity.winfo_children():
             try:
                 current = str(child.cget("text"))
-            except Exception:
-                continue
+            except TclError:
+                current = ""
             if "VB-GFX" in current:
                 child.configure(text="VideoBatch Fast")
 
