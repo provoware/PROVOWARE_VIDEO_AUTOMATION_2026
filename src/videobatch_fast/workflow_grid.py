@@ -3,13 +3,7 @@ from __future__ import annotations
 from tkinter import Canvas, TclError, ttk
 from typing import Callable
 
-WORKFLOW_LAYOUT_MODES = {"two_columns", "wide", "compact"}
-DEFAULT_WORKFLOW_LAYOUT_MODE = "two_columns"
-
-
-def normalize_workflow_layout_mode(value: object) -> str:
-    selected = str(value)
-    return selected if selected in WORKFLOW_LAYOUT_MODES else DEFAULT_WORKFLOW_LAYOUT_MODE
+from .workflow_layout import DEFAULT_WORKFLOW_LAYOUT_MODE, normalize_workflow_layout_mode
 
 
 class ScrollableWorkflowGrid:
