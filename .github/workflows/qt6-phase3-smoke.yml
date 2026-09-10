@@ -82,7 +82,7 @@ jobs:
       - name: Install only fast test tools
         run: |
           set -Eeuo pipefail
-          python -m pip install ruff==0.16.1 pytest==8.4.2
+          python -m pip install ruff==0.16.1 pytest==8.4.2 Pillow==12.3.0
 
       - name: Compile and lint changed architecture
         run: |
@@ -119,8 +119,8 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install test runner
-        run: python -m pip install pytest==8.4.2
+      - name: Install lightweight regression dependencies
+        run: python -m pip install pytest==8.4.2 Pillow==12.3.0
 
       - name: Run complete non-legacy regression suite
         run: python -m pytest -q
