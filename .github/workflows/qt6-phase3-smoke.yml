@@ -104,9 +104,11 @@ jobs:
           set -Eeuo pipefail
           python tests/test_qt_runtime_toolchain_contract.py
 
-      - name: Derive exact compact release manifest
+      - name: Derive exact compact release manifest from clean HEAD
         run: |
           set -Eeuo pipefail
+          git restore --source=HEAD --staged --worktree -- toolchain_wheelhouse
+          git diff --exit-code -- toolchain_wheelhouse
           RUNTIME_PY="$(python scripts/toolchain.py path --scope runtime --quiet | tail -n 1)"
           test -x "$RUNTIME_PY"
           "$RUNTIME_PY" scripts/build_release_manifest.py --compact
