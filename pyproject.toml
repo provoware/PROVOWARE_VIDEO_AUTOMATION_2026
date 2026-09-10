@@ -7,6 +7,9 @@ dependencies = [
   "Pillow==12.3.0",
 ]
 
+[project.optional-dependencies]
+qt = ["PySide6==6.11.2"]
+
 [tool.pytest.ini_options]
 addopts = "-p no:cacheprovider"
 testpaths = ["tests"]
@@ -17,6 +20,8 @@ branch = true
 omit = [
   "*/ui.py",
   "*/ui_*.py",
+  "*/qt_ui.py",
+  "*/qt_theme.py",
   "*/app.py",
   "*/theme.py",
   "*/workflow_dialogs.py",
