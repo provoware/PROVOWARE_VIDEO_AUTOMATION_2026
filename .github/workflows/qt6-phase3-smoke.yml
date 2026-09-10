@@ -1,4 +1,4 @@
-name: Qt6 Phase 3 project workspace smoke
+name: Qt6 Phase 3 orchestrated validation
 
 on:
   pull_request:
@@ -6,6 +6,8 @@ on:
     paths:
       - "STARTEN.sh"
       - "start.sh"
+      - "pyproject.toml"
+      - "VERSION.json"
       - "requirements.lock"
       - "requirements-toolchain.lock"
       - "requirements-qt.txt"
@@ -13,13 +15,16 @@ on:
       - "STARTUP_CONTRACT.json"
       - "PLATFORM_SUPPORT.json"
       - "RELEASE_MANIFEST.json"
+      - "scripts/ab_installer.py"
       - "scripts/bootstrap.py"
       - "scripts/debug_launcher.py"
       - "scripts/build_release_manifest.py"
       - "scripts/build_toolchain_wheelhouse.py"
       - "scripts/startup_check.py"
       - "scripts/toolchain.py"
+      - "src/videobatch_fast/__main__.py"
       - "src/videobatch_fast/qt_*.py"
+      - "src/videobatch_fast/linux_installation.py"
       - "src/videobatch_fast/platform_integration.py"
       - "src/videobatch_fast/project_state.py"
       - "src/videobatch_fast/startup_handshake.py"
@@ -27,6 +32,7 @@ on:
       - "src/videobatch_fast/assurance.py"
       - "src/videobatch_fast/diagnostics_service.py"
       - "src/videobatch_fast/fault_lab.py"
+      - "tests/test_linux_installation_hygiene.py"
       - "tests/test_platform_integration.py"
       - "tests/test_qt_phase2_contract.py"
       - "tests/test_qt_phase3_contract.py"
@@ -41,16 +47,91 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: qt6-phase3-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONPATH: src
+  PYTHONUTF8: "1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PIP_NO_INPUT: "1"
+
 jobs:
-  offline-qt-runtime-gate:
+  orchestrator-preflight:
+    name: "1 · Orchestrator / schnelle Prüfer"
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify runner base
+        run: |
+          set -Eeuo pipefail
+          . /etc/os-release
+          test "$VERSION_ID" = "26.04"
+
+      - name: Install only fast test tools
+        run: |
+          set -Eeuo pipefail
+          python -m pip install ruff==0.16.1 pytest==8.4.2
+
+      - name: Compile and lint changed architecture
+        run: |
+          set -Eeuo pipefail
+          python -m compileall -q -f src scripts tests
+          python -m ruff check src scripts tests --select E9,F63,F7,F82 --no-cache
+
+      - name: Run focused architecture and Linux hygiene contracts
+        run: |
+          set -Eeuo pipefail
+          python -m pytest -q \
+            tests/test_linux_installation_hygiene.py \
+            tests/test_platform_integration.py \
+            tests/test_qt_phase2_contract.py \
+            tests/test_qt_phase3_contract.py \
+            tests/test_qt_runtime_toolchain_contract.py \
+            tests/test_tk_free_core_contract.py
+
+  core-regression:
+    name: "2A · Regression-Prüfer / kompletter Testbestand"
+    needs: orchestrator-preflight
     runs-on: ubuntu-26.04
     timeout-minutes: 25
     env:
-      PYTHONPATH: src
-      PYTHONUTF8: "1"
+      VIDEOBATCH_SKIP_TK_GUI_TESTS: "1"
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test runner
+        run: python -m pip install pytest==8.4.2
+
+      - name: Run complete non-legacy regression suite
+        run: python -m pytest -q
+
+  offline-qt-runtime-gate:
+    name: "2B · Runtime-Prüfer / offline Qt"
+    needs: orchestrator-preflight
+    runs-on: ubuntu-26.04
+    timeout-minutes: 25
+    env:
       QT_QPA_PLATFORM: offscreen
-      PIP_DISABLE_PIP_VERSION_CHECK: "1"
-      PIP_NO_INPUT: "1"
       VIDEOBATCH_CI_ALLOW_PUBLIC_PYPI: "1"
     steps:
       - name: Check out exact revision
@@ -125,17 +206,15 @@ jobs:
           git diff --exit-code -- RELEASE_MANIFEST.json
 
   qt-phase3-wayland-smoke:
+    name: "3 · Wayland-Prüfer / echter Qt-Lifecycle"
+    needs: [orchestrator-preflight, offline-qt-runtime-gate]
     runs-on: ubuntu-26.04
     timeout-minutes: 35
     env:
-      PYTHONPATH: src
-      PYTHONUTF8: "1"
       QT_QPA_PLATFORM: wayland
       XDG_SESSION_TYPE: wayland
       XDG_CURRENT_DESKTOP: KDE
       DESKTOP_SESSION: plasmawayland
-      PIP_DISABLE_PIP_VERSION_CHECK: "1"
-      PIP_NO_INPUT: "1"
       VIDEOBATCH_CI_ALLOW_PUBLIC_PYPI: "1"
     steps:
       - name: Check out exact revision
@@ -177,7 +256,6 @@ jobs:
           test "$VERSION_ID" = "26.04"
           printf '%s\n' 'VARIANT="Kubuntu CI target"' 'VARIANT_ID=kubuntu' \
             | sudo tee -a /etc/os-release >/dev/null
-          grep -E '^(VERSION_ID|VARIANT|VARIANT_ID)=' /etc/os-release
 
       - name: Start headless Wayland compositor
         run: |
@@ -197,24 +275,11 @@ jobs:
           cat /tmp/weston-phase3.log
           exit 1
 
-      - name: Compile supported Qt Wayland startup modules
-        run: |
-          set -Eeuo pipefail
-          python -m py_compile \
-            scripts/bootstrap.py \
-            scripts/build_toolchain_wheelhouse.py \
-            scripts/toolchain.py \
-            src/videobatch_fast/qt_ui.py \
-            src/videobatch_fast/qt_phase2.py \
-            src/videobatch_fast/qt_phase2_components.py \
-            src/videobatch_fast/qt_phase3.py \
-            src/videobatch_fast/qt_phase3_components.py \
-            src/videobatch_fast/platform_integration.py
-
       - name: Run target architecture and recovery contracts
         run: |
           set -Eeuo pipefail
           python -m pytest -q \
+            tests/test_linux_installation_hygiene.py \
             tests/test_platform_integration.py \
             tests/test_qt_phase2_contract.py \
             tests/test_qt_phase3_contract.py \
@@ -225,12 +290,14 @@ jobs:
         run: |
           set -Eeuo pipefail
           python - <<'PY'
+          import sys
           from PySide6.QtWidgets import QApplication
 
           app = QApplication([])
           backend = app.platformName().lower()
           print(f"QT_QPA_BACKEND={backend}")
           assert "wayland" in backend, backend
+          assert "tkinter" not in sys.modules
           app.quit()
           PY
 
@@ -293,6 +360,7 @@ jobs:
           state = Path(os.environ["XDG_STATE_HOME"])
           clean = state / "safe-clean.marker"
           log = state / "safe-bootstrap.log"
+          log.parent.mkdir(parents=True, exist_ok=True)
           events = __import__("queue").Queue()
           sink = bootstrap.EventSink(events, log)
           environment = {
@@ -329,3 +397,31 @@ jobs:
             ${{ runner.temp }}/videobatch-start-safe/state/safe-bootstrap.log
           if-no-files-found: warn
           retention-days: 14
+
+  orchestrator-summary:
+    name: "4 · Orchestrator / Gesamtfreigabe"
+    if: always()
+    needs: [orchestrator-preflight, core-regression, offline-qt-runtime-gate, qt-phase3-wayland-smoke]
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    env:
+      PREFLIGHT: ${{ needs.orchestrator-preflight.result }}
+      CORE: ${{ needs.core-regression.result }}
+      RUNTIME: ${{ needs.offline-qt-runtime-gate.result }}
+      WAYLAND: ${{ needs.qt-phase3-wayland-smoke.result }}
+    steps:
+      - name: Require every specialist gate
+        run: |
+          set -Eeuo pipefail
+          printf 'Preflight=%s\nCore=%s\nRuntime=%s\nWayland=%s\n' "$PREFLIGHT" "$CORE" "$RUNTIME" "$WAYLAND"
+          test "$PREFLIGHT" = success
+          test "$CORE" = success
+          test "$RUNTIME" = success
+          test "$WAYLAND" = success
+          {
+            echo '## VideoBatch Qt6 Orchestrator'
+            echo
+            echo '🟢 Schnellprüfung, vollständige Regression, Offline-Qt-Runtime und nativer Wayland-Lifecycle bestanden.'
+            echo
+            echo "Commit: \`${{ github.event.pull_request.head.sha || github.sha }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
