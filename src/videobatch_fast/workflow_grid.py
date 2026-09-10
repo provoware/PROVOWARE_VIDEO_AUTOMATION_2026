@@ -3,7 +3,11 @@ from __future__ import annotations
 from tkinter import Canvas, TclError, ttk
 from typing import Callable
 
-from .workflow_layout import DEFAULT_WORKFLOW_LAYOUT_MODE, normalize_workflow_layout_mode
+from .workflow_layout import (
+    DEFAULT_WORKFLOW_LAYOUT_MODE,
+    WORKFLOW_LAYOUT_MODES,
+    normalize_workflow_layout_mode,
+)
 
 
 class ScrollableWorkflowGrid:
