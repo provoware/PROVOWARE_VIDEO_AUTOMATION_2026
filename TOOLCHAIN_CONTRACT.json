@@ -1,13 +1,17 @@
 {
   "schema_version": 1,
-  "contract_id": "videobatch-fast.predictive-bootstrap/2.8.3-rc24-v1",
+  "contract_id": "videobatch-fast.predictive-bootstrap/2.8.3-rc24-v2",
   "release_target": "2.8.3-rc24",
   "packages": {
     "runtime": {
       "cffi": "2.0.0",
       "cryptography": "50.0.0",
       "Pillow": "12.3.0",
-      "pycparser": "3.0"
+      "PySide6": "6.11.2",
+      "PySide6-Addons": "6.11.2",
+      "PySide6-Essentials": "6.11.2",
+      "pycparser": "3.0",
+      "shiboken6": "6.11.2"
     },
     "quality": {
       "bandit": "1.9.4",
@@ -27,6 +31,9 @@
     "wheel_hash_manifest_required": true,
     "sdists_forbidden": true,
     "online_download_requires_explicit_consent": true,
+    "online_user_consent_requires_gui_buttons": true,
+    "headless_user_online_download_forbidden": true,
+    "ci_online_exception_requires_github_actions_marker": true,
     "atomic_replacement_required": true,
     "public_index": "https://pypi.org/simple",
     "automatic_repair_on_launcher_start": true,
@@ -34,7 +41,7 @@
     "offline_opt_out_supported": true,
     "automatic_stable_finalization": true,
     "stable_requires_live_desktop_gate": true,
-    "explicit_consent_is_central_launcher_invocation": true,
+    "explicit_consent_is_central_launcher_invocation": false,
     "startup_requires_quality_tools": false,
     "runtime_and_quality_environments_separated": true,
     "content_addressed_user_environments": true,

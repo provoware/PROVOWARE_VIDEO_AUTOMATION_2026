@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "contract_id": "videobatch-fast.predictive-startup/2.8.3-rc24-v2",
+  "contract_id": "videobatch-fast.predictive-startup/2.8.3-rc24-v3",
   "release_target": "2.8.3-rc24",
-  "goal": "Die Oberfläche ohne Nutzerintervention nach einer bestätigten UI-Bereitschaftsmeldung öffnen; bei einem frühen Oberflächenfehler automatisch in einen neutralen sicheren Startmodus wechseln.",
+  "goal": "Die Oberfläche ohne Terminal- oder Texteingaben nach einer bestätigten UI-Bereitschaftsmeldung öffnen; nur wenn lokale Abhängigkeiten nicht ausreichen, darf eine klar beschriftete grafische Online-Freigabe angeboten werden.",
   "stages": [
     {
       "id": "system",
@@ -12,7 +12,7 @@
     {
       "id": "runtime",
       "order": 2,
-      "label": "Laufzeit automatisch vorbereiten"
+      "label": "Laufzeit lokal prüfen und bei Bedarf kontrolliert reparieren"
     },
     {
       "id": "project",
@@ -27,6 +27,10 @@
   ],
   "policy": {
     "interactive_questions_forbidden": true,
+    "interaction_rule": "Keine Terminal- oder Textfragen. Die einzige zulässige Nutzerinteraktion vor dem Programmstart ist eine grafische Online-Reparaturfreigabe mit den Buttons 'Online reparieren' und 'Offline bleiben', wenn lokale Wiederherstellung nicht ausreicht.",
+    "online_repair_gui_confirmation_required": true,
+    "online_repair_decline_keeps_offline_path": true,
+    "headless_online_repair_forbidden": true,
     "quality_tools_must_not_block_application_start": true,
     "ffmpeg_codec_listing_must_not_block_application_start": true,
     "real_encoder_smoke_test_is_authoritative": true,
