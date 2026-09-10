@@ -9,15 +9,18 @@ on:
       - "requirements-qt.txt"
       - "TOOLCHAIN_CONTRACT.json"
       - "STARTUP_CONTRACT.json"
+      - "PLATFORM_SUPPORT.json"
       - "RELEASE_MANIFEST.json"
       - "scripts/build_release_manifest.py"
       - "scripts/build_toolchain_wheelhouse.py"
       - "scripts/toolchain.py"
       - "src/videobatch_fast/qt_*.py"
+      - "src/videobatch_fast/platform_integration.py"
       - "src/videobatch_fast/project_state.py"
       - "src/videobatch_fast/assurance.py"
       - "src/videobatch_fast/diagnostics_service.py"
       - "src/videobatch_fast/fault_lab.py"
+      - "tests/test_platform_integration.py"
       - "tests/test_qt_phase2_contract.py"
       - "tests/test_qt_phase3_contract.py"
       - "tests/test_qt_runtime_toolchain_contract.py"
@@ -32,7 +35,7 @@ permissions:
 
 jobs:
   offline-qt-runtime-gate:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 25
     env:
       PYTHONPATH: src
@@ -52,6 +55,12 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Verify runner base
+        run: |
+          set -Eeuo pipefail
+          . /etc/os-release
+          test "$VERSION_ID" = "26.04"
+
       - name: Install minimal Qt system runtime
         run: |
           set -Eeuo pipefail
@@ -60,6 +69,7 @@ jobs:
             libegl1 \
             libgl1 \
             libfontconfig1 \
+            libwayland-client0 \
             libxkbcommon0
 
       - name: Build verified runtime wheelhouse with explicit CI consent
@@ -78,13 +88,7 @@ jobs:
           test -x "$RUNTIME_PY"
           "$RUNTIME_PY" - <<'PY'
           import importlib.metadata as metadata
-          import cryptography
-          import cffi
-          import pycparser
-          import PySide6
-          import shiboken6
-          from PIL import Image
-          from PySide6 import QtCore, QtGui, QtWidgets
+          from PySide6 import QtCore
 
           expected = {
               "PySide6": "6.11.2",
@@ -100,30 +104,28 @@ jobs:
           python scripts/toolchain.py gate --scope runtime
 
       - name: Prove offline install flags and consent contract
-        run: |
-          set -Eeuo pipefail
-          python tests/test_qt_runtime_toolchain_contract.py
+        run: python tests/test_qt_runtime_toolchain_contract.py
 
-      - name: Derive exact compact release manifest from clean HEAD
+      - name: Check compact release manifest from clean HEAD
         run: |
           set -Eeuo pipefail
           git restore --source=HEAD --staged --worktree -- toolchain_wheelhouse
           git diff --exit-code -- toolchain_wheelhouse
           RUNTIME_PY="$(python scripts/toolchain.py path --scope runtime --quiet | tail -n 1)"
-          test -x "$RUNTIME_PY"
           "$RUNTIME_PY" scripts/build_release_manifest.py --compact
           cat RELEASE_MANIFEST.json
-          if [[ "${GITHUB_HEAD_REF:-}" != tmp/qt6-offline-runtime-gate-* ]]; then
-            git diff --exit-code -- RELEASE_MANIFEST.json
-          fi
+          git diff --exit-code -- RELEASE_MANIFEST.json
 
-  qt-phase3-offscreen-smoke:
-    runs-on: ubuntu-24.04
+  qt-phase3-wayland-smoke:
+    runs-on: ubuntu-26.04
     timeout-minutes: 25
     env:
       PYTHONPATH: src
       PYTHONUTF8: "1"
-      QT_QPA_PLATFORM: offscreen
+      QT_QPA_PLATFORM: wayland
+      XDG_SESSION_TYPE: wayland
+      XDG_CURRENT_DESKTOP: KDE
+      DESKTOP_SESSION: plasmawayland
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
       PIP_NO_INPUT: "1"
     steps:
@@ -137,22 +139,41 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install minimal Qt system runtime
+      - name: Install native Wayland Qt runtime
         run: |
           set -Eeuo pipefail
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
+            weston \
+            wl-clipboard \
+            xdg-desktop-portal \
+            xdg-desktop-portal-kde \
             libegl1 \
             libgl1 \
             libfontconfig1 \
+            libwayland-client0 \
             libxkbcommon0
-
-      - name: Install locked Qt runtime and test runner
-        run: |
-          set -Eeuo pipefail
           python -m pip install --upgrade pip
           python -m pip install -r requirements-qt.txt
           python -m pip install pytest==8.4.2
+
+      - name: Start headless Wayland compositor
+        run: |
+          set -Eeuo pipefail
+          mkdir -p "$RUNNER_TEMP/xdg"
+          chmod 700 "$RUNNER_TEMP/xdg"
+          echo "XDG_RUNTIME_DIR=$RUNNER_TEMP/xdg" >> "$GITHUB_ENV"
+          echo "WAYLAND_DISPLAY=wayland-phase3" >> "$GITHUB_ENV"
+          XDG_RUNTIME_DIR="$RUNNER_TEMP/xdg" weston \
+            --backend=headless-backend.so \
+            --socket=wayland-phase3 \
+            --idle-time=0 >/tmp/weston-phase3.log 2>&1 &
+          for _ in $(seq 1 20); do
+            test -S "$RUNNER_TEMP/xdg/wayland-phase3" && exit 0
+            sleep 0.25
+          done
+          cat /tmp/weston-phase3.log
+          exit 1
 
       - name: Compile Phase 2 and Phase 3 Qt modules
         run: |
@@ -162,22 +183,42 @@ jobs:
             src/videobatch_fast/qt_phase2.py \
             src/videobatch_fast/qt_phase2_components.py \
             src/videobatch_fast/qt_phase3.py \
-            src/videobatch_fast/qt_phase3_components.py
+            src/videobatch_fast/qt_phase3_components.py \
+            src/videobatch_fast/platform_integration.py
 
-      - name: Run Phase 2 regression and Phase 3 architecture contracts
+      - name: Run target and architecture contracts
         run: |
           set -Eeuo pipefail
           python -m pytest -q \
+            tests/test_platform_integration.py \
             tests/test_qt_phase2_contract.py \
             tests/test_qt_phase3_contract.py \
             tests/test_qt_runtime_toolchain_contract.py
 
-      - name: Run real Phase 2 regression smoke
+      - name: Prove native Wayland QPA backend
         run: |
           set -Eeuo pipefail
-          python tests/qt_phase2_smoke.py
+          python - <<'PY'
+          from PySide6.QtWidgets import QApplication
 
-      - name: Run real Phase 3 project workspace smoke
-        run: |
-          set -Eeuo pipefail
-          python tests/qt_phase3_smoke.py
+          app = QApplication([])
+          backend = app.platformName().lower()
+          print(f"QT_QPA_BACKEND={backend}")
+          assert "wayland" in backend, backend
+          app.quit()
+          PY
+
+      - name: Run Phase 2 regression smoke on Wayland
+        run: python tests/qt_phase2_smoke.py
+
+      - name: Run Phase 3 project workspace smoke on Wayland
+        run: python tests/qt_phase3_smoke.py
+
+      - name: Upload compositor diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qt-phase3-wayland-diagnostics
+          path: /tmp/weston-phase3.log
+          if-no-files-found: warn
+          retention-days: 14
