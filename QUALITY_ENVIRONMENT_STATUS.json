@@ -14,7 +14,11 @@
     "existing_instance_focus": true
   },
   "internal_gates": {
-    "tests": {"passed": 325, "failed": 0, "skipped": 0},
+    "tests": {
+      "passed": 325,
+      "failed": 0,
+      "skipped": 0
+    },
     "line_coverage_percent": 82.43,
     "branch_coverage_percent": 67.21,
     "combined_coverage_percent": 79.46,

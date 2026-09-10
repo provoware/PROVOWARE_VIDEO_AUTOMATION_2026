@@ -79,7 +79,12 @@
     "targeted_rc24": "27/27 finalization and preview regressions",
     "selected_media_click_stress": "120 rapid selection changes, passed",
     "full_regression": "325/325",
-    "full_regression_groups": [98, 89, 83, 55],
+    "full_regression_groups": [
+      98,
+      89,
+      83,
+      55
+    ],
     "test_environment": "Xvfb X11 on exact exported PR tree"
   }
 }
