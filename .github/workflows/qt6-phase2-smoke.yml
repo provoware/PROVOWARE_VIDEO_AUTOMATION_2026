@@ -33,6 +33,16 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install minimal Qt system runtime
+        run: |
+          set -Eeuo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 \
+            libgl1 \
+            libfontconfig1 \
+            libxkbcommon0
+
       - name: Install Qt runtime and test runner
         run: |
           set -Eeuo pipefail
