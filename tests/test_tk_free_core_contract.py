@@ -71,6 +71,12 @@ def test_supported_wayland_bootstrap_contains_no_tk_dependency() -> None:
     assert "kdialog" in downloader
 
 
+def test_canonical_module_entrypoint_routes_to_qt_wayland() -> None:
+    source = (SRC / "videobatch_fast" / "__main__.py").read_text(encoding="utf-8")
+    assert "from .qt_phase3 import main" in source
+    assert "from .app import main" not in source
+
+
 def test_qt_phase3_owns_ready_lock_and_clean_shutdown_contract() -> None:
     source = (SRC / "videobatch_fast" / "qt_phase3.py").read_text(encoding="utf-8")
     required = (
@@ -134,6 +140,7 @@ def test_wayland_startup_sources_compile() -> None:
         ROOT / "scripts" / "toolchain.py",
         ROOT / "scripts" / "build_toolchain_wheelhouse.py",
         SRC / "videobatch_fast" / "qt_phase3.py",
+        SRC / "videobatch_fast" / "__main__.py",
     )
     for source in sources:
         result = subprocess.run(
