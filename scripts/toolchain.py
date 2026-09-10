@@ -176,7 +176,13 @@ def installed_versions(python: Path, contract: dict[str, Any], scope: str) -> di
 
 
 def runtime_import_gate(python: Path) -> None:
-    code = "import tkinter,cryptography,cffi,pycparser; from PIL import Image; print('RUNTIME_IMPORTS_OK')"
+    code = (
+        "import cryptography,cffi,pycparser; "
+        "from PIL import Image; "
+        "from PySide6 import QtCore,QtGui,QtWidgets; "
+        "assert QtCore.qVersion(); "
+        "print('RUNTIME_IMPORTS_OK')"
+    )
     completed = run([str(python), "-c", code], timeout=60)
     if completed.returncode or "RUNTIME_IMPORTS_OK" not in completed.stdout:
         raise RuntimeError("Runtime-Importprüfung fehlgeschlagen:\n" + completed.stdout[-4000:])
@@ -378,7 +384,7 @@ def install(contract: dict[str, Any], *, replace: bool, scope: str = "all") -> P
         safe_remove_tree(target, allowed_parent=target.parent)
     try:
         progress(4, 5, f"{effective_scope(scope).capitalize()}-Umgebung offline installieren")
-        # Build directly at its immutable final, content-addressed path.  Moving a
+        # Build directly at its immutable final, content-addressed path. Moving a
         # venv after creation breaks absolute console-script shebangs.
         venv.EnvBuilder(with_pip=True, clear=True, symlinks=True).create(target)
         python = target / "bin" / "python"
