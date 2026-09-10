@@ -498,7 +498,8 @@ jobs:
 
           source = os.environ["source_tar"]
           target = os.path.join(os.environ["RUNNER_TEMP"], os.environ["archive"])
-          prefix = os.environ["project"] + "/"
+          root_name = os.environ["project"]
+          prefix = root_name + "/"
           seen: set[str] = set()
 
           with tarfile.open(source, "r:") as tar, zipfile.ZipFile(
@@ -514,17 +515,18 @@ jobs:
                   path = PurePosixPath(name)
                   if path.is_absolute() or ".." in path.parts:
                       raise RuntimeError(f"Unsicherer Archivpfad: {name}")
-                  if not name.startswith(prefix):
+                  if name != root_name and not name.startswith(prefix):
                       raise RuntimeError(f"Falsches Archivpräfix: {name}")
-                  if name in seen:
-                      raise RuntimeError(f"Doppelter Archivpfad: {name}")
-                  seen.add(name)
 
-                  if member.isdir() and not name.endswith("/"):
-                      name += "/"
+                  archive_name = (
+                      name + "/" if member.isdir() and not name.endswith("/") else name
+                  )
+                  if archive_name in seen:
+                      raise RuntimeError(f"Doppelter Archivpfad: {archive_name}")
+                  seen.add(archive_name)
 
                   timestamp = max(int(member.mtime), 315532800)
-                  info = zipfile.ZipInfo(name, time.gmtime(timestamp)[:6])
+                  info = zipfile.ZipInfo(archive_name, time.gmtime(timestamp)[:6])
                   info.create_system = 3
 
                   if member.isdir():
