@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -109,13 +110,43 @@ def test_publish_replaces_complete_directory_atomically(tmp_path: Path) -> None:
     _assert_publish_atomic(tmp_path)
 
 
+def _assert_qt_isolated_from_legacy_runtime() -> None:
+    runtime_lock = (ROOT / "requirements.lock").read_text(encoding="utf-8")
+    qt_lock = (ROOT / "requirements-qt.txt").read_text(encoding="utf-8")
+    contract = json.loads((ROOT / "TOOLCHAIN_CONTRACT.json").read_text(encoding="utf-8"))
+    runtime_packages = {name.lower() for name in contract["packages"]["runtime"]}
+    qt_names = ("PySide6", "PySide6-Addons", "PySide6-Essentials", "shiboken6")
+
+    for name in qt_names:
+        assert name.lower() not in runtime_packages
+        assert f"{name}==6.11.2" not in runtime_lock
+        assert f"{name}==6.11.2" in qt_lock
+
+    assert "-r requirements.lock" in qt_lock
+
+
+def test_qt_dependencies_are_isolated_from_legacy_runtime() -> None:
+    _assert_qt_isolated_from_legacy_runtime()
+
+
 def _assert_offline_install_flags() -> None:
-    source = (ROOT / "scripts" / "toolchain.py").read_text(encoding="utf-8")
+    toolchain_source = (ROOT / "scripts" / "toolchain.py").read_text(encoding="utf-8")
     for token in ('"--no-index"', '"--find-links"', '"--require-hashes"'):
-        assert token in source, f"Offline-Installationsflag fehlt: {token}"
+        assert token in toolchain_source, f"Offline-Installationsflag fehlt: {token}"
+
+    workflow = (ROOT / ".github" / "workflows" / "qt6-phase3-smoke.yml").read_text(encoding="utf-8")
+    for token in (
+        "PIP_NO_INDEX=1",
+        "--no-index",
+        "--find-links",
+        "--require-hashes",
+        "requirements-qt.txt",
+        "QT_HASH_MANIFEST",
+    ):
+        assert token in workflow, f"Qt-Offline-Gate fehlt: {token}"
 
 
-def test_runtime_install_is_no_index_and_hash_pinned() -> None:
+def test_runtime_and_qt_install_are_no_index_and_hash_pinned() -> None:
     _assert_offline_install_flags()
 
 
@@ -127,8 +158,9 @@ def main() -> int:
         _assert_explicit_ci_marker_reaches_preflight(base / "authorized")
         _assert_failed_download_preserves_existing_wheelhouse(base / "failure")
         _assert_publish_atomic(base / "atomic")
+        _assert_qt_isolated_from_legacy_runtime()
         _assert_offline_install_flags()
-    print("OFFLINE_QT_CONSENT_AND_INSTALL_CONTRACT_OK")
+    print("OFFLINE_QT_CONSENT_ISOLATION_AND_INSTALL_CONTRACT_OK")
     return 0
 
 

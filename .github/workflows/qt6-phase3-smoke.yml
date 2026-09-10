@@ -62,29 +62,120 @@ jobs:
             libfontconfig1 \
             libxkbcommon0
 
-      - name: Build verified runtime wheelhouse with explicit CI consent
+      - name: Build canonical runtime and isolated Qt wheelhouses
         run: |
           set -Eeuo pipefail
           test "${GITHUB_ACTIONS:-}" = "true"
           test "${VIDEOBATCH_CI_ALLOW_PUBLIC_PYPI:-}" = "1"
+
           python scripts/build_toolchain_wheelhouse.py --scope runtime
           python scripts/toolchain.py verify --scope runtime
 
-      - name: Install runtime strictly offline from wheelhouse
+          QT_WHEELHOUSE="$RUNNER_TEMP/videobatch-qt-wheelhouse"
+          QT_HASH_LOCK="$RUNNER_TEMP/requirements-qt-resolved.lock"
+          QT_HASH_MANIFEST="$RUNNER_TEMP/qt-wheelhouse-sha256.json"
+          rm -rf "$QT_WHEELHOUSE"
+          mkdir -p "$QT_WHEELHOUSE"
+
+          python -m pip download \
+            --disable-pip-version-check \
+            --progress-bar off \
+            --only-binary=:all: \
+            --dest "$QT_WHEELHOUSE" \
+            --requirement requirements-qt.txt
+
+          QT_WHEELHOUSE="$QT_WHEELHOUSE" \
+          QT_HASH_LOCK="$QT_HASH_LOCK" \
+          QT_HASH_MANIFEST="$QT_HASH_MANIFEST" \
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          import zipfile
+          from email.parser import Parser
+          from pathlib import Path
+
+          wheelhouse = Path(os.environ["QT_WHEELHOUSE"])
+          lock_path = Path(os.environ["QT_HASH_LOCK"])
+          manifest_path = Path(os.environ["QT_HASH_MANIFEST"])
+          wheels = sorted(wheelhouse.glob("*.whl"))
+          assert wheels, "Qt-Wheelhouse ist leer"
+          assert not [path for path in wheelhouse.iterdir() if not path.name.endswith(".whl")]
+
+          entries = []
+          lock_lines = [
+              "# CI-erzeugt aus requirements-qt.txt; Installation erfolgt strikt offline.",
+              "# Jede Wheel-Datei ist mit SHA-256 gebunden.",
+          ]
+          for path in wheels:
+              digest = hashlib.sha256(path.read_bytes()).hexdigest()
+              with zipfile.ZipFile(path) as archive:
+                  metadata_names = [
+                      name for name in archive.namelist()
+                      if name.endswith(".dist-info/METADATA")
+                  ]
+                  assert len(metadata_names) == 1, path.name
+                  message = Parser().parsestr(
+                      archive.read(metadata_names[0]).decode("utf-8", errors="strict")
+                  )
+              name = str(message["Name"])
+              version = str(message["Version"])
+              assert name and version
+              entries.append(
+                  {"filename": path.name, "name": name, "version": version, "sha256": digest}
+              )
+              lock_lines.append(f"{name}=={version} --hash=sha256:{digest}")
+
+          lock_path.write_text("\n".join(lock_lines) + "\n", encoding="utf-8")
+          manifest_path.write_text(
+              json.dumps(
+                  {"schema_version": 1, "source": "requirements-qt.txt", "wheels": entries},
+                  indent=2,
+                  sort_keys=True,
+              ) + "\n",
+              encoding="utf-8",
+          )
+          print(f"QT_WHEELHOUSE_HASH_BOUND={len(entries)}")
+          PY
+
+          echo "QT_WHEELHOUSE=$QT_WHEELHOUSE" >> "$GITHUB_ENV"
+          echo "QT_HASH_LOCK=$QT_HASH_LOCK" >> "$GITHUB_ENV"
+          echo "QT_HASH_MANIFEST=$QT_HASH_MANIFEST" >> "$GITHUB_ENV"
+
+      - name: Install runtime and Qt strictly offline
         run: |
           set -Eeuo pipefail
           PIP_NO_INDEX=1 python scripts/toolchain.py install --scope runtime --replace
           RUNTIME_PY="$(python scripts/toolchain.py path --scope runtime --quiet | tail -n 1)"
           test -x "$RUNTIME_PY"
+
+          PIP_NO_INDEX=1 "$RUNTIME_PY" -m pip install \
+            --disable-pip-version-check \
+            --no-index \
+            --find-links "$QT_WHEELHOUSE" \
+            --require-hashes \
+            --only-binary=:all: \
+            --requirement "$QT_HASH_LOCK"
+          PIP_NO_INDEX=1 "$RUNTIME_PY" -m pip check
+
+          QT_WHEELHOUSE="$QT_WHEELHOUSE" \
+          QT_HASH_MANIFEST="$QT_HASH_MANIFEST" \
           "$RUNTIME_PY" - <<'PY'
+          import hashlib
           import importlib.metadata as metadata
-          import cryptography
-          import cffi
-          import pycparser
+          import json
+          import os
+          from pathlib import Path
+
           import PySide6
           import shiboken6
-          from PIL import Image
           from PySide6 import QtCore, QtGui, QtWidgets
+
+          manifest = json.loads(Path(os.environ["QT_HASH_MANIFEST"]).read_text(encoding="utf-8"))
+          wheelhouse = Path(os.environ["QT_WHEELHOUSE"])
+          for item in manifest["wheels"]:
+              path = wheelhouse / item["filename"]
+              assert hashlib.sha256(path.read_bytes()).hexdigest() == item["sha256"], path.name
 
           expected = {
               "PySide6": "6.11.2",
@@ -97,9 +188,10 @@ jobs:
           assert QtCore.qVersion() == "6.11.2", QtCore.qVersion()
           print("OFFLINE_QT_RUNTIME_IMPORTS_OK")
           PY
+
           python scripts/toolchain.py gate --scope runtime
 
-      - name: Prove offline install flags and consent contract
+      - name: Prove isolation, offline flags and consent contract
         run: |
           set -Eeuo pipefail
           python tests/test_qt_runtime_toolchain_contract.py

@@ -1,3 +1,6 @@
 -r requirements.lock
-# Native Qt-6-Oberfläche. Qt 6 ist jetzt Teil des kanonischen Runtime-Locks;
-# der produktive Legacy-Startpfad bleibt bis zum grünen Migrationsgate unverändert.
+# Native Qt-6-Oberfläche. Bewusst getrennt vom stabilen Legacy-Startpfad.
+PySide6==6.11.2
+PySide6-Addons==6.11.2
+PySide6-Essentials==6.11.2
+shiboken6==6.11.2
