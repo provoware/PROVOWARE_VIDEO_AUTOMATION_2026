@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import importlib.util
+import queue
 import subprocess
 import sys
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,6 +27,15 @@ def _run_import_probe(module: str) -> subprocess.CompletedProcess[str]:
         capture_output=True,
         check=False,
     )
+
+
+def _load_bootstrap_module():
+    path = ROOT / "scripts" / "bootstrap.py"
+    spec = importlib.util.spec_from_file_location("videobatch_test_bootstrap", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def test_config_import_does_not_load_tkinter() -> None:
@@ -73,6 +85,47 @@ def test_qt_phase3_owns_ready_lock_and_clean_shutdown_contract() -> None:
     )
     for token in required:
         assert token in source, f"Qt-Startvertrag fehlt: {token}"
+
+
+def test_bootstrap_retries_failed_normal_qt_start_in_safe_mode(tmp_path: Path) -> None:
+    bootstrap = _load_bootstrap_module()
+    events: queue.Queue[tuple[str, object]] = queue.Queue()
+    sink = bootstrap.EventSink(events, tmp_path / "bootstrap.log")
+    lock_handle = (tmp_path / "bootstrap.lock").open("a+", encoding="utf-8")
+    attempts: list[bool] = []
+
+    def fake_launch(_python, _environment, _sink, *, safe_mode: bool, timeout: float):
+        attempts.append(safe_mode)
+        assert timeout == 2.0
+        if not safe_mode:
+            raise bootstrap.BootstrapFailure("kontrollierter Normalstart-Fehler vor UI_READY")
+        return 4321, True
+
+    contract = {
+        "policy": {
+            "maximum_automatic_repair_attempts": 2,
+            "application_ready_timeout_seconds": 2,
+        }
+    }
+    with (
+        mock.patch.object(bootstrap, "acquire_lock", return_value=lock_handle),
+        mock.patch.object(bootstrap, "verify_project"),
+        mock.patch.object(bootstrap, "load_startup_contract", return_value=contract),
+        mock.patch.object(bootstrap, "install_user_launchers"),
+        mock.patch.object(bootstrap, "ensure_runtime", return_value=(Path(sys.executable), False)),
+        mock.patch.object(bootstrap, "run_startup_probe", return_value={"status": "ready"}),
+        mock.patch.object(bootstrap, "launch_application", side_effect=fake_launch),
+    ):
+        bootstrap.worker(sink)
+
+    assert attempts == [False, True]
+    received = []
+    while not events.empty():
+        received.append(events.get_nowait())
+    assert ("done", (4321, True)) in received
+    log = (tmp_path / "bootstrap.log").read_text(encoding="utf-8")
+    assert "NORMAL START FAILED" in log
+    assert "kontrollierter Normalstart-Fehler vor UI_READY" in log
 
 
 def test_wayland_startup_sources_compile() -> None:
