@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import os
+import shutil
 import socket
 import subprocess
 import sys
@@ -43,90 +44,69 @@ def ci_online_authorized() -> bool:
 
 
 def graphical_session_available() -> bool:
-    return bool(os.environ.get("DISPLAY", "").strip() or os.environ.get("WAYLAND_DISPLAY", "").strip())
+    return bool(os.environ.get("WAYLAND_DISPLAY", "").strip())
 
 
 def ask_online_repair_buttons(index_url: str) -> bool:
-    """Ask for one-shot online repair consent using buttons only.
+    """Ask for one-shot online repair consent through native KDE on Wayland.
 
-    This function intentionally lives in the low-level downloader so every user
-    path, including direct toolchain calls, reaches the same fail-closed gate
-    before DNS resolution or package download starts.
+    The downloader owns this fail-closed consent boundary so every user path,
+    including direct toolchain calls, must receive an explicit button decision
+    before DNS resolution or package download begins.
     """
     if not graphical_session_available():
         print(
-            "Online-Reparatur blockiert: Es ist keine grafische Sitzung für die erforderliche Button-Freigabe verfügbar.",
+            "Online-Reparatur blockiert: Keine native Wayland-Sitzung für die erforderliche Button-Freigabe erkannt.",
             file=sys.stderr,
         )
         return False
-    try:
-        import tkinter as tk
-    except Exception as exc:
-        print(f"Online-Reparatur blockiert: Grafischer Bestätigungsdialog ist nicht verfügbar ({exc}).", file=sys.stderr)
+    kdialog = shutil.which("kdialog")
+    if not kdialog:
+        print(
+            "Online-Reparatur blockiert: KDE-Dialogwerkzeug kdialog fehlt. Auf Kubuntu 26.04 kann das Paket 'kdialog' installiert werden.",
+            file=sys.stderr,
+        )
         return False
 
-    decision = {"allowed": False}
-    root = None
+    text = (
+        "Lokale Abhängigkeiten reichen nicht aus.\n\n"
+        "VideoBatch kann ausschließlich die exakt festgelegten fehlenden Python-Pakete "
+        "online laden, anschließend prüfen und lokal für spätere Offline-Starts speichern.\n\n"
+        f"Paketquelle: {index_url}\n"
+        "Projekt- und Mediendateien werden nicht hochgeladen.\n\n"
+        "Online reparieren?\n"
+        "Ja = Pakete beziehen · Nein = offline bleiben"
+    )
     try:
-        root = tk.Tk()
-        root.title("VideoBatch – Online-Reparatur")
-        root.resizable(False, False)
-        root.protocol("WM_DELETE_WINDOW", root.destroy)
-
-        frame = tk.Frame(root, padx=24, pady=20)
-        frame.grid(row=0, column=0, sticky="nsew")
-        tk.Label(
-            frame,
-            text="Lokale Abhängigkeiten reichen nicht aus.",
-            font=("Sans", 12, "bold"),
-            anchor="w",
-            justify="left",
-        ).grid(row=0, column=0, columnspan=2, sticky="w")
-        tk.Label(
-            frame,
-            text=(
-                "VideoBatch kann die exakt festgelegten fehlenden Python-Pakete online laden, "
-                "anschließend prüfen und lokal für Offline-Starts speichern.\n\n"
-                f"Paketquelle: {index_url}\n"
-                "Es werden keine Projekt- oder Mediendateien hochgeladen."
-            ),
-            wraplength=560,
-            anchor="w",
-            justify="left",
-        ).grid(row=1, column=0, columnspan=2, sticky="w", pady=(12, 20))
-
-        def decline() -> None:
-            decision["allowed"] = False
-            root.destroy()
-
-        def allow() -> None:
-            decision["allowed"] = True
-            root.destroy()
-
-        offline = tk.Button(frame, text="Offline bleiben", command=decline, width=18)
-        online = tk.Button(frame, text="Online reparieren", command=allow, width=18)
-        offline.grid(row=2, column=0, padx=(0, 8), sticky="e")
-        online.grid(row=2, column=1, padx=(8, 0), sticky="w")
-        root.bind("<Escape>", lambda _event: decline())
-        root.bind("<Return>", lambda _event: allow())
-        online.focus_set()
-        try:
-            root.attributes("-topmost", True)
-            root.after(350, lambda: root.winfo_exists() and root.attributes("-topmost", False))
-        except tk.TclError:
-            pass
-        root.mainloop()
-    except Exception as exc:
-        print(f"Online-Reparatur blockiert: Bestätigungsdialog konnte nicht geöffnet werden ({exc}).", file=sys.stderr)
+        completed = subprocess.run(
+            [
+                kdialog,
+                "--title",
+                "VideoBatch · Online-Reparatur",
+                "--yesno",
+                text,
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=300,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        print(
+            f"Online-Reparatur blockiert: KDE-Bestätigungsdialog konnte nicht geöffnet werden ({exc}).",
+            file=sys.stderr,
+        )
         return False
-    finally:
-        if root is not None:
-            try:
-                if root.winfo_exists():
-                    root.destroy()
-            except Exception:
-                pass
-    return bool(decision["allowed"])
+    if completed.returncode not in {0, 1}:
+        detail = (completed.stderr or "").strip()
+        print(
+            "Online-Reparatur blockiert: KDE-Bestätigungsdialog lieferte kein gültiges Ja/Nein-Ergebnis."
+            + (f" Detail: {detail}" if detail else ""),
+            file=sys.stderr,
+        )
+        return False
+    return completed.returncode == 0
 
 
 def online_authorized(index_url: str) -> bool:
