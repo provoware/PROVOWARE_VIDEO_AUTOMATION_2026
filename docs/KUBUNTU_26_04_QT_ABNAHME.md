@@ -4,7 +4,7 @@ Diese Abnahme ist **kein CI-Test**. Sie ist für den echten Zielrechner gedacht:
 
 **Kubuntu 26.04 LTS · KDE Plasma · Wayland · PySide6/Qt 6**
 
-Der bestehende kanonische Startpfad wird durch diese Prüfung **nicht** umgestellt.
+Der bestehende kanonische Startpfad wird durch diese Prüfung **nicht** umgestellt. Seine normale Launcherpflege bleibt unverändert und läuft während der Abnahme ausschließlich in einer frisch erzeugten, isolierten Test-Heimat.
 
 ## Start
 
@@ -12,9 +12,9 @@ Im Projektordner die Datei **`KUBUNTU_26_04_QT_ABNAHME.sh`** ausführen. In Dolp
 
 Der Durchlauf erledigt vier Schritte:
 
-1. echtes Kubuntu 26.04, KDE Plasma und Wayland prüfen,
-2. die bereits definierte, geprüfte Qt-Laufzeit vorbereiten,
-3. den realen `STARTEN.sh`-Pfad mit automatischem Test-Schließen prüfen,
+1. eine frische Test-Heimat erzeugen und alle persistenten Benutzerpfade (`HOME`, Data, Config, State und Cache) dorthin umleiten,
+2. echtes Kubuntu 26.04, KDE Plasma und Wayland prüfen und die geprüfte Qt-Laufzeit **in dieser Test-Heimat** vorbereiten,
+3. den realen `STARTEN.sh`-Pfad mit automatischem Test-Schließen prüfen und anschließend den Launcher-/Desktop-Hygienebericht fail-closed gegen die Test-Heimat validieren,
 4. die native Phase-3-Qt-Oberfläche öffnen, wichtige Ansichten fotografieren und die Ampelkarte anzeigen.
 
 Fehlen lokale Python-/Qt-Pakete, darf die vorhandene Toolchain sie online reparieren. **Vor dem ersten DNS-/PyPI-Zugriff erscheint die bereits implementierte grafische KDE-Bestätigung.** Ohne Zustimmung bleibt die Abnahme offline und unverändert.
@@ -27,6 +27,8 @@ Fehlen lokale Python-/Qt-Pakete, darf die vorhandene Toolchain sie online repari
 - verifizierte Runtime,
 - FFmpeg und FFprobe,
 - echter `STARTEN.sh`-Start bis `UI_READY` und sauberer Test-Abschluss,
+- Launcher, Desktop-Eintrag, Installationspfad, Config, State und Cache bleiben nachweisbar innerhalb der isolierten Test-Heimat,
+- geerbte Installations-/Portable-/Runtime-Overrides werden vor der Abnahme entfernt,
 - Mindestbildschirmfläche 1024 × 700,
 - Hauptfenster, Status, Start-Schaltfläche, Auftragstabelle und Workspace-Navigation,
 - Projekt- und Diagnosebereich,
@@ -34,9 +36,15 @@ Fehlen lokale Python-/Qt-Pakete, darf die vorhandene Toolchain sie online repari
 
 ## Ergebnis
 
-Jeder Lauf bekommt einen eigenen Ordner unter:
+Der Ein-Klick-Starter legt zunächst eine eindeutige Test-Heimat unter dem normalen Abnahme-Statusordner an und schreibt ihren Pfad nach `letzte-test-heimat.txt`. Innerhalb dieser Test-Heimat bekommt der eigentliche Qt-Prüflauf seinen eigenen Zeitstempel-Ordner. `XDG_RUNTIME_DIR` bleibt absichtlich der echte Sitzungspfad, weil Wayland und DBus darüber erreichbar sind; er ist kein persistenter Benutzer-Datenpfad.
 
-`~/.local/state/VideoBatchFast/acceptance/<datum_uhrzeit>/`
+Die dauerhafte Startlogdatei liegt unter:
+
+`~/.local/state/VideoBatchFast/acceptance/letzter-ein-klick-start.log`
+
+Der detaillierte Qt-Prüfordner liegt innerhalb der jeweils protokollierten Test-Heimat unter:
+
+`<test-heimat>/.local/state/VideoBatchFast/acceptance/<datum_uhrzeit>/`
 
 Darin liegen:
 
@@ -46,7 +54,7 @@ Darin liegen:
 - `startpfad.log` – Ergebnis des echten Startpfads,
 - `screenshots/` – native Qt-Screenshots.
 
-Es werden **keine Projekt- oder Mediendateien** für die Abnahme benötigt oder verändert.
+Es werden **keine Projekt- oder Mediendateien** für die Abnahme benötigt oder verändert. Die produktive `bootstrap.py` erhält keinen Test-Schalter und bleibt funktional unverändert; die Sicherheit entsteht ausschließlich durch die isolierte Abnahme-Umgebung und die nachgeschaltete Pfadvalidierung.
 
 ## Manuelle Sichtfreigabe
 

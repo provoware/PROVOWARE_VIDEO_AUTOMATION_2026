@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "STARTEN.sh"
+      - "KUBUNTU_26_04_QT_ABNAHME.sh"
       - "start.sh"
       - "pyproject.toml"
       - "VERSION.json"
@@ -22,6 +23,7 @@ on:
       - "scripts/build_toolchain_wheelhouse.py"
       - "scripts/startup_check.py"
       - "scripts/toolchain.py"
+      - "scripts/validate_acceptance_isolation.py"
       - "src/videobatch_fast/__main__.py"
       - "src/videobatch_fast/qt_*.py"
       - "src/videobatch_fast/linux_installation.py"
@@ -327,23 +329,38 @@ jobs:
         run: python tests/qt_phase3_smoke.py
 
       - name: Prepare verified private Qt runtime for launcher
+        env:
+          HOME: ${{ runner.temp }}/videobatch-start-normal/home
+          XDG_DATA_HOME: ${{ runner.temp }}/videobatch-start-normal/home/.local/share
+          XDG_STATE_HOME: ${{ runner.temp }}/videobatch-start-normal/home/.local/state
+          XDG_CONFIG_HOME: ${{ runner.temp }}/videobatch-start-normal/home/.config
+          XDG_CACHE_HOME: ${{ runner.temp }}/videobatch-start-normal/home/.cache
         run: |
           set -Eeuo pipefail
+          mkdir -p "$HOME" "$XDG_DATA_HOME" "$XDG_STATE_HOME" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME"
+          unset VIDEOBATCH_INSTALL_ROOT VIDEOBATCH_PORTABLE_LAUNCHER VIDEOBATCH_PORTABLE \
+            VIDEOBATCH_RUNTIME_PYTHON VIDEOBATCH_QUALITY_PYTHON VIDEOBATCH_TOOLCHAIN_PYTHON
           test "${GITHUB_ACTIONS:-}" = "true"
           test "${VIDEOBATCH_CI_ALLOW_PUBLIC_PYPI:-}" = "1"
           python scripts/build_toolchain_wheelhouse.py --scope runtime
           PIP_NO_INDEX=1 python scripts/toolchain.py install --scope runtime --replace
           python scripts/toolchain.py gate --scope runtime
 
-      - name: Prove STARTEN.sh to Qt UI-ready and clean shutdown
+      - name: Prove STARTEN.sh to Qt UI-ready, isolated user paths and clean shutdown
         env:
-          XDG_STATE_HOME: ${{ runner.temp }}/videobatch-start-normal/state
-          XDG_CONFIG_HOME: ${{ runner.temp }}/videobatch-start-normal/config
+          HOME: ${{ runner.temp }}/videobatch-start-normal/home
+          XDG_DATA_HOME: ${{ runner.temp }}/videobatch-start-normal/home/.local/share
+          XDG_STATE_HOME: ${{ runner.temp }}/videobatch-start-normal/home/.local/state
+          XDG_CONFIG_HOME: ${{ runner.temp }}/videobatch-start-normal/home/.config
+          XDG_CACHE_HOME: ${{ runner.temp }}/videobatch-start-normal/home/.cache
           VIDEOBATCH_TEST_AUTO_CLOSE_MS: "1200"
           VIDEOBATCH_DEBUG: "1"
         run: |
           set -Eeuo pipefail
-          chmod +x STARTEN.sh start.sh
+          mkdir -p "$HOME" "$XDG_DATA_HOME" "$XDG_STATE_HOME" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME"
+          unset VIDEOBATCH_INSTALL_ROOT VIDEOBATCH_PORTABLE_LAUNCHER VIDEOBATCH_PORTABLE \
+            VIDEOBATCH_RUNTIME_PYTHON VIDEOBATCH_QUALITY_PYTHON VIDEOBATCH_TOOLCHAIN_PYTHON
+          chmod +x STARTEN.sh start.sh scripts/validate_acceptance_isolation.py
           dbus-run-session -- timeout 90s ./STARTEN.sh --check-only \
             2>&1 | tee "$RUNNER_TEMP/starten-normal.log"
           grep -E 'BOOTSTRAP_READY pid=[0-9]+ mode=normal' "$RUNNER_TEMP/starten-normal.log"
@@ -353,6 +370,9 @@ jobs:
             echo "::error title=Tk leaked into supported launcher::Startup log references tkinter."
             exit 1
           fi
+          python scripts/validate_acceptance_isolation.py \
+            --test-home "$HOME" \
+            --report-root "$XDG_STATE_HOME/VideoBatchFast/installer"
 
       - name: Prove actual safe-mode Qt launch and clean marker
         env:
@@ -423,7 +443,7 @@ jobs:
           path: |
             /tmp/weston-phase3.log
             ${{ runner.temp }}/starten-normal.log
-            ${{ runner.temp }}/videobatch-start-normal/state/VideoBatchFast/logs/*
+            ${{ runner.temp }}/videobatch-start-normal/home/.local/state/VideoBatchFast/logs/*
             ${{ runner.temp }}/videobatch-start-safe/state/safe-bootstrap.log
           if-no-files-found: warn
           retention-days: 14
