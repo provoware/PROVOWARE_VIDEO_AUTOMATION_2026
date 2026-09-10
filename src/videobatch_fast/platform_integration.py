@@ -78,7 +78,13 @@ def detect_desktop_platform(
             release.get("VARIANT_ID", "").lower(),
         )
     )
-    is_kubuntu = "kubuntu" in distro_tokens
+    # Ubuntu flavours share Ubuntu's base /etc/os-release.  A real Kubuntu
+    # installation therefore normally reports ID=ubuntu and PRETTY_NAME=Ubuntu.
+    # Treat an Ubuntu base plus an actual KDE/Plasma session as Kubuntu-compatible
+    # while still rejecting Ubuntu/GNOME and non-Ubuntu KDE distributions.
+    has_kubuntu_branding = "kubuntu" in distro_tokens
+    has_ubuntu_base = distro_id in {"ubuntu", "kubuntu"}
+    is_kubuntu = has_kubuntu_branding or (has_ubuntu_base and is_kde)
 
     capabilities = {
         "ffmpeg": which("ffmpeg") is not None,

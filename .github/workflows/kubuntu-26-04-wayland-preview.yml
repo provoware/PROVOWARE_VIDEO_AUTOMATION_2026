@@ -113,6 +113,16 @@ jobs:
           cat /tmp/weston.log
           exit 1
 
+      - name: Prove VideoBatch accepts unmodified Ubuntu flavour identity
+        run: |
+          set -Eeuo pipefail
+          . /etc/os-release
+          test "$ID" = "ubuntu"
+          test "$VERSION_ID" = "26.04"
+          ! grep -qiE '^(VARIANT|VARIANT_ID)=.*kubuntu' /etc/os-release
+          python3 scripts/kubuntu_26_04_wayland_check.py --json | tee "$RUNNER_TEMP/platform-check.json"
+          grep -F '"status": "ready"' "$RUNNER_TEMP/platform-check.json"
+
       - name: Prove PySide6 uses the Wayland QPA backend
         run: |
           set -Eeuo pipefail

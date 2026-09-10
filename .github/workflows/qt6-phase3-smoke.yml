@@ -272,13 +272,13 @@ jobs:
           python -m pip install -r requirements-qt.txt
           python -m pip install pytest==8.4.2
 
-      - name: Mark CI image as Kubuntu-compatible target identity
+      - name: Verify real Ubuntu 26.04 flavour base identity
         run: |
           set -Eeuo pipefail
           . /etc/os-release
+          test "$ID" = "ubuntu"
           test "$VERSION_ID" = "26.04"
-          printf '%s\n' 'VARIANT="Kubuntu CI target"' 'VARIANT_ID=kubuntu' \
-            | sudo tee -a /etc/os-release >/dev/null
+          ! grep -qiE '^(VARIANT|VARIANT_ID)=.*kubuntu' /etc/os-release
 
       - name: Start headless Wayland compositor
         run: |
