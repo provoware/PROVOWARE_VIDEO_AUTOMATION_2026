@@ -7,7 +7,12 @@ case "$action" in
   gate) exec python3 "$ROOT_DIR/scripts/toolchain.py" gate --scope quality --run-external "$@" ;;
   status) exec python3 "$ROOT_DIR/scripts/toolchain.py" status "$@" ;;
   prepare) exec python3 "$ROOT_DIR/scripts/toolchain.py" prepare --scope quality --auto-repair "$@" ;;
-  build) exec python3 "$ROOT_DIR/scripts/toolchain.py" build --scope quality --allow-online "$@" ;;
+  build)
+    if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+      export VIDEOBATCH_CI_ALLOW_PUBLIC_PYPI=1
+    fi
+    exec python3 "$ROOT_DIR/scripts/toolchain.py" build --scope quality --allow-online "$@"
+    ;;
   contract|verify|install) exec python3 "$ROOT_DIR/scripts/toolchain.py" "$action" --scope quality "$@" ;;
   *) printf 'Unbekannte Aktion: %s\n' "$action" >&2; exit 2 ;;
 esac
