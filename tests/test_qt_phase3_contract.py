@@ -146,6 +146,7 @@ def test_acceptance_isolation_validator_is_fail_closed(tmp_path) -> None:
         "desktop_entries_removed": [],
         "canonical_desktop_entry": str(home / ".local/share/applications/videobatch-fast.desktop"),
         "canonical_launcher": str(home / ".local/bin/videobatch-fast"),
+        "controller_versions_removed": [],
         "protected_user_data": [
             str(home / ".config/VideoBatchFast"),
             str(home / ".local/state/VideoBatchFast"),
@@ -185,3 +186,65 @@ def test_remote_wayland_launcher_proves_the_same_isolated_user_boundary() -> Non
     launch = workflow.index("Prove STARTEN.sh to Qt UI-ready, isolated user paths and clean shutdown")
     assert prepare < launch
     assert workflow.count("VIDEOBATCH_INSTALL_ROOT VIDEOBATCH_PORTABLE_LAUNCHER VIDEOBATCH_PORTABLE") >= 2
+
+
+def _load_qt_acceptance_module():
+    import importlib.util
+
+    path = ROOT / "scripts" / "qt_desktop_acceptance.py"
+    spec = importlib.util.spec_from_file_location("qt_desktop_acceptance_test", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_internal_qt_acceptance_fails_closed_without_isolated_test_home(tmp_path) -> None:
+    acceptance = _load_qt_acceptance_module()
+    real_home = tmp_path / "real-home"
+    env = {
+        "HOME": str(real_home),
+        "XDG_DATA_HOME": str(real_home / ".local/share"),
+        "XDG_CONFIG_HOME": str(real_home / ".config"),
+        "XDG_STATE_HOME": str(real_home / ".local/state"),
+        "XDG_CACHE_HOME": str(real_home / ".cache"),
+    }
+    ok, detail = acceptance.acceptance_environment_status(env)
+    assert ok is False
+    assert "VIDEOBATCH_ACCEPTANCE_TEST_HOME fehlt" in detail
+
+    test_home = tmp_path / "test-home"
+    env.update({
+        "VIDEOBATCH_ACCEPTANCE_TEST_HOME": str(test_home),
+        "HOME": str(test_home),
+        "XDG_DATA_HOME": str(test_home / ".local/share"),
+        "XDG_CONFIG_HOME": str(test_home / ".config"),
+        "XDG_STATE_HOME": str(test_home / ".local/state"),
+        "XDG_CACHE_HOME": str(test_home / ".cache"),
+    })
+    ok, detail = acceptance.acceptance_environment_status(env)
+    assert ok is True, detail
+
+    source = _text(ROOT / "scripts" / "qt_desktop_acceptance.py")
+    main = source.index("def main() -> int:")
+    guard = source.index("acceptance_environment_status()", main)
+    first_write = source.index("folder = run_dir()", main)
+    assert guard < first_write
+    assert "VIDEOBATCH_ACCEPTANCE_TEST_HOME" not in _text(ROOT / "scripts" / "bootstrap.py")
+
+
+def test_remote_safe_mode_reuses_verified_runtime_without_leaving_its_test_home() -> None:
+    workflow = _text(ROOT / ".github" / "workflows" / "qt6-phase3-smoke.yml")
+    for token in (
+        "HOME: ${{ runner.temp }}/videobatch-start-safe/home",
+        "XDG_DATA_HOME: ${{ runner.temp }}/videobatch-start-safe/home/.local/share",
+        "XDG_STATE_HOME: ${{ runner.temp }}/videobatch-start-safe/home/.local/state",
+        "XDG_CONFIG_HOME: ${{ runner.temp }}/videobatch-start-safe/home/.config",
+        "XDG_CACHE_HOME: ${{ runner.temp }}/videobatch-start-safe/home/.cache",
+        'NORMAL_DATA_HOME="$RUNNER_TEMP/videobatch-start-normal/home/.local/share"',
+        'XDG_DATA_HOME="$NORMAL_DATA_HOME" python scripts/toolchain.py path --scope runtime --quiet',
+        'test -x "$RUNTIME_PY"',
+        '"scripts/qt_desktop_acceptance.py"',
+        '"docs/KUBUNTU_26_04_QT_ABNAHME.md"',
+    ):
+        assert token in workflow

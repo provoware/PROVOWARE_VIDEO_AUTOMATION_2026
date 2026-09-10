@@ -15,9 +15,11 @@ on:
       - "TOOLCHAIN_CONTRACT.json"
       - "STARTUP_CONTRACT.json"
       - "PLATFORM_SUPPORT.json"
+      - "docs/KUBUNTU_26_04_QT_ABNAHME.md"
       - "RELEASE_MANIFEST.json"
       - "scripts/ab_installer.py"
       - "scripts/bootstrap.py"
+      - "scripts/qt_desktop_acceptance.py"
       - "scripts/debug_launcher.py"
       - "scripts/build_release_manifest.py"
       - "scripts/build_toolchain_wheelhouse.py"
@@ -376,15 +378,22 @@ jobs:
 
       - name: Prove actual safe-mode Qt launch and clean marker
         env:
-          XDG_STATE_HOME: ${{ runner.temp }}/videobatch-start-safe/state
-          XDG_CONFIG_HOME: ${{ runner.temp }}/videobatch-start-safe/config
+          HOME: ${{ runner.temp }}/videobatch-start-safe/home
+          XDG_DATA_HOME: ${{ runner.temp }}/videobatch-start-safe/home/.local/share
+          XDG_STATE_HOME: ${{ runner.temp }}/videobatch-start-safe/home/.local/state
+          XDG_CONFIG_HOME: ${{ runner.temp }}/videobatch-start-safe/home/.config
+          XDG_CACHE_HOME: ${{ runner.temp }}/videobatch-start-safe/home/.cache
           VIDEOBATCH_TEST_AUTO_CLOSE_MS: "900"
           VIDEOBATCH_DEBUG: "1"
         run: |
           set -Eeuo pipefail
-          RUNTIME_PY="$(python scripts/toolchain.py path --scope runtime --quiet | tail -n 1)"
+          mkdir -p "$HOME" "$XDG_DATA_HOME" "$XDG_STATE_HOME" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME"
+          unset VIDEOBATCH_INSTALL_ROOT VIDEOBATCH_PORTABLE_LAUNCHER VIDEOBATCH_PORTABLE \
+            VIDEOBATCH_RUNTIME_PYTHON VIDEOBATCH_QUALITY_PYTHON VIDEOBATCH_TOOLCHAIN_PYTHON
+          NORMAL_DATA_HOME="$RUNNER_TEMP/videobatch-start-normal/home/.local/share"
+          RUNTIME_PY="$(XDG_DATA_HOME="$NORMAL_DATA_HOME" python scripts/toolchain.py path --scope runtime --quiet | tail -n 1)"
+          test -x "$RUNTIME_PY"
           export RUNTIME_PY
-          mkdir -p "$XDG_STATE_HOME"
           dbus-run-session -- python - <<'PY'
           import os
           import sys
@@ -444,7 +453,7 @@ jobs:
             /tmp/weston-phase3.log
             ${{ runner.temp }}/starten-normal.log
             ${{ runner.temp }}/videobatch-start-normal/home/.local/state/VideoBatchFast/logs/*
-            ${{ runner.temp }}/videobatch-start-safe/state/safe-bootstrap.log
+            ${{ runner.temp }}/videobatch-start-safe/home/.local/state/safe-bootstrap.log
           if-no-files-found: warn
           retention-days: 14
 

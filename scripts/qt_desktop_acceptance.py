@@ -13,8 +13,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
+SCRIPTS = ROOT / "scripts"
 sys.path.insert(0, str(SRC)) if str(SRC) not in sys.path else None
+sys.path.insert(0, str(SCRIPTS)) if str(SCRIPTS) not in sys.path else None
 
+from validate_acceptance_isolation import validate_environment
 from videobatch_fast.platform_integration import (
     PlatformCompatibilityError,
     detect_desktop_platform,
@@ -157,6 +160,23 @@ table{{width:100%;border-collapse:collapse}}td{{padding:9px;border-bottom:1px so
     (folder / "AMPEL.html").write_text(page, encoding="utf-8")
 
 
+def acceptance_environment_status(
+    environ: dict[str, str] | None = None,
+) -> tuple[bool, str]:
+    env = os.environ if environ is None else environ
+    raw = str(env.get("VIDEOBATCH_ACCEPTANCE_TEST_HOME", "")).strip()
+    if not raw:
+        return False, (
+            "VIDEOBATCH_ACCEPTANCE_TEST_HOME fehlt. "
+            "Die interne Qt-Abnahme darf nur über KUBUNTU_26_04_QT_ABNAHME.sh gestartet werden."
+        )
+    test_home = Path(raw).expanduser().resolve(strict=False)
+    errors = validate_environment(test_home, env)
+    if errors:
+        return False, "Abnahme-Isolation ungültig: " + " | ".join(errors)
+    return True, f"isolierte Test-Heimat bestätigt: {test_home}"
+
+
 def real_start(folder: Path) -> dict[str, object]:
     state = folder / "startpfad-state"
     config = folder / "startpfad-config"
@@ -250,6 +270,11 @@ def acceptance_dialog(report: dict, folder: Path, window, automated_green: bool)
 
 
 def main() -> int:
+    isolated, isolation_detail = acceptance_environment_status()
+    if not isolated:
+        print(f"🔴 Qt-Abnahme blockiert: {isolation_detail}")
+        return 4
+
     folder = run_dir()
     report = {
         "schema_version": 1,
@@ -265,6 +290,7 @@ def main() -> int:
     except PlatformCompatibilityError as exc:
         platform_ok, detail = False, str(exc)
     report["platform"] = platform.to_dict()
+    add(report, "platform", "Isolierte Test-Heimat", True, isolation_detail)
     add(report, "platform", "Kubuntu 26.04 + KDE Plasma + Wayland", platform_ok, detail)
     if not platform_ok:
         report["automated"] = {"platform": "red", "runtime": "yellow", "start": "yellow", "layout": "yellow", "diagnostics": "yellow"}
