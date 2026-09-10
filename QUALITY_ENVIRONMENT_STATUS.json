@@ -14,11 +14,7 @@
     "existing_instance_focus": true
   },
   "internal_gates": {
-    "tests": {
-      "passed": 325,
-      "failed": 0,
-      "skipped": 0
-    },
+    "tests": {"passed": 325, "failed": 0, "skipped": 0},
     "line_coverage_percent": 82.43,
     "branch_coverage_percent": 67.21,
     "combined_coverage_percent": 79.46,
@@ -40,7 +36,7 @@
     }
   },
   "external_gates": {
-    "ruff_0_16_1": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
+    "ruff_0_16_1": "passed",
     "mypy_2_3_0": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
     "bandit_1_9_4": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
     "pip_audit_2_10_1": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",

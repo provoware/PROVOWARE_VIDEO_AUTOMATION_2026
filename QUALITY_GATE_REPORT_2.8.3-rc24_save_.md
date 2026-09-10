@@ -2,6 +2,8 @@
 
 ## Ergebnis
 
+> **Provenienz-Hinweis zum aktuellen RC24-Kandidaten:** Dieser Bericht dokumentiert einen realen, erfolgreichen historischen Lauf vom 5. August 2026 auf Commit `2e33a2c00a0b2e7aa44f3db38a0a60a2d6998710`. Er darf nicht automatisch als Freigabe der vier Werkzeuge für spätere Kandidatenstände gelesen werden. Die kanonische Quelle `diagnostics/release_readiness/RELEASE_EVIDENCE.json` entscheidet über den aktuellen Stable-Status. Für Ruff 0.16.1 liegt inzwischen ein neuer aktueller Offline-Nachweis aus Run `34418854572` vor; MyPy, Bandit und pip-audit bleiben bis zu einer erneuten Provenienzprüfung offen.
+
 Die exakt gepinnte Qualitätswerkzeugkette wurde am 5. August 2026 vollständig und reproduzierbar ausgeführt. Alle vier Pflichtwerkzeuge bestanden ohne Quell- oder Sicherheitsbefund.
 
 | Werkzeug | Exakte Version | Ergebnis | Rückgabecode |
@@ -57,11 +59,8 @@ Geprüft wurde die exakt gepinnte Laufzeit-Lockdatei mit deaktivierter implizite
 
 Es wurden keine Anwendungsdateien geändert, weil kein konkreter reproduzierbarer Quell- oder Sicherheitsbefund vorlag. Der einzige erste Laufabbruch war eine fehlende Runner-Systemvoraussetzung (`python3-tk`) vor der Werkzeugausführung. Nach Ergänzung dieser bereits vom Toolchain-Laufzeitvertrag verlangten Systemkomponente bestand die unveränderte Werkzeugkette vollständig.
 
-## Verbleibende Stable-Gates
+## Einordnung der damaligen Schlussfolgerung
 
-Die externen Python-Qualitätswerkzeuge blockieren Stable nicht mehr. Weiterhin offen bleiben:
+Für den am 5. August 2026 geprüften Commit waren nach diesem Lauf die vier Python-Qualitätswerkzeuge grün. Für den **aktuellen** RC24-Kandidaten gilt jedoch ausschließlich die kanonische Release-Evidence. Dort ist Ruff 0.16.1 durch den neuen Run `34418854572` aktuell bestätigt; MyPy 2.3.0, Bandit 1.9.4 und pip-audit 2.10.1 bleiben bis zu einer erneuten Provenienzprüfung offen.
 
-1. physische KDE-Abnahme unter echten X11- und Wayland-Sitzungen,
-2. dokumentierter Langzeitrender mit großer Medienauswahl und langsamem externem Ziel.
-
-Der Kandidat bleibt bis zu diesen beiden Nachweisen `2.8.3-rc24` und wird nicht als Stable bezeichnet.
+Unabhängig davon bleiben die physische KDE-Abnahme unter echten X11- und Wayland-Sitzungen sowie der dokumentierte Langzeitrender mit großer Medienauswahl und langsamem externem Ziel erforderlich. Der Kandidat wird nicht als Stable bezeichnet.

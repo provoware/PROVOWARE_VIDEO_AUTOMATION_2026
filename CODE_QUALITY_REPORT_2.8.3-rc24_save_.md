@@ -30,4 +30,4 @@
 
 ## Offene externe Gates
 
-Ruff, MyPy, Bandit und pip-audit sind noch nicht abschließend in der exakt gesperrten Qualitätsumgebung ausgeführt. Physische KDE-Abnahme und Langzeitrender bleiben ebenfalls offen.
+Ruff 0.16.1 ist für den aktuellen Kandidaten in der exakt gesperrten Offline-Qualitätsumgebung mit 0 Findings bestanden. MyPy 2.3.0, Bandit 1.9.4 und pip-audit 2.10.1 benötigen noch einen aktuell provenienzgebundenen Nachweis. Physische KDE-Abnahme und Langzeitrender bleiben ebenfalls offen.

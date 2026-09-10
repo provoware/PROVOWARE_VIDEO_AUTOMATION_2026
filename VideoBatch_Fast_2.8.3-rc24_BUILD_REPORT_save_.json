@@ -58,7 +58,6 @@
     "scope_note": "Headless deterministic CI matrix; not a substitute for physical KDE acceptance."
   },
   "stable_blockers": [
-    "Ruff 0.16.1: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
     "MyPy 2.3.0: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
     "Bandit 1.9.4: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
     "pip-audit 2.10.1: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
@@ -80,12 +79,7 @@
     "targeted_rc24": "27/27 finalization and preview regressions",
     "selected_media_click_stress": "120 rapid selection changes, passed",
     "full_regression": "325/325",
-    "full_regression_groups": [
-      98,
-      89,
-      83,
-      55
-    ],
+    "full_regression_groups": [98, 89, 83, 55],
     "test_environment": "Xvfb X11 on exact exported PR tree"
   }
 }
