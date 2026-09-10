@@ -1,10 +1,8 @@
-# Exakter Offline-Qualitätsbericht 2.8.3-rc24
+# Exakter Offline-Qualitätsbericht · VideoBatch Fast 2.8.3-rc24
 
 ## Ergebnis
 
-> **Provenienz-Hinweis zum aktuellen RC24-Kandidaten:** Dieser Bericht dokumentiert einen realen, erfolgreichen historischen Lauf vom 5. August 2026 auf Commit `2e33a2c00a0b2e7aa44f3db38a0a60a2d6998710`. Er darf nicht automatisch als Freigabe der vier Werkzeuge für spätere Kandidatenstände gelesen werden. Die kanonische Quelle `diagnostics/release_readiness/RELEASE_EVIDENCE.json` entscheidet über den aktuellen Stable-Status. Für Ruff 0.16.1 liegt inzwischen ein neuer aktueller Offline-Nachweis aus Run `34418854572` vor; MyPy, Bandit und pip-audit bleiben bis zu einer erneuten Provenienzprüfung offen.
-
-Die exakt gepinnte Qualitätswerkzeugkette wurde am 5. August 2026 vollständig und reproduzierbar ausgeführt. Alle vier Pflichtwerkzeuge bestanden ohne Quell- oder Sicherheitsbefund.
+Der aktuelle RC24-Kandidat hat die vier verpflichtenden Python-Qualitätswerkzeuge vollständig bestanden. Maßgeblicher Nachweis ist GitHub-Actions-Lauf `34421827176` auf Commit `5d7c1949e7995126b7b58ca444ae6e112ecefcea`.
 
 | Werkzeug | Exakte Version | Ergebnis | Rückgabecode |
 |---|---:|---|---:|
@@ -13,54 +11,37 @@ Die exakt gepinnte Qualitätswerkzeugkette wurde am 5. August 2026 vollständig 
 | Bandit | 1.9.4 | bestanden | 0 |
 | pip-audit | 2.10.1 | bestanden | 0 |
 
-## Reproduzierbarer Ablauf
+## Reproduzierbarer Sicherheitsvertrag
 
-1. Die Paketbasis wurde einmalig mit ausdrücklich freigegebenem Zugriff auf den im Vertrag festgelegten öffentlichen Paketindex aufgebaut.
-2. 47 Wheel-Dateien wurden identifiziert, gehasht und in einem atomar veröffentlichten Wheelhouse gebunden.
-3. Wheelhouse, Manifest und aufgelöste Hash-Lockdatei wurden erfolgreich verifiziert.
-4. Die Qualitätsumgebung wurde ausschließlich mit `--no-index`, `--find-links` und `--require-hashes` installiert.
-5. Die installierten Versionen wurden über `importlib.metadata` gegen die Pflichtversionen geprüft.
-6. Alle vier Werkzeuge liefen getrennt. Rückgabecodes und vollständige Rohprotokolle wurden unabhängig vom Ergebnis als GitHub-Actions-Artefakt gespeichert.
+1. Die Werkzeugversionen sind exakt gepinnt.
+2. Das Wheelhouse wird vollständig erzeugt, inventarisiert und per SHA-256 manifestiert.
+3. Die Qualitätsumgebung wird anschließend ausschließlich mit `--no-index`, `--find-links` und `--require-hashes` installiert.
+4. Die tatsächlich installierten Versionen werden gegen die Pflichtversionen geprüft.
+5. pip-audit erhält vor dem Netzwerksperrlauf einen reproduzierbaren Cachebestand.
+6. Der eigentliche Werkzeuglauf verwendet `run_external_quality.py --mode required --offline`; der Netzwerkzugriff ist dabei blockiert.
+7. Die Repository-Arbeitskopie wird nach dem Lauf auf unveränderten Zustand geprüft.
 
-## Einzelbefunde
+## Provenienz
 
-### Ruff 0.16.1
+- GitHub-Actions-Lauf: `34421827176`
+- geprüfter Commit: `5d7c1949e7995126b7b58ca444ae6e112ecefcea`
+- Evidence-Artefakt-ID: `10131186987`
+- Evidence-Artefakt-Digest: `sha256:c11ed40a13264a7912154c6fee3e7f70108b20218a06442254ceb4fb7158e371`
+- Wheelhouse-Manifest SHA-256: `e1d99b53efc8b65527a7d5b292258439c2562b5d80354d8ae342e1cae7b59844`
+- aufgelöste Hash-Lockdatei SHA-256: `3fe96551379db60b501b749e66b9a807d7c6a6ba0e7000770a97e8003cb40ca1`
+- pip-audit-Cache-Inventar SHA-256: `bbd31f0bae51c2dda936042d3815bed51d178339c214551332e2fc67eb5ff4d8`
+- Netzwerkblocker im Werkzeuglauf: aktiv
 
-`All checks passed!`
+## Bandit-Reparatur und Regression
 
-Geprüfter Umfang: `src`, `scripts`, `tests` gemäß `pyproject.toml`.
+Der erste vollständige aktuelle Lauf auf Commit `caeb6c48a7492937340ece58fc90461939dc6fe9` lieferte genau einen Bandit-Befund `B112` niedriger Schwere. Ursache war ein pauschales `except Exception: continue` beim Lesen der `text`-Option eines Tk-Widgets.
 
-### MyPy 2.3.0
+Die Korrektur verengt den erwarteten Fehlerfall auf `tkinter.TclError` und setzt bei fehlender `text`-Option einen definierten Leerwert. Es wurde weder `#nosec` verwendet noch die Bandit-Konfiguration gelockert. Der vollständige Wiederholungslauf bestand anschließend mit Rückgabecode 0.
 
-`Success: no issues found in 10 source files`
+## Historischer Nachweis
 
-Geprüfter Umfang: die zehn im verbindlichen externen Qualitätsrunner festgelegten sicherheits- und laufzeitkritischen Module.
+Der ältere Vier-Werkzeug-Lauf `30972392104` vom 5. August 2026 auf Commit `2e33a2c00a0b2e7aa44f3db38a0a60a2d6998710` bleibt im Repository als historische Provenienz erhalten. Für den aktuellen Kandidaten ist er nicht mehr erforderlich, weil nun ein direkt gebundener aktueller Nachweis vorliegt.
 
-### Bandit 1.9.4
+## Freigabegrenze
 
-Rückgabecode 0; keine Sicherheitsbefunde. Bandit gab ausschließlich harmlose Parserhinweise zu natürlichen Wörtern in Kommentaren aus. Diese Hinweise sind keine Test-IDs, keine Schwachstellen und rechtfertigen keine Quelländerung.
-
-### pip-audit 2.10.1
-
-`No known vulnerabilities found`
-
-Geprüft wurde die exakt gepinnte Laufzeit-Lockdatei mit deaktivierter impliziter Pip-Auflösung.
-
-## Nachweis
-
-- Workflow-Lauf: `30972392104`
-- geprüfter Commit: `2e33a2c00a0b2e7aa44f3db38a0a60a2d6998710`
-- Artefakt: `pinned-offline-quality-evidence`
-- Artefakt-ID: `8917005198`
-- Artefakt-SHA-256: `4bc19bb1f3d935f8fab4b197ba9b6a1e5dc3e962b7bc11e28a41a3c5c95b58fd`
-- Aufbewahrung: 30 Tage
-
-## Patchentscheidung
-
-Es wurden keine Anwendungsdateien geändert, weil kein konkreter reproduzierbarer Quell- oder Sicherheitsbefund vorlag. Der einzige erste Laufabbruch war eine fehlende Runner-Systemvoraussetzung (`python3-tk`) vor der Werkzeugausführung. Nach Ergänzung dieser bereits vom Toolchain-Laufzeitvertrag verlangten Systemkomponente bestand die unveränderte Werkzeugkette vollständig.
-
-## Einordnung der damaligen Schlussfolgerung
-
-Für den am 5. August 2026 geprüften Commit waren nach diesem Lauf die vier Python-Qualitätswerkzeuge grün. Für den **aktuellen** RC24-Kandidaten gilt jedoch ausschließlich die kanonische Release-Evidence. Dort ist Ruff 0.16.1 durch den neuen Run `34418854572` aktuell bestätigt; MyPy 2.3.0, Bandit 1.9.4 und pip-audit 2.10.1 bleiben bis zu einer erneuten Provenienzprüfung offen.
-
-Unabhängig davon bleiben die physische KDE-Abnahme unter echten X11- und Wayland-Sitzungen sowie der dokumentierte Langzeitrender mit großer Medienauswahl und langsamem externem Ziel erforderlich. Der Kandidat wird nicht als Stable bezeichnet.
+Die Python-Qualitätsgates sind vollständig grün. **Stable ist trotzdem noch nicht freigegeben.** Es fehlen weiterhin zwei reale Nachweise auf demselben finalen Kandidaten: die physische KDE-X11-/Wayland-Abnahme und der dokumentierte Langzeitrender mit großer Medienauswahl auf langsamem externem Ziel.

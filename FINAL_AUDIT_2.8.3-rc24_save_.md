@@ -27,7 +27,7 @@ Alle Punkte wurden korrigiert und mit Regressionen abgesichert.
 
 ## Audit-Ergebnis
 
-- 323/323 Tests bestanden
+- 325/325 Tests bestanden
 - 0 übersprungene Tests im finalen Xvfb-Lauf
 - 82,43 % Statement-/Zeilenabdeckung
 - 67,21 % Branch-Abdeckung
@@ -41,14 +41,13 @@ Alle Punkte wurden korrigiert und mit Regressionen abgesichert.
 
 ## Freigabegrenze
 
-RC24 ist ein Releasekandidat. Stable bleibt blockiert, bis externe Qualitätswerkzeuge,
-physische KDE-X11-/Wayland-Abnahme und Langzeitrender vollständig grün sind.
+RC24 ist ein Releasekandidat. Die exakt gepinnten Python-Qualitätswerkzeuge sind vollständig grün. Stable bleibt nur noch blockiert, bis die physische KDE-X11-/Wayland-Abnahme und der reale Langzeitrender auf demselben finalen Kandidaten vollständig grün sind.
 
 ## Frischpaketprüfung
 
-Ein neu entpacktes Vorab-ZIP bestand Manifest, Version, isolierte Kompilierung, Architektur, interne Qualität sowie 323/323 Tests. Der Diagnosepfad wurde dabei absichtlich unter einem noch nicht vorhandenen Elternordner angelegt.
+Ein neu entpacktes Vorab-ZIP bestand Manifest, Version, isolierte Kompilierung, Architektur, interne Qualität sowie 325/325 Tests. Der Diagnosepfad wurde dabei absichtlich unter einem noch nicht vorhandenen Elternordner angelegt.
 
 
 ## Repository-Abschluss
 
-Der aktive Projektstamm enthält nur die aktuellen RC24-Nachweise. Frühere Berichte bleiben im historischen Archiv nachvollziehbar, werden jedoch nicht ausgeliefert. Der Release-Dateivertrag, die zweispaltige README-Tabelle und die `_save_`-Kennzeichnung sind maschinell geprüft. Stable bleibt wegen der sechs ausdrücklich genannten externen und physischen Gates gesperrt.
+Der aktive Projektstamm enthält nur die aktuellen RC24-Nachweise. Frühere Berichte bleiben im historischen Archiv nachvollziehbar, werden jedoch nicht ausgeliefert. Der Release-Dateivertrag, die zweispaltige README-Tabelle und die `_save_`-Kennzeichnung sind maschinell geprüft. Stable bleibt wegen der zwei ausdrücklich verbleibenden realen Gates gesperrt: physische KDE-X11-/Wayland-Abnahme und Langzeitrender.

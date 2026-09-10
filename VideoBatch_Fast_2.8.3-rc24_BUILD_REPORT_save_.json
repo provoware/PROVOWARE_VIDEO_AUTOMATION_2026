@@ -58,9 +58,6 @@
     "scope_note": "Headless deterministic CI matrix; not a substitute for physical KDE acceptance."
   },
   "stable_blockers": [
-    "MyPy 2.3.0: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
-    "Bandit 1.9.4: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
-    "pip-audit 2.10.1: Exakt gepinnter Offline-Lauf noch nicht abgeschlossen",
     "Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless",
     "Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt"
   ],

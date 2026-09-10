@@ -34,7 +34,12 @@
     "targeted_rc24": "27/27 finalization and preview regressions",
     "selected_media_click_stress": "120 rapid selection changes, passed",
     "full_regression": "325/325",
-    "full_regression_groups": [98, 89, 83, 55],
+    "full_regression_groups": [
+      98,
+      89,
+      83,
+      55
+    ],
     "test_environment": "Xvfb X11 on exact exported PR tree"
   },
   "matrix": {
@@ -44,10 +49,26 @@
     "workflow_run_id": 30966067548,
     "verified_commit": "ef003d2c01fa94b899d0ebac9947f1795dd23e8f",
     "targets": [
-      {"os": "ubuntu-22.04", "session": "x11", "status": "passed"},
-      {"os": "ubuntu-22.04", "session": "wayland", "status": "passed"},
-      {"os": "ubuntu-24.04", "session": "x11", "status": "passed"},
-      {"os": "ubuntu-24.04", "session": "wayland", "status": "passed"}
+      {
+        "os": "ubuntu-22.04",
+        "session": "x11",
+        "status": "passed"
+      },
+      {
+        "os": "ubuntu-22.04",
+        "session": "wayland",
+        "status": "passed"
+      },
+      {
+        "os": "ubuntu-24.04",
+        "session": "x11",
+        "status": "passed"
+      },
+      {
+        "os": "ubuntu-24.04",
+        "session": "wayland",
+        "status": "passed"
+      }
     ],
     "scope_note": "Headless deterministic CI matrix; not a substitute for physical KDE acceptance."
   },
@@ -82,43 +103,145 @@
     "ready_suffix": "_save_",
     "policy": "Only standalone user and release deliverables receive _save_. Source modules, CI workflows, canonical manifests, entrypoints and README retain stable technical names.",
     "ready": [
-      {"path": "START_HIER_save_.md", "label": "Schnellstart", "evidence": "Geprüfter Nutzerstart und sichere erste Schritte"},
-      {"path": "AUTOINSTALLATION_save_.md", "label": "Installationsanleitung", "evidence": "Benutzerpfade, A/B-Slots und Berechtigungsschutz dokumentiert"},
-      {"path": "PROJEKTORDNERSTRUKTUR_save_.md", "label": "Projektübersicht", "evidence": "Ordner, Start, Sicherheit und Funktionen beschrieben"},
-      {"path": "RELEASE_NOTES_save_.md", "label": "Releasehinweise", "evidence": "Aktueller RC24-Funktionsstand dokumentiert"},
-      {"path": "TEST_REPORT_save_.md", "label": "Testbericht", "evidence": "Automatisierte und offene Prüfungen getrennt ausgewiesen"},
-      {"path": "FRESH_PACKAGE_REPORT_save_.md", "label": "Paketbericht", "evidence": "Saubere Paketprüfung für RC24 dokumentiert"},
-      {"path": "CODE_QUALITY_REPORT_2.8.3-rc24_save_.md", "label": "Codequalitätsbericht", "evidence": "Interne Qualitätsprüfung ohne Befund"},
-      {"path": "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md", "label": "Implementierungsbericht", "evidence": "Umgesetzte Funktions- und Sicherheitsverträge dokumentiert"},
-      {"path": "FINAL_AUDIT_2.8.3-rc24_save_.md", "label": "RC-Abschlussaudit", "evidence": "RC-Gates und offene Stable-Gates ehrlich getrennt"},
-      {"path": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json", "label": "Maschinenlesbarer Buildbericht", "evidence": "Aus der kanonischen RELEASE_EVIDENCE.json erzeugt"}
+      {
+        "path": "START_HIER_save_.md",
+        "label": "Schnellstart",
+        "evidence": "Geprüfter Nutzerstart und sichere erste Schritte"
+      },
+      {
+        "path": "AUTOINSTALLATION_save_.md",
+        "label": "Installationsanleitung",
+        "evidence": "Benutzerpfade, A/B-Slots und Berechtigungsschutz dokumentiert"
+      },
+      {
+        "path": "PROJEKTORDNERSTRUKTUR_save_.md",
+        "label": "Projektübersicht",
+        "evidence": "Ordner, Start, Sicherheit und Funktionen beschrieben"
+      },
+      {
+        "path": "RELEASE_NOTES_save_.md",
+        "label": "Releasehinweise",
+        "evidence": "Aktueller RC24-Funktionsstand dokumentiert"
+      },
+      {
+        "path": "TEST_REPORT_save_.md",
+        "label": "Testbericht",
+        "evidence": "Automatisierte und offene Prüfungen getrennt ausgewiesen"
+      },
+      {
+        "path": "FRESH_PACKAGE_REPORT_save_.md",
+        "label": "Paketbericht",
+        "evidence": "Saubere Paketprüfung für RC24 dokumentiert"
+      },
+      {
+        "path": "CODE_QUALITY_REPORT_2.8.3-rc24_save_.md",
+        "label": "Codequalitätsbericht",
+        "evidence": "Interne Qualitätsprüfung ohne Befund"
+      },
+      {
+        "path": "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md",
+        "label": "Implementierungsbericht",
+        "evidence": "Umgesetzte Funktions- und Sicherheitsverträge dokumentiert"
+      },
+      {
+        "path": "FINAL_AUDIT_2.8.3-rc24_save_.md",
+        "label": "RC-Abschlussaudit",
+        "evidence": "RC-Gates und offene Stable-Gates ehrlich getrennt"
+      },
+      {
+        "path": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
+        "label": "Maschinenlesbarer Buildbericht",
+        "evidence": "Aus der kanonischen RELEASE_EVIDENCE.json erzeugt"
+      }
     ],
     "unfinished": [
-      {"path": "TODO.md", "label": "Offene Arbeitsliste", "reason": "Enthält bewusst die verbleibenden Stable-Gates"},
-      {"path": "QUALITY_GATE_ATTEMPT_2.8.3-rc24.md", "label": "Externe Qualitätswerkzeuge", "reason": "Ruff 0.16.1 ist aktuell offline bestanden; MyPy, Bandit und pip-audit bleiben für den aktuellen Kandidaten offen"},
-      {"path": "STABLE_GATE_ITERATION_2.8.3-rc24_2026-08-04.md", "label": "Stable-Freigabeiteration", "reason": "Stable-Freigabe ist ausdrücklich noch blockiert"},
-      {"path": "docs/LONG_RENDER_2.8.3-rc24.md", "label": "Langzeitrender", "reason": "Realer Langzeitrender mit großer Auswahl und langsamem Ziel fehlt"},
-      {"path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md", "label": "Stable-Abnahmenachweis", "reason": "Physische Desktop- und Langzeitnachweise fehlen"},
-      {"path": "VISUAL_DESKTOP_APPROVAL.md", "label": "Desktop-Sichtprüfung", "reason": "Physische KDE-X11-/Wayland-Abnahme bleibt offen"},
-      {"path": "QUALITY_ENVIRONMENT_STATUS.json", "label": "Qualitätsumgebung", "reason": "Ruff 0.16.1 ist freigegeben; MyPy, Bandit und pip-audit sind für den aktuellen Kandidaten noch nicht vollständig freigegeben"},
-      {"path": "VISUAL_INSPECTION_MANIFEST.json", "label": "Visuelles Prüfmanifest", "reason": "Aktueller physischer Lauf ist nicht vollständig bestätigt"}
+      {
+        "path": "TODO.md",
+        "label": "Offene Arbeitsliste",
+        "reason": "Enthält bewusst die verbleibenden Stable-Gates"
+      },
+      {
+        "path": "QUALITY_GATE_ATTEMPT_2.8.3-rc24.md",
+        "label": "Externe Qualitätswerkzeuge",
+        "reason": "Technische Provenienzdatei der inzwischen bestandenen Python-Qualitätsgates; bleibt bewusst ohne _save_-Suffix und ist kein Stable-Blocker mehr"
+      },
+      {
+        "path": "STABLE_GATE_ITERATION_2.8.3-rc24_2026-08-04.md",
+        "label": "Stable-Freigabeiteration",
+        "reason": "Stable-Freigabe ist ausdrücklich noch blockiert"
+      },
+      {
+        "path": "docs/LONG_RENDER_2.8.3-rc24.md",
+        "label": "Langzeitrender",
+        "reason": "Realer Langzeitrender mit großer Auswahl und langsamem Ziel fehlt"
+      },
+      {
+        "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
+        "label": "Stable-Abnahmenachweis",
+        "reason": "Physische Desktop- und Langzeitnachweise fehlen"
+      },
+      {
+        "path": "VISUAL_DESKTOP_APPROVAL.md",
+        "label": "Desktop-Sichtprüfung",
+        "reason": "Physische KDE-X11-/Wayland-Abnahme bleibt offen"
+      },
+      {
+        "path": "QUALITY_ENVIRONMENT_STATUS.json",
+        "label": "Qualitätsumgebung",
+        "reason": "Maschinenlesbare technische Statusdatei; alle Python-Qualitätsgates sind bestanden, Stable bleibt nur wegen physischer Desktop- und Langzeitnachweise offen"
+      },
+      {
+        "path": "VISUAL_INSPECTION_MANIFEST.json",
+        "label": "Visuelles Prüfmanifest",
+        "reason": "Aktueller physischer Lauf ist nicht vollständig bestätigt"
+      }
     ]
   },
   "stable_gates": [
-    {"id": "ruff_0_16_1", "label": "Ruff 0.16.1", "status": "passed", "reason": "Exakt gepinnter Offline-Lauf bestanden; 0 Findings, GitHub Actions Run 34418854572, Commit eda699f3d1159cf0a1104ec7a8c880faf6bb93bd"},
-    {"id": "mypy_2_3_0", "label": "MyPy 2.3.0", "status": "open", "reason": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen"},
-    {"id": "bandit_1_9_4", "label": "Bandit 1.9.4", "status": "open", "reason": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen"},
-    {"id": "pip_audit_2_10_1", "label": "pip-audit 2.10.1", "status": "open", "reason": "Exakt gepinnter Offline-Lauf noch nicht abgeschlossen"},
-    {"id": "physical_kde_x11_wayland", "label": "Physische KDE-X11-/Wayland-Abnahme", "status": "open", "reason": "Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless"},
-    {"id": "large_media_soak", "label": "Langzeitrender mit großer Medienauswahl", "status": "open", "reason": "Realer Lauf auf langsamem externem Ziel fehlt"}
+    {
+      "id": "ruff_0_16_1",
+      "label": "Ruff 0.16.1",
+      "status": "passed",
+      "reason": "Exakt gepinnter Offline-Lauf bestanden; Ruff 0.16.1, Rückgabecode 0, GitHub Actions Run 34421827176, Commit 5d7c1949e7995126b7b58ca444ae6e112ecefcea"
+    },
+    {
+      "id": "mypy_2_3_0",
+      "label": "MyPy 2.3.0",
+      "status": "passed",
+      "reason": "Exakt gepinnter Offline-Lauf bestanden; MyPy 2.3.0, Rückgabecode 0, GitHub Actions Run 34421827176, Commit 5d7c1949e7995126b7b58ca444ae6e112ecefcea"
+    },
+    {
+      "id": "bandit_1_9_4",
+      "label": "Bandit 1.9.4",
+      "status": "passed",
+      "reason": "Exakt gepinnter Offline-Lauf bestanden; Bandit 1.9.4, Rückgabecode 0 nach fachlicher B112-Korrektur, GitHub Actions Run 34421827176, Commit 5d7c1949e7995126b7b58ca444ae6e112ecefcea"
+    },
+    {
+      "id": "pip_audit_2_10_1",
+      "label": "pip-audit 2.10.1",
+      "status": "passed",
+      "reason": "Exakt gepinnter Offline-Lauf bestanden; pip-audit 2.10.1, Rückgabecode 0, GitHub Actions Run 34421827176, Commit 5d7c1949e7995126b7b58ca444ae6e112ecefcea"
+    },
+    {
+      "id": "physical_kde_x11_wayland",
+      "label": "Physische KDE-X11-/Wayland-Abnahme",
+      "status": "open",
+      "reason": "Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless"
+    },
+    {
+      "id": "large_media_soak",
+      "label": "Langzeitrender mit großer Medienauswahl",
+      "status": "open",
+      "reason": "Realer Lauf auf langsamem externem Ziel fehlt"
+    }
   ],
   "stable_ready": false,
   "progress": {
-    "percent": 83,
-    "completed": 25,
-    "open": 5,
+    "percent": 93,
+    "completed": 28,
+    "open": 2,
     "total": 30,
-    "current_todo": "Ruff 0.16.1 offline bestanden; MyPy, Bandit, pip-audit sowie physische Desktop- und Langzeit-Gates bleiben offen"
+    "current_todo": "Python-Qualitätsgates vollständig offline bestanden; nur physische KDE-X11-/Wayland-Abnahme und realer Langzeitrender bleiben offen"
   },
   "approved_quality_report": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
   "artifact_policy": "full-project-zip-before-stable",
@@ -151,6 +274,41 @@
       "exit_code": 0,
       "configuration": "pyproject.toml",
       "scope": "."
+    },
+    "python_stable_gates": {
+      "status": "passed",
+      "commit": "5d7c1949e7995126b7b58ca444ae6e112ecefcea",
+      "workflow_run_id": 34421827176,
+      "artifact_id": 10131186987,
+      "artifact_digest": "sha256:c11ed40a13264a7912154c6fee3e7f70108b20218a06442254ceb4fb7158e371",
+      "install_contract": "toolchain.py --no-index --find-links --require-hashes",
+      "execution_contract": "run_external_quality.py --mode required --offline",
+      "network_guard": true,
+      "wheelhouse_manifest_sha256": "e1d99b53efc8b65527a7d5b292258439c2562b5d80354d8ae342e1cae7b59844",
+      "resolved_lock_sha256": "3fe96551379db60b501b749e66b9a807d7c6a6ba0e7000770a97e8003cb40ca1",
+      "pip_audit_cache_inventory_sha256": "bbd31f0bae51c2dda936042d3815bed51d178339c214551332e2fc67eb5ff4d8",
+      "results": {
+        "ruff": {
+          "version": "0.16.1",
+          "status": "pass",
+          "returncode": 0
+        },
+        "mypy": {
+          "version": "2.3.0",
+          "status": "pass",
+          "returncode": 0
+        },
+        "bandit": {
+          "version": "1.9.4",
+          "status": "pass",
+          "returncode": 0
+        },
+        "pip-audit": {
+          "version": "2.10.1",
+          "status": "pass",
+          "returncode": 0
+        }
+      }
     }
   }
 }

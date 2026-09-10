@@ -1,34 +1,43 @@
 # QUALITY GATE ATTEMPT · VideoBatch Fast 2.8.3-rc24
 
-**Status:** TEILWEISE BESTANDEN · keine Stable-Freigabe
+**Status:** PYTHON-QUALITÄTSGATES VOLLSTÄNDIG BESTANDEN · Stable weiterhin gesperrt
 
 **Kanonische Quelle:** `diagnostics/release_readiness/RELEASE_EVIDENCE.json`
 
-Dieser Bericht dokumentiert die externen Qualitäts-Gates des aktuellen RC24-Kandidaten. Ein Werkzeug gilt nur dann für den aktuellen Kandidaten als bestanden, wenn seine Evidence mit dem aktuellen Prüfstand nachvollziehbar verknüpft ist.
+Diese technische Provenienzdatei dokumentiert die externen Python-Qualitätsgates des aktuellen RC24-Kandidaten. Sie bleibt bewusst ohne `_save_`-Suffix, weil sie den Arbeits- und Reparaturpfad festhält; der releasefertige Ergebnisbericht ist `QUALITY_GATE_REPORT_2.8.3-rc24_save_.md`.
 
-## Aktuell bestandener Werkzeug-Gate
+## Aktueller provenienzgebundener Lauf
 
-- **Ruff 0.16.1: BESTANDEN.** Exakt gepinnter Offline-Lauf mit deaktiviertem Paketindex (`pip --no-index`) aus einem SHA-256-geprüften Wheelhouse.
-- GitHub-Actions-Lauf: `34418854572`
-- geprüfter Commit: `eda699f3d1159cf0a1104ec7a8c880faf6bb93bd`
-- Findings: `0`
-- Rückgabecode: `0`
-- Wheel-SHA-256: `39897739f112253ee4fdd2e8aa9a4f9ded99fb2be367d5f31dfa4ded6025584c`
+- GitHub-Actions-Lauf: `34421827176`
+- geprüfter Commit: `5d7c1949e7995126b7b58ca444ae6e112ecefcea`
+- Qualitätsumgebung: exakt gepinnte Wheel-Versionen, SHA-256-manifestiertes Wheelhouse, Installation mit `--no-index`, `--find-links` und `--require-hashes`
+- eigentlicher Werkzeuglauf: Netzwerkzugriff durch den Offline-Guard blockiert
+- Wheelhouse-Manifest SHA-256: `e1d99b53efc8b65527a7d5b292258439c2562b5d80354d8ae342e1cae7b59844`
+- aufgelöste Hash-Lockdatei SHA-256: `3fe96551379db60b501b749e66b9a807d7c6a6ba0e7000770a97e8003cb40ca1`
+- pip-audit-Cache-Inventar SHA-256: `bbd31f0bae51c2dda936042d3815bed51d178339c214551332e2fc67eb5ff4d8`
 
-## Noch offene Werkzeug-Gates
+| Werkzeug | Version | Ergebnis | Rückgabecode |
+|---|---:|---|---:|
+| Ruff | 0.16.1 | BESTANDEN | 0 |
+| MyPy | 2.3.0 | BESTANDEN | 0 |
+| Bandit | 1.9.4 | BESTANDEN | 0 |
+| pip-audit | 2.10.1 | BESTANDEN | 0 |
 
-- **MyPy 2.3.0:** offen – exakt gepinnter Offline-Nachweis für den aktuellen Kandidaten noch nicht bestätigt.
-- **Bandit 1.9.4:** offen – exakt gepinnter Offline-Nachweis für den aktuellen Kandidaten noch nicht bestätigt.
-- **pip-audit 2.10.1:** offen – exakt gepinnter Offline-Nachweis für den aktuellen Kandidaten noch nicht bestätigt.
+## Reparierter Bandit-Befund
+
+Der erste aktuelle Voll-Lauf auf Commit `caeb6c48a7492937340ece58fc90461939dc6fe9` bestand Ruff, MyPy und pip-audit, meldete aber genau einen Bandit-Befund `B112` mit niedriger Schwere in `src/videobatch_fast/canonical_ui.py`. Dort wurde ein allgemeines `except Exception: continue` beim Lesen eines Tk-Widget-Textes still verworfen.
+
+Die Korrektur verengt die erwartete Ausnahme auf `tkinter.TclError` und setzt bei einer nicht vorhandenen `text`-Option einen definierten Leerwert. Es wurde **kein** `#nosec`, keine Bandit-Ausnahme und keine Lockerung der Sicherheitskonfiguration verwendet. Der vollständige Wiederholungslauf `34421827176` bestand anschließend mit Bandit-Rückgabecode `0`.
 
 ## Historische Evidence
 
-Am 5. August 2026 bestand ein älterer, exakt gepinnter Vier-Werkzeug-Lauf (`30972392104`) auf Commit `2e33a2c00a0b2e7aa44f3db38a0a60a2d6998710`. Dieser Nachweis bleibt erhalten, wird aber nicht automatisch auf den heutigen RC24-Kandidaten übertragen. Für Ruff existiert inzwischen ein neuer, direkt zum aktuellen Prüfpfad gehörender Nachweis; für MyPy, Bandit und pip-audit wird die Provenienz noch separat erneuert.
+Der ältere Vier-Werkzeug-Lauf `30972392104` vom 5. August 2026 auf Commit `2e33a2c00a0b2e7aa44f3db38a0a60a2d6998710` bleibt als historische Evidence erhalten. Er wird nicht mehr benötigt, um den aktuellen Kandidaten freizugeben, weil nun ein direkt an den aktuellen RC24-Prüfstand gebundener Nachweis vorliegt.
 
-## Weitere offene Stable-Gates
+## Verbleibende Stable-Gates
 
-Die physische KDE-X11-/Wayland-Abnahme und der reale Langzeitrender mit großer Medienauswahl auf langsamem externem Ziel bleiben offen.
+Nur zwei Stable-Gates bleiben offen:
 
-## Freigaberegel
+1. physische KDE-X11-/Wayland-Abnahme auf realen Zielsystemen,
+2. realer Langzeitrender mit großer Medienauswahl auf langsamem externem Ziel.
 
-Diese Datei bleibt ohne `_save_`-Suffix, bis alle zugehörigen externen Qualitäts-Gates mit nachvollziehbarer aktueller Evidence abgeschlossen sind. Stable wird erst erklärt, wenn zusätzlich die physischen Desktop- und Langzeit-Gates bestanden sind.
+Stable wird bis zum erfolgreichen Abschluss **beider** realen Nachweise nicht erklärt.

@@ -18,10 +18,10 @@
 
 1. FFmpeg 7+ erzeugt PNG-Vorschauen trotz atomarer `.partial`-Dateiendung, weil Ausgabeformat und Codec explizit gesetzt werden.
 2. Beschädigte oder zu kleine Cacheziele werden vor dem Neuaufbau entfernt.
-3. Verzögerte Tooltips werden bei Fokusverlust oder zerstörten Widgets sicher abgebrochen und bleiben innerhalb des Bildschirms.
+3. Verzöwerte Tooltips werden bei Fokusverlust oder zerstörten Widgets sicher abgebrochen und bleiben innerhalb des Bildschirms.
 4. Cache- und Hilfeaktionen verwenden zentrale Texte und erklären Wirkung sowie Schutzgrenze.
 5. Historische Berichte und doppelte Baselines gelangen nicht mehr in aktive Releasepakete.
 
 ## Bewusst nicht behauptet
 
-Stable ist weiterhin blockiert. Ruff 0.16.1 ist inzwischen in einem exakt gepinnten Offline-Lauf mit 0 Findings bestanden. Nicht abschließend für den aktuellen Kandidaten belegt sind MyPy 2.3.0, Bandit 1.9.4, pip-audit 2.10.1, die physische KDE-X11-/Wayland-Abnahme und der Langzeitrender mit großer Medienauswahl auf langsamem externem Ziel.
+Stable ist weiterhin blockiert. Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4 und pip-audit 2.10.1 sind für den aktuellen Kandidaten in der exakt gesperrten Offline-Qualitätsumgebung provenienzgebunden bestanden. Nicht abschließend belegt sind nur noch die physische KDE-X11-/Wayland-Abnahme und der Langzeitrender mit großer Medienauswahl auf langsamem externem Ziel.
