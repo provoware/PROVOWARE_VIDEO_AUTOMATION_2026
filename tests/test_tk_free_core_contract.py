@@ -66,7 +66,8 @@ def test_supported_wayland_bootstrap_contains_no_tk_dependency() -> None:
     assert '"QT_QPA_PLATFORM": "wayland"' in bootstrap
     assert "KDialogProgress" in bootstrap
     assert "kdialog" in bootstrap
-    assert "from PySide6 import QtCore,QtGui,QtWidgets" in toolchain
+    assert "from PySide6 import QtCore" in toolchain
+    assert "QtCore.qVersion()" in toolchain
     assert '"--yesno"' in downloader
     assert "kdialog" in downloader
 
