@@ -10,7 +10,7 @@ from typing import Callable, Mapping
 
 
 class PlatformCompatibilityError(RuntimeError):
-    """Raised when the current Linux desktop cannot host the Tk GUI safely."""
+    """Raised when the current desktop is outside the supported Qt/Wayland target."""
 
 
 @dataclass(frozen=True)
@@ -26,7 +26,7 @@ class DesktopPlatform:
     is_wayland: bool
     is_kde: bool
     is_kubuntu: bool
-    tkinter_transport: str
+    ui_transport: str
     capabilities: dict[str, bool]
     warnings: tuple[str, ...]
 
@@ -70,7 +70,15 @@ def detect_desktop_platform(
     distro_id = release.get("ID", "").lower()
     distro_name = release.get("PRETTY_NAME", release.get("NAME", ""))
     distro_version = release.get("VERSION_ID", "")
-    is_kubuntu = distro_id == "kubuntu" or "kubuntu" in distro_name.lower()
+    distro_tokens = ":".join(
+        (
+            distro_id,
+            distro_name.lower(),
+            release.get("VARIANT", "").lower(),
+            release.get("VARIANT_ID", "").lower(),
+        )
+    )
+    is_kubuntu = "kubuntu" in distro_tokens
 
     capabilities = {
         "ffmpeg": which("ffmpeg") is not None,
@@ -80,31 +88,16 @@ def detect_desktop_platform(
         "xdg_open": which("xdg-open") is not None,
         "notify_send": which("notify-send") is not None,
         "kdialog": which("kdialog") is not None,
-        "xwayland_binary": which("Xwayland") is not None or which("xwayland") is not None,
     }
 
     warnings: list[str] = []
-    if is_wayland:
-        tkinter_transport = "xwayland" if display else "unavailable"
-        if not display:
-            warnings.append(
-                "Wayland ist aktiv, aber DISPLAY fehlt. Die aktuelle Tkinter-Oberfläche benötigt XWayland."
-            )
-        if not capabilities["wl_copy"] or not capabilities["wl_paste"]:
-            warnings.append(
-                "wl-clipboard fehlt. Wayland-native Zwischenablagefunktionen sind nur eingeschränkt verfügbar."
-            )
-        if not capabilities["xwayland_binary"]:
-            warnings.append(
-                "XWayland wurde nicht als ausführbare Systemkomponente gefunden. Der Tkinter-Start kann scheitern."
-            )
-    else:
-        tkinter_transport = "x11" if display else "headless"
-
-    if is_kubuntu and distro_version.startswith("26.04") and not is_wayland:
+    if is_wayland and (not capabilities["wl_copy"] or not capabilities["wl_paste"]):
         warnings.append(
-            "Kubuntu 26.04 wurde erkannt, die Sitzung ist jedoch nicht Wayland. Die Anwendung bleibt kompatibel, "
-            "die Zielkonfiguration dieser Erweiterung ist Plasma Wayland."
+            "wl-clipboard fehlt. Die Oberfläche startet weiter, native Zwischenablagefunktionen sind aber eingeschränkt."
+        )
+    if is_wayland and not wayland_display:
+        warnings.append(
+            "Wayland wurde erkannt, aber WAYLAND_DISPLAY fehlt. Ein nativer Qt-Wayland-Start ist so nicht möglich."
         )
 
     return DesktopPlatform(
@@ -119,21 +112,28 @@ def detect_desktop_platform(
         is_wayland=is_wayland,
         is_kde=is_kde,
         is_kubuntu=is_kubuntu,
-        tkinter_transport=tkinter_transport,
+        ui_transport="wayland-native" if is_wayland and wayland_display else "unsupported",
         capabilities=capabilities,
         warnings=tuple(warnings),
     )
 
 
 def validate_gui_environment(platform: DesktopPlatform) -> None:
-    if platform.is_wayland and not platform.display:
+    if not platform.is_kubuntu or not platform.distro_version.startswith("26.04"):
         raise PlatformCompatibilityError(
-            "Plasma Wayland wurde erkannt, aber die XWayland-Anbindung für Tkinter ist nicht verfügbar "
-            "(DISPLAY ist leer). Installieren/aktivieren Sie xwayland und melden Sie sich erneut an."
+            "Diese VideoBatch-Ausbaustufe unterstützt ausschließlich Kubuntu 26.04 LTS."
         )
-    if platform.session_type == "x11" and not platform.display:
+    if not platform.is_kde:
         raise PlatformCompatibilityError(
-            "Eine X11-Sitzung wurde erkannt, aber DISPLAY ist leer. Die grafische Oberfläche kann so nicht starten."
+            "KDE Plasma wurde nicht erkannt. Zielsystem ist Kubuntu 26.04 mit Plasma."
+        )
+    if not platform.is_wayland:
+        raise PlatformCompatibilityError(
+            "Keine Wayland-Sitzung erkannt. X11 gehört nicht mehr zum unterstützten Zielpfad."
+        )
+    if not platform.wayland_display:
+        raise PlatformCompatibilityError(
+            "Wayland ist aktiv, aber WAYLAND_DISPLAY fehlt. Bitte neu in die Plasma-Wayland-Sitzung anmelden."
         )
 
 
@@ -178,7 +178,7 @@ def prepare_gui_environment(
 
 
 def copy_text(text: str, platform: DesktopPlatform) -> bool:
-    """Copy without shell interpolation. Wayland prefers wl-copy; Tk remains the UI transport."""
+    """Copy text through the native Wayland clipboard helper without shell interpolation."""
     if platform.is_wayland and platform.capabilities.get("wl_copy"):
         try:
             subprocess.run(
