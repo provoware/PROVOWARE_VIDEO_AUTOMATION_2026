@@ -175,9 +175,7 @@ def render_quality(value: Mapping[str, Any]) -> dict[str, Any]:
         },
         "external_gates": external,
         "stable_ready": bool(value["stable_ready"]),
-        "stable_block_reason": (
-            "External quality tools, physical KDE session acceptance and large-media soak remain required."
-        ),
+        "stable_block_reason": " | ".join(stable_blockers(value)),
     }
 
 

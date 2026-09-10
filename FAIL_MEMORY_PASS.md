@@ -17,7 +17,7 @@ Das Repository für `2.8.3-rc24` konsolidieren, reale Schwachstellen beheben, fr
 
 ### Umgesetzt
 
-- 323/323 automatisierte Tests unter deterministischem X11 bestanden
+- 325/325 automatisierte Tests unter deterministischem X11 bestanden
 - Text-, Versions-, Dokument-, Release-Datei- und Manifestverträge bestanden
 - interne Qualitätsprüfung: 203 Python-Dateien, 1.602 Funktionen, maximale Komplexität 29, 0 Befunde
 - Statement-/Zeilenabdeckung 82,43 %, Branch-Abdeckung 67,21 %
@@ -61,20 +61,18 @@ Das Repository für `2.8.3-rc24` konsolidieren, reale Schwachstellen beheben, fr
 
 - reale Langzeitmessung mit mehreren tausend Medien auf langsamem externem Datenträger
 - physische KDE-X11-/Wayland-Abnahme auf den Zielsystemen
-- vollständige Ausführung der exakt gepinnten Ruff-, MyPy-, Bandit- und pip-audit-Werkzeuge
+- die exakt gepinnten Ruff-, MyPy-, Bandit- und pip-audit-Werkzeuge sind auf dem aktuellen Kandidaten vollständig bestanden
 
 ## Aktuelle offene Stable-Gates
 
-1. Ruff `0.16.1`
-2. MyPy `2.3.0`
-3. Bandit `1.9.4`
-4. pip-audit `2.10.1`
-5. physische KDE-X11-/Wayland-Abnahme
-6. dokumentierter Langzeitrender mit großer Medienauswahl und langsamem externem Ziel
+1. physische KDE-X11-/Wayland-Abnahme
+2. dokumentierter Langzeitrender mit großer Medienauswahl und langsamem externem Ziel
+
+Die Python-Qualitätsgates Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4 und pip-audit 2.10.1 sind auf Commit `5d7c1949e7995126b7b58ca444ae6e112ecefcea` im provenienzgebundenen Offline-Lauf `34421827176` vollständig bestanden.
 
 ## Nächster bevorzugter Entwicklungspunkt
 
-Die exakt gepinnte Offline-Qualitätswerkzeugkette vollständig ausführen und nur konkrete, reproduzierbare Befunde als kleine Folgepatches bearbeiten.
+Die physische KDE-X11-/Wayland-Abnahme auf dem unveränderten finalen Kandidaten durchführen und Bild-/Startbefunde nur als kleine, reproduzierbare Folgepatches bearbeiten.
 
 ## Alternative mit hohem Nutzen und geringem Risiko
 

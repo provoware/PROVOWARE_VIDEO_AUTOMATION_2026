@@ -11,7 +11,7 @@
 
 ## Tests und Coverage
 
-- 323/323 Tests bestanden
+- 325/325 Tests bestanden
 - 82,43 % Statement-/Zeilenabdeckung
 - 67,21 % Branch-Abdeckung
 - 79,46 % kombinierte Coverage
@@ -28,6 +28,6 @@
 - historische Nachweise liegen außerhalb aktiver Releaseartefakte
 - maschinenlesbare Trennung releasefertiger und offener Unterlagen
 
-## Offene externe Gates
+## Externe Qualitätsgates
 
-Ruff, MyPy, Bandit und pip-audit sind noch nicht abschließend in der exakt gesperrten Qualitätsumgebung ausgeführt. Physische KDE-Abnahme und Langzeitrender bleiben ebenfalls offen.
+Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4 und pip-audit 2.10.1 sind für den aktuellen Kandidaten im provenienzgebundenen Offline-Lauf `34421827176` vollständig bestanden. Ein einzelner Bandit-B112-Befund niedriger Schwere wurde durch enges Abfangen von `tkinter.TclError` fachlich behoben und im vollständigen Wiederholungslauf verifiziert. Offen bleiben nur die physische KDE-X11-/Wayland-Abnahme und der reale Langzeitrender.
