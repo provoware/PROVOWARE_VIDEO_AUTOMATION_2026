@@ -14,7 +14,6 @@ from PySide6.QtWidgets import (
     QComboBox,
     QFileDialog,
     QFrame,
-    QGridLayout,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -109,6 +108,8 @@ class VideoBatchQtWindow(QMainWindow):
         self.prepare_queue: queue.Queue[tuple[str, object]] = queue.Queue()
         self.prepare_generation = 0
         self.preparing = False
+        self.prepare_thread: threading.Thread | None = None
+        self.close_after_stop = False
         self.jobs: list[PairJob] = []
         self._build_ui()
         self._connect()
@@ -402,7 +403,8 @@ class VideoBatchQtWindow(QMainWindow):
             except Exception as exc:
                 self.prepare_queue.put(("error", (generation, f"{type(exc).__name__}: {exc}")))
 
-        threading.Thread(target=prepare, daemon=True, name="VideoBatch-Qt-Prepare").start()
+        self.prepare_thread = threading.Thread(target=prepare, daemon=True, name="VideoBatch-Qt-Prepare")
+        self.prepare_thread.start()
 
     def _cancel(self) -> None:
         if self.preparing and not self.runner.running:
@@ -447,6 +449,10 @@ class VideoBatchQtWindow(QMainWindow):
                         self.cancel.setEnabled(False)
                         self._refresh()
         self._drain_events()
+        prepare_alive = bool(self.prepare_thread and self.prepare_thread.is_alive())
+        if self.close_after_stop and not self.runner.running and not prepare_alive:
+            self.close_after_stop = False
+            self.close()
 
     def _drain_events(self) -> None:
         for _ in range(200):
@@ -510,18 +516,28 @@ class VideoBatchQtWindow(QMainWindow):
         self.status.setText(text)
 
     def closeEvent(self, event: QCloseEvent) -> None:
-        if self.runner.running:
+        prepare_alive = bool(self.prepare_thread and self.prepare_thread.is_alive())
+        if self.runner.running or prepare_alive:
+            if self.close_after_stop:
+                event.ignore()
+                return
             answer = QMessageBox.question(
-                self, "Verarbeitung läuft", "Kontrolliert abbrechen und schließen?",
+                self, "Vorgang läuft", "Kontrolliert beenden und danach VideoBatch schließen?",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No,
             )
             if answer != QMessageBox.StandardButton.Yes:
                 event.ignore()
                 return
-            self.runner.cancel()
-        if self.preparing:
-            self.prepare_generation += 1
-            self.preparing = False
+            self.close_after_stop = True
+            if self.preparing:
+                self.prepare_generation += 1
+                self.preparing = False
+            if self.runner.running:
+                self.runner.cancel()
+            self._status("STOPPT")
+            self._write_log("Sicheres Beenden angefordert; laufender Vorgang wird zuerst abgeschlossen.")
+            event.ignore()
+            return
         event.accept()
 
 
