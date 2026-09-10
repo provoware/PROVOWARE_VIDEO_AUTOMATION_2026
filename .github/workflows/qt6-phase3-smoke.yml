@@ -4,6 +4,8 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - "STARTEN.sh"
+      - "start.sh"
       - "requirements.lock"
       - "requirements-toolchain.lock"
       - "requirements-qt.txt"
@@ -11,12 +13,17 @@ on:
       - "STARTUP_CONTRACT.json"
       - "PLATFORM_SUPPORT.json"
       - "RELEASE_MANIFEST.json"
+      - "scripts/bootstrap.py"
+      - "scripts/debug_launcher.py"
       - "scripts/build_release_manifest.py"
       - "scripts/build_toolchain_wheelhouse.py"
+      - "scripts/startup_check.py"
       - "scripts/toolchain.py"
       - "src/videobatch_fast/qt_*.py"
       - "src/videobatch_fast/platform_integration.py"
       - "src/videobatch_fast/project_state.py"
+      - "src/videobatch_fast/startup_handshake.py"
+      - "src/videobatch_fast/instance_lock.py"
       - "src/videobatch_fast/assurance.py"
       - "src/videobatch_fast/diagnostics_service.py"
       - "src/videobatch_fast/fault_lab.py"
@@ -24,6 +31,7 @@ on:
       - "tests/test_qt_phase2_contract.py"
       - "tests/test_qt_phase3_contract.py"
       - "tests/test_qt_runtime_toolchain_contract.py"
+      - "tests/test_tk_free_core_contract.py"
       - "tests/test_quality_wheelhouse_2_8_3.py"
       - "tests/qt_phase2_smoke.py"
       - "tests/qt_phase3_smoke.py"
@@ -118,7 +126,7 @@ jobs:
 
   qt-phase3-wayland-smoke:
     runs-on: ubuntu-26.04
-    timeout-minutes: 25
+    timeout-minutes: 35
     env:
       PYTHONPATH: src
       PYTHONUTF8: "1"
@@ -128,6 +136,7 @@ jobs:
       DESKTOP_SESSION: plasmawayland
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
       PIP_NO_INPUT: "1"
+      VIDEOBATCH_CI_ALLOW_PUBLIC_PYPI: "1"
     steps:
       - name: Check out exact revision
         uses: actions/checkout@v4
@@ -139,11 +148,15 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install native Wayland Qt runtime
+      - name: Install native Wayland and KDE bootstrap runtime
         run: |
           set -Eeuo pipefail
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
+            dbus-daemon \
+            ffmpeg \
+            kdialog \
+            qdbus-qt6 \
             weston \
             wl-clipboard \
             xdg-desktop-portal \
@@ -156,6 +169,15 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements-qt.txt
           python -m pip install pytest==8.4.2
+
+      - name: Mark CI image as Kubuntu-compatible target identity
+        run: |
+          set -Eeuo pipefail
+          . /etc/os-release
+          test "$VERSION_ID" = "26.04"
+          printf '%s\n' 'VARIANT="Kubuntu CI target"' 'VARIANT_ID=kubuntu' \
+            | sudo tee -a /etc/os-release >/dev/null
+          grep -E '^(VERSION_ID|VARIANT|VARIANT_ID)=' /etc/os-release
 
       - name: Start headless Wayland compositor
         run: |
@@ -175,10 +197,13 @@ jobs:
           cat /tmp/weston-phase3.log
           exit 1
 
-      - name: Compile Phase 2 and Phase 3 Qt modules
+      - name: Compile supported Qt Wayland startup modules
         run: |
           set -Eeuo pipefail
           python -m py_compile \
+            scripts/bootstrap.py \
+            scripts/build_toolchain_wheelhouse.py \
+            scripts/toolchain.py \
             src/videobatch_fast/qt_ui.py \
             src/videobatch_fast/qt_phase2.py \
             src/videobatch_fast/qt_phase2_components.py \
@@ -186,14 +211,15 @@ jobs:
             src/videobatch_fast/qt_phase3_components.py \
             src/videobatch_fast/platform_integration.py
 
-      - name: Run target and architecture contracts
+      - name: Run target architecture and recovery contracts
         run: |
           set -Eeuo pipefail
           python -m pytest -q \
             tests/test_platform_integration.py \
             tests/test_qt_phase2_contract.py \
             tests/test_qt_phase3_contract.py \
-            tests/test_qt_runtime_toolchain_contract.py
+            tests/test_qt_runtime_toolchain_contract.py \
+            tests/test_tk_free_core_contract.py
 
       - name: Prove native Wayland QPA backend
         run: |
@@ -214,11 +240,92 @@ jobs:
       - name: Run Phase 3 project workspace smoke on Wayland
         run: python tests/qt_phase3_smoke.py
 
-      - name: Upload compositor diagnostics
+      - name: Prepare verified private Qt runtime for launcher
+        run: |
+          set -Eeuo pipefail
+          test "${GITHUB_ACTIONS:-}" = "true"
+          test "${VIDEOBATCH_CI_ALLOW_PUBLIC_PYPI:-}" = "1"
+          python scripts/build_toolchain_wheelhouse.py --scope runtime
+          PIP_NO_INDEX=1 python scripts/toolchain.py install --scope runtime --replace
+          python scripts/toolchain.py gate --scope runtime
+
+      - name: Prove STARTEN.sh to Qt UI-ready and clean shutdown
+        env:
+          XDG_STATE_HOME: ${{ runner.temp }}/videobatch-start-normal/state
+          XDG_CONFIG_HOME: ${{ runner.temp }}/videobatch-start-normal/config
+          VIDEOBATCH_TEST_AUTO_CLOSE_MS: "1200"
+          VIDEOBATCH_DEBUG: "1"
+        run: |
+          set -Eeuo pipefail
+          chmod +x STARTEN.sh start.sh
+          dbus-run-session -- timeout 90s ./STARTEN.sh --check-only \
+            2>&1 | tee "$RUNNER_TEMP/starten-normal.log"
+          grep -E 'BOOTSTRAP_READY pid=[0-9]+ mode=normal' "$RUNNER_TEMP/starten-normal.log"
+          grep -F 'Die Anwendung wurde regulär beendet.' "$RUNNER_TEMP/starten-normal.log"
+          grep -R -F 'UI_READY pid=' "$XDG_STATE_HOME/VideoBatchFast/logs"
+          if grep -R -i -F 'tkinter' "$XDG_STATE_HOME/VideoBatchFast/logs"; then
+            echo "::error title=Tk leaked into supported launcher::Startup log references tkinter."
+            exit 1
+          fi
+
+      - name: Prove actual safe-mode Qt launch and clean marker
+        env:
+          XDG_STATE_HOME: ${{ runner.temp }}/videobatch-start-safe/state
+          XDG_CONFIG_HOME: ${{ runner.temp }}/videobatch-start-safe/config
+          VIDEOBATCH_TEST_AUTO_CLOSE_MS: "900"
+          VIDEOBATCH_DEBUG: "1"
+        run: |
+          set -Eeuo pipefail
+          RUNTIME_PY="$(python scripts/toolchain.py path --scope runtime --quiet | tail -n 1)"
+          export RUNTIME_PY
+          mkdir -p "$XDG_STATE_HOME"
+          dbus-run-session -- python - <<'PY'
+          import os
+          import sys
+          import time
+          from pathlib import Path
+
+          root = Path.cwd()
+          sys.path.insert(0, str(root / "scripts"))
+          sys.path.insert(0, str(root / "src"))
+          import bootstrap
+
+          state = Path(os.environ["XDG_STATE_HOME"])
+          clean = state / "safe-clean.marker"
+          log = state / "safe-bootstrap.log"
+          events = __import__("queue").Queue()
+          sink = bootstrap.EventSink(events, log)
+          environment = {
+              **os.environ,
+              "PYTHONPATH": str(root / "src"),
+              "VIDEOBATCH_DEBUG_CLEAN_MARKER": str(clean),
+              "VIDEOBATCH_STARTUP_STATUS": "degraded",
+          }
+          pid, safe_mode = bootstrap.launch_application(
+              Path(os.environ["RUNTIME_PY"]),
+              environment,
+              sink,
+              safe_mode=True,
+              timeout=30,
+          )
+          assert safe_mode is True
+          deadline = time.monotonic() + 15
+          while Path("/proc", str(pid)).exists() and time.monotonic() < deadline:
+              time.sleep(0.1)
+          assert not Path("/proc", str(pid)).exists(), "Safe-mode Qt process did not close"
+          assert clean.is_file(), "Qt safe-mode did not write clean-shutdown marker"
+          print("SAFE_QT_UI_READY_AND_CLEAN_SHUTDOWN_OK")
+          PY
+
+      - name: Upload compositor and launcher diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: qt-phase3-wayland-diagnostics
-          path: /tmp/weston-phase3.log
+          path: |
+            /tmp/weston-phase3.log
+            ${{ runner.temp }}/starten-normal.log
+            ${{ runner.temp }}/videobatch-start-normal/state/VideoBatchFast/logs/*
+            ${{ runner.temp }}/videobatch-start-safe/state/safe-bootstrap.log
           if-no-files-found: warn
           retention-days: 14
