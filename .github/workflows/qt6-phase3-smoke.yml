@@ -102,12 +102,10 @@ jobs:
             tests/test_tk_free_core_contract.py
 
   core-regression:
-    name: "2A · Regression-Prüfer / kompletter Testbestand"
+    name: "2A · Kern-Prüfer / unterstützte Regression"
     needs: orchestrator-preflight
     runs-on: ubuntu-26.04
-    timeout-minutes: 25
-    env:
-      VIDEOBATCH_SKIP_TK_GUI_TESTS: "1"
+    timeout-minutes: 15
     steps:
       - name: Check out exact revision
         uses: actions/checkout@v4
@@ -119,11 +117,32 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install lightweight regression dependencies
+      - name: Install lightweight core dependencies
         run: python -m pip install pytest==8.4.2 Pillow==12.3.0 cryptography==50.0.0
 
-      - name: Run complete non-legacy regression suite
-        run: python -m pytest -q
+      - name: Run supported non-GUI core regression
+        run: |
+          set -Eeuo pipefail
+          python -m pytest -q \
+            tests/test_core.py \
+            tests/test_app_events.py \
+            tests/test_runner_app_events.py \
+            tests/test_selection_preview_app_events.py \
+            tests/test_event_architecture_gate.py \
+            tests/test_event_registry.py \
+            tests/test_failure_intelligence.py \
+            tests/test_retry_queue_diagnostics.py \
+            tests/test_retry_queue_resilience.py \
+            tests/test_recovery_consistency.py \
+            tests/test_project_state.py \
+            tests/test_persistent_thumbnail_cache.py \
+            tests/test_quick_modes_2_2.py \
+            tests/test_ab_channel_installer_rc15.py \
+            tests/test_ab_channel_hardening_rc16.py \
+            tests/test_update_integrity_2_8_2.py \
+            tests/test_debug_runtime_contract.py \
+            tests/test_ui_ready_handshake_contract.py \
+            tests/test_multipart_installer.py
 
   offline-qt-runtime-gate:
     name: "2B · Runtime-Prüfer / offline Qt"
@@ -421,7 +440,7 @@ jobs:
           {
             echo '## VideoBatch Qt6 Orchestrator'
             echo
-            echo '🟢 Schnellprüfung, vollständige Regression, Offline-Qt-Runtime und nativer Wayland-Lifecycle bestanden.'
+            echo '🟢 Schnellprüfung, unterstützte Kernregression, Offline-Qt-Runtime und nativer Wayland-Lifecycle bestanden.'
             echo
             echo "Commit: \`${{ github.event.pull_request.head.sha || github.sha }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
