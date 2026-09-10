@@ -44,6 +44,8 @@ jobs:
     steps:
       - name: Check out exact revision
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -105,7 +107,9 @@ jobs:
       - name: Derive exact compact release manifest
         run: |
           set -Eeuo pipefail
-          python scripts/build_release_manifest.py --compact
+          RUNTIME_PY="$(python scripts/toolchain.py path --scope runtime --quiet | tail -n 1)"
+          test -x "$RUNTIME_PY"
+          "$RUNTIME_PY" scripts/build_release_manifest.py --compact
           cat RELEASE_MANIFEST.json
           if [[ "${GITHUB_HEAD_REF:-}" != tmp/qt6-offline-runtime-gate-* ]]; then
             git diff --exit-code -- RELEASE_MANIFEST.json
@@ -123,6 +127,8 @@ jobs:
     steps:
       - name: Check out exact revision
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
