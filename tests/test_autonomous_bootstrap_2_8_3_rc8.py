@@ -53,7 +53,15 @@ def test_successful_builder_keeps_project_and_publishes_manifest(tmp_path: Path)
     argv = ["build_toolchain_wheelhouse.py", "--output", str(output), "--index-url", "https://pypi.org/simple"]
     with (
         mock.patch.object(sys, "argv", argv),
-        mock.patch.dict("os.environ", {"VIDEOBATCH_ALLOW_PUBLIC_PYPI": "1"}, clear=True),
+        mock.patch.dict(
+            "os.environ",
+            {
+                "GITHUB_ACTIONS": "true",
+                "VIDEOBATCH_CI_ALLOW_PUBLIC_PYPI": "1",
+                "VIDEOBATCH_ALLOW_PUBLIC_PYPI": "1",
+            },
+            clear=True,
+        ),
         mock.patch.object(builder, "preflight", return_value=[]),
         mock.patch.object(builder.subprocess, "run", side_effect=fake_run),
     ):

@@ -65,7 +65,15 @@ def test_missing_system_pip_is_repairable_not_network_fatal(tmp_path: Path) -> N
     failed_download = subprocess.CompletedProcess([], 23, stdout="download-test-error")
     with (
         mock.patch.object(sys, "argv", argv),
-        mock.patch.dict("os.environ", {"VIDEOBATCH_ALLOW_PUBLIC_PYPI": "1"}, clear=True),
+        mock.patch.dict(
+            "os.environ",
+            {
+                "GITHUB_ACTIONS": "true",
+                "VIDEOBATCH_CI_ALLOW_PUBLIC_PYPI": "1",
+                "VIDEOBATCH_ALLOW_PUBLIC_PYPI": "1",
+            },
+            clear=True,
+        ),
         mock.patch.object(builder, "preflight", return_value=["pip fehlt; temporäre isolierte pip-Umgebung wird versucht"]),
         mock.patch.object(builder, "resolve_pip_runner", return_value=([sys.executable, "-m", "pip"], None)),
         mock.patch.object(builder.subprocess, "run", return_value=failed_download),

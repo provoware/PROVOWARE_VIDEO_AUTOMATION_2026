@@ -18,6 +18,8 @@ on:
       - "src/videobatch_fast/assurance.py"
       - "src/videobatch_fast/diagnostics_service.py"
       - "src/videobatch_fast/fault_lab.py"
+      - "tests/test_autonomous_bootstrap_2_8_3_rc8.py"
+      - "tests/test_quality_toolchain_bundle_2_8_3_rc3.py"
       - "tests/test_qt_phase2_contract.py"
       - "tests/test_qt_phase3_contract.py"
       - "tests/test_qt_runtime_toolchain_contract.py"
