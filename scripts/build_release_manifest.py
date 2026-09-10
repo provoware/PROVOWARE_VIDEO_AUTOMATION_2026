@@ -27,13 +27,19 @@ def sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def canonical_git_mode(path: Path) -> str:
+    """Normalize filesystem permissions to the mode semantics tracked by Git."""
+    mode = path.stat().st_mode & 0o777
+    return "0o755" if mode & 0o111 else "0o644"
+
+
 def file_record(path: Path) -> dict[str, Any]:
     data = path.read_bytes()
     return {
         "path": path.relative_to(ROOT).as_posix(),
         "size": len(data),
         "sha256": sha256_bytes(data),
-        "mode": oct(path.stat().st_mode & 0o777),
+        "mode": canonical_git_mode(path),
     }
 
 
