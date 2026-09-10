@@ -27,6 +27,7 @@ EXCLUDE_PARTS = frozenset(
         "matrix-status",
         "warmup-metrics",
         "release-audit",
+        "debugging",
     }
 )
 EXCLUDE_SUFFIXES = frozenset({".pyc", ".pyo", ".pvak", ".coverage"})
