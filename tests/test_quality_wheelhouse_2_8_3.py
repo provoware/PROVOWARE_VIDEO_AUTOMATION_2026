@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -21,7 +22,11 @@ def test_failed_download_preserves_existing_wheelhouse(tmp_path: Path) -> None:
     argv = ["build_toolchain_wheelhouse.py", "--output", str(output), "--index-url", "https://pypi.org/simple"]
     with (
         mock.patch.object(sys, "argv", argv),
-        mock.patch.dict("os.environ", {"VIDEOBATCH_ALLOW_PUBLIC_PYPI": "1"}, clear=True),
+        mock.patch.dict(
+            os.environ,
+            {"GITHUB_ACTIONS": "true", "VIDEOBATCH_CI_ALLOW_PUBLIC_PYPI": "1"},
+            clear=True,
+        ),
         mock.patch.object(builder, "preflight", return_value=[]),
         mock.patch.object(builder.subprocess, "run", return_value=subprocess.CompletedProcess([], 1)),
     ):
