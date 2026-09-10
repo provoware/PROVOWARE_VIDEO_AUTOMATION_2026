@@ -176,10 +176,17 @@ def installed_versions(python: Path, contract: dict[str, Any], scope: str) -> di
 
 
 def runtime_import_gate(python: Path) -> None:
+    """Verify the pinned Python/Qt package layer without requiring a display stack.
+
+    QtGui/QtWidgets and the actual Wayland QPA backend are exercised separately
+    by the native Kubuntu 26.04 Wayland lifecycle gate. Keeping this probe on
+    QtCore lets the same verified package environment serve headless quality
+    tooling without inventing an EGL dependency for static analysis.
+    """
     code = (
         "import cryptography,cffi,pycparser; "
         "from PIL import Image; "
-        "from PySide6 import QtCore,QtGui,QtWidgets; "
+        "from PySide6 import QtCore; "
         "assert QtCore.qVersion(); "
         "print('RUNTIME_IMPORTS_OK')"
     )
