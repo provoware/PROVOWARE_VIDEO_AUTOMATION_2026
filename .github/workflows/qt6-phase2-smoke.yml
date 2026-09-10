@@ -33,11 +33,12 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install Qt runtime
+      - name: Install Qt runtime and test runner
         run: |
           set -Eeuo pipefail
           python -m pip install --upgrade pip
           python -m pip install -r requirements-qt.txt
+          python -m pip install pytest==8.4.2
 
       - name: Compile Phase 2 Qt modules
         run: |
