@@ -5,6 +5,8 @@ import sys
 import time
 from pathlib import Path
 
+os.environ.setdefault("QT_QPA_PLATFORM", "wayland")
+
 from PySide6.QtCore import QTimer, Qt
 from PySide6.QtWidgets import (
     QApplication,
@@ -14,8 +16,16 @@ from PySide6.QtWidgets import (
     QTabWidget,
 )
 
+from .debug_runtime import RUNTIME
 from .diagnostics_service import build_diagnostic_payload
+from .instance_lock import (
+    ApplicationLock,
+    InstanceAlreadyRunning,
+    focus_request_token,
+    request_existing_instance_focus,
+)
 from .paths import state_dir
+from .platform_integration import PlatformCompatibilityError, prepare_gui_environment
 from .project_state import (
     default_project_file,
     load_project_state,
@@ -25,6 +35,7 @@ from .project_state import (
 from .qt_phase2 import VideoBatchQtPhase2Window
 from .qt_phase3_components import DiagnosticsPanel, ProjectPanel, WorkspaceNavigationPanel
 from .qt_theme import APP_STYLE
+from .startup_handshake import signal_ui_ready
 
 
 class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
@@ -39,7 +50,7 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         self._loading_project = False
         self._session_id = f"qt-phase3-{os.getpid()}-{int(time.time())}"
         super().__init__()
-        self.setWindowTitle("PROVOWARE VideoBatch 2026 · Qt 6 · Phase 3")
+        self.setWindowTitle("PROVOWARE VideoBatch 2026 · Qt 6 · Wayland")
         self._build_phase3_workspace()
         self._connect_phase3()
         self._autosave_timer = QTimer(self)
@@ -311,14 +322,158 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         super().closeEvent(event)
 
 
+def _prepare_target_platform() -> bool:
+    try:
+        platform = prepare_gui_environment()
+    except PlatformCompatibilityError as exc:
+        print(
+            "VideoBatch konnte die native Qt-Wayland-Sitzung nicht freigeben.\n"
+            f"Grund: {exc}\n"
+            "Zielsystem: Kubuntu 26.04 LTS · KDE Plasma · Wayland.",
+            file=sys.stderr,
+        )
+        return False
+    if platform.warnings:
+        print("VideoBatch Plattformhinweis: " + " | ".join(platform.warnings), file=sys.stderr)
+    return True
+
+
+def _install_focus_watch(window: VideoBatchQtPhase3Window) -> QTimer:
+    last_token = [focus_request_token()]
+    timer = QTimer(window)
+    timer.setInterval(300)
+
+    def poll() -> None:
+        token = focus_request_token()
+        if token <= last_token[0]:
+            return
+        last_token[0] = token
+        window.showNormal()
+        window.raise_()
+        window.activateWindow()
+
+    timer.timeout.connect(poll)
+    timer.start()
+    return timer
+
+
+def _install_exception_hook() -> object:
+    previous = sys.excepthook
+
+    def handle(exc_type, exc, tb) -> None:
+        incident = RUNTIME.capture_exception(
+            exc_type,
+            exc,
+            tb,
+            what="In der Qt-Oberfläche ist ein unbehandelter Fehler aufgetreten.",
+            how="Qt oder Python meldete eine Ausnahme außerhalb eines bereits abgesicherten Bedienpfads.",
+            where="videobatch_fast.qt_phase3 · Qt-Ereignisschleife",
+            solutions=(
+                "Den automatisch erzeugten TXT-Bericht prüfen.",
+                "Den letzten Bedienvorgang notieren und kontrolliert reproduzieren.",
+                "Bei wiederholtem Fehler VideoBatch regulär schließen und über STARTEN.sh neu öffnen.",
+            ),
+            fatal=False,
+            auto_open=True,
+            force=True,
+        )
+        try:
+            parent = QApplication.activeWindow()
+            QMessageBox.critical(
+                parent,
+                "VideoBatch · Fehlerdiagnose",
+                f"{exc_type.__name__}: {exc}\n\nBericht: {incident.path if incident else 'siehe Debug-Ausgabe'}",
+            )
+        except Exception:
+            previous(exc_type, exc, tb)
+
+    sys.excepthook = handle
+    return previous
+
+
+def _schedule_test_close(window: VideoBatchQtPhase3Window) -> None:
+    raw = os.environ.get("VIDEOBATCH_TEST_AUTO_CLOSE_MS", "").strip()
+    if not raw:
+        return
+    try:
+        delay = min(15_000, max(250, int(raw)))
+    except ValueError:
+        return
+    QTimer.singleShot(delay, window.close)
+
+
 def main() -> int:
-    app = QApplication(sys.argv)
-    app.setApplicationName("PROVOWARE VideoBatch 2026 Qt Phase 3")
-    app.setStyle("Fusion")
-    app.setStyleSheet(APP_STYLE)
-    window = VideoBatchQtPhase3Window()
-    window.show()
-    return app.exec()
+    if not _prepare_target_platform():
+        return 2
+
+    clean_marker = os.environ.get("VIDEOBATCH_DEBUG_CLEAN_MARKER", "").strip()
+    if clean_marker:
+        RUNTIME.set_clean_shutdown_marker(Path(clean_marker).expanduser())
+
+    try:
+        lock = ApplicationLock().acquire()
+    except InstanceAlreadyRunning:
+        request_existing_instance_focus()
+        signal_ui_ready(existing_instance=True)
+        return 0
+
+    app: QApplication | None = None
+    previous_hook: object | None = None
+    try:
+        app = QApplication(sys.argv)
+        app.setApplicationName("PROVOWARE VideoBatch 2026")
+        app.setStyle("Fusion")
+        app.setStyleSheet(APP_STYLE)
+        if not app.platformName().lower().startswith("wayland"):
+            print(
+                f"VideoBatch blockiert: Qt verwendet '{app.platformName()}' statt des erforderlichen Wayland-Backends.",
+                file=sys.stderr,
+            )
+            return 2
+
+        previous_hook = _install_exception_hook()
+        safe_mode = os.environ.get("VIDEOBATCH_SAFE_MODE", "0") == "1"
+        window = VideoBatchQtPhase3Window(autoload_project=not safe_mode)
+        focus_timer = _install_focus_watch(window)
+        window._focus_request_timer = focus_timer
+        if safe_mode:
+            window._write_log("Sicherer Startmodus: Projekt-Autoload wurde zum Schutz übersprungen.")
+        window.show()
+        app.processEvents()
+        signal_ui_ready()
+        RUNTIME.verbose(
+            "Die native Qt-Wayland-Oberfläche ist startbereit.",
+            f"Qt meldet das Plattform-Backend {app.platformName()} und die UI-Ready-Markierung wurde geschrieben.",
+            "videobatch_fast.qt_phase3.main",
+            "VideoBatch kann jetzt normal bedient werden.",
+            level="OK",
+        )
+        _schedule_test_close(window)
+        exit_code = int(app.exec())
+        RUNTIME.mark_clean_shutdown()
+        return exit_code
+    except BaseException as exc:
+        RUNTIME.capture_exception(
+            type(exc),
+            exc,
+            exc.__traceback__,
+            what="VideoBatch konnte die native Qt-Wayland-Anwendung nicht stabil ausführen.",
+            how="Der Fehler trat an der äußeren Qt-Anwendungsgrenze auf und wurde vor Prozessende protokolliert.",
+            where="videobatch_fast.qt_phase3.main",
+            solutions=(
+                "Den automatisch geöffneten TXT-Bericht vollständig prüfen.",
+                "VideoBatch danach erneut über STARTEN.sh öffnen; der Bootstrap versucht bei Bedarf den sicheren Startmodus.",
+                "Originalmedien nicht verändern oder löschen, bevor die konkrete Ursache feststeht.",
+            ),
+            fatal=True,
+            auto_open=True,
+            force=True,
+        )
+        return 1
+    finally:
+        if previous_hook is not None:
+            sys.excepthook = previous_hook  # type: ignore[assignment]
+        lock.release()
 
 
 if __name__ == "__main__":
