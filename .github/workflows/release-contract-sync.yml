@@ -1,0 +1,63 @@
+name: Release contract sync
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-contract-sync-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONUTF8: '1'
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  release-contract-sync:
+    name: Release contract sync
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Compile release-contract guards
+        run: |
+          set -Eeuo pipefail
+          python -m py_compile \
+            diagnostics/release_readiness/generate_from_evidence.py \
+            scripts/export_stable_acceptance_evidence.py \
+            scripts/validate_release_contract_sync.py \
+            scripts/validate_stable_acceptance.py
+
+      - name: Verify all generated release evidence is synchronized
+        run: python diagnostics/release_readiness/generate_from_evidence.py --check
+
+      - name: Verify manifest, evidence and status files agree
+        run: python scripts/validate_release_contract_sync.py --json
+
+      - name: Prove release-contract gate remained read-only
+        if: always()
+        run: |
+          set -Eeuo pipefail
+          status="$(git status --porcelain --untracked-files=all)"
+          if [[ -n "$status" ]]; then
+            printf '%s\n' "$status"
+            echo "::error title=Release contract gate wrote repository files::The gate must remain read-only."
+            exit 1
+          fi

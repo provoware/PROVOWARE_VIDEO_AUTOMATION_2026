@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts import export_stable_acceptance_evidence as evidence_exporter
 from scripts.validate_stable_acceptance import AcceptanceBlocked, REQUIRED_CHECKS, validate_evidence
 from scripts.validate_version_contract import validate
 from videobatch_fast.automated_desktop_approval import verify_automated_desktop_approval
@@ -29,6 +30,16 @@ def _write_evidence(directory: Path, candidate: str = "2.8.3-rc24", digest: str 
             "checks": {name: True for name in required},
         }
         (directory / f"{kind}.json").write_text(json.dumps(payload), encoding="utf-8")
+
+
+def _bind_exporter_manifest(tmp_path: Path, monkeypatch) -> tuple[Path, str]:
+    manifest = tmp_path / "RELEASE_MANIFEST.json"
+    manifest.write_text(
+        json.dumps({"version": "2.8.3-rc24", "schema_version": 3, "representation": "compact"}) + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(evidence_exporter, "MANIFEST", manifest)
+    return manifest, hashlib.sha256(manifest.read_bytes()).hexdigest()
 
 
 def test_stable_acceptance_blocks_missing_evidence(tmp_path: Path) -> None:
@@ -61,9 +72,85 @@ def test_stable_acceptance_blocks_failed_long_render(tmp_path: Path) -> None:
         validate_evidence(tmp_path, "2.8.3-rc24", "a" * 64, now=NOW)
 
 
+def test_stable_acceptance_rejects_duplicate_json_keys(tmp_path: Path) -> None:
+    _write_evidence(tmp_path)
+    path = tmp_path / "kubuntu_26_04_wayland.json"
+    path.write_text('{"schema_version":1,"schema_version":1}\n', encoding="utf-8")
+    with pytest.raises(AcceptanceBlocked, match="doppelter JSON-Schlüssel"):
+        validate_evidence(tmp_path, "2.8.3-rc24", "a" * 64, now=NOW)
+
+
 def test_stable_acceptance_accepts_complete_evidence_set(tmp_path: Path) -> None:
     _write_evidence(tmp_path)
     validate_evidence(tmp_path, "2.8.3-rc24", "a" * 64, now=NOW)
+
+
+def test_kubuntu_export_is_bound_to_candidate_and_manifest(tmp_path: Path, monkeypatch) -> None:
+    _manifest, digest = _bind_exporter_manifest(tmp_path, monkeypatch)
+    source = tmp_path / "acceptance.json"
+    source.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "overall": "green",
+                "target": "Kubuntu 26.04 LTS · KDE Plasma · Wayland · PySide6",
+                "automated": {"platform": "green", "layout": "green"},
+                "platform": {"session_type": "wayland", "desktop": "KDE Plasma"},
+                "qt": {"backend": "wayland", "version": "6.11.2"},
+                "start_chain": {"ok": True},
+                "screenshots": [str(tmp_path / "preview.png")],
+                "checks": [{"name": "Nutzbare Bildschirmfläche", "ok": True, "detail": "ok"}],
+                "manual_approval": {
+                    "approved": True,
+                    "reviewer": "Tester",
+                    "approved_at": "2026-08-04T10:00:00Z",
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    target = evidence_exporter.export_kubuntu(source, tmp_path / "evidence")
+    payload = json.loads(target.read_text(encoding="utf-8"))
+    assert target.name == "kubuntu_26_04_wayland.json"
+    assert payload["candidate_id"] == "2.8.3-rc24"
+    assert payload["manifest_sha256"] == digest
+    assert payload["result"] == "passed"
+    assert all(payload["checks"].values())
+
+
+def test_long_render_export_requires_full_physical_completion(tmp_path: Path, monkeypatch) -> None:
+    _manifest, digest = _bind_exporter_manifest(tmp_path, monkeypatch)
+    state = tmp_path / "state.json"
+    state.write_text(
+        json.dumps(
+            {
+                "candidate": "2.8.3-rc24",
+                "state": "completed",
+                "terminal_event": "run_completed",
+                "finished_at": "2026-08-04T10:00:00Z",
+                "rehearsal_only": False,
+                "run_id": "physical-1",
+                "resource_mode": "hard-systemd",
+                "target": {"external_usb": True, "fstype": "ext4", "write_mib_s": 20.0},
+                "jobs": [{"state": "completed"} for _ in range(96)],
+                "output_manifest": {
+                    "entries": [
+                        {"job_id": f"job-{index:03d}", "size": 1024, "sha256": "a" * 64}
+                        for index in range(96)
+                    ],
+                    "digest": "b" * 64,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    target = evidence_exporter.export_long_render(state, tmp_path / "evidence")
+    assert target is not None
+    payload = json.loads(target.read_text(encoding="utf-8"))
+    assert payload["candidate_id"] == "2.8.3-rc24"
+    assert payload["manifest_sha256"] == digest
+    assert payload["result"] == "passed"
+    assert all(payload["checks"].values())
 
 
 def test_stable_version_contract_is_supported(tmp_path: Path) -> None:
@@ -119,5 +206,6 @@ def test_finalization_entrypoints_are_bound() -> None:
     assert "scripts/finalize_release.py" in entry
     assert "check_visual_approval.py\" --require" in stable
     assert "validate_stable_acceptance.py" in stable
+    assert "stable-evidence" in stable
     assert "--acceptance-evidence" in (ROOT / "scripts/finalize_release.py").read_text(encoding="utf-8")
     assert "videobatch.sh\" finalize" in wrapper

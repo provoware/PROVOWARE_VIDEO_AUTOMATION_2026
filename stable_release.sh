@@ -8,9 +8,10 @@ if [[ "$CHANNEL" != "stable" ]]; then
   printf 'STABLE BLOCKIERT: Ursache: Der Kanal ist %s statt stable. Auswirkung: Das Stable-Paket wird nicht erzeugt. Automatische Schutzmaßnahme: Die Paketierung stoppt vor dem Schreiben. Lösung: Den Kandidaten vollständig prüfen und danach in einer getrennten Arbeitskopie auf stable setzen. Alternative: Den Stand als Release Candidate paketieren.\n' "$CHANNEL" >&2
   exit 12
 fi
-EVIDENCE_DIR="${VIDEOBATCH_ACCEPTANCE_EVIDENCE:-}"
-if [[ -z "$EVIDENCE_DIR" ]]; then
-  printf '%s\n' 'STABLE BLOCKIERT: Ursache: Der externe Abnahmeordner wurde nicht angegeben. Auswirkung: Das Stable-Paket wird nicht erzeugt. Automatische Schutzmaßnahme: Die Freigabe stoppt, ohne Nachweise zu ändern oder zu erzeugen. Lösung: Über finalize mit --acceptance-evidence einen vollständigen Nachweisordner angeben. Alternative: Den Kandidaten als Release Candidate belassen.' >&2
+DEFAULT_EVIDENCE_ROOT="${XDG_STATE_HOME:-${HOME:?HOME ist nicht gesetzt}/.local/state}/VideoBatchFast/stable-evidence"
+EVIDENCE_DIR="${VIDEOBATCH_ACCEPTANCE_EVIDENCE:-$DEFAULT_EVIDENCE_ROOT/$VERSION}"
+if [[ ! -d "$EVIDENCE_DIR" ]]; then
+  printf 'STABLE BLOCKIERT: Ursache: Der kandidatengebundene Abnahmeordner fehlt: %s. Auswirkung: Das Stable-Paket wird nicht erzeugt. Automatische Schutzmaßnahme: Die Freigabe stoppt, ohne Nachweise zu ändern oder zu erzeugen. Lösung: Zuerst KUBUNTU_26_04_QT_ABNAHME.sh und den realen Langzeitrender vollständig ausführen. Alternative: VIDEOBATCH_ACCEPTANCE_EVIDENCE auf einen bereits vollständigen externen Nachweisordner setzen.\n' "$EVIDENCE_DIR" >&2
   exit 14
 fi
 CANDIDATE="${VIDEOBATCH_ACCEPTANCE_CANDIDATE:-$VERSION}"

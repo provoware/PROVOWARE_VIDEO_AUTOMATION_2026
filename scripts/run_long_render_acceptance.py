@@ -3,15 +3,22 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
+from export_stable_acceptance_evidence import EvidenceExportError, export_long_render
 from videobatch_fast.long_render_contract import (
     LongRenderAcceptance,
     LongRenderContractError,
     install_signal_handlers,
     load_contract,
 )
+
+
+def _default_evidence_root() -> Path:
+    state_home = Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state"))
+    return state_home / "VideoBatchFast" / "stable-evidence"
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -21,6 +28,15 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--contract", required=True, type=Path, help="Gebundene JSON-Vertragsdatei")
     parser.add_argument("--state-file", type=Path, help="Abweichender Pfad der atomaren Zustandsdatei")
     parser.add_argument("--resume", action="store_true", help="Vorhandenen identischen Lauf sicher fortsetzen")
+    parser.add_argument(
+        "--stable-evidence-root",
+        type=Path,
+        default=None,
+        help=(
+            "Basisordner für kandidatengebundene Stable-Nachweise; Standard ist "
+            "$XDG_STATE_HOME/VideoBatchFast/stable-evidence."
+        ),
+    )
     parser.add_argument(
         "--allow-rehearsal-target",
         action="store_true",
@@ -71,6 +87,27 @@ def main(argv: list[str] | None = None) -> int:
         "state_file": str(contract.state_file),
         "report": str(contract.state_file.parent / "final-report.json"),
     }
+
+    if state.get("state") == "completed" and not bool(state.get("rehearsal_only")):
+        try:
+            evidence = export_long_render(
+                contract.state_file,
+                args.stable_evidence_root or _default_evidence_root(),
+            )
+        except EvidenceExportError as exc:
+            summary["stable_evidence"] = "blocked"
+            summary["stable_evidence_error"] = str(exc)
+            print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
+            print(
+                "LANGZEITRENDER STABLE-NACHWEIS BLOCKIERT: "
+                f"{exc}. Der Render bleibt erhalten; Stable wird nicht freigegeben.",
+                file=sys.stderr,
+            )
+            return 14
+        summary["stable_evidence"] = str(evidence) if evidence else "not-created"
+    elif bool(state.get("rehearsal_only")):
+        summary["stable_evidence"] = "rehearsal-only"
+
     print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
     if state.get("state") == "completed":
         return 0
