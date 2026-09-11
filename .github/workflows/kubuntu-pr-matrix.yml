@@ -29,6 +29,7 @@ env:
   PIP_NO_INPUT: '1'
   PYTHONHASHSEED: '0'
   PYTHONUTF8: '1'
+  PYTHONPATH: src
 
 concurrency:
   group: kubuntu-pr-matrix-${{ github.event.pull_request.number }}
@@ -41,8 +42,8 @@ jobs:
     timeout-minutes: 10
     env:
       PYTHONDONTWRITEBYTECODE: '1'
-      PYTHONPYCACHEPREFIX: ${{ runner.temp }}/videobatch-preflight-pycache
-      RUFF_CACHE_DIR: ${{ runner.temp }}/videobatch-preflight-ruff-cache
+      PYTHONPYCACHEPREFIX: /tmp/videobatch-preflight-pycache
+      RUFF_CACHE_DIR: /tmp/videobatch-preflight-ruff-cache
 
     steps:
       - name: Check out exact PR head
@@ -444,7 +445,7 @@ jobs:
     timeout-minutes: 15
     env:
       PYTHONDONTWRITEBYTECODE: '1'
-      PYTHONPYCACHEPREFIX: ${{ runner.temp }}/videobatch-archive-pycache
+      PYTHONPYCACHEPREFIX: /tmp/videobatch-archive-pycache
 
     steps:
       - name: Check out exact verified PR head
@@ -468,7 +469,7 @@ jobs:
             exit 1
           fi
 
-      - name: Build reproducible complete project ZIP
+      - name: Build Unicode-safe reproducible complete project ZIP
         env:
           VERIFIED_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
@@ -477,12 +478,109 @@ jobs:
           project="PROVOWARE_VIDEO_AUTOMATION_2026"
           version="$(python3 -c 'import json; from pathlib import Path; data=json.loads(Path("VERSION.json").read_text(encoding="utf-8")); value=str(data.get("build") or data.get("version") or "").strip(); assert value, "VERSION.json: build/version fehlt"; print(value)')"
           archive="${project}_${version}_${short_sha}_verified.zip"
+          source_tar="$RUNNER_TEMP/${project}_${short_sha}.tar"
+
           git archive \
-            --format=zip \
+            --format=tar \
             --prefix="${project}/" \
-            --output="$RUNNER_TEMP/$archive" \
+            --output="$source_tar" \
             "$VERIFIED_SHA"
+
+          export source_tar archive project
+          python3 - <<'PY'
+          import os
+          import shutil
+          import stat
+          import tarfile
+          import time
+          import zipfile
+          from pathlib import PurePosixPath
+
+          source = os.environ["source_tar"]
+          target = os.path.join(os.environ["RUNNER_TEMP"], os.environ["archive"])
+          root_name = os.environ["project"]
+          prefix = root_name + "/"
+          seen: set[str] = set()
+
+          with tarfile.open(source, "r:") as tar, zipfile.ZipFile(
+              target,
+              "w",
+              compression=zipfile.ZIP_DEFLATED,
+              compresslevel=9,
+              allowZip64=True,
+              strict_timestamps=False,
+          ) as output:
+              for member in tar.getmembers():
+                  name = member.name
+                  path = PurePosixPath(name)
+                  if path.is_absolute() or ".." in path.parts:
+                      raise RuntimeError(f"Unsicherer Archivpfad: {name}")
+                  if name != root_name and not name.startswith(prefix):
+                      raise RuntimeError(f"Falsches Archivpräfix: {name}")
+
+                  archive_name = (
+                      name + "/" if member.isdir() and not name.endswith("/") else name
+                  )
+                  if archive_name in seen:
+                      raise RuntimeError(f"Doppelter Archivpfad: {archive_name}")
+                  seen.add(archive_name)
+
+                  timestamp = max(int(member.mtime), 315532800)
+                  info = zipfile.ZipInfo(archive_name, time.gmtime(timestamp)[:6])
+                  info.create_system = 3
+
+                  if member.isdir():
+                      info.external_attr = (
+                          (stat.S_IFDIR | (member.mode & 0o7777)) << 16
+                      ) | 0x10
+                      info.compress_type = zipfile.ZIP_STORED
+                      output.writestr(info, b"")
+                  elif member.isfile():
+                      info.external_attr = (
+                          stat.S_IFREG | (member.mode & 0o7777)
+                      ) << 16
+                      info.compress_type = zipfile.ZIP_DEFLATED
+                      source_file = tar.extractfile(member)
+                      if source_file is None:
+                          raise RuntimeError(f"Datei nicht lesbar: {member.name}")
+                      with source_file, output.open(info, "w") as destination:
+                          shutil.copyfileobj(source_file, destination, 1024 * 1024)
+                  elif member.issym():
+                      info.external_attr = (
+                          stat.S_IFLNK | (member.mode & 0o7777)
+                      ) << 16
+                      info.compress_type = zipfile.ZIP_STORED
+                      output.writestr(info, member.linkname.encode("utf-8"))
+                  else:
+                      raise RuntimeError(
+                          f"Nicht unterstützter Git-Archive-Eintrag: {member.name}"
+                      )
+          PY
+          rm -f "$source_tar"
+
           unzip -t "$RUNNER_TEMP/$archive"
+
+          fresh="$RUNNER_TEMP/fresh-extract"
+          rm -rf "$fresh"
+          mkdir -p "$fresh"
+          unzip -q "$RUNNER_TEMP/$archive" -d "$fresh"
+          fresh_root="$fresh/$project"
+          test -d "$fresh_root"
+          test -f "$fresh_root/tests/generated_media/bühne_äöü_测试.png"
+          test ! -e "$fresh_root/debugging"
+          test ! -e "$fresh_root/.gitattributes"
+
+          (
+            cd "$fresh_root"
+            PYTHONPATH=src PYTHONDONTWRITEBYTECODE=1 \
+              python3 scripts/build_release_manifest.py --check --json \
+              | tee "$RUNNER_TEMP/fresh-extract-release-manifest-check.json"
+            PYTHONPATH=src PYTHONDONTWRITEBYTECODE=1 \
+              python3 diagnostics/release_readiness/generate_from_evidence.py --check
+            PYTHONPATH=src PYTHONDONTWRITEBYTECODE=1 \
+              python3 -m compileall -q -f src scripts diagnostics tests
+          )
+
           archive_sha256="$(sha256sum "$RUNNER_TEMP/$archive" | awk '{print $1}')"
           archive_size="$(stat -c '%s' "$RUNNER_TEMP/$archive")"
           printf '%s  %s\n' "$archive_sha256" "$archive" \
@@ -494,7 +592,7 @@ jobs:
           from pathlib import Path
 
           payload = {
-              "schema_version": 1,
+              "schema_version": 2,
               "status": "verified",
               "commit": os.environ["VERIFIED_SHA"],
               "archive": os.environ["archive"],
@@ -506,6 +604,10 @@ jobs:
                   "python_compileall": "passed",
                   "kubuntu_matrix": "4/4 passed",
                   "zip_integrity": "passed",
+                  "unicode_filename_roundtrip_infozip": "passed",
+                  "fresh_extract_release_manifest": "passed",
+                  "fresh_extract_release_evidence": "passed",
+                  "development_files_excluded": "passed",
               },
           }
           Path(os.environ["RUNNER_TEMP"], "VERIFIED_SOURCE_ARTIFACT.json").write_text(
@@ -524,5 +626,6 @@ jobs:
             ${{ runner.temp }}/${{ env.archive }}.sha256
             ${{ runner.temp }}/VERIFIED_SOURCE_ARTIFACT.json
             ${{ runner.temp }}/release-manifest-check.json
+            ${{ runner.temp }}/fresh-extract-release-manifest-check.json
           if-no-files-found: error
           retention-days: 30

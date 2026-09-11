@@ -40,4 +40,4 @@ Fehlende Wheels, zusätzliche Wheels, geänderte Hashwerte, doppelte Distributio
 
 ## Aktueller RC-Status
 
-In der vorliegenden Buildumgebung bot das konfigurierte Paketgateway die gesperrten Qualitätsdistributionen nicht an. Die Umgebung wurde daher nicht künstlich oder unvollständig erzeugt. Der strenge Lauf bleibt offen.
+Der strenge Offline-Qualitätslauf ist für den aktuellen RC24-Kandidaten bestanden. GitHub-Actions-Lauf `34421827176` prüfte Commit `5d7c1949e7995126b7b58ca444ae6e112ecefcea` mit Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4 und pip-audit 2.10.1. Die Installation erfolgte hashgebunden aus dem verifizierten Wheelhouse; der eigentliche Werkzeuglauf verwendete den Netzwerkblocker. Stable bleibt unabhängig davon bis zur physischen KDE-X11-/Wayland-Abnahme und zum realen Langzeitrender gesperrt.

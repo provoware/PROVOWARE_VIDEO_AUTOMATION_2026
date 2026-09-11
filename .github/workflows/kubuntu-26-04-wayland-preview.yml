@@ -1,0 +1,134 @@
+name: Kubuntu 26.04 Wayland preview contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/kubuntu-26-04-wayland-preview.yml
+      - PLATFORM_SUPPORT.json
+      - docs/KUBUNTU_26_04_WAYLAND.md
+      - scripts/build_wayland_preview_zip.py
+      - scripts/install_kubuntu_26_04_wayland.sh
+      - scripts/kubuntu_26_04_wayland_check.py
+      - src/videobatch_fast/app.py
+      - src/videobatch_fast/platform_integration.py
+      - tests/test_platform_integration.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONPATH: src
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  logic:
+    name: Platform logic and syntax
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install pinned test runner
+        run: python3 -m pip install --disable-pip-version-check --no-input pytest==9.0.2
+      - name: Compile changed Python
+        run: python3 -m compileall -q -f src/videobatch_fast/platform_integration.py src/videobatch_fast/app.py scripts/kubuntu_26_04_wayland_check.py scripts/build_wayland_preview_zip.py
+      - name: Run platform unit tests
+        run: python3 -m pytest -q tests/test_platform_integration.py
+
+  resolute:
+    name: Ubuntu 26.04 package and Wayland-host contract
+    runs-on: ubuntu-latest
+    container: ubuntu:26.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install Resolute desktop/runtime dependencies
+        run: |
+          set -Eeuo pipefail
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            python3 python3-pytest python3-tk ffmpeg xwayland xvfb weston wl-clipboard \
+            xdg-utils xdg-desktop-portal xdg-desktop-portal-kde libnotify-bin
+      - name: Verify Ubuntu 26.04 base and required packages
+        run: |
+          set -Eeuo pipefail
+          . /etc/os-release
+          test "$VERSION_ID" = "26.04"
+          command -v python3
+          command -v ffmpeg
+          command -v ffprobe
+          command -v Xwayland
+          command -v wl-copy
+          test -f /usr/share/xdg-desktop-portal/portals/kde.portal
+      - name: Simulate Plasma Wayland host with XWayland transport
+        env:
+          XDG_SESSION_TYPE: wayland
+          WAYLAND_DISPLAY: wayland-ci
+          DISPLAY: ':99'
+          XDG_CURRENT_DESKTOP: KDE
+          DESKTOP_SESSION: plasma
+        run: |
+          set -Eeuo pipefail
+          Xvfb :99 -screen 0 1280x720x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
+          sleep 1
+          python3 scripts/kubuntu_26_04_wayland_check.py --json | tee /tmp/platform.json
+          python3 - <<'PY'
+          import json
+          payload = json.load(open('/tmp/platform.json', encoding='utf-8'))
+          assert payload['status'] == 'ready', payload
+          assert payload['platform']['is_wayland'] is True, payload
+          assert payload['platform']['tkinter_transport'] == 'xwayland', payload
+          PY
+      - name: Run platform tests on Python from 26.04
+        run: python3 -m pytest -q tests/test_platform_integration.py
+
+  package:
+    name: Build complete preview ZIP
+    needs: [logic, resolute]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Build deterministic complete source ZIP
+        run: python3 scripts/build_wayland_preview_zip.py
+      - name: Verify ZIP structure and checksum metadata
+        run: |
+          set -Eeuo pipefail
+          python3 - <<'PY'
+          import json
+          import zipfile
+          from pathlib import Path
+          zips = list(Path('dist').glob('*.zip'))
+          assert len(zips) == 1, zips
+          with zipfile.ZipFile(zips[0]) as archive:
+              names = set(archive.namelist())
+          required = {
+              'STARTEN.sh',
+              'VERSION.json',
+              'PLATFORM_SUPPORT.json',
+              'src/videobatch_fast/platform_integration.py',
+              'docs/KUBUNTU_26_04_WAYLAND.md',
+              'scripts/install_kubuntu_26_04_wayland.sh',
+          }
+          missing = sorted(required - names)
+          assert not missing, missing
+          meta = json.loads(Path(str(zips[0]) + '.sha256.json').read_text(encoding='utf-8'))
+          assert len(meta['sha256']) == 64
+          print(meta)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: videobatch-kubuntu-26-04-wayland-preview
+          path: |
+            dist/*.zip
+            dist/*.sha256.json
+          if-no-files-found: error
+          retention-days: 30

@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "catalog_version": "1.0",
+  "texts": {
+    "recovery.dialog.heading": "Wiederherstellbare Projekte",
+    "recovery.dialog.restore": "Wiederherstellen",
+    "recovery.dialog.later": "Später",
+    "recovery.dialog.clear": "Liste leeren",
+    "recovery.clear.confirm_title": "Wiederherstellungsliste leeren?",
+    "recovery.clear.confirm_body": "Die Einträge werden aus der aktiven Wiederherstellungsliste entfernt und sicher im Verlauf archiviert. Quelldateien und erzeugte Medien werden nicht gelöscht."
+  }
+}

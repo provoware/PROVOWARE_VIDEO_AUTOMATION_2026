@@ -2662,8 +2662,11 @@
       "size": 34017
     }
   ],
+  "file_count": 455,
+  "files_sha256": "6eddbec83f9cd062503761ee71a4ef5ea09ce85ffcfc824979ee1b3f2d1f5508",
   "name": "provoware - videoautomation - 2026",
-  "schema_version": 2,
+  "representation": "compact",
+  "schema_version": 3,
   "version": "2.8.3-rc24",
   "visual_approval": {
     "approval_sha256": "",

@@ -27,11 +27,13 @@ EXCLUDE_PARTS = frozenset(
         "matrix-status",
         "warmup-metrics",
         "release-audit",
+        "debugging",
     }
 )
 EXCLUDE_SUFFIXES = frozenset({".pyc", ".pyo", ".pvak", ".coverage"})
 EXCLUDE_FILES = frozenset(
     {
+        ".gitattributes",
         "RELEASE_MANIFEST.json",
         "STABLE_UPDATE_MANIFEST.json",
         "modern_visual_contact_sheet.png",

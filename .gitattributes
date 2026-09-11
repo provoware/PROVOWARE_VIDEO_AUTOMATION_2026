@@ -1,0 +1,4 @@
+# Release archive hygiene: keep development-only debugging helpers in Git,
+# but never ship them in git-archive based verified project ZIPs.
+debugging export-ignore
+.gitattributes export-ignore

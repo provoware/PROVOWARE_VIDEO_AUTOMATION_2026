@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import threading
 from pathlib import Path
-from tkinter import Tk
+from tkinter import TclError, Tk
 
 from .canonical_dashboard_mixin import CanonicalDashboardMixin
 from .canonical_debug_mixin import CanonicalDebugMixin
@@ -17,6 +17,7 @@ from .canonical_shell_workspace import CanonicalShellWorkspaceMixin
 from .canonical_shell_chrome import CanonicalShellChromeMixin
 from .debug_runtime import RUNTIME, show_incident_dialog
 from .error_handling import error_definition
+from .failure_intelligence import capture_exception_with_intelligence
 from .startup_handshake import signal_ui_ready
 from .ui import VideoBatchFastUI
 from .ui_components import SolutionDialog
@@ -37,19 +38,77 @@ class CanonicalVideoBatchFastUI(
 ):
     """VB-GFX-1.0 shell around the complete VideoBatch implementation."""
 
+    def _open_help_from_keyboard(self, _event=None) -> str:
+        self._show_help_center()
+        return "break"
+
+    def _build_shell_sidebar(self, parent) -> None:
+        super()._build_shell_sidebar(parent)
+        scheduler = self._shell_nav_buttons.get("scheduler")
+        if scheduler is not None:
+            scheduler.configure(text="◷  Scheduler · noch nicht verfügbar")
+
+    def _build_shell_header(self, parent) -> None:
+        super()._build_shell_header(parent)
+        for child in self._shell_header_identity.winfo_children():
+            try:
+                current = str(child.cget("text"))
+            except TclError:
+                current = ""
+            if "VB-GFX" in current:
+                child.configure(text="VideoBatch Fast")
+
+    def _build_shell_kpis(self, parent) -> None:
+        super()._build_shell_kpis(parent)
+        buttons = getattr(self, "_shell_kpi_buttons", {})
+        if isinstance(buttons, dict):
+            scheduler = buttons.get("scheduler")
+        elif isinstance(buttons, (list, tuple)) and buttons:
+            scheduler = buttons[-1]
+        else:
+            scheduler = None
+        if scheduler is not None:
+            scheduler.configure(text="Noch nicht verfügbar")
+
+    def _build_shell_actions(self, parent) -> None:
+        super()._build_shell_actions(parent)
+        buttons = getattr(self, "_shell_action_buttons", ())
+        if buttons:
+            buttons[-1].configure(text="◷ Startzeituhr · noch nicht verfügbar")
+
+    def _build_dashboard_scheduler_card(self, parent):
+        card = super()._build_dashboard_scheduler_card(parent)
+        self._dashboard_scheduler_summary.set(
+            "Automatischer Start ist in dieser Version noch nicht verfügbar."
+        )
+        for child in card.winfo_children():
+            if child.winfo_class() == "TButton":
+                child.configure(text="◷ Startzeituhr · noch nicht verfügbar")
+        return card
+
+    def _refresh_canonical_dashboard(self) -> None:
+        super()._refresh_canonical_dashboard()
+        if hasattr(self, "_dashboard_scheduler_summary"):
+            jobs = tuple(getattr(self, "jobs", ()))
+            self._dashboard_scheduler_summary.set(
+                f"Noch nicht verfügbar · {len(jobs)} Aufträge vorbereitet · kein automatischer Start"
+            )
+
 
 def _tk_exception_handler(root: Tk):
     def handle(exc_type, exc, tb) -> None:
-        incident = RUNTIME.capture_exception(
+        incident = capture_exception_with_intelligence(
+            RUNTIME,
             exc_type,
             exc,
             tb,
+            operation_id="ui-callback",
             what="In der laufenden Oberfläche ist ein Fehler aufgetreten.",
             how=(
                 "Tkinter hat eine Ausnahme in einer Schaltfläche, einem Ereignis oder einer "
                 "automatischen UI-Aktualisierung gemeldet."
             ),
-            where="Tkinter-Callback · genauer Python-Ort steht im Bericht",
+            where="Tkinter-Callback",
             solutions=(
                 "Den automatisch geöffneten TXT-Bericht prüfen.",
                 "Die zuletzt verwendete Schaltfläche oder Auswahl notieren und den Schritt reproduzieren.",
@@ -71,10 +130,12 @@ def _install_thread_debug_hook() -> None:
     previous = threading.excepthook
 
     def handle(args: threading.ExceptHookArgs) -> None:
-        incident = RUNTIME.capture_exception(
+        incident = capture_exception_with_intelligence(
+            RUNTIME,
             args.exc_type,
             args.exc_value,
             args.exc_traceback,
+            operation_id=f"thread:{args.thread.name}",
             what=f"Ein Hintergrundprozess ist unerwartet abgebrochen: {args.thread.name}.",
             how="Python hat eine unbehandelte Ausnahme in einem Hintergrund-Thread gemeldet.",
             where=f"Thread: {args.thread.name}",
@@ -124,7 +185,8 @@ def run_app() -> None:
             "CanonicalVideoBatchFastUI(root)",
             "Bei einem Konstruktionsfehler bleibt der vollständige Python-Ort im Absturzbericht erhalten.",
         )
-        CanonicalVideoBatchFastUI(root)
+        app = CanonicalVideoBatchFastUI(root)
+        root.bind("<F1>", app._open_help_from_keyboard, add="+")
         root.update_idletasks()
         signal_ui_ready()
         RUNTIME.verbose(
@@ -138,16 +200,18 @@ def run_app() -> None:
         RUNTIME.mark_clean_shutdown()
     except BaseException as exc:
         exc_type = type(exc)
-        incident = RUNTIME.capture_exception(
+        incident = capture_exception_with_intelligence(
+            RUNTIME,
             exc_type,
             exc,
             exc.__traceback__,
+            operation_id="application-main",
             what="VideoBatch konnte die grafische Anwendung nicht stabil weiter ausführen.",
             how=(
                 "Der Fehler trat während Fensteraufbau, Oberflächenkonstruktion oder Hauptschleife auf "
                 "und wurde vom zentralen Absturzfänger abgefangen."
             ),
-            where="canonical_ui.run_app · genauer Python-Ort steht im Bericht",
+            where="canonical_ui.run_app",
             solutions=(
                 "Den automatisch geöffneten TXT-Bericht vollständig prüfen.",
                 "Im Bericht unter WO IST ES PASSIERT den Dateinamen und die Zeilennummer notieren.",

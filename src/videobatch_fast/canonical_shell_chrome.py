@@ -95,7 +95,7 @@ class CanonicalShellChromeMixin:
                 font=("DejaVu Sans", max(9, round(10 * factor)), "bold"),
             )
 
-        nav_padding_y = max(7, round(8 * factor))
+        nav_padding_y = max(5, round(6 * factor))
         style.configure(
             "ShellNav.TButton",
             background=COLORS["toolbar"],
@@ -122,7 +122,7 @@ class CanonicalShellChromeMixin:
         ttk.Label(parent, text="Batch Video Processing", style="ShellHint.TLabel").pack(
             anchor="w",
             padx=(27, 0),
-            pady=(2, 16),
+            pady=(2, 10),
         )
         self._shell_nav_buttons = {}
         for item in SHELL_NAVIGATION:
@@ -147,11 +147,11 @@ class CanonicalShellChromeMixin:
                     style="ShellNav.TButton",
                     command=lambda index=item.page_index: self._select_shell_page(index),
                 )
-            button.pack(fill="x", pady=2)
+            button.pack(fill="x", pady=1)
             self._shell_nav_buttons[item.key] = button
 
         ttk.Frame(parent, style="ShellSidebar.TFrame").pack(fill="both", expand=True)
-        status = ttk.Frame(parent, style="ShellCard.TFrame", padding=10)
+        status = ttk.Frame(parent, style="ShellCard.TFrame", padding=8)
         status.pack(fill="x", pady=(10, 0))
         ttk.Label(status, text="Systemstatus", style="ShellKpiHint.TLabel").pack(anchor="w")
         sidebar_status = ttk.Label(
@@ -173,7 +173,7 @@ class CanonicalShellChromeMixin:
         ).pack(anchor="w")
 
     def _build_shell_header(self, parent) -> None:
-        header = ttk.Frame(parent, style="ShellHeader.TFrame", padding=(12, 8))
+        header = ttk.Frame(parent, style="ShellHeader.TFrame", padding=(10, 6))
         header.grid(row=0, column=0, sticky="ew", pady=(0, 9))
         self._shell_header = header
 
@@ -307,7 +307,7 @@ class CanonicalShellChromeMixin:
             ("scheduler", "Startzeituhr", None, "Checkpoint 5"),
         )
         for key, title, page_index, action_label in cards:
-            card = ttk.Frame(row, style="ShellCard.TFrame", padding=(13, 9))
+            card = ttk.Frame(row, style="ShellCard.TFrame", padding=(10, 7))
             self._shell_kpi_cards.append(card)
             ttk.Label(card, text=title, style="ShellKpiHint.TLabel").pack(anchor="w")
             ttk.Label(
@@ -426,7 +426,7 @@ class CanonicalShellChromeMixin:
             return
 
     def _build_shell_actions(self, parent) -> None:
-        bar = ttk.Frame(parent, style="ShellHeader.TFrame", padding=(7, 5))
+        bar = ttk.Frame(parent, style="ShellHeader.TFrame", padding=(6, 4))
         bar.grid(row=2, column=0, sticky="ew", pady=(0, 9))
         actions: tuple[tuple[str, Callable[[], object], str, str], ...] = (
             ("＋ Neuer Auftrag", self._new_project, "Accent.TButton", "normal"),

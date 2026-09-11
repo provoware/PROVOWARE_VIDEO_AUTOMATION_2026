@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "version_source": "VERSION.json",
+  "preview_id": "kubuntu-26.04-wayland-preview1",
+  "targets": {
+    "kubuntu_26_04": {
+      "desktop": "KDE Plasma",
+      "session": "wayland",
+      "ui_toolkit": "Tk 8.6",
+      "ui_transport": "XWayland",
+      "native_helpers": [
+        "wl-clipboard",
+        "xdg-open",
+        "xdg-desktop-portal-kde"
+      ],
+      "release_ready": false,
+      "release_blocker": "Real-device GUI startup/visual acceptance on Kubuntu 26.04 Plasma Wayland is still required."
+    },
+    "x11": {
+      "status": "retained"
+    }
+  }
+}

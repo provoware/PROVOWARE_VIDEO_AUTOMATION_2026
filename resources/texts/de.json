@@ -4,6 +4,7 @@
   "locale": "de-DE",
   "files": [
     "application.json",
+    "ui-recovery.json",
     "ui-foundation.json",
     "ui-media.json",
     "ui-workflow.json",

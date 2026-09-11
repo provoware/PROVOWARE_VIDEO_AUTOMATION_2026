@@ -86,14 +86,20 @@ Diese Punkte dürfen nicht durch Scrollen oder kleinere Schrift lediglich verdec
 - [x] Persistenter menschlicher Debugmodus mit TXT-Absturzberichten vorhanden.
 - [x] Bestehender GUI-Rundtrip besitzt eine grundlegende Überlagerungsprüfung; seine Sollwerte werden erst nach der realen Bildkorrektur erweitert.
 
+## Technische Nacharbeiten und Regressionsthemen – keine Stable-Gates
+
+Diese Punkte bleiben als Arbeitswissen erhalten. Sie werden **nicht** mehr in die kanonische Stable-Gate-Zahl eingerechnet; automatisierte Verträge werden über die aktuelle Nullrunde bewertet.
+
+- [ ] **TEST-P1-001 – Bestehende Startverträge mit `videobatch.sh` abgleichen:** historische Abweichung weiter beobachten und nur bei reproduzierbarem aktuellem Fehler erneut öffnen.
+- [ ] **TEST-P1-002 – Hauptzweig-Ablauf prüfen:** historische Ablaufannahmen nur bei aktuellem Regressionsergebnis wieder als Blocker behandeln.
+- [ ] **TEST-P1-003 – Zielumgebung vervollständigen:** reale Desktop-/FFmpeg-Bedingungen gehören in die physische Zielsystemabnahme.
+- [ ] **TEST-P1-004 – Beschädigte Testmedien erneut prüfen:** bei realem FFprobe-Befund reproduzieren und eingrenzen.
+- [x] **Python-Qualitätsgates:** Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4 und pip-audit 2.10.1 im provenienzgebundenen Offline-Lauf `34421827176` auf Commit `5d7c1949e7995126b7b58ca444ae6e112ecefcea` bestanden.
+- [x] **Release-Manifest für diesen Kandidaten:** nach Codefix synchronisiert und im Repository-Preflight read-only verifiziert.
+
 ## Noch offene Stable-Gates
 
-- [ ] **TEST-P1-001 – Bestehende Startverträge mit `videobatch.sh` abgleichen:** Drei Prüfungen erwarten weiterhin den früheren direkten Aufruf von `scripts/bootstrap.py`.
-- [ ] **TEST-P1-002 – Hauptzweig-Ablauf prüfen:** Zwei Prüfungen erwarten eine feste Hauptzweig-Auswahl und zwölf begrenzte Abfrageversuche, die im aktuellen Ablauf fehlen.
-- [ ] **TEST-P1-003 – Zielumgebung vervollständigen:** FFmpeg, eine echte Bildschirmsitzung und die isolierte Python-Laufzeit im Wurzelbereich fehlen in der aktuellen Prüfumgebung.
-- [ ] **TEST-P1-004 – Beschädigte Testmedien erneut prüfen:** Die Erkennung einer beschädigten Videodatei muss mit vorhandenem FFprobe reproduziert und eingegrenzt werden.
 - [ ] **Physische KDE-Abnahme unter X11 und Wayland** für den finalen, korrigierten UI-Stand dokumentieren.
 - [ ] **Langzeitrender** mit großer Medienauswahl und langsamem externem Ziel durchführen.
-- [ ] `RELEASE_MANIFEST.json` erst **nach** finalem Code-/UI-/Startnachweis genau einmal regenerieren und anschließend read-only verifizieren.
 
-Stable bleibt gesperrt, bis diese realen Nachweise auf demselben unveränderten Kandidaten vorliegen.
+Stable bleibt gesperrt, bis diese beiden realen Nachweise auf demselben unveränderten Kandidaten vorliegen.

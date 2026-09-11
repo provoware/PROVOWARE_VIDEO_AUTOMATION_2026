@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import os
 import socket
 import subprocess
@@ -38,7 +39,7 @@ def preflight(index_url: str) -> list[str]:
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False,
     )
     if pip_check.returncode:
-        errors.append("pip fehlt. Kubuntu: sudo apt install python3-pip python3-venv")
+        errors.append("pip fehlt; temporäre isolierte pip-Umgebung wird versucht")
     hosts = {"files.pythonhosted.org"}
     host = urlparse(index_url).hostname if index_url else "pypi.org"
     if host:
@@ -49,6 +50,57 @@ def preflight(index_url: str) -> list[str]:
         except socket.gaierror as exc:
             errors.append(f"DNS-Auflösung fehlgeschlagen: {hostname} ({exc})")
     return errors
+
+
+def resolve_pip_runner() -> tuple[list[str], Path | None]:
+    """Return a working pip command without requiring system-wide python3-pip.
+
+    Ubuntu/Kubuntu can provide ``venv`` without exposing ``pip`` as a system
+    module.  In that case we create a short-lived bootstrap venv and use only
+    its pip for downloading the exact locked wheels.
+    """
+    if importlib.util.find_spec("pip") is not None:
+        return [sys.executable, "-m", "pip"], None
+
+    parent = Path(tempfile.gettempdir()) / "VideoBatchFast" / "bootstrap"
+    parent.mkdir(parents=True, exist_ok=True)
+    bootstrap = Path(tempfile.mkdtemp(prefix="pip-", dir=parent))
+    created = subprocess.run(
+        [sys.executable, "-m", "venv", str(bootstrap)],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
+    if created.returncode:
+        detail = (created.stdout or "").strip()[-3000:]
+        safe_remove_tree(bootstrap, allowed_parent=parent)
+        suffix = f"\n{detail}" if detail else ""
+        raise RuntimeError(
+            "Weder System-pip noch eine temporäre pip-Umgebung sind verfügbar. "
+            "Auf Kubuntu/Ubuntu fehlt sehr wahrscheinlich python3-venv. "
+            "Installierbares Systempaket: python3-venv." + suffix
+        )
+
+    python = bootstrap / "bin" / "python"
+    verify = subprocess.run(
+        [str(python), "-m", "pip", "--version"],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
+    if verify.returncode:
+        detail = (verify.stdout or "").strip()[-3000:]
+        safe_remove_tree(bootstrap, allowed_parent=parent)
+        suffix = f"\n{detail}" if detail else ""
+        raise RuntimeError(
+            "Die temporäre pip-Umgebung wurde erstellt, enthält aber kein funktionsfähiges pip."
+            + suffix
+        )
+    return [str(python), "-m", "pip"], bootstrap
 
 
 def write_log(output: str | None) -> Path:
@@ -99,19 +151,27 @@ def main() -> int:
 
     progress(1, 5, "Internet- und Python-Voraussetzungen prüfen")
     errors = preflight(index_url)
-    if errors:
-        for error in errors:
-            print(f"✕ {error}", file=sys.stderr)
+    fatal_errors = [error for error in errors if not error.startswith("pip fehlt")]
+    for error in errors:
+        marker = "!" if error.startswith("pip fehlt") else "✕"
+        print(f"{marker} {error}", file=sys.stderr)
+    if fatal_errors:
         print("Automatische Vorbereitung konnte keine Paketquelle erreichen.", file=sys.stderr)
         return 5
 
+    bootstrap_pip: Path | None = None
     try:
+        try:
+            pip_command, bootstrap_pip = resolve_pip_runner()
+        except RuntimeError as exc:
+            print(f"✕ {exc}", file=sys.stderr)
+            return 7
         staging = Path(tempfile.mkdtemp(prefix=f".{output.name}.build-", dir=output.parent))
         lock_key = "runtime_lock" if args.scope == "runtime" else "unified_lock"
         lock = ROOT / contract["paths"][lock_key]
         progress(2, 5, "Exakt gesperrte Pakete laden")
         command = [
-            sys.executable, "-m", "pip", "download",
+            *pip_command, "download",
             "--disable-pip-version-check", "--progress-bar", "off", "--quiet",
             "--only-binary=:all:", "--dest", str(staging),
             "--requirement", str(lock), "--index-url", index_url,
@@ -148,6 +208,8 @@ def main() -> int:
     finally:
         if staging is not None and staging.exists():
             safe_remove_tree(staging, allowed_parent=output.parent)
+        if bootstrap_pip is not None and bootstrap_pip.exists():
+            safe_remove_tree(bootstrap_pip, allowed_parent=bootstrap_pip.parent)
 
 
 if __name__ == "__main__":
