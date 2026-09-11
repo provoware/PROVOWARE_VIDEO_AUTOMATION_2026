@@ -11,7 +11,7 @@ from .paths import config_dir, default_output_dir, ensure_app_dirs
 from .project_state import default_project_file
 from .safe_io import atomic_write_json, quarantine_file
 from .quick_modes import QUICK_MODES
-from .workflow_grid import DEFAULT_WORKFLOW_LAYOUT_MODE, WORKFLOW_LAYOUT_MODES
+from .workflow_layout import DEFAULT_WORKFLOW_LAYOUT_MODE, WORKFLOW_LAYOUT_MODES
 from .slideshow import SLIDESHOW_MODES, TRANSITION_PRESETS
 from .slideshow_sequence import ORDER_MODES
 

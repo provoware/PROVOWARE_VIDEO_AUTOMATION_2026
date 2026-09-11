@@ -36,7 +36,9 @@ def test_qt_theme_and_dependency_contract_exist() -> None:
     theme = QT_THEME.read_text(encoding="utf-8")
     pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
     requirements = (ROOT / "requirements-qt.txt").read_text(encoding="utf-8")
+    runtime_lock = (ROOT / "requirements.lock").read_text(encoding="utf-8")
 
     assert "APP_STYLE" in theme
     assert 'qt = ["PySide6==6.11.2"]' in pyproject
-    assert "PySide6==6.11.2" in requirements
+    assert "-r requirements.lock" in requirements
+    assert "PySide6==6.11.2" in runtime_lock

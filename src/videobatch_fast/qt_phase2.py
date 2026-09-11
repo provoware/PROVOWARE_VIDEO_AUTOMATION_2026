@@ -48,7 +48,7 @@ class VideoBatchQtPhase2Window(VideoBatchQtWindow):
         self._write_log("Qt Phase 2 aktiv: Vorschau · Diashow · Waveform · Spezialdialoge.")
 
     def _build_phase2_dock(self) -> None:
-        self.phase2_dock = QDockWidget("Werkzeuge · Phase 2", self)
+        self.phase2_dock = QDockWidget("Vorschau & Diashow", self)
         self.phase2_dock.setObjectName("phase2Dock")
         self.phase2_dock.setAllowedAreas(
             Qt.DockWidgetArea.RightDockWidgetArea | Qt.DockWidgetArea.BottomDockWidgetArea
@@ -64,7 +64,7 @@ class VideoBatchQtPhase2Window(VideoBatchQtWindow):
         self.slideshow = SlideshowPanel()
         tabs.addTab(self.slideshow, "Diashow & Waveform")
 
-        tabs.addTab(self._dialogs_panel(), "Spezialdialoge")
+        tabs.addTab(self._dialogs_panel(), "Weitere Werkzeuge")
 
         self.phase2_dock.setWidget(tabs)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.phase2_dock)
@@ -186,12 +186,26 @@ class VideoBatchQtPhase2Window(VideoBatchQtWindow):
         jobs = len(audios) if audios and images else 0
         self.kpi_values["jobs"].setText(str(jobs))
         pending = self.slideshow.pending_analysis and self.slideshow.scene_sync_enabled
-        self.start.setEnabled(bool(jobs) and not self.runner.running and not self.preparing and not pending)
+        output_ready = bool(self.output.text().strip())
+        ready = bool(jobs) and output_ready and not self.runner.running and not self.preparing and not pending
+        self.start.setEnabled(ready)
+        self.step_files.setText("1 · Dateien ✓" if jobs else "1 · Dateien")
+        self.step_output.setText("2 · Ausgabe ✓" if output_ready else "2 · Ausgabe")
+        self.step_start.setText("3 · Start bereit" if ready else "3 · Start")
 
         if pending and not self.runner.running and not self.preparing:
             self._status("ANALYSE")
+            self.next_step.setText("Audioanalyse läuft. Danach wird Schritt 3 automatisch freigegeben.")
         elif not self.runner.running and not self.preparing:
-            self._status("BEREIT" if jobs else "PRÜFEN")
+            if not audios:
+                self.next_step.setText("Nächster Schritt: 1 · Mindestens eine Audiodatei auswählen.")
+            elif not images:
+                self.next_step.setText("Nächster Schritt: 1 · Bilder für die Diashow auswählen.")
+            elif not output_ready:
+                self.next_step.setText("Nächster Schritt: 2 · Einen Ausgabeordner wählen.")
+            else:
+                self.next_step.setText(f"Bereit: {jobs} Diashow-Video(s). Nächster Schritt: 3 · Videos erstellen.")
+            self._status("BEREIT" if ready else "PRÜFEN")
 
     def _start(self) -> None:
         if not hasattr(self, "slideshow") or self.slideshow.assignment_mode != SLIDESHOW_MODE_ALL_IMAGES:
@@ -241,6 +255,8 @@ class VideoBatchQtPhase2Window(VideoBatchQtWindow):
         self.progress.setRange(0, 0)
         self.progress.setFormat("Diashow wird vorbereitet …")
         self._status("PRÜFT")
+        self.step_start.setText("3 · Start …")
+        self.next_step.setText("Diashow wird geprüft. Danach startet die Verarbeitung automatisch.")
         self._write_log(
             f"Prüfe {len(audios)} Diashow-Auftrag/Aufträge · "
             f"{len(images)} Bilder · Szenensync: {'ja' if options.slideshow_scene_sync else 'nein'}."

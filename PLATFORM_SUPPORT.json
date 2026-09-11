@@ -1,23 +1,27 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "version_source": "VERSION.json",
-  "preview_id": "kubuntu-26.04-wayland-preview1",
-  "targets": {
-    "kubuntu_26_04": {
-      "desktop": "KDE Plasma",
-      "session": "wayland",
-      "ui_toolkit": "Tk 8.6",
-      "ui_transport": "XWayland",
-      "native_helpers": [
-        "wl-clipboard",
-        "xdg-open",
-        "xdg-desktop-portal-kde"
-      ],
-      "release_ready": false,
-      "release_blocker": "Real-device GUI startup/visual acceptance on Kubuntu 26.04 Plasma Wayland is still required."
-    },
-    "x11": {
-      "status": "retained"
-    }
+  "support_policy": "single-target",
+  "target": {
+    "id": "kubuntu-26.04-wayland",
+    "system": "Kubuntu 26.04 LTS",
+    "desktop": "KDE Plasma",
+    "session": "wayland",
+    "ui_toolkit": "PySide6 / Qt 6",
+    "ui_transport": "wayland-native",
+    "native_helpers": [
+      "wl-clipboard",
+      "xdg-open",
+      "xdg-desktop-portal-kde"
+    ],
+    "unsupported": [
+      "X11 session",
+      "Ubuntu 22.04",
+      "Ubuntu 24.04",
+      "Tk/Tkinter frontend",
+      "XWayland as GUI transport"
+    ],
+    "release_ready": false,
+    "release_blocker": "Real-device startup and visual acceptance on Kubuntu 26.04 Plasma Wayland is still required before stable release."
   }
 }

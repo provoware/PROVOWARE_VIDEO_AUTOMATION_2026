@@ -1,0 +1,486 @@
+name: Qt6 Phase 3 orchestrated validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "STARTEN.sh"
+      - "KUBUNTU_26_04_QT_ABNAHME.sh"
+      - "start.sh"
+      - "pyproject.toml"
+      - "VERSION.json"
+      - "requirements.lock"
+      - "requirements-toolchain.lock"
+      - "requirements-qt.txt"
+      - "TOOLCHAIN_CONTRACT.json"
+      - "STARTUP_CONTRACT.json"
+      - "PLATFORM_SUPPORT.json"
+      - "docs/KUBUNTU_26_04_QT_ABNAHME.md"
+      - "RELEASE_MANIFEST.json"
+      - "scripts/ab_installer.py"
+      - "scripts/bootstrap.py"
+      - "scripts/qt_desktop_acceptance.py"
+      - "scripts/debug_launcher.py"
+      - "scripts/build_release_manifest.py"
+      - "scripts/build_toolchain_wheelhouse.py"
+      - "scripts/startup_check.py"
+      - "scripts/toolchain.py"
+      - "scripts/validate_acceptance_isolation.py"
+      - "src/videobatch_fast/__main__.py"
+      - "src/videobatch_fast/qt_*.py"
+      - "src/videobatch_fast/linux_installation.py"
+      - "src/videobatch_fast/platform_integration.py"
+      - "src/videobatch_fast/project_state.py"
+      - "src/videobatch_fast/startup_handshake.py"
+      - "src/videobatch_fast/instance_lock.py"
+      - "src/videobatch_fast/assurance.py"
+      - "src/videobatch_fast/diagnostics_service.py"
+      - "src/videobatch_fast/fault_lab.py"
+      - "tests/test_linux_installation_hygiene.py"
+      - "tests/test_platform_integration.py"
+      - "tests/test_qt_phase2_contract.py"
+      - "tests/test_qt_phase3_contract.py"
+      - "tests/test_qt_runtime_toolchain_contract.py"
+      - "tests/test_tk_free_core_contract.py"
+      - "tests/test_quality_wheelhouse_2_8_3.py"
+      - "tests/qt_phase2_smoke.py"
+      - "tests/qt_phase3_smoke.py"
+      - ".github/workflows/qt6-phase3-smoke.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qt6-phase3-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONPATH: src
+  PYTHONUTF8: "1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PIP_NO_INPUT: "1"
+
+jobs:
+  orchestrator-preflight:
+    name: "1 · Orchestrator / schnelle Prüfer"
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify runner base
+        run: |
+          set -Eeuo pipefail
+          . /etc/os-release
+          test "$VERSION_ID" = "26.04"
+
+      - name: Install only fast test tools
+        run: |
+          set -Eeuo pipefail
+          python -m pip install ruff==0.16.1 pytest==8.4.2 Pillow==12.3.0 cryptography==50.0.0
+
+      - name: Compile and lint changed architecture
+        run: |
+          set -Eeuo pipefail
+          python -m compileall -q -f src scripts tests
+          python -m ruff check src scripts tests --select E9,F63,F7,F82 --no-cache
+
+      - name: Run focused architecture and Linux hygiene contracts
+        run: |
+          set -Eeuo pipefail
+          python -m pytest -q \
+            tests/test_linux_installation_hygiene.py \
+            tests/test_platform_integration.py \
+            tests/test_qt_phase2_contract.py \
+            tests/test_qt_phase3_contract.py \
+            tests/test_qt_runtime_toolchain_contract.py \
+            tests/test_tk_free_core_contract.py
+
+  core-regression:
+    name: "2A · Kern-Prüfer / unterstützte Regression"
+    needs: orchestrator-preflight
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install lightweight core dependencies
+        run: python -m pip install pytest==8.4.2 Pillow==12.3.0 cryptography==50.0.0
+
+      - name: Run supported non-GUI core regression
+        run: |
+          set -Eeuo pipefail
+          python -m pytest -q \
+            tests/test_core.py \
+            tests/test_app_events.py \
+            tests/test_runner_app_events.py \
+            tests/test_selection_preview_app_events.py \
+            tests/test_event_architecture_gate.py \
+            tests/test_event_registry.py \
+            tests/test_failure_intelligence.py \
+            tests/test_retry_queue_diagnostics.py \
+            tests/test_retry_queue_resilience.py \
+            tests/test_recovery_consistency.py \
+            tests/test_project_state.py \
+            tests/test_persistent_thumbnail_cache.py \
+            tests/test_quick_modes_2_2.py \
+            tests/test_ab_channel_installer_rc15.py \
+            tests/test_ab_channel_hardening_rc16.py \
+            tests/test_update_integrity_2_8_2.py \
+            tests/test_debug_runtime_contract.py \
+            tests/test_ui_ready_handshake_contract.py \
+            tests/test_multipart_installer.py
+
+  offline-qt-runtime-gate:
+    name: "2B · Runtime-Prüfer / offline Qt"
+    needs: orchestrator-preflight
+    runs-on: ubuntu-26.04
+    timeout-minutes: 25
+    env:
+      QT_QPA_PLATFORM: offscreen
+      VIDEOBATCH_CI_ALLOW_PUBLIC_PYPI: "1"
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify runner base
+        run: |
+          set -Eeuo pipefail
+          . /etc/os-release
+          test "$VERSION_ID" = "26.04"
+
+      - name: Install minimal Qt system runtime
+        run: |
+          set -Eeuo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 \
+            libgl1 \
+            libfontconfig1 \
+            libwayland-client0 \
+            libxkbcommon0
+
+      - name: Build verified runtime wheelhouse with explicit CI consent
+        run: |
+          set -Eeuo pipefail
+          test "${GITHUB_ACTIONS:-}" = "true"
+          test "${VIDEOBATCH_CI_ALLOW_PUBLIC_PYPI:-}" = "1"
+          python scripts/build_toolchain_wheelhouse.py --scope runtime
+          python scripts/toolchain.py verify --scope runtime
+
+      - name: Install runtime strictly offline from wheelhouse
+        run: |
+          set -Eeuo pipefail
+          PIP_NO_INDEX=1 python scripts/toolchain.py install --scope runtime --replace
+          RUNTIME_PY="$(python scripts/toolchain.py path --scope runtime --quiet | tail -n 1)"
+          test -x "$RUNTIME_PY"
+          "$RUNTIME_PY" - <<'PY'
+          import importlib.metadata as metadata
+          from PySide6 import QtCore
+
+          expected = {
+              "PySide6": "6.11.2",
+              "PySide6-Addons": "6.11.2",
+              "PySide6-Essentials": "6.11.2",
+              "shiboken6": "6.11.2",
+          }
+          actual = {name: metadata.version(name) for name in expected}
+          assert actual == expected, (actual, expected)
+          assert QtCore.qVersion() == "6.11.2", QtCore.qVersion()
+          print("OFFLINE_QT_RUNTIME_IMPORTS_OK")
+          PY
+          python scripts/toolchain.py gate --scope runtime
+
+      - name: Prove offline install flags and consent contract
+        run: python tests/test_qt_runtime_toolchain_contract.py
+
+      - name: Check compact release manifest from clean HEAD
+        run: |
+          set -Eeuo pipefail
+          git restore --source=HEAD --staged --worktree -- toolchain_wheelhouse
+          git diff --exit-code -- toolchain_wheelhouse
+          RUNTIME_PY="$(python scripts/toolchain.py path --scope runtime --quiet | tail -n 1)"
+          "$RUNTIME_PY" scripts/build_release_manifest.py --compact
+          cat RELEASE_MANIFEST.json
+          git diff --exit-code -- RELEASE_MANIFEST.json
+
+  qt-phase3-wayland-smoke:
+    name: "3 · Wayland-Prüfer / echter Qt-Lifecycle"
+    needs: [orchestrator-preflight, offline-qt-runtime-gate]
+    runs-on: ubuntu-26.04
+    timeout-minutes: 35
+    env:
+      QT_QPA_PLATFORM: wayland
+      XDG_SESSION_TYPE: wayland
+      XDG_CURRENT_DESKTOP: KDE
+      DESKTOP_SESSION: plasmawayland
+      VIDEOBATCH_CI_ALLOW_PUBLIC_PYPI: "1"
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install native Wayland and KDE bootstrap runtime
+        run: |
+          set -Eeuo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            dbus-daemon \
+            ffmpeg \
+            kdialog \
+            qdbus-qt6 \
+            weston \
+            wl-clipboard \
+            xdg-desktop-portal \
+            xdg-desktop-portal-kde \
+            libegl1 \
+            libgl1 \
+            libfontconfig1 \
+            libwayland-client0 \
+            libxkbcommon0
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-qt.txt
+          python -m pip install pytest==8.4.2
+
+      - name: Verify real Ubuntu 26.04 flavour base identity
+        run: |
+          set -Eeuo pipefail
+          . /etc/os-release
+          test "$ID" = "ubuntu"
+          test "$VERSION_ID" = "26.04"
+          ! grep -qiE '^(VARIANT|VARIANT_ID)=.*kubuntu' /etc/os-release
+
+      - name: Start headless Wayland compositor
+        run: |
+          set -Eeuo pipefail
+          mkdir -p "$RUNNER_TEMP/xdg"
+          chmod 700 "$RUNNER_TEMP/xdg"
+          echo "XDG_RUNTIME_DIR=$RUNNER_TEMP/xdg" >> "$GITHUB_ENV"
+          echo "WAYLAND_DISPLAY=wayland-phase3" >> "$GITHUB_ENV"
+          XDG_RUNTIME_DIR="$RUNNER_TEMP/xdg" weston \
+            --backend=headless-backend.so \
+            --socket=wayland-phase3 \
+            --idle-time=0 >/tmp/weston-phase3.log 2>&1 &
+          for _ in $(seq 1 20); do
+            test -S "$RUNNER_TEMP/xdg/wayland-phase3" && exit 0
+            sleep 0.25
+          done
+          cat /tmp/weston-phase3.log
+          exit 1
+
+      - name: Run target architecture and recovery contracts
+        run: |
+          set -Eeuo pipefail
+          python -m pytest -q \
+            tests/test_linux_installation_hygiene.py \
+            tests/test_platform_integration.py \
+            tests/test_qt_phase2_contract.py \
+            tests/test_qt_phase3_contract.py \
+            tests/test_qt_runtime_toolchain_contract.py \
+            tests/test_tk_free_core_contract.py
+
+      - name: Prove native Wayland QPA backend
+        run: |
+          set -Eeuo pipefail
+          python - <<'PY'
+          import sys
+          from PySide6.QtWidgets import QApplication
+
+          app = QApplication([])
+          backend = app.platformName().lower()
+          print(f"QT_QPA_BACKEND={backend}")
+          assert "wayland" in backend, backend
+          assert "tkinter" not in sys.modules
+          app.quit()
+          PY
+
+      - name: Run Phase 2 regression smoke on Wayland
+        run: python tests/qt_phase2_smoke.py
+
+      - name: Run Phase 3 project workspace smoke on Wayland
+        run: python tests/qt_phase3_smoke.py
+
+      - name: Prepare verified private Qt runtime for launcher
+        env:
+          HOME: ${{ runner.temp }}/videobatch-start-normal/home
+          XDG_DATA_HOME: ${{ runner.temp }}/videobatch-start-normal/home/.local/share
+          XDG_STATE_HOME: ${{ runner.temp }}/videobatch-start-normal/home/.local/state
+          XDG_CONFIG_HOME: ${{ runner.temp }}/videobatch-start-normal/home/.config
+          XDG_CACHE_HOME: ${{ runner.temp }}/videobatch-start-normal/home/.cache
+        run: |
+          set -Eeuo pipefail
+          mkdir -p "$HOME" "$XDG_DATA_HOME" "$XDG_STATE_HOME" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME"
+          unset VIDEOBATCH_INSTALL_ROOT VIDEOBATCH_PORTABLE_LAUNCHER VIDEOBATCH_PORTABLE \
+            VIDEOBATCH_RUNTIME_PYTHON VIDEOBATCH_QUALITY_PYTHON VIDEOBATCH_TOOLCHAIN_PYTHON
+          test "${GITHUB_ACTIONS:-}" = "true"
+          test "${VIDEOBATCH_CI_ALLOW_PUBLIC_PYPI:-}" = "1"
+          python scripts/build_toolchain_wheelhouse.py --scope runtime
+          PIP_NO_INDEX=1 python scripts/toolchain.py install --scope runtime --replace
+          python scripts/toolchain.py gate --scope runtime
+
+      - name: Prove STARTEN.sh to Qt UI-ready, isolated user paths and clean shutdown
+        env:
+          HOME: ${{ runner.temp }}/videobatch-start-normal/home
+          XDG_DATA_HOME: ${{ runner.temp }}/videobatch-start-normal/home/.local/share
+          XDG_STATE_HOME: ${{ runner.temp }}/videobatch-start-normal/home/.local/state
+          XDG_CONFIG_HOME: ${{ runner.temp }}/videobatch-start-normal/home/.config
+          XDG_CACHE_HOME: ${{ runner.temp }}/videobatch-start-normal/home/.cache
+          VIDEOBATCH_TEST_AUTO_CLOSE_MS: "1200"
+          VIDEOBATCH_DEBUG: "1"
+        run: |
+          set -Eeuo pipefail
+          mkdir -p "$HOME" "$XDG_DATA_HOME" "$XDG_STATE_HOME" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME"
+          unset VIDEOBATCH_INSTALL_ROOT VIDEOBATCH_PORTABLE_LAUNCHER VIDEOBATCH_PORTABLE \
+            VIDEOBATCH_RUNTIME_PYTHON VIDEOBATCH_QUALITY_PYTHON VIDEOBATCH_TOOLCHAIN_PYTHON
+          chmod +x STARTEN.sh start.sh scripts/validate_acceptance_isolation.py
+          dbus-run-session -- timeout 90s ./STARTEN.sh --check-only \
+            2>&1 | tee "$RUNNER_TEMP/starten-normal.log"
+          grep -E 'BOOTSTRAP_READY pid=[0-9]+ mode=normal' "$RUNNER_TEMP/starten-normal.log"
+          grep -F 'Die Anwendung wurde regulär beendet.' "$RUNNER_TEMP/starten-normal.log"
+          grep -R -F 'UI_READY pid=' "$XDG_STATE_HOME/VideoBatchFast/logs"
+          if grep -R -i -F 'tkinter' "$XDG_STATE_HOME/VideoBatchFast/logs"; then
+            echo "::error title=Tk leaked into supported launcher::Startup log references tkinter."
+            exit 1
+          fi
+          python scripts/validate_acceptance_isolation.py \
+            --test-home "$HOME" \
+            --report-root "$XDG_STATE_HOME/VideoBatchFast/installer"
+
+      - name: Prove actual safe-mode Qt launch and clean marker
+        env:
+          HOME: ${{ runner.temp }}/videobatch-start-safe/home
+          XDG_DATA_HOME: ${{ runner.temp }}/videobatch-start-safe/home/.local/share
+          XDG_STATE_HOME: ${{ runner.temp }}/videobatch-start-safe/home/.local/state
+          XDG_CONFIG_HOME: ${{ runner.temp }}/videobatch-start-safe/home/.config
+          XDG_CACHE_HOME: ${{ runner.temp }}/videobatch-start-safe/home/.cache
+          VIDEOBATCH_TEST_AUTO_CLOSE_MS: "900"
+          VIDEOBATCH_DEBUG: "1"
+        run: |
+          set -Eeuo pipefail
+          mkdir -p "$HOME" "$XDG_DATA_HOME" "$XDG_STATE_HOME" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME"
+          unset VIDEOBATCH_INSTALL_ROOT VIDEOBATCH_PORTABLE_LAUNCHER VIDEOBATCH_PORTABLE \
+            VIDEOBATCH_RUNTIME_PYTHON VIDEOBATCH_QUALITY_PYTHON VIDEOBATCH_TOOLCHAIN_PYTHON
+          NORMAL_DATA_HOME="$RUNNER_TEMP/videobatch-start-normal/home/.local/share"
+          RUNTIME_PY="$(XDG_DATA_HOME="$NORMAL_DATA_HOME" python scripts/toolchain.py path --scope runtime --quiet | tail -n 1)"
+          test -x "$RUNTIME_PY"
+          export RUNTIME_PY
+          dbus-run-session -- python - <<'PY'
+          import os
+          import sys
+          import time
+          from pathlib import Path
+
+          root = Path.cwd()
+          sys.path.insert(0, str(root / "scripts"))
+          sys.path.insert(0, str(root / "src"))
+          import bootstrap
+
+          state = Path(os.environ["XDG_STATE_HOME"])
+          clean = state / "safe-clean.marker"
+          log = state / "safe-bootstrap.log"
+          log.parent.mkdir(parents=True, exist_ok=True)
+          events = __import__("queue").Queue()
+          sink = bootstrap.EventSink(events, log)
+          environment = {
+              **os.environ,
+              "PYTHONPATH": str(root / "src"),
+              "VIDEOBATCH_DEBUG_CLEAN_MARKER": str(clean),
+              "VIDEOBATCH_STARTUP_STATUS": "degraded",
+          }
+          pid, safe_mode = bootstrap.launch_application(
+              Path(os.environ["RUNTIME_PY"]),
+              environment,
+              sink,
+              safe_mode=True,
+              timeout=30,
+          )
+          assert safe_mode is True
+          deadline = time.monotonic() + 15
+          exited = False
+          while time.monotonic() < deadline:
+              try:
+                  waited_pid, _status = os.waitpid(pid, os.WNOHANG)
+              except ChildProcessError:
+                  exited = not Path("/proc", str(pid)).exists()
+                  if exited:
+                      break
+              else:
+                  if waited_pid == pid:
+                      exited = True
+                      break
+              time.sleep(0.1)
+          assert exited, "Safe-mode Qt process did not close"
+          assert clean.is_file(), "Qt safe-mode did not write clean-shutdown marker"
+          print("SAFE_QT_UI_READY_AND_CLEAN_SHUTDOWN_OK")
+          PY
+
+      - name: Upload compositor and launcher diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qt-phase3-wayland-diagnostics
+          path: |
+            /tmp/weston-phase3.log
+            ${{ runner.temp }}/starten-normal.log
+            ${{ runner.temp }}/videobatch-start-normal/home/.local/state/VideoBatchFast/logs/*
+            ${{ runner.temp }}/videobatch-start-safe/home/.local/state/safe-bootstrap.log
+          if-no-files-found: warn
+          retention-days: 14
+
+  orchestrator-summary:
+    name: "4 · Orchestrator / Gesamtfreigabe"
+    if: always()
+    needs: [orchestrator-preflight, core-regression, offline-qt-runtime-gate, qt-phase3-wayland-smoke]
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    env:
+      PREFLIGHT: ${{ needs.orchestrator-preflight.result }}
+      CORE: ${{ needs.core-regression.result }}
+      RUNTIME: ${{ needs.offline-qt-runtime-gate.result }}
+      WAYLAND: ${{ needs.qt-phase3-wayland-smoke.result }}
+    steps:
+      - name: Require every specialist gate
+        run: |
+          set -Eeuo pipefail
+          printf 'Preflight=%s\nCore=%s\nRuntime=%s\nWayland=%s\n' "$PREFLIGHT" "$CORE" "$RUNTIME" "$WAYLAND"
+          test "$PREFLIGHT" = success
+          test "$CORE" = success
+          test "$RUNTIME" = success
+          test "$WAYLAND" = success
+          {
+            echo '## VideoBatch Qt6 Orchestrator'
+            echo
+            echo '🟢 Schnellprüfung, unterstützte Kernregression, Offline-Qt-Runtime und nativer Wayland-Lifecycle bestanden.'
+            echo
+            echo "Commit: \`${{ github.event.pull_request.head.sha || github.sha }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

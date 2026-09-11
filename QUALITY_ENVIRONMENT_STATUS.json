@@ -3,15 +3,15 @@
   "generated_from": "diagnostics/release_readiness/RELEASE_EVIDENCE.json",
   "build": "2.8.3-rc24",
   "runtime_start": {
-    "status": "passed",
     "architecture": "content-addressed user environment",
-    "quality_tools_block_start": false,
-    "interactive_questions": false,
+    "existing_instance_focus": true,
     "ffmpeg_aac_detection": "real smoke test",
-    "ui_ready_handshake": true,
+    "interactive_questions": false,
+    "quality_tools_block_start": false,
     "safe_mode_retry": true,
+    "status": "passed",
     "system_python_fallback": "verified imports only",
-    "existing_instance_focus": true
+    "ui_ready_handshake": true
   },
   "internal_gates": {
     "tests": {
@@ -29,14 +29,14 @@
     "architecture_findings": 0,
     "internal_quality_findings": 0,
     "maximum_complexity": 29,
-    "release_manifest_files": 455,
+    "release_manifest_files": 461,
     "kubuntu_matrix": {
       "status": "passed",
-      "passed_targets": 4,
-      "total_targets": 4,
-      "workflow_run_id": 30966067548,
-      "verified_commit": "ef003d2c01fa94b899d0ebac9947f1795dd23e8f",
-      "scope_note": "Headless deterministic CI matrix; not a substitute for physical KDE acceptance."
+      "passed_targets": 1,
+      "total_targets": 1,
+      "workflow_run_id": 34550170345,
+      "verified_commit": "92b2089a604b13367cb14c64e69703f97b5381d1",
+      "scope_note": "Aktuelle Ziel-CI auf Ubuntu-26.04-Basis mit KDE-/Wayland-Laufzeitteilmenge, headless Weston und nativem Qt-Wayland-QPA; kein Ersatz für die physische Kubuntu-26.04-Abnahme."
     }
   },
   "external_gates": {
@@ -44,9 +44,9 @@
     "mypy_2_3_0": "passed",
     "bandit_1_9_4": "passed",
     "pip_audit_2_10_1": "passed",
-    "physical_kde_x11_wayland": "Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless",
+    "physical_kubuntu_26_04_wayland": "Reale Zielsystem-Abnahme auf Kubuntu 26.04 LTS mit KDE Plasma und nativem Wayland fehlt; die CI-Prüfung ist headless und ersetzt die Sichtabnahme nicht.",
     "large_media_soak": "Realer Lauf auf langsamem externem Ziel fehlt"
   },
   "stable_ready": false,
-  "stable_block_reason": "Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless | Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt"
+  "stable_block_reason": "Physische Kubuntu-26.04-Plasma-Wayland-Abnahme: Reale Zielsystem-Abnahme auf Kubuntu 26.04 LTS mit KDE Plasma und nativem Wayland fehlt; die CI-Prüfung ist headless und ersetzt die Sichtabnahme nicht. | Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt"
 }

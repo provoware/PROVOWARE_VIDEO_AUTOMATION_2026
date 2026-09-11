@@ -1,87 +1,71 @@
 {
-  "schema_version": 1,
-  "product": {
-    "name": "VideoBatch Fast",
-    "version": "2.8.3-rc24",
-    "channel": "rc",
-    "iteration": 24,
-    "build_date": "2026-08-05"
-  },
-  "provenance": {
-    "canonical_source": "diagnostics/release_readiness/RELEASE_EVIDENCE.json",
-    "verified_source_commit": "ef003d2c01fa94b899d0ebac9947f1795dd23e8f",
-    "repository_finalization_commit": "76689511d2c35bb2ef626e96cb513c3d3672b20c",
-    "manifest_regeneration_run_id": 30965984513,
-    "matrix_workflow_run_id": 30966067548,
-    "evidence_regression_base_head": "f05bafb53938b7a2e99095d525830c737c0f89de",
-    "evidence_regression_method": "four deterministic pytest partitions; 325/325 passed"
-  },
-  "manifest": {
-    "path": "RELEASE_MANIFEST.json",
-    "file_count": 455,
-    "status": "passed"
-  },
-  "tests": {
-    "passed": 325,
-    "failed": 0,
-    "skipped": 0,
-    "line_coverage_percent": 82.43,
-    "branch_coverage_percent": 67.21,
-    "combined_coverage_percent": 79.46,
-    "assurance_scenarios": "12/12",
-    "fault_lab": "12/12",
-    "visual_scenarios": "18/18",
-    "targeted_rc24": "27/27 finalization and preview regressions",
-    "selected_media_click_stress": "120 rapid selection changes, passed",
-    "full_regression": "325/325",
-    "full_regression_groups": [
-      98,
-      89,
-      83,
-      55
+  "approved_quality_report": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
+  "artifact_policy": "full-project-zip-before-stable",
+  "critical_fix": {
+    "area": "already-selected project media list",
+    "resolution": [
+      "single serial preview controller",
+      "180 ms debounce",
+      "generation tokens",
+      "Pillow validation before ImageTk",
+      "main-thread-only Tk updates",
+      "explicit PNG output for FFmpeg 7+ atomic partial files",
+      "invalid cache targets removed before regeneration"
     ],
-    "test_environment": "Xvfb X11 on exact exported PR tree"
+    "root_cause": "unbounded per-click preview threads and FFmpeg processes plus unvalidated direct Tk image decoding"
   },
-  "matrix": {
-    "status": "passed",
-    "passed_targets": 4,
-    "total_targets": 4,
-    "workflow_run_id": 30966067548,
-    "verified_commit": "ef003d2c01fa94b899d0ebac9947f1795dd23e8f",
-    "targets": [
-      {
-        "os": "ubuntu-22.04",
-        "session": "x11",
-        "status": "passed"
+  "deterministic_build": "passed; two independent builds byte-identical",
+  "external_quality_evidence": {
+    "python_stable_gates": {
+      "artifact_digest": "sha256:c11ed40a13264a7912154c6fee3e7f70108b20218a06442254ceb4fb7158e371",
+      "artifact_id": 10131186987,
+      "commit": "5d7c1949e7995126b7b58ca444ae6e112ecefcea",
+      "execution_contract": "run_external_quality.py --mode required --offline",
+      "install_contract": "toolchain.py --no-index --find-links --require-hashes",
+      "network_guard": true,
+      "pip_audit_cache_inventory_sha256": "bbd31f0bae51c2dda936042d3815bed51d178339c214551332e2fc67eb5ff4d8",
+      "resolved_lock_sha256": "3fe96551379db60b501b749e66b9a807d7c6a6ba0e7000770a97e8003cb40ca1",
+      "results": {
+        "bandit": {
+          "returncode": 0,
+          "status": "pass",
+          "version": "1.9.4"
+        },
+        "mypy": {
+          "returncode": 0,
+          "status": "pass",
+          "version": "2.3.0"
+        },
+        "pip-audit": {
+          "returncode": 0,
+          "status": "pass",
+          "version": "2.10.1"
+        },
+        "ruff": {
+          "returncode": 0,
+          "status": "pass",
+          "version": "0.16.1"
+        }
       },
-      {
-        "os": "ubuntu-22.04",
-        "session": "wayland",
-        "status": "passed"
-      },
-      {
-        "os": "ubuntu-24.04",
-        "session": "x11",
-        "status": "passed"
-      },
-      {
-        "os": "ubuntu-24.04",
-        "session": "wayland",
-        "status": "passed"
-      }
-    ],
-    "scope_note": "Headless deterministic CI matrix; not a substitute for physical KDE acceptance."
-  },
-  "runtime_start": {
-    "status": "passed",
-    "architecture": "content-addressed user environment",
-    "quality_tools_block_start": false,
-    "interactive_questions": false,
-    "ffmpeg_aac_detection": "real smoke test",
-    "ui_ready_handshake": true,
-    "safe_mode_retry": true,
-    "system_python_fallback": "verified imports only",
-    "existing_instance_focus": true
+      "status": "passed",
+      "wheelhouse_manifest_sha256": "e1d99b53efc8b65527a7d5b292258439c2562b5d80354d8ae342e1cae7b59844",
+      "workflow_run_id": 34421827176
+    },
+    "ruff_0_16_1": {
+      "artifact_digest": "sha256:2dadf37c62efe20ab6f8d65393cf18274a9188efffdb5cbaa108f0e4cc81d13e",
+      "artifact_id": 10130136687,
+      "commit": "eda699f3d1159cf0a1104ec7a8c880faf6bb93bd",
+      "configuration": "pyproject.toml",
+      "exit_code": 0,
+      "findings": 0,
+      "install_mode": "offline-pip-no-index-from-verified-wheelhouse",
+      "scope": ".",
+      "status": "passed",
+      "tool": "ruff",
+      "tool_version": "0.16.1",
+      "wheel_sha256": "39897739f112253ee4fdd2e8aa9a4f9ded99fb2be367d5f31dfa4ded6025584c",
+      "workflow_run_id": 34418854572
+    }
   },
   "internal_quality": {
     "architecture_findings": 0,
@@ -91,224 +75,227 @@
     "largest_python_file_lines": 683,
     "maximum_complexity": 29
   },
+  "manifest": {
+    "file_count": 461,
+    "path": "RELEASE_MANIFEST.json",
+    "status": "passed"
+  },
+  "matrix": {
+    "passed_targets": 1,
+    "scope_note": "Aktuelle Ziel-CI auf Ubuntu-26.04-Basis mit KDE-/Wayland-Laufzeitteilmenge, headless Weston und nativem Qt-Wayland-QPA; kein Ersatz für die physische Kubuntu-26.04-Abnahme.",
+    "status": "passed",
+    "targets": [
+      {
+        "desktop": "KDE runtime subset",
+        "os": "ubuntu-26.04",
+        "session": "wayland-native",
+        "status": "passed"
+      }
+    ],
+    "total_targets": 1,
+    "verified_commit": "92b2089a604b13367cb14c64e69703f97b5381d1",
+    "workflow_run_id": 34550170345
+  },
+  "product": {
+    "build_date": "2026-09-11",
+    "channel": "rc",
+    "iteration": 24,
+    "name": "VideoBatch Fast",
+    "version": "2.8.3-rc24"
+  },
+  "progress": {
+    "completed": 28,
+    "current_todo": "Automatisierte Ziel-CI für Kubuntu-26.04-/Wayland-Vertrag vorhanden; offen bleiben die physische Kubuntu-26.04-Plasma-Wayland-Abnahme und der reale Langzeitrender.",
+    "open": 2,
+    "percent": 93,
+    "total": 30
+  },
+  "provenance": {
+    "canonical_source": "diagnostics/release_readiness/RELEASE_EVIDENCE.json",
+    "evidence_regression_base_head": "f05bafb53938b7a2e99095d525830c737c0f89de",
+    "evidence_regression_method": "four deterministic pytest partitions; 325/325 passed",
+    "manifest_regeneration_run_id": 30965984513,
+    "matrix_workflow_run_id": 30966067548,
+    "repository_finalization_commit": "76689511d2c35bb2ef626e96cb513c3d3672b20c",
+    "verified_source_commit": "ef003d2c01fa94b899d0ebac9947f1795dd23e8f"
+  },
   "release_cleanup": {
-    "historical_reports_archived": 56,
+    "historical_reports_archived": 66,
+    "obsolete_kubuntu_matrix_files_removed": 10,
     "obsolete_visual_baselines_removed": 16,
     "ready_deliverables": 10,
-    "unfinished_gate_files": 8,
     "release_archive_excluded": true,
-    "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe"
+    "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe",
+    "unfinished_gate_files": 8
   },
   "release_files": {
-    "ready_suffix": "_save_",
     "policy": "Only standalone user and release deliverables receive _save_. Source modules, CI workflows, canonical manifests, entrypoints and README retain stable technical names.",
     "ready": [
       {
-        "path": "START_HIER_save_.md",
+        "evidence": "Geprüfter Nutzerstart und sichere erste Schritte",
         "label": "Schnellstart",
-        "evidence": "Geprüfter Nutzerstart und sichere erste Schritte"
+        "path": "START_HIER_save_.md"
       },
       {
-        "path": "AUTOINSTALLATION_save_.md",
+        "evidence": "Benutzerpfade, A/B-Slots und Berechtigungsschutz dokumentiert",
         "label": "Installationsanleitung",
-        "evidence": "Benutzerpfade, A/B-Slots und Berechtigungsschutz dokumentiert"
+        "path": "AUTOINSTALLATION_save_.md"
       },
       {
-        "path": "PROJEKTORDNERSTRUKTUR_save_.md",
+        "evidence": "Ordner, Start, Sicherheit und Funktionen beschrieben",
         "label": "Projektübersicht",
-        "evidence": "Ordner, Start, Sicherheit und Funktionen beschrieben"
+        "path": "PROJEKTORDNERSTRUKTUR_save_.md"
       },
       {
-        "path": "RELEASE_NOTES_save_.md",
+        "evidence": "Aktueller RC24-Funktionsstand dokumentiert",
         "label": "Releasehinweise",
-        "evidence": "Aktueller RC24-Funktionsstand dokumentiert"
+        "path": "RELEASE_NOTES_save_.md"
       },
       {
-        "path": "TEST_REPORT_save_.md",
+        "evidence": "Automatisierte und offene Prüfungen getrennt ausgewiesen",
         "label": "Testbericht",
-        "evidence": "Automatisierte und offene Prüfungen getrennt ausgewiesen"
+        "path": "TEST_REPORT_save_.md"
       },
       {
-        "path": "FRESH_PACKAGE_REPORT_save_.md",
+        "evidence": "Saubere Paketprüfung für RC24 dokumentiert",
         "label": "Paketbericht",
-        "evidence": "Saubere Paketprüfung für RC24 dokumentiert"
+        "path": "FRESH_PACKAGE_REPORT_save_.md"
       },
       {
-        "path": "CODE_QUALITY_REPORT_2.8.3-rc24_save_.md",
+        "evidence": "Interne Qualitätsprüfung ohne Befund",
         "label": "Codequalitätsbericht",
-        "evidence": "Interne Qualitätsprüfung ohne Befund"
+        "path": "CODE_QUALITY_REPORT_2.8.3-rc24_save_.md"
       },
       {
-        "path": "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md",
+        "evidence": "Umgesetzte Funktions- und Sicherheitsverträge dokumentiert",
         "label": "Implementierungsbericht",
-        "evidence": "Umgesetzte Funktions- und Sicherheitsverträge dokumentiert"
+        "path": "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md"
       },
       {
-        "path": "FINAL_AUDIT_2.8.3-rc24_save_.md",
+        "evidence": "RC-Gates und offene Stable-Gates ehrlich getrennt",
         "label": "RC-Abschlussaudit",
-        "evidence": "RC-Gates und offene Stable-Gates ehrlich getrennt"
+        "path": "FINAL_AUDIT_2.8.3-rc24_save_.md"
       },
       {
-        "path": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
+        "evidence": "Aus der kanonischen RELEASE_EVIDENCE.json erzeugt",
         "label": "Maschinenlesbarer Buildbericht",
-        "evidence": "Aus der kanonischen RELEASE_EVIDENCE.json erzeugt"
+        "path": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json"
       }
     ],
+    "ready_suffix": "_save_",
     "unfinished": [
       {
-        "path": "TODO.md",
         "label": "Offene Arbeitsliste",
+        "path": "TODO.md",
         "reason": "Enthält bewusst die verbleibenden Stable-Gates"
       },
       {
-        "path": "QUALITY_GATE_ATTEMPT_2.8.3-rc24.md",
         "label": "Externe Qualitätswerkzeuge",
+        "path": "QUALITY_GATE_ATTEMPT_2.8.3-rc24.md",
         "reason": "Technische Provenienzdatei der inzwischen bestandenen Python-Qualitätsgates; bleibt bewusst ohne _save_-Suffix und ist kein Stable-Blocker mehr"
       },
       {
-        "path": "STABLE_GATE_ITERATION_2.8.3-rc24_2026-08-04.md",
         "label": "Stable-Freigabeiteration",
-        "reason": "Stable-Freigabe ist ausdrücklich noch blockiert"
+        "path": "STABLE_GATE_ITERATION_2.8.3-rc24_2026-09-11.md",
+        "reason": "Aktueller Stable-Arbeitsstand; reale Zielsystemabnahme und Langzeitrender sind noch offen"
       },
       {
-        "path": "docs/LONG_RENDER_2.8.3-rc24.md",
         "label": "Langzeitrender",
+        "path": "docs/LONG_RENDER_2.8.3-rc24.md",
         "reason": "Realer Langzeitrender mit großer Auswahl und langsamem Ziel fehlt"
       },
       {
-        "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
         "label": "Stable-Abnahmenachweis",
+        "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
         "reason": "Physische Desktop- und Langzeitnachweise fehlen"
       },
       {
-        "path": "VISUAL_DESKTOP_APPROVAL.md",
         "label": "Desktop-Sichtprüfung",
-        "reason": "Physische KDE-X11-/Wayland-Abnahme bleibt offen"
+        "path": "VISUAL_DESKTOP_APPROVAL.md",
+        "reason": "Physische Kubuntu-26.04-Plasma-Wayland-Abnahme bleibt offen"
       },
       {
-        "path": "QUALITY_ENVIRONMENT_STATUS.json",
         "label": "Qualitätsumgebung",
-        "reason": "Maschinenlesbare technische Statusdatei; alle Python-Qualitätsgates sind bestanden, Stable bleibt nur wegen physischer Desktop- und Langzeitnachweise offen"
+        "path": "QUALITY_ENVIRONMENT_STATUS.json",
+        "reason": "Maschinenlesbarer Status; automatisierte Qualitätsgates sind bestanden, Stable bleibt wegen physischer Kubuntu-26.04-Wayland-Abnahme und Langzeitrender offen"
       },
       {
-        "path": "VISUAL_INSPECTION_MANIFEST.json",
         "label": "Visuelles Prüfmanifest",
+        "path": "VISUAL_INSPECTION_MANIFEST.json",
         "reason": "Aktueller physischer Lauf ist nicht vollständig bestätigt"
       }
     ]
   },
+  "runtime_start": {
+    "architecture": "content-addressed user environment",
+    "existing_instance_focus": true,
+    "ffmpeg_aac_detection": "real smoke test",
+    "interactive_questions": false,
+    "quality_tools_block_start": false,
+    "safe_mode_retry": true,
+    "status": "passed",
+    "system_python_fallback": "verified imports only",
+    "ui_ready_handshake": true
+  },
+  "schema_version": 1,
   "stable_gates": [
     {
       "id": "ruff_0_16_1",
       "label": "Ruff 0.16.1",
-      "status": "passed",
-      "reason": "Exakt gepinnter Offline-Lauf bestanden; Ruff 0.16.1, Rückgabecode 0, GitHub Actions Run 34421827176, Commit 5d7c1949e7995126b7b58ca444ae6e112ecefcea"
+      "reason": "Exakt gepinnter Offline-Lauf bestanden; Ruff 0.16.1, Rückgabecode 0, GitHub Actions Run 34421827176, Commit 5d7c1949e7995126b7b58ca444ae6e112ecefcea",
+      "status": "passed"
     },
     {
       "id": "mypy_2_3_0",
       "label": "MyPy 2.3.0",
-      "status": "passed",
-      "reason": "Exakt gepinnter Offline-Lauf bestanden; MyPy 2.3.0, Rückgabecode 0, GitHub Actions Run 34421827176, Commit 5d7c1949e7995126b7b58ca444ae6e112ecefcea"
+      "reason": "Exakt gepinnter Offline-Lauf bestanden; MyPy 2.3.0, Rückgabecode 0, GitHub Actions Run 34421827176, Commit 5d7c1949e7995126b7b58ca444ae6e112ecefcea",
+      "status": "passed"
     },
     {
       "id": "bandit_1_9_4",
       "label": "Bandit 1.9.4",
-      "status": "passed",
-      "reason": "Exakt gepinnter Offline-Lauf bestanden; Bandit 1.9.4, Rückgabecode 0 nach fachlicher B112-Korrektur, GitHub Actions Run 34421827176, Commit 5d7c1949e7995126b7b58ca444ae6e112ecefcea"
+      "reason": "Exakt gepinnter Offline-Lauf bestanden; Bandit 1.9.4, Rückgabecode 0 nach fachlicher B112-Korrektur, GitHub Actions Run 34421827176, Commit 5d7c1949e7995126b7b58ca444ae6e112ecefcea",
+      "status": "passed"
     },
     {
       "id": "pip_audit_2_10_1",
       "label": "pip-audit 2.10.1",
-      "status": "passed",
-      "reason": "Exakt gepinnter Offline-Lauf bestanden; pip-audit 2.10.1, Rückgabecode 0, GitHub Actions Run 34421827176, Commit 5d7c1949e7995126b7b58ca444ae6e112ecefcea"
+      "reason": "Exakt gepinnter Offline-Lauf bestanden; pip-audit 2.10.1, Rückgabecode 0, GitHub Actions Run 34421827176, Commit 5d7c1949e7995126b7b58ca444ae6e112ecefcea",
+      "status": "passed"
     },
     {
-      "id": "physical_kde_x11_wayland",
-      "label": "Physische KDE-X11-/Wayland-Abnahme",
-      "status": "open",
-      "reason": "Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless"
+      "id": "physical_kubuntu_26_04_wayland",
+      "label": "Physische Kubuntu-26.04-Plasma-Wayland-Abnahme",
+      "reason": "Reale Zielsystem-Abnahme auf Kubuntu 26.04 LTS mit KDE Plasma und nativem Wayland fehlt; die CI-Prüfung ist headless und ersetzt die Sichtabnahme nicht.",
+      "status": "open"
     },
     {
       "id": "large_media_soak",
       "label": "Langzeitrender mit großer Medienauswahl",
-      "status": "open",
-      "reason": "Realer Lauf auf langsamem externem Ziel fehlt"
+      "reason": "Realer Lauf auf langsamem externem Ziel fehlt",
+      "status": "open"
     }
   ],
   "stable_ready": false,
-  "progress": {
-    "percent": 93,
-    "completed": 28,
-    "open": 2,
-    "total": 30,
-    "current_todo": "Python-Qualitätsgates vollständig offline bestanden; nur physische KDE-X11-/Wayland-Abnahme und realer Langzeitrender bleiben offen"
-  },
-  "approved_quality_report": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
-  "artifact_policy": "full-project-zip-before-stable",
-  "deterministic_build": "passed; two independent builds byte-identical",
-  "critical_fix": {
-    "area": "already-selected project media list",
-    "root_cause": "unbounded per-click preview threads and FFmpeg processes plus unvalidated direct Tk image decoding",
-    "resolution": [
-      "single serial preview controller",
-      "180 ms debounce",
-      "generation tokens",
-      "Pillow validation before ImageTk",
-      "main-thread-only Tk updates",
-      "explicit PNG output for FFmpeg 7+ atomic partial files",
-      "invalid cache targets removed before regeneration"
-    ]
-  },
-  "external_quality_evidence": {
-    "ruff_0_16_1": {
-      "status": "passed",
-      "tool": "ruff",
-      "tool_version": "0.16.1",
-      "commit": "eda699f3d1159cf0a1104ec7a8c880faf6bb93bd",
-      "workflow_run_id": 34418854572,
-      "artifact_id": 10130136687,
-      "artifact_digest": "sha256:2dadf37c62efe20ab6f8d65393cf18274a9188efffdb5cbaa108f0e4cc81d13e",
-      "install_mode": "offline-pip-no-index-from-verified-wheelhouse",
-      "wheel_sha256": "39897739f112253ee4fdd2e8aa9a4f9ded99fb2be367d5f31dfa4ded6025584c",
-      "findings": 0,
-      "exit_code": 0,
-      "configuration": "pyproject.toml",
-      "scope": "."
-    },
-    "python_stable_gates": {
-      "status": "passed",
-      "commit": "5d7c1949e7995126b7b58ca444ae6e112ecefcea",
-      "workflow_run_id": 34421827176,
-      "artifact_id": 10131186987,
-      "artifact_digest": "sha256:c11ed40a13264a7912154c6fee3e7f70108b20218a06442254ceb4fb7158e371",
-      "install_contract": "toolchain.py --no-index --find-links --require-hashes",
-      "execution_contract": "run_external_quality.py --mode required --offline",
-      "network_guard": true,
-      "wheelhouse_manifest_sha256": "e1d99b53efc8b65527a7d5b292258439c2562b5d80354d8ae342e1cae7b59844",
-      "resolved_lock_sha256": "3fe96551379db60b501b749e66b9a807d7c6a6ba0e7000770a97e8003cb40ca1",
-      "pip_audit_cache_inventory_sha256": "bbd31f0bae51c2dda936042d3815bed51d178339c214551332e2fc67eb5ff4d8",
-      "results": {
-        "ruff": {
-          "version": "0.16.1",
-          "status": "pass",
-          "returncode": 0
-        },
-        "mypy": {
-          "version": "2.3.0",
-          "status": "pass",
-          "returncode": 0
-        },
-        "bandit": {
-          "version": "1.9.4",
-          "status": "pass",
-          "returncode": 0
-        },
-        "pip-audit": {
-          "version": "2.10.1",
-          "status": "pass",
-          "returncode": 0
-        }
-      }
-    }
+  "tests": {
+    "assurance_scenarios": "12/12",
+    "branch_coverage_percent": 67.21,
+    "combined_coverage_percent": 79.46,
+    "failed": 0,
+    "fault_lab": "12/12",
+    "full_regression": "325/325",
+    "full_regression_groups": [
+      98,
+      89,
+      83,
+      55
+    ],
+    "line_coverage_percent": 82.43,
+    "passed": 325,
+    "selected_media_click_stress": "120 rapid selection changes, passed",
+    "skipped": 0,
+    "targeted_rc24": "27/27 finalization and preview regressions",
+    "test_environment": "Letzte vollständige Legacy-Regression unter Xvfb; aktueller Qt-Zielpfad wird separat nativ unter Wayland geprüft.",
+    "visual_scenarios": "18/18"
   }
 }

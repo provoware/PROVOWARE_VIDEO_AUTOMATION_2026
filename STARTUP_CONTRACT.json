@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
-  "contract_id": "videobatch-fast.predictive-startup/2.8.3-rc24-v2",
+  "contract_id": "videobatch-fast.predictive-startup/2.8.3-rc24-v4",
   "release_target": "2.8.3-rc24",
-  "goal": "Die Oberfläche ohne Nutzerintervention nach einer bestätigten UI-Bereitschaftsmeldung öffnen; bei einem frühen Oberflächenfehler automatisch in einen neutralen sicheren Startmodus wechseln.",
+  "goal": "Die native Qt-Oberfläche auf Kubuntu 26.04 Plasma Wayland ohne Terminal- oder Texteingaben nach einer bestätigten UI-Bereitschaftsmeldung öffnen; nur wenn lokale Abhängigkeiten nicht ausreichen, darf eine klar beschriftete grafische Online-Freigabe angeboten werden.",
   "stages": [
     {
       "id": "system",
       "order": 1,
-      "label": "Programmpaket und System prüfen"
+      "label": "Kubuntu 26.04 und Wayland prüfen"
     },
     {
       "id": "runtime",
       "order": 2,
-      "label": "Laufzeit automatisch vorbereiten"
+      "label": "Qt-Laufzeit lokal prüfen und bei Bedarf kontrolliert reparieren"
     },
     {
       "id": "project",
@@ -22,11 +22,23 @@
     {
       "id": "launch",
       "order": 4,
-      "label": "Oberfläche öffnen"
+      "label": "Qt-Oberfläche über Wayland öffnen"
     }
   ],
   "policy": {
+    "supported_platform": "Kubuntu 26.04 LTS",
+    "supported_desktop": "KDE Plasma",
+    "supported_session": "wayland",
+    "ui_toolkit": "PySide6 / Qt 6",
+    "ui_transport": "wayland-native",
+    "x11_supported": false,
+    "tkinter_supported": false,
+    "xwayland_required": false,
     "interactive_questions_forbidden": true,
+    "interaction_rule": "Keine Terminal- oder Textfragen. Die einzige zulässige Nutzerinteraktion vor dem Programmstart ist eine grafische Online-Reparaturfreigabe mit den Buttons 'Online reparieren' und 'Offline bleiben', wenn lokale Wiederherstellung nicht ausreicht.",
+    "online_repair_gui_confirmation_required": true,
+    "online_repair_decline_keeps_offline_path": true,
+    "headless_online_repair_forbidden": true,
     "quality_tools_must_not_block_application_start": true,
     "ffmpeg_codec_listing_must_not_block_application_start": true,
     "real_encoder_smoke_test_is_authoritative": true,
@@ -38,7 +50,9 @@
     "maximum_automatic_repair_attempts": 2,
     "fatal_conditions": [
       "bootstrap_python_missing",
-      "tk_missing",
+      "unsupported_platform",
+      "wayland_session_missing",
+      "qt_runtime_missing",
       "project_package_incomplete",
       "runtime_cannot_be_installed_or_verified_after_all_repair_attempts"
     ],

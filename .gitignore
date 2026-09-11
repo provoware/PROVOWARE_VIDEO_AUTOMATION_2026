@@ -28,3 +28,13 @@ dist/
 /warmup-metrics/
 /release-audit/
 /dist-matrix-*/
+
+# Local editor/desktop residue must never enter source control.
+.DS_Store
+Thumbs.db
+.directory
+*~
+*.swp
+*.swo
+*.bak
+*.tmp

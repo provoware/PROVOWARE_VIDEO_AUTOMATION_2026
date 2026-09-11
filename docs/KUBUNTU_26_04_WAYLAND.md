@@ -2,53 +2,68 @@
 
 ## Ziel
 
-Die aktuelle VideoBatch-Fast-Version aus `VERSION.json` bleibt mit X11 kompatibel und kann auf Kubuntu 26.04 in einer Plasma-Wayland-Sitzung betrieben werden.
+VideoBatch wird ab dieser Qt-Ausbaustufe gezielt für **Kubuntu 26.04 LTS mit KDE Plasma und Wayland** entwickelt und geprüft. X11, Ubuntu 22.04/24.04 sowie die Tk/Tkinter-Oberfläche gehören nicht mehr zum vorgesehenen Zielpfad.
 
 ## Technisches Modell
 
-Die bestehende Oberfläche verwendet Python/Tkinter. Das in Kubuntu 26.04 verfügbare Tk 8.6 arbeitet unter Linux über X11. In einer Plasma-Wayland-Sitzung wird das Fenster deshalb über **XWayland** dargestellt. Das ist bewusst dokumentiert: Diese Erweiterung behauptet keine native Wayland-Tk-Oberfläche.
+Die neue Oberfläche basiert auf **PySide6 / Qt 6** und soll unter Plasma direkt über den Qt-Wayland-Backendpfad laufen. XWayland ist für die VideoBatch-Oberfläche nicht vorgesehen und wird von der Kubuntu-26.04-Vorbereitung nicht installiert.
 
-Wayland-spezifische Desktopfunktionen werden getrennt behandelt. `wl-clipboard` kann für native Zwischenablageoperationen genutzt werden; `xdg-open` und die KDE-Desktop-Portale bleiben die vorgesehenen Desktop-Schnittstellen. Es werden keine X11-Automationswerkzeuge wie `xdotool` oder `wmctrl` vorausgesetzt.
+Desktopfunktionen werden über Wayland- und Freedesktop-Schnittstellen angebunden:
 
-## Einmalige Vorbereitung
+- `wl-clipboard` für die native Zwischenablage,
+- `xdg-open` für Dateien und Ordner,
+- `xdg-desktop-portal` und `xdg-desktop-portal-kde` für Desktop-Integration,
+- Qt 6 / PySide6 für die grafische Oberfläche.
+
+## Einmalige Systemvorbereitung
 
 ```bash
 bash scripts/install_kubuntu_26_04_wayland.sh
 ```
 
-Der Helfer installiert nur fehlende Laufzeitpakete und löscht keine Nutzerdaten.
+Der Helfer ergänzt nur benötigte Systempakete. Er löscht keine Nutzerdaten und installiert absichtlich weder `python3-tk` noch `xwayland` als Voraussetzung für die neue Oberfläche.
 
-## Prüfung
+## Plattformprüfung
 
 ```bash
 python3 scripts/kubuntu_26_04_wayland_check.py
 python3 scripts/kubuntu_26_04_wayland_check.py --json
 ```
 
-Für eine funktionierende Wayland-Sitzung müssen mindestens `XDG_SESSION_TYPE=wayland`, `WAYLAND_DISPLAY` und für die Tk-Oberfläche ein von XWayland bereitgestelltes `DISPLAY` vorhanden sein.
+Freigegeben wird nur folgende Kombination:
 
-## Start
+- Kubuntu 26.04 LTS,
+- KDE Plasma,
+- `XDG_SESSION_TYPE=wayland`,
+- gesetztes `WAYLAND_DISPLAY`.
+
+Ein vorhandenes `DISPLAY` ist für den nativen Qt-Wayland-Pfad nicht erforderlich.
+
+## Qt-Teststart während der Migration
+
+Solange der produktive Startpfad noch nicht endgültig auf Qt umgeschaltet wurde, kann die aktuelle Qt-Phase gezielt gestartet werden:
 
 ```bash
-./STARTEN.sh
+python3 -m venv .venv-qt
+source .venv-qt/bin/activate
+python3 -m pip install -r requirements-qt.txt
+PYTHONPATH=src QT_QPA_PLATFORM=wayland python3 -m videobatch_fast.qt_phase3
 ```
 
-Beim Start schreibt VideoBatch zusätzlich einen maschinenlesbaren Plattformbericht nach:
+## Plattformbericht
+
+Die Plattformprüfung kann weiterhin einen maschinenlesbaren Bericht unter dem bestehenden Statuspfad erzeugen:
 
 `~/.local/state/VideoBatchFast/startup/platform.json`
 
-## Fehlerbild: Wayland aktiv, aber DISPLAY fehlt
+Der relevante Transportwert lautet nun `ui_transport: wayland-native`.
 
-Das Programm bricht vor der Tk-Fenstererzeugung mit einer verständlichen Diagnose ab. Prüfen:
+## CI-Prüfung
 
-```bash
-printf 'XDG_SESSION_TYPE=%s\nWAYLAND_DISPLAY=%s\nDISPLAY=%s\n' \
-  "$XDG_SESSION_TYPE" "$WAYLAND_DISPLAY" "$DISPLAY"
-command -v Xwayland || command -v xwayland
-```
+Die CI verwendet einen GitHub-Runner auf Ubuntu 26.04 als technische Basis, installiert die benötigten KDE-/Wayland-Komponenten und startet einen headless Weston-Compositor. Darin wird Qt ausdrücklich mit `QT_QPA_PLATFORM=wayland` ausgeführt.
 
-Danach `xwayland` installieren bzw. die Plasma-Sitzung neu anmelden.
+Das prüft Betriebssystembasis, Abhängigkeiten und den nativen Wayland-Transport reproduzierbar. Es ersetzt **nicht** die abschließende Sichtprüfung auf einem echten Kubuntu-26.04-Plasma-Desktop.
 
 ## Freigabegrenze
 
-CI kann Paketbestand, Python-Logik, simulierte Wayland-Umgebungen und reproduzierbare Builds prüfen. Die endgültige Freigabe als „Kubuntu 26.04 Wayland vollständig abgenommen“ erfordert zusätzlich einen echten Start auf einem Kubuntu-26.04-Plasma-Wayland-System mit sichtbarer UI-Ready-Meldung.
+Eine stabile Freigabe benötigt weiterhin einen echten Programmstart auf dem Zielrechner mit Kubuntu 26.04 Plasma Wayland sowie eine visuelle Prüfung der Oberfläche. Bis dahin bleibt der Qt-PR absichtlich im Draft-Status.

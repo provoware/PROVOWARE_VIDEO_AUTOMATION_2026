@@ -15,7 +15,6 @@ def test_owner_dispatch_is_issue_and_owner_bound() -> None:
         "github.event.issue.number == 12",
         "github.event.comment.author_association == 'OWNER'",
         "github.event.comment.body == '/run-kubuntu-main'",
-        "github.event.comment.body == '/run-kubuntu-cache-warmup'",
         "startsWith(github.event.comment.body, '/run-kubuntu-pr ')",
     )
     for fragment in required_fragments:
@@ -29,12 +28,12 @@ def test_dispatch_targets_only_approved_main_workflows() -> None:
     source = WORKFLOW.read_text(encoding="utf-8")
 
     assert "workflow=kubuntu-build-matrix.yml" in source
-    assert "workflow=kubuntu-cache-warmup.yml" in source
+    assert "kubuntu-cache-warmup.yml" not in source
     assert "workflow=kubuntu-pr-validation.yml" in source
     assert "ref=main" in source
     assert 'REF: ${{ steps.select.outputs.ref }}' in source
     assert '--ref "$REF"' in source
-    assert "-f report_issue=12" in source
+    assert "arguments=''" in source
     assert "-f head_sha=$requested_sha" in source
     assert 'gh workflow run "$WORKFLOW"' in source
     assert "case \"$COMMAND\" in" in source

@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import os
+import shutil
 import socket
 import subprocess
 import sys
@@ -23,6 +24,8 @@ from toolchain_common import (
     write_resolved_lock,
 )
 
+CI_ONLINE_MARKER = "VIDEOBATCH_CI_ALLOW_PUBLIC_PYPI"
+
 
 def state_root() -> Path:
     return Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state")) / "VideoBatchFast"
@@ -30,6 +33,89 @@ def state_root() -> Path:
 
 def progress(step: int, total: int, message: str) -> None:
     print(f"[{step}/{total}] {message}", flush=True)
+
+
+def ci_online_authorized() -> bool:
+    """Allow non-interactive network access only inside explicitly opted-in GitHub Actions."""
+    return (
+        os.environ.get("GITHUB_ACTIONS", "").strip().lower() == "true"
+        and os.environ.get(CI_ONLINE_MARKER, "").strip() == "1"
+    )
+
+
+def graphical_session_available() -> bool:
+    return bool(os.environ.get("WAYLAND_DISPLAY", "").strip())
+
+
+def ask_online_repair_buttons(index_url: str) -> bool:
+    """Ask for one-shot online repair consent through native KDE on Wayland.
+
+    The downloader owns this fail-closed consent boundary so every user path,
+    including direct toolchain calls, must receive an explicit button decision
+    before DNS resolution or package download begins.
+    """
+    if not graphical_session_available():
+        print(
+            "Online-Reparatur blockiert: Keine native Wayland-Sitzung für die erforderliche Button-Freigabe erkannt.",
+            file=sys.stderr,
+        )
+        return False
+    kdialog = shutil.which("kdialog")
+    if not kdialog:
+        print(
+            "Online-Reparatur blockiert: KDE-Dialogwerkzeug kdialog fehlt. Auf Kubuntu 26.04 kann das Paket 'kdialog' installiert werden.",
+            file=sys.stderr,
+        )
+        return False
+
+    text = (
+        "Lokale Abhängigkeiten reichen nicht aus.\n\n"
+        "VideoBatch kann ausschließlich die exakt festgelegten fehlenden Python-Pakete "
+        "online laden, anschließend prüfen und lokal für spätere Offline-Starts speichern.\n\n"
+        f"Paketquelle: {index_url}\n"
+        "Projekt- und Mediendateien werden nicht hochgeladen.\n\n"
+        "Online reparieren?\n"
+        "Ja = Pakete beziehen · Nein = offline bleiben"
+    )
+    try:
+        completed = subprocess.run(
+            [
+                kdialog,
+                "--title",
+                "VideoBatch · Online-Reparatur",
+                "--yesno",
+                text,
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=300,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        print(
+            f"Online-Reparatur blockiert: KDE-Bestätigungsdialog konnte nicht geöffnet werden ({exc}).",
+            file=sys.stderr,
+        )
+        return False
+    if completed.returncode not in {0, 1}:
+        detail = (completed.stderr or "").strip()
+        print(
+            "Online-Reparatur blockiert: KDE-Bestätigungsdialog lieferte kein gültiges Ja/Nein-Ergebnis."
+            + (f" Detail: {detail}" if detail else ""),
+            file=sys.stderr,
+        )
+        return False
+    return completed.returncode == 0
+
+
+def online_authorized(index_url: str) -> bool:
+    if ci_online_authorized():
+        return True
+    allowed = ask_online_repair_buttons(index_url)
+    if not allowed:
+        print("Online-Reparatur nicht freigegeben; es findet kein DNS-/PyPI-Zugriff statt.", file=sys.stderr)
+    return allowed
 
 
 def preflight(index_url: str) -> list[str]:
@@ -56,7 +142,7 @@ def resolve_pip_runner() -> tuple[list[str], Path | None]:
     """Return a working pip command without requiring system-wide python3-pip.
 
     Ubuntu/Kubuntu can provide ``venv`` without exposing ``pip`` as a system
-    module.  In that case we create a short-lived bootstrap venv and use only
+    module. In that case we create a short-lived bootstrap venv and use only
     its pip for downloading the exact locked wheels.
     """
     if importlib.util.find_spec("pip") is not None:
@@ -128,10 +214,10 @@ def write_log(output: str | None) -> Path:
         return Path(os.devnull)
 
 
-
 def publish(staging: Path, output: Path) -> None:
     """Kompatibler, sicherer Einstieg für ältere Tests und Werkzeuge."""
     publish_directory(staging, output)
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Baut das einheitliche Offline-Wheelhouse atomar auf.")
@@ -139,12 +225,12 @@ def main() -> int:
     parser.add_argument("--index-url", default="")
     parser.add_argument("--scope", choices=("runtime", "all"), default="all")
     args = parser.parse_args()
-    if os.environ.get("VIDEOBATCH_ALLOW_PUBLIC_PYPI") != "1":
-        print("Online-Bezug blockiert: Start muss über ./videobatch.sh erfolgen.", file=sys.stderr)
-        return 4
 
     contract = load_contract()
     index_url = args.index_url or str(contract["policy"]["public_index"])
+    if not online_authorized(index_url):
+        return 4
+
     output = (args.output or ROOT / contract["paths"]["wheelhouse"]).resolve(strict=False)
     output.parent.mkdir(parents=True, exist_ok=True)
     staging: Path | None = None

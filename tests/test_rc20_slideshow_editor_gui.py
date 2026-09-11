@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -9,8 +8,10 @@ from PIL import Image
 
 from videobatch_fast.audio_waveform import SceneMarker, WaveformAnalysis
 
+from gui_test_support import legacy_tk_gui_available
 
-pytestmark = pytest.mark.skipif(not os.environ.get("DISPLAY"), reason="GUI display required")
+
+pytestmark = pytest.mark.skipif(not legacy_tk_gui_available(), reason="reachable legacy Tk/X display required")
 
 
 def test_thumbnail_strip_drag_selection_and_anchors(tmp_path: Path) -> None:

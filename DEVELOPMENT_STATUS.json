@@ -6,12 +6,12 @@
   "progress_percent": 93,
   "completed": 28,
   "open": 2,
-  "current_todo": "Python-Qualitätsgates vollständig offline bestanden; nur physische KDE-X11-/Wayland-Abnahme und realer Langzeitrender bleiben offen",
+  "current_todo": "Automatisierte Ziel-CI für Kubuntu-26.04-/Wayland-Vertrag vorhanden; offen bleiben die physische Kubuntu-26.04-Plasma-Wayland-Abnahme und der reale Langzeitrender.",
   "status": "yellow",
   "stable_ready": false,
   "approved_quality_report": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
   "stable_blockers": [
-    "Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless",
+    "Physische Kubuntu-26.04-Plasma-Wayland-Abnahme: Reale Zielsystem-Abnahme auf Kubuntu 26.04 LTS mit KDE Plasma und nativem Wayland fehlt; die CI-Prüfung ist headless und ersetzt die Sichtabnahme nicht.",
     "Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt"
   ],
   "total": 30

@@ -15,17 +15,21 @@ concurrency:
   group: repository-preflight-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  PYTHONUTF8: '1'
+  PYTHONDONTWRITEBYTECODE: '1'
+  PIP_DISABLE_PIP_VERSION_CHECK: '1'
+  PIP_NO_INPUT: '1'
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
 jobs:
   compatibility-preflight:
-    # Legacy context name retained temporarily because the current main rule expects it.
+    # Context name retained because main may still require it.
     name: Design manifest contract
-    runs-on: ubuntu-24.04
-    timeout-minutes: 8
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
     env:
-      PYTHONDONTWRITEBYTECODE: '1'
-      PYTHONUTF8: '1'
       PYTHONPATH: src
-
     steps:
       - name: Check out exact revision
         uses: actions/checkout@v4
@@ -33,29 +37,32 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
 
+      - name: Set up stable validation Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
       - name: Install pinned repository toolchain
         run: |
           set -Eeuo pipefail
-          python3 -m pip install --disable-pip-version-check --no-input -r requirements-toolchain.lock
+          python -m pip install --disable-pip-version-check --no-input -r requirements-toolchain.lock
 
-      - name: Compile changed contracts
+      - name: Compile and run documentation contracts
         run: |
           set -Eeuo pipefail
-          python3 -m py_compile \
+          python -m py_compile \
             scripts/validate_documentation.py \
-            src/videobatch_fast/canonical_shell_workspace.py \
-            tests/test_documentation_contract.py
-
-      - name: Run documentation contract
-        run: |
-          set -Eeuo pipefail
-          python3 -m pytest -q tests/test_documentation_contract.py
-          python3 scripts/validate_documentation.py --json
+            src/videobatch_fast/platform_integration.py \
+            src/videobatch_fast/workflow_layout.py \
+            tests/test_documentation_contract.py \
+            tests/test_tk_free_core_contract.py
+          python -m pytest -q \
+            tests/test_documentation_contract.py \
+            tests/test_tk_free_core_contract.py
+          python scripts/validate_documentation.py --json
 
       - name: Verify release manifest
-        run: |
-          set -Eeuo pipefail
-          python3 scripts/build_release_manifest.py --check --json
+        run: python scripts/build_release_manifest.py --check --json
 
       - name: Prove preflight remained read-only
         if: always()
@@ -70,12 +77,10 @@ jobs:
 
   prepare-ruff-wheelhouse:
     name: Prepare exact Ruff 0.16.1 wheelhouse
-    runs-on: ubuntu-24.04
-    timeout-minutes: 8
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
     env:
-      PYTHONUTF8: '1'
       EXPECTED_RUFF_WHEEL_SHA256: 39897739f112253ee4fdd2e8aa9a4f9ded99fb2be367d5f31dfa4ded6025584c
-
     steps:
       - name: Check out exact revision
         uses: actions/checkout@v4
@@ -83,17 +88,20 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
 
-      - name: Verify repository pin
-        run: |
-          set -Eeuo pipefail
-          test "$(grep -cx 'ruff==0.16.1' requirements-toolchain.lock)" = "1"
+      - name: Set up stable validation Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
 
-      - name: Download exact standalone Ruff wheel
+      - name: Verify repository pin
+        run: test "$(grep -cx 'ruff==0.16.1' requirements-toolchain.lock)" = "1"
+
+      - name: Download and attest exact Ruff wheel
         run: |
           set -Eeuo pipefail
           wheelhouse="$RUNNER_TEMP/ruff-wheelhouse"
           mkdir -p "$wheelhouse"
-          python3 -m pip download \
+          python -m pip download \
             --disable-pip-version-check \
             --no-input \
             --only-binary=:all: \
@@ -118,16 +126,10 @@ jobs:
   offline-ruff-stable-gate:
     name: Offline Ruff 0.16.1 stable gate
     needs: prepare-ruff-wheelhouse
-    runs-on: ubuntu-24.04
-    timeout-minutes: 8
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
     env:
-      PYTHONUTF8: '1'
-      PYTHONDONTWRITEBYTECODE: '1'
-      PIP_DISABLE_PIP_VERSION_CHECK: '1'
-      PIP_NO_INPUT: '1'
       PIP_NO_INDEX: '1'
-      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-
     steps:
       - name: Check out exact revision
         uses: actions/checkout@v4
@@ -135,24 +137,24 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
 
+      - name: Set up stable validation Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
       - name: Download prepared Ruff wheelhouse
         uses: actions/download-artifact@v4
         with:
           name: ruff-0.16.1-wheelhouse-${{ github.event.pull_request.head.sha || github.sha }}
           path: ${{ runner.temp }}/ruff-wheelhouse
 
-      - name: Verify wheelhouse before offline install
+      - name: Verify and install Ruff offline
         run: |
           set -Eeuo pipefail
           cd "$RUNNER_TEMP/ruff-wheelhouse"
           sha256sum -c WHEELHOUSE_SHA256.txt
-          test "$(find . -maxdepth 1 -type f -name 'ruff-0.16.1-*.whl' | wc -l)" = "1"
-
-      - name: Install Ruff with package index disabled
-        run: |
-          set -Eeuo pipefail
           venv="$RUNNER_TEMP/ruff-offline-venv"
-          python3 -m venv "$venv"
+          python -m venv "$venv"
           "$venv/bin/python" -m pip install \
             --no-index \
             --find-links "$RUNNER_TEMP/ruff-wheelhouse" \
@@ -161,64 +163,35 @@ jobs:
           echo "RUFF_BIN=$venv/bin/ruff" >> "$GITHUB_ENV"
 
       - name: Run complete repository Ruff contract
-        id: ruff
         run: |
           set -Eeuo pipefail
-          result="$RUNNER_TEMP/RUFF_STABLE_GATE_FINDINGS.json"
-          set +e
-          "$RUFF_BIN" check . --no-cache --output-format=json > "$result"
-          status=$?
-          set -e
-          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
-          python3 - "$result" "$status" <<'PY'
+          "$RUFF_BIN" check . --no-cache --output-format=json > "$RUNNER_TEMP/RUFF_STABLE_GATE_FINDINGS.json"
+          python - <<'PY'
           import json
           import os
-          import sys
           from pathlib import Path
-
-          findings_path = Path(sys.argv[1])
-          exit_code = int(sys.argv[2])
-          findings = json.loads(findings_path.read_text(encoding="utf-8") or "[]")
-          wheel_record = Path(
-              os.environ["RUNNER_TEMP"],
-              "ruff-wheelhouse",
-              "WHEELHOUSE_SHA256.txt",
-          ).read_text(encoding="utf-8").strip()
-          evidence = {
-              "schema_version": 1,
-              "gate": "ruff_0_16_1",
-              "status": "passed" if exit_code == 0 and not findings else "failed",
-              "tool": "ruff",
-              "tool_version": "0.16.1",
-              "repository_pin": "requirements-toolchain.lock: ruff==0.16.1",
-              "install_mode": "offline-pip-no-index-from-verified-wheelhouse",
-              "wheel_sha256_record": wheel_record,
-              "configuration": "pyproject.toml",
-              "scope": ".",
-              "findings": len(findings),
-              "exit_code": exit_code,
-              "commit": os.environ["SOURCE_SHA"],
-              "run_id": os.environ["GITHUB_RUN_ID"],
-              "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+          findings = json.loads(Path(os.environ['RUNNER_TEMP'], 'RUFF_STABLE_GATE_FINDINGS.json').read_text(encoding='utf-8') or '[]')
+          assert not findings, findings
+          payload = {
+              'schema_version': 2,
+              'gate': 'ruff_0_16_1',
+              'status': 'passed',
+              'tool': 'ruff',
+              'tool_version': '0.16.1',
+              'commit': os.environ['SOURCE_SHA'],
+              'install_mode': 'offline-pip-no-index-from-verified-wheelhouse',
           }
-          Path(os.environ["RUNNER_TEMP"], "RUFF_STABLE_GATE_EVIDENCE.json").write_text(
-              json.dumps(evidence, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-              encoding="utf-8",
+          Path(os.environ['RUNNER_TEMP'], 'RUFF_STABLE_GATE_EVIDENCE.json').write_text(
+              json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + '\n',
+              encoding='utf-8',
           )
-          print(json.dumps(evidence, ensure_ascii=False, indent=2, sort_keys=True))
           PY
-          test "$status" = "0"
 
       - name: Prove Ruff gate remained read-only
         if: always()
         run: |
           set -Eeuo pipefail
-          status="$(git status --porcelain --untracked-files=all)"
-          if [[ -n "$status" ]]; then
-            printf '%s\n' "$status"
-            echo "::error title=Offline Ruff gate changed repository::Stable-gate validation must remain read-only."
-            exit 1
-          fi
+          test -z "$(git status --porcelain --untracked-files=all)"
 
       - name: Upload Ruff stable-gate evidence
         if: always()
@@ -234,21 +207,21 @@ jobs:
 
   offline-python-stable-gates:
     name: Offline MyPy 2.3.0 · Bandit 1.9.4 · pip-audit 2.10.1 stable gates
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 45
     env:
-      PYTHONUTF8: '1'
-      PYTHONDONTWRITEBYTECODE: '1'
-      PIP_DISABLE_PIP_VERSION_CHECK: '1'
-      PIP_NO_INPUT: '1'
-      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-
+      VIDEOBATCH_CI_ALLOW_PUBLIC_PYPI: '1'
     steps:
       - name: Check out exact revision
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
+
+      - name: Set up stable validation Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
 
       - name: Isolate quality state outside the repository
         run: |
@@ -260,14 +233,7 @@ jobs:
             echo "VIDEOBATCH_QUALITY_EVIDENCE_DIR=$RUNNER_TEMP/videobatch-quality/evidence"
           } >> "$GITHUB_ENV"
 
-      - name: Provide required Python Tk runtime
-        run: |
-          set -Eeuo pipefail
-          sudo env DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=5 update
-          sudo env DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=5 install -y --no-install-recommends python3-tk
-          python3 -c 'import tkinter; print("TKINTER_RUNTIME_OK")'
-
-      - name: Run exact hash-bound quality gate with offline enforcement
+      - name: Build verified quality wheelhouse then execute offline
         id: quality_gate
         run: |
           set -Eeuo pipefail
@@ -285,68 +251,55 @@ jobs:
         if: always()
         run: |
           set -Eeuo pipefail
-          python3 - <<'PY'
+          python - <<'PY'
           import hashlib
           import json
           import os
           from pathlib import Path
 
-          evidence_dir = Path(os.environ["VIDEOBATCH_QUALITY_EVIDENCE_DIR"])
-          report_path = evidence_dir / "diagnostics" / "external_quality_latest.json"
-          versions_path = evidence_dir / "installed-versions.json"
-          manifest_path = evidence_dir / "wheelhouse-manifest.json"
-          lock_path = evidence_dir / "requirements-toolchain-resolved.lock"
-          cache_inventory = evidence_dir / "pip-audit-cache-inventory.tsv"
+          evidence_dir = Path(os.environ['VIDEOBATCH_QUALITY_EVIDENCE_DIR'])
+          report_path = evidence_dir / 'diagnostics' / 'external_quality_latest.json'
+          versions_path = evidence_dir / 'installed-versions.json'
+          manifest_path = evidence_dir / 'wheelhouse-manifest.json'
+          lock_path = evidence_dir / 'requirements-toolchain-resolved.lock'
+          cache_inventory = evidence_dir / 'pip-audit-cache-inventory.tsv'
 
           def digest(path: Path) -> str:
-              return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else ""
+              return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else ''
 
-          report = json.loads(report_path.read_text(encoding="utf-8")) if report_path.is_file() else {}
-          versions = json.loads(versions_path.read_text(encoding="utf-8")) if versions_path.is_file() else {}
+          report = json.loads(report_path.read_text(encoding='utf-8')) if report_path.is_file() else {}
+          versions = json.loads(versions_path.read_text(encoding='utf-8')) if versions_path.is_file() else {}
           results = {
-              str(item.get("tool")): {
-                  "status": item.get("status"),
-                  "returncode": item.get("returncode"),
-                  "version": item.get("version"),
+              str(item.get('tool')): {
+                  'status': item.get('status'),
+                  'returncode': item.get('returncode'),
+                  'version': item.get('version'),
               }
-              for item in report.get("results", [])
-              if isinstance(item, dict) and item.get("tool")
+              for item in report.get('results', [])
+              if isinstance(item, dict) and item.get('tool')
           }
-          required = {
-              "ruff": "0.16.1",
-              "mypy": "2.3.0",
-              "bandit": "1.9.4",
-              "pip-audit": "2.10.1",
-          }
-          passed = (
-              report.get("offline") is True
-              and all(
-                  results.get(tool, {}).get("status") == "pass"
-                  and results.get(tool, {}).get("returncode") == 0
-                  and results.get(tool, {}).get("version") == version
-                  for tool, version in required.items()
-              )
+          required = {'ruff': '0.16.1', 'mypy': '2.3.0', 'bandit': '1.9.4', 'pip-audit': '2.10.1'}
+          passed = report.get('offline') is True and all(
+              results.get(tool, {}).get('status') == 'pass'
+              and results.get(tool, {}).get('returncode') == 0
+              and results.get(tool, {}).get('version') == version
+              for tool, version in required.items()
           )
           payload = {
-              "schema_version": 1,
-              "status": "passed" if passed else "failed",
-              "source_sha": os.environ["SOURCE_SHA"],
-              "run_id": os.environ["GITHUB_RUN_ID"],
-              "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
-              "install_contract": "toolchain.py --no-index --find-links --require-hashes",
-              "execution_contract": "run_external_quality.py --mode required --offline",
-              "network_guard": bool(report.get("offline")),
-              "required_versions": required,
-              "installed_versions": versions.get("packages", {}),
-              "results": results,
-              "wheelhouse_manifest_sha256": digest(manifest_path),
-              "resolved_lock_sha256": digest(lock_path),
-              "pip_audit_cache_inventory_sha256": digest(cache_inventory),
+              'schema_version': 2,
+              'status': 'passed' if passed else 'failed',
+              'source_sha': os.environ['SOURCE_SHA'],
+              'network_guard': bool(report.get('offline')),
+              'required_versions': required,
+              'installed_versions': versions.get('packages', {}),
+              'results': results,
+              'wheelhouse_manifest_sha256': digest(manifest_path),
+              'resolved_lock_sha256': digest(lock_path),
+              'pip_audit_cache_inventory_sha256': digest(cache_inventory),
           }
-          output = evidence_dir / "PYTHON_STABLE_GATES_EVIDENCE.json"
-          output.write_text(
-              json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-              encoding="utf-8",
+          (evidence_dir / 'PYTHON_STABLE_GATES_EVIDENCE.json').write_text(
+              json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + '\n',
+              encoding='utf-8',
           )
           print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
           PY
@@ -357,12 +310,7 @@ jobs:
           set -Eeuo pipefail
           git clean -fdx -- toolchain_wheelhouse .quality-toolchain-backups
           git checkout -- toolchain_wheelhouse
-          status="$(git status --porcelain --untracked-files=all)"
-          if [[ -n "$status" ]]; then
-            printf '%s\n' "$status"
-            echo "::error title=Offline Python gate changed repository::Stable-gate validation must leave the checkout unchanged."
-            exit 1
-          fi
+          test -z "$(git status --porcelain --untracked-files=all)"
 
       - name: Upload complete Python stable-gate evidence
         if: always()
@@ -378,17 +326,17 @@ jobs:
         run: |
           set -Eeuo pipefail
           test '${{ steps.quality_gate.outputs.exit_code }}' = '0'
-          python3 - <<'PY'
+          python - <<'PY'
           import json
           import os
           from pathlib import Path
-          path = Path(os.environ["VIDEOBATCH_QUALITY_EVIDENCE_DIR"]) / "PYTHON_STABLE_GATES_EVIDENCE.json"
-          payload = json.loads(path.read_text(encoding="utf-8"))
-          if payload.get("status") != "passed":
-              raise SystemExit("Python stable-gate evidence is not passed")
-          for tool in ("mypy", "bandit", "pip-audit"):
-              item = payload["results"].get(tool, {})
-              if item.get("status") != "pass" or item.get("returncode") != 0:
-                  raise SystemExit(f"{tool} stable gate failed: {item!r}")
-          print("PYTHON_STABLE_GATES_PASSED")
+          path = Path(os.environ['VIDEOBATCH_QUALITY_EVIDENCE_DIR']) / 'PYTHON_STABLE_GATES_EVIDENCE.json'
+          payload = json.loads(path.read_text(encoding='utf-8'))
+          if payload.get('status') != 'passed':
+              raise SystemExit('Python stable-gate evidence is not passed')
+          for tool in ('mypy', 'bandit', 'pip-audit'):
+              item = payload['results'].get(tool, {})
+              if item.get('status') != 'pass' or item.get('returncode') != 0:
+                  raise SystemExit(f'{tool} stable gate failed: {item!r}')
+          print('PYTHON_STABLE_GATES_PASSED')
           PY

@@ -19,7 +19,7 @@ from videobatch_fast.platform_integration import (  # noqa: E402
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="VideoBatch Wayland/Kubuntu 26.04 Vorprüfung")
+    parser = argparse.ArgumentParser(description="VideoBatch Kubuntu 26.04 / Wayland Vorprüfung")
     parser.add_argument("--json", action="store_true", help="nur maschinenlesbare Ausgabe")
     args = parser.parse_args()
 
@@ -33,9 +33,9 @@ def main() -> int:
         error = str(exc)
 
     payload = {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": status,
-        "target": "Kubuntu 26.04 Plasma Wayland",
+        "target": "Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · Qt 6",
         "platform": platform.to_dict(),
         "error": error,
     }
@@ -44,9 +44,11 @@ def main() -> int:
     else:
         light = "🟢" if status == "ready" else "🔴"
         print(f"{light} VideoBatch Plattformprüfung: {status}")
-        print(f"Sitzung: {platform.session_type}")
-        print(f"Tkinter-Transport: {platform.tkinter_transport}")
         print(f"System: {platform.distro_name or platform.distro_id or 'unbekannt'}")
+        print(f"Desktop: {platform.current_desktop or platform.desktop_session or 'unbekannt'}")
+        print(f"Sitzung: {platform.session_type}")
+        print(f"Qt-Transport: {platform.ui_transport}")
+        print(f"Wayland-Anzeige: {platform.wayland_display or 'fehlt'}")
         for warning in platform.warnings:
             print(f"WARNUNG: {warning}")
         if error:

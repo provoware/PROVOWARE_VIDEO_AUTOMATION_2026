@@ -4,12 +4,17 @@ import json
 import threading
 from pathlib import Path
 
+import pytest
+
 from videobatch_fast.config import normalize_config
 from videobatch_fast.incremental_directory import scan_directory_batches
 from videobatch_fast.preparation_assistant import build_preparation_checks, preparation_ready
 from videobatch_fast.theme import available_themes
 
+from gui_test_support import legacy_tk_gui_available
+
 ROOT = Path(__file__).resolve().parents[1]
+LEGACY_TK_GUI_AVAILABLE = legacy_tk_gui_available()
 
 
 def test_incremental_scan_yields_early_batches_and_skips_links(tmp_path: Path) -> None:
@@ -109,6 +114,7 @@ def test_workspace_source_binds_requested_user_flows() -> None:
     assert "workspace_layout_profiles" not in save_block
 
 
+@pytest.mark.skipif(not LEGACY_TK_GUI_AVAILABLE, reason="reachable legacy Tk/X display required")
 def test_scrollable_workflow_grid_grows_and_scrolls() -> None:
     from types import SimpleNamespace
     from tkinter import Tk, ttk
@@ -161,6 +167,7 @@ def test_scrollable_workflow_grid_grows_and_scrolls() -> None:
     root.destroy()
 
 
+@pytest.mark.skipif(not LEGACY_TK_GUI_AVAILABLE, reason="reachable legacy Tk/X display required")
 def test_scrollable_workflow_grid_survives_destroyed_widgets() -> None:
     from tkinter import Tk, ttk
     from videobatch_fast.workflow_grid import ScrollableWorkflowGrid

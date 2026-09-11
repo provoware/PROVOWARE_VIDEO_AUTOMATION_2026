@@ -115,3 +115,42 @@ def test_generated_ci_evidence_is_ignored_and_not_packaged() -> None:
     }
     assert forbidden_files.isdisjoint(packaged)
     assert not any(path.startswith("matrix-logs/") for path in packaged)
+
+
+def test_obsolete_multi_target_kubuntu_matrix_infrastructure_is_removed() -> None:
+    obsolete = (
+        ".github/actions/kubuntu-package-cache/action.yml",
+        ".github/actions/kubuntu-package-cache/install-and-measure.sh",
+        ".github/ci/kubuntu-packages.txt",
+        "KUBUNTU_BUILD_MATRIX.json",
+        "scripts/build_kubuntu_cache_report.py",
+        "scripts/build_kubuntu_matrix_report.py",
+        "scripts/write_kubuntu_matrix_status.py",
+        "tests/test_kubuntu_cache_warmup.py",
+        "tests/test_kubuntu_ci_reports.py",
+        "tests/test_rc13_portable_signing_matrix.py",
+    )
+    assert all(not (ROOT / relative).exists() for relative in obsolete)
+
+    workflow = (ROOT / ".github/workflows/kubuntu-build-matrix.yml").read_text(encoding="utf-8")
+    assert "ubuntu-26.04" in workflow
+    assert "QT_QPA_PLATFORM: wayland" in workflow
+    assert "ubuntu-22.04" not in workflow
+    assert "ubuntu-24.04" not in workflow
+
+
+def test_superseded_historical_documents_are_outside_release_tree() -> None:
+    archive = ROOT / "docs/archive/release-history"
+    archived = (
+        "ANALYSE_AUSGANGSTOOL.md",
+        "DESIGN_SYSTEM_ANALYSIS_2_5.md",
+        "DOKUMENTATIONS_AUDIT_2026-08-06.md",
+        "QUALITY_TOOLCHAIN_2_8_3_RC3.md",
+        "QUALITY_TOOLCHAIN_2_8_3_RC4.md",
+        "SETUP_2_8_3_RC5.md",
+        "VISUAL_LAYOUT_ANALYSIS_2_4.md",
+        "FAIL_MEMORY_PASS.md",
+        "STABLE_GATE_ITERATION_2.8.3-rc24_2026-08-04.md",
+        "VIDEOBATCH_BILDVERGLEICH_CHECKLISTE_2026-08-07.txt",
+    )
+    assert all((archive / name).is_file() for name in archived)

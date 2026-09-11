@@ -142,9 +142,9 @@ konsistent sein.
 ## 10. Stable-Grenze
 
 Ein Release Candidate darf nicht als Stable bezeichnet werden, solange externe
-Qualitätswerkzeuge, physische KDE-X11-/Wayland-Abnahme oder vorgeschriebene
-Langzeittests offen sind. Automatisierte Xvfb-Prüfungen ersetzen keine physische
-Desktopfreigabe.
+Qualitätswerkzeuge, die physische Kubuntu-26.04-Plasma-Wayland-Abnahme oder vorgeschriebene
+Langzeittests offen sind. Headless-Wayland- und sonstige CI-Prüfungen ersetzen keine physische
+Desktopfreigabe auf dem Zielsystem.
 
 
 ## Release-Dateinamen

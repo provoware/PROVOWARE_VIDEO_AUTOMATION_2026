@@ -6,6 +6,7 @@ import json
 import os
 import queue
 import shlex
+import shutil
 import subprocess
 import sys
 import threading
@@ -19,6 +20,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from videobatch_fast.linux_installation import normalize_linux_installation  # noqa: E402
 from videobatch_fast.startup_handshake import read_ready_marker  # noqa: E402
 
 CHECK_ONLY = "--check-only" in sys.argv
@@ -42,6 +44,7 @@ class EventSink:
 
     def log(self, text: str) -> None:
         with self._lock:
+            self.log_path.parent.mkdir(parents=True, exist_ok=True)
             with self.log_path.open("a", encoding="utf-8", errors="replace") as handle:
                 handle.write(text.rstrip() + "\n")
 
@@ -55,6 +58,121 @@ class EventSink:
     def failed(self, message: str) -> None:
         self.log("FAILED: " + message)
         self.events.put(("failed", message))
+
+
+class KDialogProgress:
+    """Stdlib-only bootstrap UI for Kubuntu before the private PySide6 runtime exists."""
+
+    def __init__(self) -> None:
+        self.kdialog = shutil.which("kdialog")
+        self.qdbus = next(
+            (path for name in ("qdbus6", "qdbus-qt6", "qdbus") if (path := shutil.which(name))),
+            None,
+        )
+        self.dbus_ref: tuple[str, ...] = ()
+
+    @property
+    def available(self) -> bool:
+        return bool(self.kdialog and os.environ.get("WAYLAND_DISPLAY"))
+
+    def open(self) -> bool:
+        if not self.available:
+            return False
+        if self.qdbus:
+            try:
+                completed = subprocess.run(
+                    [
+                        str(self.kdialog),
+                        "--title",
+                        "VideoBatch Fast startet",
+                        "--progressbar",
+                        "VideoBatch wird sicher vorbereitet …",
+                        "4",
+                    ],
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.DEVNULL,
+                    timeout=10,
+                    check=False,
+                )
+                if completed.returncode == 0:
+                    self.dbus_ref = tuple(completed.stdout.strip().split())
+            except (OSError, subprocess.SubprocessError):
+                self.dbus_ref = ()
+        self.stage(0, "VideoBatch wird sicher vorbereitet …")
+        return True
+
+    def _dbus_call(self, *args: str) -> bool:
+        if not self.qdbus or not self.dbus_ref:
+            return False
+        try:
+            completed = subprocess.run(
+                [str(self.qdbus), *self.dbus_ref, *args],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=5,
+                check=False,
+            )
+            return completed.returncode == 0
+        except (OSError, subprocess.SubprocessError):
+            return False
+
+    def _popup(self, message: str, seconds: int = 2) -> None:
+        if not self.kdialog:
+            return
+        try:
+            subprocess.Popen(
+                [
+                    str(self.kdialog),
+                    "--title",
+                    "VideoBatch Fast",
+                    "--passivepopup",
+                    message,
+                    str(seconds),
+                ],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
+            )
+        except OSError:
+            pass
+
+    def stage(self, number: int, message: str) -> None:
+        if self.dbus_ref:
+            changed = self._dbus_call("Set", "", "value", str(max(0, min(4, number))))
+            changed = self._dbus_call("setLabelText", message) and changed
+            if changed:
+                return
+            self.dbus_ref = ()
+        self._popup(f"[{max(0, min(4, number))}/4] {message}")
+
+    def success(self, safe_mode: bool) -> None:
+        label = "Sicherer Startmodus ist geöffnet." if safe_mode else "VideoBatch ist startbereit."
+        self.stage(4, label)
+        time.sleep(0.25)
+        self.close()
+        self._popup(label, 3)
+
+    def error(self, message: str, log_path: Path) -> None:
+        self.close()
+        if not self.kdialog:
+            return
+        text = f"{message}\n\nDiagnoseprotokoll:\n{log_path}"
+        try:
+            subprocess.run(
+                [str(self.kdialog), "--title", "VideoBatch · Startfehler", "--error", text],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=120,
+                check=False,
+            )
+        except (OSError, subprocess.SubprocessError):
+            pass
+
+    def close(self) -> None:
+        if self.dbus_ref:
+            self._dbus_call("close")
+        self.dbus_ref = ()
 
 
 def run_logged(command: list[str], sink: EventSink, *, timeout: int = 1800) -> subprocess.CompletedProcess[str]:
@@ -103,7 +221,8 @@ def verify_project() -> None:
         "STARTUP_CONTRACT.json",
         "scripts/toolchain.py",
         "scripts/startup_check.py",
-        "src/videobatch_fast/__main__.py",
+        "src/videobatch_fast/qt_phase3.py",
+        "src/videobatch_fast/linux_installation.py",
     )
     missing = [name for name in required if not (ROOT / name).is_file()]
     if missing:
@@ -139,40 +258,14 @@ def load_startup_contract() -> dict[str, Any]:
 
 
 def install_user_launchers(sink: EventSink) -> None:
-    """Maintain menu and command launchers without requiring root privileges."""
+    """Maintain exactly one XDG menu entry and one stable user launcher."""
     try:
         launcher_value = os.environ.get("VIDEOBATCH_PORTABLE_LAUNCHER", "").strip()
         launcher = Path(launcher_value).expanduser().resolve() if launcher_value else (ROOT / "start.sh").resolve()
-        bin_dir = Path.home() / ".local/bin"
-        bin_dir.mkdir(parents=True, exist_ok=True)
-        wrapper = bin_dir / "videobatch-fast"
-        wrapper.write_text(
-            "#!/usr/bin/env bash\n"
-            "set -Eeuo pipefail\n"
-            f"exec {shlex.quote(str(launcher))} \"$@\"\n",
-            encoding="utf-8",
-        )
-        wrapper.chmod(0o755)
-
-        app_dir = Path.home() / ".local/share/applications"
-        app_dir.mkdir(parents=True, exist_ok=True)
-        desktop = app_dir / "videobatch-fast.desktop"
-        desktop.write_text(
-            "[Desktop Entry]\n"
-            "Type=Application\n"
-            "Name=VideoBatch Fast\n"
-            "Comment=Geführte Videoautomatisierung\n"
-            f"Exec={launcher}\n"
-            f"Path={launcher.parent if launcher_value else ROOT}\n"
-            "Terminal=false\n"
-            "Icon=video-x-generic\n"
-            "Categories=AudioVideo;Video;\n"
-            "StartupNotify=true\n",
-            encoding="utf-8",
-        )
-        desktop.chmod(0o755)
-    except OSError as exc:
-        sink.log(f"Launcher-Installation übersprungen: {exc}")
+        report = normalize_linux_installation(project_root=ROOT, launcher=launcher)
+        sink.log("INSTALLATION_HYGIENE " + json.dumps(report, ensure_ascii=False, sort_keys=True))
+    except (OSError, RuntimeError, ValueError) as exc:
+        sink.log(f"Launcher-/Installationsbereinigung übersprungen: {exc}")
 
 
 def toolchain_python(scope: str, sink: EventSink) -> Path:
@@ -189,8 +282,10 @@ def toolchain_python(scope: str, sink: EventSink) -> Path:
 def system_runtime_fallback(sink: EventSink) -> Path | None:
     """Use the system interpreter only as a verified, degraded last-known-safe path."""
     code = (
-        "import tkinter,cryptography,cffi,pycparser; "
+        "import cryptography,cffi,pycparser; "
         "from PIL import Image; "
+        "from PySide6 import QtCore,QtGui,QtWidgets; "
+        "assert QtCore.qVersion(); "
         "print('SYSTEM_RUNTIME_FALLBACK_OK')"
     )
     completed = run_logged([sys.executable, "-c", code], sink, timeout=60)
@@ -204,8 +299,10 @@ def _portable_runtime(sink: EventSink) -> Path | None:
     if os.environ.get("VIDEOBATCH_PORTABLE") != "1":
         return None
     code = (
-        "import tkinter,cryptography,cffi,pycparser; "
+        "import cryptography,cffi,pycparser; "
         "from PIL import Image; "
+        "from PySide6 import QtCore,QtGui,QtWidgets; "
+        "assert QtCore.qVersion(); "
         "print('PORTABLE_RUNTIME_VERIFIED')"
     )
     completed = run_logged([sys.executable, "-c", code], sink, timeout=60)
@@ -293,23 +390,25 @@ def launch_application(
     safe_mode: bool,
     timeout: float = 35.0,
 ) -> tuple[int, bool]:
-    """Launch and require a real UI-ready handshake before closing the starter."""
+    """Launch native Qt/Wayland and require a real UI-ready handshake."""
     handshake_dir = STATE / "startup" / "handshakes"
     handshake_dir.mkdir(parents=True, exist_ok=True)
     token = f"{os.getpid()}-{time.time_ns()}-{'safe' if safe_mode else 'normal'}"
     marker = handshake_dir / f"{token}.json"
     app_log = LOG_DIR / f"application_{token}.log"
+    app_log.parent.mkdir(parents=True, exist_ok=True)
     child_env = {
         **environment,
         "VIDEOBATCH_UI_READY_FILE": str(marker),
         "VIDEOBATCH_SAFE_MODE": "1" if safe_mode else "0",
         "PYTHONUNBUFFERED": "1",
+        "QT_QPA_PLATFORM": "wayland",
     }
-    sink.log(f"APPLICATION ATTEMPT safe_mode={safe_mode} log={app_log}")
+    sink.log(f"APPLICATION ATTEMPT safe_mode={safe_mode} transport=wayland log={app_log}")
     try:
         with app_log.open("a", encoding="utf-8", errors="replace") as output:
             process = subprocess.Popen(
-                [str(python), "-m", "videobatch_fast"],
+                [str(python), "-m", "videobatch_fast.qt_phase3"],
                 cwd=ROOT,
                 env=child_env,
                 text=True,
@@ -318,7 +417,7 @@ def launch_application(
                 start_new_session=True,
             )
     except OSError as exc:
-        raise BootstrapFailure(f"Die Oberfläche konnte nicht gestartet werden: {exc}") from exc
+        raise BootstrapFailure(f"Die Qt-Oberfläche konnte nicht gestartet werden: {exc}") from exc
 
     deadline = time.monotonic() + max(5.0, timeout)
     while time.monotonic() < deadline:
@@ -335,7 +434,7 @@ def launch_application(
             detail = _tail(app_log)
             sink.log(f"APPLICATION EXITED returncode={returncode}\n{detail}")
             raise BootstrapFailure(
-                "Die Oberfläche wurde vor der Bereitschaftsmeldung beendet."
+                "Die Qt-Oberfläche wurde vor der Bereitschaftsmeldung beendet."
                 + (f" Letzter technischer Hinweis: {detail.splitlines()[-1]}" if detail.splitlines() else "")
             )
         time.sleep(0.1)
@@ -349,7 +448,7 @@ def launch_application(
             process.kill()
         except OSError:
             pass
-    raise BootstrapFailure("Die Oberfläche hat ihre Startbereitschaft nicht rechtzeitig bestätigt.")
+    raise BootstrapFailure("Die Qt-Oberfläche hat ihre Startbereitschaft nicht rechtzeitig bestätigt.")
 
 
 def worker(sink: EventSink) -> None:
@@ -358,12 +457,12 @@ def worker(sink: EventSink) -> None:
         sink.failed("Ein anderer Startvorgang arbeitet noch. Das vorhandene Fenster bleibt erhalten.")
         return
     try:
-        sink.stage(1, "Programmpaket und System prüfen")
+        sink.stage(1, "Programmpaket und Kubuntu-Wayland-System prüfen")
         verify_project()
         startup_contract = load_startup_contract()
         install_user_launchers(sink)
 
-        sink.stage(2, "Laufzeit automatisch vorbereiten")
+        sink.stage(2, "Qt-Laufzeit automatisch vorbereiten")
         attempts = int(startup_contract["policy"].get("maximum_automatic_repair_attempts", 2))
         python, runtime_fallback = ensure_runtime(sink, maximum_attempts=attempts)
 
@@ -372,7 +471,7 @@ def worker(sink: EventSink) -> None:
         if runtime_fallback:
             report = {**report, "status": "degraded", "runtime_fallback": True}
 
-        sink.stage(4, "Oberfläche öffnen")
+        sink.stage(4, "Native Qt-Wayland-Oberfläche öffnen")
         environment = {
             **os.environ,
             "PYTHONPATH": _project_pythonpath(),
@@ -382,7 +481,7 @@ def worker(sink: EventSink) -> None:
         }
         ready_timeout = float(startup_contract["policy"].get("application_ready_timeout_seconds", 35))
         if runtime_fallback:
-            sink.stage(4, "Sicheren Startmodus öffnen")
+            sink.stage(4, "Qt im sicheren Startmodus öffnen")
             safe_environment = {**environment, "VIDEOBATCH_STARTUP_STATUS": "degraded"}
             pid, safe_mode = launch_application(python, safe_environment, sink, safe_mode=True, timeout=ready_timeout)
         else:
@@ -390,7 +489,7 @@ def worker(sink: EventSink) -> None:
                 pid, safe_mode = launch_application(python, environment, sink, safe_mode=False, timeout=ready_timeout)
             except BootstrapFailure as first_error:
                 sink.log(f"NORMAL START FAILED: {first_error}")
-                sink.stage(4, "Sicheren Startmodus öffnen")
+                sink.stage(4, "Qt im sicheren Startmodus öffnen")
                 safe_environment = {**environment, "VIDEOBATCH_STARTUP_STATUS": "degraded"}
                 pid, safe_mode = launch_application(python, safe_environment, sink, safe_mode=True, timeout=ready_timeout)
         sink.done(pid, safe_mode)
@@ -423,70 +522,28 @@ def terminal_main(events: queue.Queue[tuple[str, Any]], sink: EventSink) -> int:
             return 1
 
 
-def gui_main(events: queue.Queue[tuple[str, Any]], sink: EventSink) -> int:
-    import tkinter as tk
-    from tkinter import ttk
-
-    root = tk.Tk()
-    root.title("VideoBatch Fast startet")
-    root.geometry("660x280")
-    root.minsize(600, 240)
-    root.resizable(False, False)
-    try:
-        root.attributes("-topmost", True)
-        root.after(1200, lambda: root.attributes("-topmost", False))
-    except tk.TclError:
-        pass
-
-    frame = ttk.Frame(root, padding=26)
-    frame.pack(fill="both", expand=True)
-    ttk.Label(frame, text="VideoBatch Fast", font=("TkDefaultFont", 20, "bold")).pack(anchor="w")
-    ttk.Label(frame, text="Automatischer Start mit sichtbarer Sicherheitsprüfung").pack(anchor="w", pady=(2, 20))
-    status = tk.StringVar(value="Start wird vorbereitet …")
-    ttk.Label(frame, textvariable=status, font=("TkDefaultFont", 12)).pack(anchor="w")
-    progress = ttk.Progressbar(frame, maximum=4, value=0, mode="determinate")
-    progress.pack(fill="x", pady=(14, 10))
-    detail = tk.StringVar(value="Keine Eingabe erforderlich. Probleme werden hier mit nächstem Schritt angezeigt.")
-    ttk.Label(frame, textvariable=detail, wraplength=560).pack(anchor="w")
-
-    result = {"code": 1}
+def kdialog_main(events: queue.Queue[tuple[str, Any]], sink: EventSink) -> int:
+    progress = KDialogProgress()
+    if not progress.open():
+        return terminal_main(events, sink)
     thread = threading.Thread(target=worker, args=(sink,), daemon=True)
     thread.start()
-
-    def poll() -> None:
-        try:
-            while True:
-                kind, payload = events.get_nowait()
-                if kind == "stage":
-                    number, message = payload
-                    progress["value"] = number
-                    status.set(message)
-                    detail.set("VideoBatch prüft sicher weiter. Bitte warten, außer hier erscheint eine konkrete Lösung.")
-                elif kind == "done":
-                    pid, safe_mode = payload
-                    mode = "Sicherer Startmodus" if safe_mode else "Startbereit"
-                    if CHECK_ONLY:
-                        print(f"BOOTSTRAP_READY pid={pid} mode={'safe' if safe_mode else 'normal'}")
-                    status.set(mode)
-                    detail.set("Die Oberfläche ist geöffnet. Der Starter schließt sich automatisch.")
-                    progress["value"] = 4
-                    result["code"] = 0
-                    root.update_idletasks()
-                    root.after(250, root.destroy)
-                    return
-                elif kind == "failed":
-                    status.set("Start konnte nicht vollständig repariert werden")
-                    detail.set(f"Start gestoppt. Protokoll für Hilfe und Ursache: {sink.log_path}")
-                    progress["value"] = 0
-                    root.after(8000, root.destroy)
-        except queue.Empty:
-            pass
-        if root.winfo_exists():
-            root.after(100, poll)
-
-    root.after(100, poll)
-    root.mainloop()
-    return int(result["code"])
+    while True:
+        kind, payload = events.get()
+        if kind == "stage":
+            number, message = payload
+            progress.stage(number, message)
+        elif kind == "done":
+            pid, safe_mode = payload
+            if CHECK_ONLY:
+                print(f"BOOTSTRAP_READY pid={pid} mode={'safe' if safe_mode else 'normal'}")
+            progress.success(safe_mode)
+            return 0
+        elif kind == "failed":
+            progress.error(str(payload), sink.log_path)
+            print("VideoBatch konnte den Start nicht selbstständig abschließen.", file=sys.stderr)
+            print(f"Protokoll: {sink.log_path}", file=sys.stderr)
+            return 1
 
 
 def main() -> int:
@@ -495,14 +552,9 @@ def main() -> int:
     log_path = LOG_DIR / f"bootstrap_{stamp}.log"
     events: queue.Queue[tuple[str, Any]] = queue.Queue()
     sink = EventSink(events, log_path)
-    sink.log(f"VideoBatch bootstrap started {datetime.now().isoformat()}")
-    graphical = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
-    if graphical:
-        try:
-            import tkinter  # noqa: F401
-        except ImportError:
-            graphical = False
-    return gui_main(events, sink) if graphical else terminal_main(events, sink)
+    sink.log(f"VideoBatch Wayland bootstrap started {datetime.now().isoformat()}")
+    progress = KDialogProgress()
+    return kdialog_main(events, sink) if progress.available else terminal_main(events, sink)
 
 
 if __name__ == "__main__":
