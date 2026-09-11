@@ -327,3 +327,8 @@ VideoBatchQtPhase2Window._show_update_dialog = _update_package
 VideoBatchQtPhase2Window._show_recovery_dialog = lambda self: _offer_recovery(self, manual=True)
 VideoBatchQtPhase2Window._show_archive_dialog = _archive_last_results
 VideoBatchQtPhase2Window._show_visual_approval = _visual_approval
+
+# Complete the remaining Tk -> Qt parity before Phase-3 windows are instantiated.
+from .qt_legacy_parity_completion import install_parity_completion
+
+install_parity_completion()
