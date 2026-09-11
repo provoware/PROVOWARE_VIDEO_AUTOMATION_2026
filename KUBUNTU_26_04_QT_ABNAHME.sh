@@ -4,7 +4,9 @@ set -Eeuo pipefail
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 PYTHON_BOOTSTRAP="${VIDEOBATCH_BOOTSTRAP_PYTHON:-python3}"
 REAL_HOME="${HOME:?HOME ist nicht gesetzt}"
-STATE_BASE="${XDG_STATE_HOME:-$REAL_HOME/.local/state}/VideoBatchFast/acceptance"
+REAL_STATE_ROOT="${XDG_STATE_HOME:-$REAL_HOME/.local/state}/VideoBatchFast"
+STATE_BASE="$REAL_STATE_ROOT/acceptance"
+EVIDENCE_ROOT="$REAL_STATE_ROOT/stable-evidence"
 LOG_DIR="$STATE_BASE"
 mkdir -p "$LOG_DIR"
 LOG="$LOG_DIR/letzter-ein-klick-start.log"
@@ -94,10 +96,27 @@ if [[ "$ISOLATION_RESULT" -ne 0 && ( "$RESULT" -eq 0 || "$RESULT" -eq 3 ) ]]; th
     RESULT=6
 fi
 
+# Nur eine vollständig grüne reale Abnahme darf den maschinenlesbaren Stable-Nachweis
+# erzeugen. Der Nachweis wird außerhalb der isolierten Test-Heimat in einem festen,
+# kandidatengebundenen Ordner abgelegt; fehlende oder widersprüchliche Daten blockieren.
+if [[ "$RESULT" -eq 0 ]]; then
+    ACCEPTANCE_JSON="$(find "$XDG_STATE_HOME/VideoBatchFast/acceptance" -type f -name acceptance.json -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -n 1 | cut -d' ' -f2-)"
+    if [[ -z "$ACCEPTANCE_JSON" || ! -f "$ACCEPTANCE_JSON" ]]; then
+        printf '%s\n' "[STABLE] acceptance.json wurde nach grüner Abnahme nicht gefunden." >>"$LOG"
+        RESULT=7
+    elif ! "$RUNTIME_PY" "$ROOT_DIR/scripts/export_stable_acceptance_evidence.py" \
+        --evidence-root "$EVIDENCE_ROOT" \
+        kubuntu --acceptance "$ACCEPTANCE_JSON" >>"$LOG" 2>&1; then
+        RESULT=7
+    else
+        printf '%s\n' "[STABLE] Kubuntu-Nachweis automatisch unter $EVIDENCE_ROOT erzeugt." >>"$LOG"
+    fi
+fi
+
 case "$RESULT" in
     0)
         if command -v kdialog >/dev/null 2>&1; then
-            kdialog --title "VideoBatch · Qt-Abnahme" --passivepopup "🟢 Qt-Abnahme vollständig bestanden · Test-Heimat isoliert." 4 >/dev/null 2>&1 || true
+            kdialog --title "VideoBatch · Qt-Abnahme" --passivepopup "🟢 Qt-Abnahme vollständig bestanden · Stable-Nachweis erzeugt." 5 >/dev/null 2>&1 || true
         fi
         ;;
     3)
@@ -107,6 +126,9 @@ case "$RESULT" in
         ;;
     6)
         show_error "Qt-Abnahme blockiert: Die Launcher-/Desktop-Isolation konnte nicht sicher nachgewiesen werden. Details: $LOG"
+        ;;
+    7)
+        show_error "Qt-Abnahme selbst war grün, aber der kandidatengebundene Stable-Nachweis konnte nicht sicher erzeugt werden. Stable bleibt blockiert. Details: $LOG"
         ;;
     *)
         show_error "Qt-Abnahme ist noch nicht freigegeben. Es wurden keine Projekt- oder Mediendateien verändert. Details: $LOG"
