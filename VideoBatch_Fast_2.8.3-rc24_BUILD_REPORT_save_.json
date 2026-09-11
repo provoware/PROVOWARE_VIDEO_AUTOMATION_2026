@@ -49,7 +49,7 @@
     "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe",
     "unfinished_gate_files": 8
   },
-  "release_manifest_files": 465,
+  "release_manifest_files": 468,
   "matrix": {
     "status": "passed",
     "passed_targets": 1,
