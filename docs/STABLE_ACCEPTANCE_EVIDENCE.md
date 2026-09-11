@@ -1,34 +1,60 @@
-# Externe Stable-Abnahmen
+# Stable-Abnahmenachweise – aktueller Zielvertrag
 
-Die Finalisierung liest einen externen Nachweisordner über
-`--acceptance-evidence ORDNER`. Sie erzeugt oder verändert darin keine Dateien.
-Der Ordner enthält genau die benötigten Dateien `kde_x11.json`,
-`kde_wayland.json` und `long_render.json` im Format Version 1.
+## Zweck
+
+Stable bleibt fail-closed, bis zwei reale Nachweise für **denselben unveränderten RC-Kandidaten** vorliegen: die physische Zielsystemabnahme auf **Kubuntu 26.04 LTS · KDE Plasma · natives Wayland** und ein realer Langzeitrender.
+
+## Benötigte Dateien
+
+Der Nachweisordner enthält genau diese beiden JSON-Dateien:
+
+- `kubuntu_26_04_wayland.json`
+- `long_render.json`
+
+X11, XWayland sowie Ubuntu 22.04/24.04 sind keine Stable-Zielpfade mehr. Alte Nachweise bleiben historische Evidenz, erfüllen aber den aktuellen Gate-Vertrag nicht.
+
+## Gemeinsame Pflichtfelder
 
 ```json
 {
   "schema_version": 1,
-  "evidence_type": "kde_x11",
+  "evidence_type": "kubuntu_26_04_wayland",
   "candidate_id": "2.8.3-rc24",
-  "manifest_sha256": "64-stelliger SHA-256 von RELEASE_MANIFEST.json",
-  "environment": {"system": "Kubuntu 24.04", "session_or_target": "KDE X11"},
-  "timestamp": "2026-08-04T10:00:00Z",
+  "manifest_sha256": "<SHA-256 des unveränderten RELEASE_MANIFEST.json>",
+  "environment": {
+    "system": "Kubuntu 26.04 LTS",
+    "desktop": "KDE Plasma",
+    "session_or_target": "Wayland"
+  },
+  "timestamp": "2026-09-11T12:00:00+02:00",
   "result": "passed",
-  "checks": {
-    "physical_session": true,
-    "application_started": true,
-    "preview_rendered": true,
-    "window_scaling_checked": true
-  }
+  "checks": {}
 }
 ```
 
-`kde_wayland.json` verwendet dieselben Prüfpunkte und `evidence_type` gleich
-`kde_wayland`. `long_render.json` verwendet `evidence_type` gleich `long_render`
-und die Prüfpunkte `large_media_selection`, `slow_external_target`,
-`render_completed` und `output_hash_verified`.
+## Pflichtprüfungen Zielsystem
 
-Alle Prüfpunkte müssen `true` und das Ergebnis muss `passed` sein. Kandidat und
-Manifest-Hash müssen exakt passen. Der Zeitpunkt benötigt eine Zeitzone und darf
-höchstens 30 Tage alt sowie höchstens fünf Minuten in der Zukunft liegen. Neue
-Nachweise werden ausschließlich nach den realen Prüfungen manuell exportiert.
+`kubuntu_26_04_wayland.json` muss alle folgenden Prüfpunkte mit `true` enthalten:
+
+- `physical_session`
+- `application_started`
+- `native_wayland_backend`
+- `preview_rendered`
+- `window_scaling_checked`
+
+## Pflichtprüfungen Langzeitrender
+
+`long_render.json` verwendet `evidence_type: "long_render"` und benötigt:
+
+- `large_media_selection`
+- `slow_external_target`
+- `render_completed`
+- `output_hash_verified`
+
+## Sicherheitsregeln
+
+- Beide Nachweise müssen zum exakt gleichen Kandidaten und Manifest-Hash gehören.
+- Das Ergebnis muss `passed` sein.
+- Die Prüfumgebung darf nicht leer sein.
+- Nachweise dürfen höchstens 30 Tage alt sein.
+- Fehlende, veraltete oder fremde Nachweise blockieren Stable; sie werden niemals automatisch erzeugt oder umgeschrieben.

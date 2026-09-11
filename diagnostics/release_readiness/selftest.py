@@ -60,8 +60,8 @@ def fixture(root: Path, *, contradictory: bool, all_pass: bool = False) -> list[
             "tests": {"passed": 323, "failed": 0, "skipped": 0},
             "matrix": {
                 "status": "passed",
-                "passed_targets": 4,
-                "total_targets": 4,
+                "passed_targets": 1,
+                "total_targets": 1,
                 "workflow_run_id": 1,
             },
             "release_files": {
@@ -86,7 +86,7 @@ def fixture(root: Path, *, contradictory: bool, all_pass: bool = False) -> list[
         "mypy_2_3_0": "passed" if all_pass else "not executed",
         "bandit_1_9_4": "passed" if all_pass else "not executed",
         "pip_audit_2_10_1": "passed" if all_pass else "not executed",
-        "physical_kde_x11_wayland": "passed" if all_pass else "required",
+        "physical_kubuntu_26_04_wayland": "passed" if all_pass else "required",
         "large_media_soak": "passed" if all_pass else "required",
     }
     write_json(

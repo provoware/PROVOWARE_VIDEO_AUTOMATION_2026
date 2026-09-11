@@ -27,7 +27,7 @@ def main() -> int:
     assert [window.phase2_tabs.tabText(index) for index in range(3)] == [
         "Vorschau",
         "Diashow & Waveform",
-        "Spezialdialoge",
+        "Weitere Werkzeuge",
     ]
     assert window.slideshow.assignment.count() == 2
     assert window.slideshow.transition.count() >= 4

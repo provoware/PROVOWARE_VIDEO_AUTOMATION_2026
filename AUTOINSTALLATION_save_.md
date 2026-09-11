@@ -12,7 +12,7 @@ Diese Anleitung erklärt, was die automatische Installation tut, welche Schritte
 
 ## Voraussetzungen
 
-- Linux x86-64 auf Ubuntu oder Kubuntu 22.04 beziehungsweise 24.04
+- Linux x86-64 auf Kubuntu 26.04 LTS mit KDE Plasma und einer Wayland-Sitzung
 - normaler Benutzerzugang
 - vollständig heruntergeladenes Installationspaket
 - genügend freier Speicherplatz

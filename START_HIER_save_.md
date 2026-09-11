@@ -12,7 +12,7 @@ Diese Anleitung führt ohne Vorwissen vom entpackten Projektpaket bis zum ersten
 
 ## Voraussetzungen
 
-- Kubuntu oder Ubuntu 22.04 beziehungsweise 24.04
+- Kubuntu 26.04 LTS mit KDE Plasma und einer Wayland-Sitzung
 - ein normaler Benutzerzugang ohne Rootbetrieb
 - ein vollständig entpacktes VideoBatch-Projektpaket
 - mindestens eine Audio- und eine Bild- oder Videodatei

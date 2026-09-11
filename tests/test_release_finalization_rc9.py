@@ -23,7 +23,7 @@ def _write_evidence(directory: Path, candidate: str = "2.8.3-rc24", digest: str 
             "evidence_type": kind,
             "candidate_id": candidate,
             "manifest_sha256": digest,
-            "environment": {"system": "Kubuntu 24.04", "session_or_target": kind},
+            "environment": {"system": "Kubuntu 26.04 LTS", "desktop": "KDE Plasma", "session_or_target": kind},
             "timestamp": "2026-08-04T10:00:00Z",
             "result": "passed",
             "checks": {name: True for name in required},
@@ -32,7 +32,7 @@ def _write_evidence(directory: Path, candidate: str = "2.8.3-rc24", digest: str 
 
 
 def test_stable_acceptance_blocks_missing_evidence(tmp_path: Path) -> None:
-    with pytest.raises(AcceptanceBlocked, match="kde_x11.json fehlt") as error:
+    with pytest.raises(AcceptanceBlocked, match="kubuntu_26_04_wayland.json fehlt") as error:
         validate_evidence(tmp_path, "2.8.3-rc24", "a" * 64, now=NOW)
     for section in ("Ursache:", "Auswirkung:", "Automatische Schutzmaßnahme:", "Lösung:", "Alternative:"):
         assert section in str(error.value)
@@ -44,10 +44,10 @@ def test_stable_acceptance_blocks_wrong_candidate_hash(tmp_path: Path) -> None:
         validate_evidence(tmp_path, "2.8.3-rc24", "a" * 64, now=NOW)
 
 
-def test_stable_acceptance_blocks_only_one_kde_session(tmp_path: Path) -> None:
+def test_stable_acceptance_blocks_missing_target_wayland_evidence(tmp_path: Path) -> None:
     _write_evidence(tmp_path)
-    (tmp_path / "kde_wayland.json").unlink()
-    with pytest.raises(AcceptanceBlocked, match="kde_wayland.json fehlt"):
+    (tmp_path / "kubuntu_26_04_wayland.json").unlink()
+    with pytest.raises(AcceptanceBlocked, match="kubuntu_26_04_wayland.json fehlt"):
         validate_evidence(tmp_path, "2.8.3-rc24", "a" * 64, now=NOW)
 
 

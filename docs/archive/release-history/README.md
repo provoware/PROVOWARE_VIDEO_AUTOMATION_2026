@@ -11,3 +11,5 @@ Aktuelle freigabefähige Nachweise liegen im Projektstamm und tragen den Zusatz 
 - frühere `FINAL_AUDIT_*`
 - frühere `VideoBatch_Fast_*_BUILD_REPORT.json`
 - vollständiger Changelog vor der Finalbereinigung
+
+Zusätzlich liegen hier inzwischen supersedierte Setup-, Quality-Toolchain-, Design-/Layoutanalysen und frühere Stable-Gate-Arbeitsstände. Sie bleiben unverändert und werden durch den Release-Dateivertrag nicht ausgeliefert.

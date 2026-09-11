@@ -97,6 +97,8 @@ def test_verified_system_python_is_last_resort_and_forces_safe_mode() -> None:
 
 def test_graphical_bootstrap_returns_success_after_confirmed_ui_ready() -> None:
     source = (SCRIPTS / "bootstrap.py").read_text(encoding="utf-8")
-    assert 'result = {"code": 1}' in source
-    assert 'result["code"] = 0' in source
-    assert 'return int(result["code"])' in source
+    assert "read_ready_marker(marker)" in source
+    assert "return process.pid, safe_mode" in source
+    assert 'elif kind == "done":' in source
+    assert 'print(f"BOOTSTRAP_READY pid={pid} mode={mode}")' in source
+    assert "return 0" in source

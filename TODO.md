@@ -1,105 +1,37 @@
 # TODO – aktueller Arbeitsplan
 
-## Schwerpunkt
+## Zielplattform
 
-Aktuell haben **Start-/Absturzstabilität** und der reale **Soll/Ist-Bildvergleich** Vorrang vor weiteren Features.
+**Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6** ist der einzige aktive GUI-Zielpfad. X11, XWayland als GUI-Transport sowie Ubuntu 22.04/24.04 gehören nur noch zur Historie.
 
-Verbindliche visuelle Arbeitsliste:
+## P0 – vor Merge von PR #128
 
-`VIDEOBATCH_BILDVERGLEICH_CHECKLISTE_2026-08-07.txt`
+- [x] Alte 22.04/24.04-×-X11/Wayland-Matrix-Infrastruktur aus dem aktiven Repo entfernt.
+- [x] Qt-Phase-2-Smoke auf den aktuellen Tabnamen `Weitere Werkzeuge` synchronisiert.
+- [x] Stable-Abnahmevertrag auf Kubuntu 26.04 Plasma Wayland + Langzeitrender reduziert.
+- [ ] Alle GitHub-CI-Gates auf dem finalen Bereinigungs-Commit grün bestätigen.
+- [ ] Reale Start- und Sichtabnahme mit `KUBUNTU_26_04_QT_ABNAHME.sh` auf dem Zielrechner durchführen.
+- [ ] Befunde aus der realen Abnahme nur als kleine reproduzierbare Folgepatches korrigieren.
 
-Die Checkliste enthält die detaillierten Einzelbefunde `UI-001` bis `UI-081` sowie die reale Endabnahme `A-001` bis `A-022`. Diese Punkte werden hier bewusst **nicht dupliziert**. `TODO.md` steuert nur Reihenfolge, Arbeitsstatus und Abschlussnachweise.
+## P1 – Stable-Gates
 
-## Statusregel – ab jetzt verbindlich
+- [ ] `kubuntu_26_04_wayland.json` für den unveränderten finalen Kandidaten erzeugen und mit `scripts/validate_stable_acceptance.py` prüfen.
+- [ ] Realen Langzeitrender mit großer Medienauswahl und langsamem externem Ziel durchführen.
+- [ ] `long_render.json` für denselben Kandidaten und denselben Manifest-Hash erzeugen.
+- [ ] Erst wenn beide Nachweise grün sind, Stable-Finalisierung zulassen.
 
-- `[x]` bedeutet: Implementierung **und** passende reale/automatisierte Abnahme sind nachgewiesen.
-- Ein statischer Vertrag allein schließt keinen sichtbaren UI-Punkt mehr ab.
-- Ein GitHub-Status `mergeable` ist keine Laufzeit- oder Sichtabnahme.
-- Ein realer Screenshot, Crashbericht oder Test, der einen früheren Haken widerlegt, **öffnet den Punkt wieder**.
-- Frühere visuelle Häkchen aus der Vorabimplementierung gelten deshalb nicht mehr als Endabnahme; die Bildvergleichscheckliste ist für die aktuelle Oberfläche maßgeblich.
+## P1 – Qt-Migration abschließen
 
-## P0 – zuerst: Startabsturz real reproduzieren
+- [ ] Nach realer Zielsystemabnahme entscheiden, ob der kanonische Startpfad vollständig auf Qt Phase 3 umgeschaltet werden kann.
+- [ ] Erst danach verbleibende Tk-/Legacy-UI-Pfade auf tatsächliche Restverwendung prüfen und nicht mehr benötigte Teile separat entfernen.
+- [ ] Projekt-, Diagnose-, Vorschau- und Diashow-Funktionen auf dem realen Zielsystem einmal vollständig durchlaufen.
 
-- [ ] **RUN-P0-001 – Aktuellen `main` auf dem Kubuntu-Zielsystem starten:** `./STARTEN.sh` mit aktivem Debugmodus ausführen.
-- [ ] **RUN-P0-002 – Absturzbericht sichern:** Bei erneutem Abbruch den automatisch erzeugten TXT-Bericht aus `debugging/` und die relevante Konsolenausgabe als primäre Ursache verwenden.
-- [ ] **RUN-P0-003 – Nur den ersten realen Crashbefund korrigieren:** Keine Layout-, Architektur- oder Toolchainumbauten, bevor der konkrete Startfehler eingegrenzt ist.
-- [ ] **RUN-P0-004 – Regulären Abschluss gegen Crash unterscheiden:** Nach dem Fix Start, kurze Bedienung und normales Schließen prüfen; der Wächter darf einen normalen Abschluss nicht als Absturz melden.
+## P2 – Wartbarkeit
 
-## P0/P1/P2 – `VIDEOBATCH_BILDVERGLEICH_CHECKLISTE_2026-08-07.txt` abarbeiten
+- [ ] Historische Nachweise weiterhin nur unter `docs/archive/` ablegen; keine alten Prüfstände zurück in den aktiven Release-Satz kopieren.
+- [ ] Keine neue parallele CI-Matrix einführen, solange der Einzielvertrag Kubuntu 26.04 / Wayland gilt.
+- [ ] Nach jeder Plattformänderung `PLATFORM_SUPPORT.json`, Stable-Abnahmevertrag, Nutzeranleitungen und CI gemeinsam gegen Drift prüfen.
 
-### Vorbedingung
+## Abschlussregel
 
-- [ ] **BV-000 – Bildzuordnung final bestätigen:** Die vereinbarte Uploadreihenfolge lautet *Muster zuerst, aktuelle Oberfläche zweitens*. Die vorhandene Checkliste bezeichnet im Kopf aktuell `Bild 1` als IST und `Bild 2` als SOLL. Vor einem Pixelpatch wird die Zuordnung anhand der Originalbilder/Filenames einmal eindeutig bestätigt. Die fachlichen Soll/Ist-Befunde werden nicht aus Vermutung umgedreht.
-- [ ] **BV-001 – Ausgangszustand sichern:** Fenstergröße, Screenshotauflösung, KDE-Skalierung, Schriftprofil, Theme und X11/Wayland für den realen IST-Screenshot dokumentieren.
-
-### Empfohlene Reihenfolge aus der Checkliste
-
-- [ ] **BV-010 – UI-003 bis UI-012:** Höhenbudget, Clipping und sichtbaren Hauptarbeitsbereich korrigieren. **P0 zuerst.**
-- [ ] **BV-011 – UI-041, UI-045, UI-052, UI-054:** echte Drei-Spalten-Kernoberfläche herstellen und real prüfen.
-- [ ] **BV-012 – UI-004, UI-013 bis UI-019:** kompakte Topbar nach Muster herstellen.
-- [ ] **BV-013 – UI-028 bis UI-036:** KPI-Karten vollständig verdichten; Diagnoseprosa aus der Primäransicht entfernen.
-- [ ] **BV-014 – UI-020 bis UI-027:** Sidebar strukturell und visuell angleichen; nur echte Systemdaten anzeigen.
-- [ ] **BV-015 – UI-037 bis UI-040:** Actionbar auf kompakte, vollständig lesbare Bedienung bringen.
-- [ ] **BV-016 – UI-042 bis UI-058:** Quellen-, Queue- und Detailfunktionen strukturell und visuell angleichen.
-- [ ] **BV-017 – UI-059 bis UI-063:** Schedulerstruktur angleichen; funktional bis Checkpoint 5 weiterhin sichtbar gesperrt lassen.
-- [ ] **BV-018 – UI-064 bis UI-071:** Footer und Systemmetriken angleichen; keine erfundenen Werte.
-- [ ] **BV-019 – UI-072 bis UI-081:** Pixel-, Farb-, Icon- und Stil-Feinschliff erst nach stabiler Geometrie.
-- [ ] **BV-020 – A-001 bis A-022:** vollständige reale visuelle Endabnahme durchführen.
-- [ ] **BV-021 – Finale TXT-Auswertung:** vollständige Bildervergleichsauswertung mit erledigten/offenen IDs und realen Prüfwerten ausgeben.
-
-## P0 – Überlagerung und Clipping als eigene Abnahmeklasse
-
-Diese Punkte dürfen nicht durch Scrollen oder kleinere Schrift lediglich verdeckt werden:
-
-- [ ] **LAY-P0-001 – Schrift unter anderem Element:** kein Label/Text darf hinter Button, Entry, Treeview, Canvas oder Nachbarkarte liegen.
-- [ ] **LAY-P0-002 – Containergrenzen:** Primäraktionen und Pflichtinformationen bleiben vollständig innerhalb ihres vorgesehenen Containers.
-- [ ] **LAY-P0-003 – Text-Clipping:** keine abgeschnittenen letzten Zeilen, Buttontexte oder Tabellenköpfe.
-- [ ] **LAY-P0-004 – Vertikales Höhenbudget:** Header + KPI + Actionbar dürfen den Kernarbeitsbereich nicht aus dem normalen Viewport verdrängen.
-- [ ] **LAY-P0-005 – Proportionsfehler:** Quellen, Queue und Jobdetails erhalten die aus dem bestätigten Muster abgeleiteten relativen Flächenanteile.
-- [ ] **LAY-P0-006 – Resize-/Schriftrobustheit:** 90 %, 105 % und 125 % sowie kleine/mittlere/große Fenster ohne Überlagerung prüfen.
-
-## P2 – geometrischen GUI-Wächter nach der Bildkorrektur erweitern
-
-- [ ] **GUARD-P2-001 – Sollzonen aus echten Messungen ableiten:** Header, KPI, Hauptarbeitsbereich, Sidebar und Footer anhand der bestätigten Referenz messen.
-- [ ] **GUARD-P2-002 – Mindestabstände ableiten:** nur tatsächlich gemessene Mindestabstände und sinnvolle Toleranzen festlegen; keine erfundenen Pixelwerte.
-- [ ] **GUARD-P2-003 – Bestehenden GUI-Rundtrip erweitern:** Zonen, Mindestabstände, Clipping und Containerüberschreitung in den vorhandenen Test integrieren; **kein neuer GitHub-Workflow**.
-- [ ] **GUARD-P2-004 – Menschliche Fehlermeldung:** der Wächter nennt Zone, Istwert, Sollbereich/Toleranz und den nächstmöglichen Reparaturhinweis.
-- [ ] **GUARD-P2-005 – Reale KDE-Gegenprobe:** automatisierter Wächter und echter Screenshot müssen übereinstimmen, bevor die Bildkorrektur abgeschlossen wird.
-
-## Entwicklungsweise – Effizienzkorrekturen
-
-- [x] **DEV-001 – `AGENTS.md` auf Minimalpatch-Prinzip umgestellt:** reproduzieren → eingrenzen → minimal korrigieren → gezielt prüfen → real abnehmen.
-- [x] **DEV-002 – Scope-Churn entfernt:** keine Pflicht mehr, in jeder Iteration pauschal README, CHANGELOG, Hilfe, Startlogik und Erscheinungsbild gleichzeitig zu ändern.
-- [x] **DEV-003 – Workflow-Proliferation untersagt:** lokale Design-/Dokumentations-/Bildprüfungen werden nicht ohne echten Bedarf zu neuen Required-Checks.
-- [x] **DEV-004 – Release-Manifest auf einen finalen Lauf begrenzt:** keine Regeneration zwischen Einzelpatches.
-- [x] **DEV-005 – Codesparsamkeit priorisiert:** bestehende Module/Tests wiederverwenden; neue Datei/Mixin/Abstraktion nur bei klarer Verantwortungsgrenze.
-- [x] **DEV-006 – Patchbudget angewendet:** Hilfevertrag und Zustandsberechnung wurden in getrennten Kleinständerungen mit vorhandenen Prüfungen bearbeitet.
-- [x] **DEV-007 – Bestätigte Ursache zuerst bearbeitet:** falsche Hilfetextquelle und gemeldete Verzweigungsgrenzen wurden ohne Nebenumbau korrigiert.
-
-## Bereits vorhandene technische Grundlagen
-
-- [x] Typisierter `AppEvent`-Vertrag und Ereignisregister vorhanden.
-- [x] BatchRunner und SelectionPreviewController auf typisierte Kernereignisse migriert.
-- [x] AST-/Ereignisarchitekturwächter vorhanden.
-- [x] Dokumentations-Schnellprüfung über `./test.sh --docs` vorhanden.
-- [x] Lokale Qualitätsprüfung und strenger Stable-Pfad getrennt.
-- [x] Persistenter menschlicher Debugmodus mit TXT-Absturzberichten vorhanden.
-- [x] Bestehender GUI-Rundtrip besitzt eine grundlegende Überlagerungsprüfung; seine Sollwerte werden erst nach der realen Bildkorrektur erweitert.
-
-## Technische Nacharbeiten und Regressionsthemen – keine Stable-Gates
-
-Diese Punkte bleiben als Arbeitswissen erhalten. Sie werden **nicht** mehr in die kanonische Stable-Gate-Zahl eingerechnet; automatisierte Verträge werden über die aktuelle Nullrunde bewertet.
-
-- [ ] **TEST-P1-001 – Bestehende Startverträge mit `videobatch.sh` abgleichen:** historische Abweichung weiter beobachten und nur bei reproduzierbarem aktuellem Fehler erneut öffnen.
-- [ ] **TEST-P1-002 – Hauptzweig-Ablauf prüfen:** historische Ablaufannahmen nur bei aktuellem Regressionsergebnis wieder als Blocker behandeln.
-- [ ] **TEST-P1-003 – Zielumgebung vervollständigen:** reale Desktop-/FFmpeg-Bedingungen gehören in die physische Zielsystemabnahme.
-- [ ] **TEST-P1-004 – Beschädigte Testmedien erneut prüfen:** bei realem FFprobe-Befund reproduzieren und eingrenzen.
-- [x] **Python-Qualitätsgates:** Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4 und pip-audit 2.10.1 im provenienzgebundenen Offline-Lauf `34421827176` auf Commit `5d7c1949e7995126b7b58ca444ae6e112ecefcea` bestanden.
-- [x] **Release-Manifest für diesen Kandidaten:** nach Codefix synchronisiert und im Repository-Preflight read-only verifiziert.
-
-## Noch offene Stable-Gates
-
-- [ ] **Physische KDE-Abnahme unter X11 und Wayland** für den finalen, korrigierten UI-Stand dokumentieren.
-- [ ] **Langzeitrender** mit großer Medienauswahl und langsamem externem Ziel durchführen.
-
-Stable bleibt gesperrt, bis diese beiden realen Nachweise auf demselben unveränderten Kandidaten vorliegen.
+Automatisierte CI und headless Weston sind notwendige technische Gates, aber kein Ersatz für die physische Kubuntu-26.04-Plasma-Wayland-Abnahme. Stable bleibt bis zur realen Zielsystemprüfung und zum realen Langzeitrender gesperrt.

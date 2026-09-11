@@ -49,24 +49,21 @@ Die folgenden Dateien sind Belege eines bestimmten Entwicklungs- oder Prüfstand
 
 - `CHANGELOG.md`
 - `CODE_QUALITY_REPORT_2.8.3-rc24_save_.md`
-- `FAIL_MEMORY_PASS.md`
 - `FINAL_AUDIT_2.8.3-rc24_save_.md`
 - `FRESH_PACKAGE_REPORT_save_.md`
 - `IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md`
 - `QUALITY_GATE_REPORT_2.8.3-rc24_save_.md`
-- `STABLE_GATE_ITERATION_2.8.3-rc24_2026-08-04.md`
 - `docs/LONG_RENDER_2.8.3-rc24.md`
-- `docs/QUALITY_TOOLCHAIN_2_8_3_RC3.md`
-- `docs/QUALITY_TOOLCHAIN_2_8_3_RC4.md`
-- `docs/SETUP_2_8_3_RC5.md`
 - `docs/STABLE_ACCEPTANCE_EVIDENCE.md`
-- `docs/ANALYSE_AUSGANGSTOOL.md`
-- `docs/DESIGN_SYSTEM_ANALYSIS_2_5.md`
-- `docs/VISUAL_LAYOUT_ANALYSIS_2_4.md`
+- `docs/archive/release-history/` – frühere Release-, Qualitäts-, Design- und Prüfstände (unverändert archiviert)
 
 **Warum bleiben diese Dateien unverändert?** Sie dokumentieren einen historischen Zustand. Eine sprachliche Überarbeitung könnte unbeabsichtigt so wirken, als wäre auch der damalige Prüfstand nachträglich verändert worden.
 
 **Kann man sie löschen?** Nein, nicht ohne gesonderte Archiventscheidung. Sie dienen der Nachvollziehbarkeit und Releasebeweiskette.
+
+## Aktueller Stable-Arbeitsstand
+
+- `STABLE_GATE_ITERATION_2.8.3-rc24_2026-09-11.md`
 
 ## 5. Interne Kalender- und Arbeitsnotizen
 

@@ -18,7 +18,11 @@ RUNTIME = {
     "cffi": "2.0.0",
     "cryptography": "50.0.0",
     "pillow": "12.3.0",
+    "pyside6": "6.11.2",
+    "pyside6-addons": "6.11.2",
+    "pyside6-essentials": "6.11.2",
     "pycparser": "3.0",
+    "shiboken6": "6.11.2",
 }
 QUALITY = {
     "bandit": "1.9.4",
@@ -104,7 +108,7 @@ def test_orchestrator_verifies_without_legacy_modules(tmp_path: Path) -> None:
         cwd=project, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False,
     )
     assert completed.returncode == 0, completed.stdout
-    assert "TOOLCHAIN_WHEELHOUSE_VERIFIED=11" in completed.stdout
+    assert "TOOLCHAIN_WHEELHOUSE_VERIFIED=15" in completed.stdout
 
 
 def test_single_entrypoint_and_compatibility_wrappers_are_bound() -> None:

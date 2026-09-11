@@ -21,7 +21,6 @@ jobs:
       github.event.issue.number == 12 &&
       github.event.comment.author_association == 'OWNER' &&
       (github.event.comment.body == '/run-kubuntu-main' ||
-       github.event.comment.body == '/run-kubuntu-cache-warmup' ||
        startsWith(github.event.comment.body, '/run-kubuntu-pr '))
     runs-on: ubuntu-24.04
     steps:
@@ -37,12 +36,6 @@ jobs:
             /run-kubuntu-main)
               workflow=kubuntu-build-matrix.yml
               label='Produktive Kubuntu-Matrix'
-              ref=main
-              arguments='-f report_issue=12'
-              ;;
-            /run-kubuntu-cache-warmup)
-              workflow=kubuntu-cache-warmup.yml
-              label='Kubuntu-Cache-Warmup'
               ref=main
               arguments=''
               ;;

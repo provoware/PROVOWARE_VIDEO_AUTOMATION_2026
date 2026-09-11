@@ -37,8 +37,10 @@ def main() -> int:
     env_python = Path(sys.executable).resolve()
     if not env_python.is_file():
         raise RuntimeError("Die verifizierte Qualitätsumgebung ist nicht verfügbar.")
-    if not (os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY")):
-        raise RuntimeError("Eine aktive grafische Desktop-Sitzung ist für die reale Abschlussprüfung erforderlich.")
+    if not os.environ.get("WAYLAND_DISPLAY"):
+        raise RuntimeError(
+            "Eine native Wayland-Sitzung auf Kubuntu 26.04 Plasma ist für die reale Abschlussprüfung erforderlich."
+        )
     base_env = {
         **os.environ,
         "VIDEOBATCH_QUALITY_PYTHON": str(env_python),

@@ -4,12 +4,16 @@ import time
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
 from PIL import Image
 
 from videobatch_fast.media_import_dialog import preview_candidate
 from videobatch_fast.theme import best_text_color, contrast_ratio, safe_text_color
 
+from gui_test_support import legacy_tk_gui_available
+
 ROOT = Path(__file__).resolve().parents[1]
+LEGACY_TK_GUI_AVAILABLE = legacy_tk_gui_available()
 
 
 def test_background_workers_never_call_tk_directly() -> None:
@@ -38,6 +42,7 @@ def test_preview_candidate_still_tracks_last_active_item() -> None:
     assert preview_candidate(selected, "") == "/tmp/c.png"
 
 
+@pytest.mark.skipif(not LEGACY_TK_GUI_AVAILABLE, reason="reachable legacy Tk/X display required")
 def test_media_dialog_rapid_selection_is_thread_safe_and_icon_view_works(tmp_path: Path, monkeypatch) -> None:
     from tkinter import Tk, ttk
 
@@ -128,6 +133,7 @@ def test_media_dialog_support_sorting_and_safe_fallback(tmp_path: Path, monkeypa
     assert len(support.sort_directory_records(records, "kind", False)) == 3
 
 
+@pytest.mark.skipif(not LEGACY_TK_GUI_AVAILABLE, reason="reachable legacy Tk/X display required")
 def test_virtual_thumbnail_grid_interactions_cover_multiselect_and_navigation(tmp_path: Path) -> None:
     from tkinter import PhotoImage, Tk, ttk
 
@@ -200,6 +206,7 @@ def test_virtual_thumbnail_grid_interactions_cover_multiselect_and_navigation(tm
     root.destroy()
 
 
+@pytest.mark.skipif(not LEGACY_TK_GUI_AVAILABLE, reason="reachable legacy Tk/X display required")
 def test_virtual_thumbnail_grid_only_renders_visible_tiles_for_huge_folder(tmp_path: Path) -> None:
     from tkinter import Tk, ttk
 

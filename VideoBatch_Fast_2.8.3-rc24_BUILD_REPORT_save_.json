@@ -4,12 +4,11 @@
   "name": "VideoBatch Fast",
   "version": "2.8.3-rc24",
   "release_channel": "rc",
-  "build_date": "2026-08-05",
+  "build_date": "2026-09-11",
   "artifact_policy": "full-project-zip-before-stable",
   "deterministic_build": "passed; two independent builds byte-identical",
   "critical_fix": {
     "area": "already-selected project media list",
-    "root_cause": "unbounded per-click preview threads and FFmpeg processes plus unvalidated direct Tk image decoding",
     "resolution": [
       "single serial preview controller",
       "180 ms debounce",
@@ -18,20 +17,21 @@
       "main-thread-only Tk updates",
       "explicit PNG output for FFmpeg 7+ atomic partial files",
       "invalid cache targets removed before regeneration"
-    ]
+    ],
+    "root_cause": "unbounded per-click preview threads and FFmpeg processes plus unvalidated direct Tk image decoding"
   },
   "runtime_start": {
-    "status": "passed",
     "architecture": "content-addressed user environment",
-    "quality_tools_block_start": false,
-    "interactive_questions": false,
+    "existing_instance_focus": true,
     "ffmpeg_aac_detection": "real smoke test",
-    "ui_ready_handshake": true,
+    "interactive_questions": false,
+    "quality_tools_block_start": false,
     "safe_mode_retry": true,
+    "status": "passed",
     "system_python_fallback": "verified imports only",
-    "existing_instance_focus": true
+    "ui_ready_handshake": true
   },
-  "fresh_package_verification": "passed from complete tracked source audit; 325 tests passed under Xvfb",
+  "fresh_package_verification": "last recorded full regression: 325 tests passed; environment: Letzte vollständige Legacy-Regression unter Xvfb; aktueller Qt-Zielpfad wird separat nativ unter Wayland geprüft.",
   "quality": {
     "architecture_findings": 0,
     "internal_files_checked": 203,
@@ -41,40 +41,35 @@
     "max_complexity": 29
   },
   "release_cleanup": {
-    "historical_reports_archived": 56,
+    "historical_reports_archived": 66,
+    "obsolete_kubuntu_matrix_files_removed": 10,
     "obsolete_visual_baselines_removed": 16,
     "ready_deliverables": 10,
-    "unfinished_gate_files": 8,
     "release_archive_excluded": true,
-    "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe"
+    "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe",
+    "unfinished_gate_files": 8
   },
-  "release_manifest_files": 455,
+  "release_manifest_files": 461,
   "matrix": {
     "status": "passed",
-    "passed_targets": 4,
-    "total_targets": 4,
-    "workflow_run_id": 30966067548,
-    "verified_commit": "ef003d2c01fa94b899d0ebac9947f1795dd23e8f",
-    "scope_note": "Headless deterministic CI matrix; not a substitute for physical KDE acceptance."
+    "passed_targets": 1,
+    "total_targets": 1,
+    "workflow_run_id": 34550170345,
+    "verified_commit": "92b2089a604b13367cb14c64e69703f97b5381d1",
+    "scope_note": "Aktuelle Ziel-CI auf Ubuntu-26.04-Basis mit KDE-/Wayland-Laufzeitteilmenge, headless Weston und nativem Qt-Wayland-QPA; kein Ersatz für die physische Kubuntu-26.04-Abnahme."
   },
   "stable_blockers": [
-    "Physische KDE-X11-/Wayland-Abnahme: Reale Zielsystem-Abnahme fehlt; die CI-Matrix ist nur deterministisch/headless",
+    "Physische Kubuntu-26.04-Plasma-Wayland-Abnahme: Reale Zielsystem-Abnahme auf Kubuntu 26.04 LTS mit KDE Plasma und nativem Wayland fehlt; die CI-Prüfung ist headless und ersetzt die Sichtabnahme nicht.",
     "Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt"
   ],
   "stable_ready": false,
   "status": "passed",
   "tests": {
-    "passed": 325,
-    "failed": 0,
-    "skipped": 0,
-    "line_coverage_percent": 82.43,
+    "assurance_scenarios": "12/12",
     "branch_coverage_percent": 67.21,
     "combined_coverage_percent": 79.46,
-    "assurance_scenarios": "12/12",
+    "failed": 0,
     "fault_lab": "12/12",
-    "visual_scenarios": "18/18",
-    "targeted_rc24": "27/27 finalization and preview regressions",
-    "selected_media_click_stress": "120 rapid selection changes, passed",
     "full_regression": "325/325",
     "full_regression_groups": [
       98,
@@ -82,6 +77,12 @@
       83,
       55
     ],
-    "test_environment": "Xvfb X11 on exact exported PR tree"
+    "line_coverage_percent": 82.43,
+    "passed": 325,
+    "selected_media_click_stress": "120 rapid selection changes, passed",
+    "skipped": 0,
+    "targeted_rc24": "27/27 finalization and preview regressions",
+    "test_environment": "Letzte vollständige Legacy-Regression unter Xvfb; aktueller Qt-Zielpfad wird separat nativ unter Wayland geprüft.",
+    "visual_scenarios": "18/18"
   }
 }

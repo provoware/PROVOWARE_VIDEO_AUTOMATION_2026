@@ -10,6 +10,8 @@ from PIL import Image
 
 from videobatch_fast.app_events import AppEvent
 from videobatch_fast.preview_service import PreviewError, load_preview_bitmap
+from gui_test_support import legacy_tk_gui_available
+
 from videobatch_fast.selection_preview_controller import (
     SelectionPreviewController,
     resolve_tree_selection,
@@ -159,6 +161,7 @@ def test_load_preview_bitmap_rejects_broken_and_huge_inputs(tmp_path: Path) -> N
         load_preview_bitmap(broken, max_width=320, max_height=240)
 
 
+@pytest.mark.skipif(not legacy_tk_gui_available(), reason="reachable legacy Tk/X display required")
 def test_main_selected_media_list_rapid_clicks_remain_stable(
     tmp_path: Path,
     monkeypatch,

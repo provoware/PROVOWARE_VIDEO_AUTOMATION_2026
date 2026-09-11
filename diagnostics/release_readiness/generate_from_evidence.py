@@ -197,7 +197,7 @@ def render_build(value: Mapping[str, Any]) -> dict[str, Any]:
         "critical_fix": dict(value["critical_fix"]),
         "runtime_start": dict(value["runtime_start"]),
         "fresh_package_verification": (
-            f"passed from complete tracked source audit; {tests['passed']} tests passed under Xvfb"
+            f"last recorded full regression: {tests['passed']} tests passed; environment: {tests['test_environment']}"
         ),
         "quality": {
             "architecture_findings": int(quality["architecture_findings"]),

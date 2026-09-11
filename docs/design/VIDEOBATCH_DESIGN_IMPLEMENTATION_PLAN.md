@@ -54,11 +54,8 @@
 - Abstammung danach `ahead`, `behind_by = 0`, Merge-Base entspricht exakt `main`  
 - Release-Manifest nach dem Merge deterministisch regeneriert und geprüft  
 - Designvertrag und Release-Manifest auf Prüf-Head `33c07d0d…` bestanden  
-- Ubuntu 22.04 X11 bestanden  
-- Ubuntu 22.04 Wayland bestanden  
-- Ubuntu 24.04 X11 bestanden  
-- Ubuntu 24.04 Wayland bestanden  
-- realer Tk-Start bei 1024×680 bestanden  
+- Historische 22.04/24.04-X11/Wayland-Matrix war für den damaligen Tk-Stand bestanden; sie ist heute nur noch Archivnachweis.  
+- Aktueller Zielvertrag: Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · Qt 6.  
 - alle sechs vorhandenen Funktionsseiten, vier Themes und drei Schriftprofile durchgeschaltet
 
 **Exit-Kriterium:** erfüllt. Die neue Shell ist vollständig nutzbar, rückwärtskompatibel und gegen den aktuellen `main`-Stand geprüft.
@@ -127,13 +124,13 @@
 
 **Umsetzung:** Screenshots für Referenzauflösungen, Themes und Schriftgrößen; Abweichungsbericht nach Layoutzonen.
 
-**Erfolgsprüfung:** Pflichtzonen vorhanden und überlappungsfrei; Abweichungen begründet oder korrigiert; KDE-X11-/Wayland-Sichtprüfung dokumentiert.
+**Erfolgsprüfung:** Pflichtzonen vorhanden und überlappungsfrei; Abweichungen begründet oder korrigiert; Kubuntu-26.04-Plasma-Wayland-Sichtprüfung dokumentiert.
 
 **Exit-Kriterium:** Referenzabgleich und physische Sichtprüfung bestanden.
 
 ### Checkpoint 10 – Abschluss- und Releaseprüfung
 
-**Umsetzung:** Unit-, Integrations-, visuelle, Architektur-, Sicherheits- und Offline-Gates; Ubuntu 22.04/24.04 × X11/Wayland sowie Langzeitrender.
+**Umsetzung:** Unit-, Integrations-, visuelle, Architektur-, Sicherheits- und Offline-Gates; Kubuntu 26.04 Plasma Wayland sowie Langzeitrender.
 
 **Erfolgsprüfung:** keine roten, fehlenden, übersprungenen oder veralteten Nachweise; Manifest, Artefaktinhalt und Release-Dokumente stimmen überein.
 
@@ -162,6 +159,6 @@
 | `tests/test_canonical_application_shell_contract.py` | Funktionserhalt, Navigation, Aktionen, Themes und Schriftprofile |
 | `tests/test_canonical_kpi_contract.py` | getrennte KPI-Zustände und ehrlicher Schedulervertrag |
 | `.github/workflows/design-manifest-gate.yml` | verpflichtender read-only Vertragslauf für PR und `main` |
-| `.github/workflows/checkpoint2-shell-matrix.yml` | realer Tk-Start und KPI-Bedienung unter Ubuntu 22.04/24.04 × X11/Wayland |
+| `.github/workflows/qt6-phase3-smoke.yml` | aktueller Qt-Lifecycle, native Wayland-Prüfung und Startvertrag auf Ubuntu-26.04-Basis |
 | `scripts/validate_design_manifest.py` | fail-closed Prüfung von Manifest, Shell, KPI-Vertrag und CI-Gate |
 | `diagnostics/checkpoint2/CHECKPOINT2_RESULT.json` | maschinenlesbarer Abschlussnachweis für Checkpoint 2 |

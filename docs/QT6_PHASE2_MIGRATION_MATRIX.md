@@ -108,8 +108,8 @@ Pflichtgates:
 4. Szenensync-Vertrag: `scene_analyses` wird beim Jobaufbau übergeben.
 5. Dialog-Parität: alle vier Factory-Dialoge plus zwei Spezialklassen vorhanden.
 6. Repository-Preflight: Compile, Ruff, MyPy/Bandit/pip-audit, Manifest.
-7. Kubuntu-Kompatibilitätsmatrix: X11/Wayland.
-8. Reale Qt-GUI-Prüfung auf Kubuntu 26.04 bleibt ein eigener Desktop-Gate und darf nicht durch reine Legacy-/Core-CI ersetzt werden.
+7. Zielplattform-CI: Ubuntu-26.04-Basis mit KDE-/Wayland-Laufzeitteilmenge und nativem Qt-Wayland-Backend.
+8. Reale Qt-GUI-Prüfung auf Kubuntu 26.04 Plasma Wayland bleibt ein eigener Desktop-Gate und darf nicht durch reine Headless-/Core-CI ersetzt werden.
 
 ## 6. Abgrenzung
 

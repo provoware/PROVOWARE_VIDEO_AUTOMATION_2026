@@ -10,6 +10,7 @@ SRC = ROOT / "src" / "videobatch_fast"
 PHASE2_FILES = (
     SRC / "qt_phase2.py",
     SRC / "qt_phase2_components.py",
+    SRC / "qt_preview_panel.py",
     SRC / "qt_media_import_dialog.py",
     SRC / "qt_workflow_dialogs.py",
 )
@@ -33,15 +34,18 @@ def test_phase2_qt_modules_are_tk_free_and_parseable() -> None:
 
 def test_phase2_reuses_verified_core_services() -> None:
     components = _text(SRC / "qt_phase2_components.py")
+    preview = _text(SRC / "qt_preview_panel.py")
     app = _text(SRC / "qt_phase2.py")
     media = _text(SRC / "qt_media_import_dialog.py")
 
-    assert "SelectionPreviewController" in components
+    assert "PreviewPanel" in components
+    assert "SelectionPreviewController" in preview
     assert "analyze_audio" in components
     assert "order_images" in components
     assert "apply_anchors" in components
     assert "WaveformSceneView" in components
     assert "QPainter" in components
+    assert "EventBuffer" in preview
 
     assert "build_jobs" in app
     assert "scene_analyses=analyses" in app

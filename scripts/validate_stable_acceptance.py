@@ -11,9 +11,19 @@ import sys
 SCHEMA_VERSION = 1
 MAX_AGE = timedelta(days=30)
 REQUIRED_CHECKS = {
-    "kde_x11": {"physical_session", "application_started", "preview_rendered", "window_scaling_checked"},
-    "kde_wayland": {"physical_session", "application_started", "preview_rendered", "window_scaling_checked"},
-    "long_render": {"large_media_selection", "slow_external_target", "render_completed", "output_hash_verified"},
+    "kubuntu_26_04_wayland": {
+        "physical_session",
+        "application_started",
+        "native_wayland_backend",
+        "preview_rendered",
+        "window_scaling_checked",
+    },
+    "long_render": {
+        "large_media_selection",
+        "slow_external_target",
+        "render_completed",
+        "output_hash_verified",
+    },
 }
 
 
@@ -91,7 +101,7 @@ def main() -> int:
     parser.add_argument("--manifest-sha256", required=True)
     args = parser.parse_args()
     validate_evidence(args.evidence_dir, args.candidate, args.manifest_sha256)
-    print("STABLE-ABNAHMEN GÜLTIG: KDE X11, KDE Wayland und Langzeitrender.")
+    print("STABLE-ABNAHMEN GÜLTIG: Kubuntu 26.04 Plasma Wayland und Langzeitrender.")
     return 0
 
 
