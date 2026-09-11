@@ -8,8 +8,9 @@
 
 - [x] Qt6-/Wayland-Bereinigung aus PR #128 integriert.
 - [x] Beschädigtes Release-Manifest und fehlende Phase-2-Dokumentklassifizierung über PR #130 repariert.
-- [x] Repository-Preflight, Manifestvertrag und Qt6-Wayland-Orchestrierung auf dem Reparaturstand grün bestätigt.
-- [x] Release-Contract-Drift-Schutz und automatische Stable-Nachweisexporte vorbereitet.
+- [x] Release-Contract-Drift-Schutz und automatische Stable-Nachweisexporte über PR #131 integriert.
+- [x] Release-Manifest nach PR #131 über PR #132 reproduzierbar synchronisiert und auf demselben Prüfstand grün bestätigt.
+- [x] Repository-Preflight, Manifestvertrag, Qt6-Wayland-Orchestrierung und Langzeitrender-Probelauf auf dem Abschlussstand grün bestätigt.
 - [ ] Physische Start- und Sichtabnahme auf dem echten Kubuntu-26.04-Plasma-Wayland-Zielrechner durchführen.
 - [ ] Realen Langzeitrender mit großer Medienauswahl auf einem langsamen externen USB-Ziel vollständig durchführen.
 
@@ -23,7 +24,7 @@
 
 ### 2. Realer Langzeitrender
 
-- [ ] Den Vertrag aus `docs/LONG_RENDER_2.8.3-rc24.md` mit großer Medienauswahl und langsamem externem USB-Ziel ausführen.
+- [ ] Den Vertrag aus `docs/LONG_RENDER_2.8.3-rc24.md` mit großer Medienauswahl und langsamem externen USB-Ziel ausführen.
 - [ ] Wiederaufnahme, Eingabe-/Ausgabeintegrität und vollständige Hashprüfung real bestehen.
 - [ ] Der erfolgreiche physische Lauf erzeugt `long_render.json` automatisch und bindet ihn an denselben Kandidaten und Manifest-Hash.
 
@@ -31,6 +32,10 @@
 
 - [ ] Beide automatischen Nachweise gemeinsam mit `scripts/validate_stable_acceptance.py` prüfen.
 - [ ] Erst bei zwei gültigen realen Nachweisen und weiterhin grüner CI den Stable-Kanal in einem getrennten, reproduzierbaren Schritt freigeben.
+
+## Repository-Schutz
+
+- [ ] GitHub-Schutz für `main` aktivieren und die zentralen Prüfungen als Pflichtprüfungen festlegen. Dieser Kontoschutz kann von der aktuell verbundenen GitHub-Schnittstelle nicht administrativ eingeschaltet werden und bleibt deshalb als sichtbare manuelle Aufgabe bestehen.
 
 ## Danach – Qt-Migration abschließen
 
