@@ -26,26 +26,10 @@
       "pip_audit_cache_inventory_sha256": "bbd31f0bae51c2dda936042d3815bed51d178339c214551332e2fc67eb5ff4d8",
       "resolved_lock_sha256": "3fe96551379db60b501b749e66b9a807d7c6a6ba0e7000770a97e8003cb40ca1",
       "results": {
-        "bandit": {
-          "returncode": 0,
-          "status": "pass",
-          "version": "1.9.4"
-        },
-        "mypy": {
-          "returncode": 0,
-          "status": "pass",
-          "version": "2.3.0"
-        },
-        "pip-audit": {
-          "returncode": 0,
-          "status": "pass",
-          "version": "2.10.1"
-        },
-        "ruff": {
-          "returncode": 0,
-          "status": "pass",
-          "version": "0.16.1"
-        }
+        "bandit": {"returncode": 0, "status": "pass", "version": "1.9.4"},
+        "mypy": {"returncode": 0, "status": "pass", "version": "2.3.0"},
+        "pip-audit": {"returncode": 0, "status": "pass", "version": "2.10.1"},
+        "ruff": {"returncode": 0, "status": "pass", "version": "0.16.1"}
       },
       "status": "passed",
       "wheelhouse_manifest_sha256": "e1d99b53efc8b65527a7d5b292258439c2562b5d80354d8ae342e1cae7b59844",
@@ -76,7 +60,7 @@
     "maximum_complexity": 29
   },
   "manifest": {
-    "file_count": 461,
+    "file_count": 465,
     "path": "RELEASE_MANIFEST.json",
     "status": "passed"
   },
@@ -85,12 +69,7 @@
     "scope_note": "Aktuelle Ziel-CI auf Ubuntu-26.04-Basis mit KDE-/Wayland-Laufzeitteilmenge, headless Weston und nativem Qt-Wayland-QPA; kein Ersatz für die physische Kubuntu-26.04-Abnahme.",
     "status": "passed",
     "targets": [
-      {
-        "desktop": "KDE runtime subset",
-        "os": "ubuntu-26.04",
-        "session": "wayland-native",
-        "status": "passed"
-      }
+      {"desktop": "KDE runtime subset", "os": "ubuntu-26.04", "session": "wayland-native", "status": "passed"}
     ],
     "total_targets": 1,
     "verified_commit": "92b2089a604b13367cb14c64e69703f97b5381d1",
@@ -131,99 +110,27 @@
   "release_files": {
     "policy": "Only standalone user and release deliverables receive _save_. Source modules, CI workflows, canonical manifests, entrypoints and README retain stable technical names.",
     "ready": [
-      {
-        "evidence": "Geprüfter Nutzerstart und sichere erste Schritte",
-        "label": "Schnellstart",
-        "path": "START_HIER_save_.md"
-      },
-      {
-        "evidence": "Benutzerpfade, A/B-Slots und Berechtigungsschutz dokumentiert",
-        "label": "Installationsanleitung",
-        "path": "AUTOINSTALLATION_save_.md"
-      },
-      {
-        "evidence": "Ordner, Start, Sicherheit und Funktionen beschrieben",
-        "label": "Projektübersicht",
-        "path": "PROJEKTORDNERSTRUKTUR_save_.md"
-      },
-      {
-        "evidence": "Aktueller RC24-Funktionsstand dokumentiert",
-        "label": "Releasehinweise",
-        "path": "RELEASE_NOTES_save_.md"
-      },
-      {
-        "evidence": "Automatisierte und offene Prüfungen getrennt ausgewiesen",
-        "label": "Testbericht",
-        "path": "TEST_REPORT_save_.md"
-      },
-      {
-        "evidence": "Saubere Paketprüfung für RC24 dokumentiert",
-        "label": "Paketbericht",
-        "path": "FRESH_PACKAGE_REPORT_save_.md"
-      },
-      {
-        "evidence": "Interne Qualitätsprüfung ohne Befund",
-        "label": "Codequalitätsbericht",
-        "path": "CODE_QUALITY_REPORT_2.8.3-rc24_save_.md"
-      },
-      {
-        "evidence": "Umgesetzte Funktions- und Sicherheitsverträge dokumentiert",
-        "label": "Implementierungsbericht",
-        "path": "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md"
-      },
-      {
-        "evidence": "RC-Gates und offene Stable-Gates ehrlich getrennt",
-        "label": "RC-Abschlussaudit",
-        "path": "FINAL_AUDIT_2.8.3-rc24_save_.md"
-      },
-      {
-        "evidence": "Aus der kanonischen RELEASE_EVIDENCE.json erzeugt",
-        "label": "Maschinenlesbarer Buildbericht",
-        "path": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json"
-      }
+      {"evidence": "Geprüfter Nutzerstart und sichere erste Schritte", "label": "Schnellstart", "path": "START_HIER_save_.md"},
+      {"evidence": "Benutzerpfade, A/B-Slots und Berechtigungsschutz dokumentiert", "label": "Installationsanleitung", "path": "AUTOINSTALLATION_save_.md"},
+      {"evidence": "Ordner, Start, Sicherheit und Funktionen beschrieben", "label": "Projektübersicht", "path": "PROJEKTORDNERSTRUKTUR_save_.md"},
+      {"evidence": "Aktueller RC24-Funktionsstand dokumentiert", "label": "Releasehinweise", "path": "RELEASE_NOTES_save_.md"},
+      {"evidence": "Automatisierte und offene Prüfungen getrennt ausgewiesen", "label": "Testbericht", "path": "TEST_REPORT_save_.md"},
+      {"evidence": "Saubere Paketprüfung für RC24 dokumentiert", "label": "Paketbericht", "path": "FRESH_PACKAGE_REPORT_save_.md"},
+      {"evidence": "Interne Qualitätsprüfung ohne Befund", "label": "Codequalitätsbericht", "path": "CODE_QUALITY_REPORT_2.8.3-rc24_save_.md"},
+      {"evidence": "Umgesetzte Funktions- und Sicherheitsverträge dokumentiert", "label": "Implementierungsbericht", "path": "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md"},
+      {"evidence": "RC-Gates und offene Stable-Gates ehrlich getrennt", "label": "RC-Abschlussaudit", "path": "FINAL_AUDIT_2.8.3-rc24_save_.md"},
+      {"evidence": "Aus der kanonischen RELEASE_EVIDENCE.json erzeugt", "label": "Maschinenlesbarer Buildbericht", "path": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json"}
     ],
     "ready_suffix": "_save_",
     "unfinished": [
-      {
-        "label": "Offene Arbeitsliste",
-        "path": "TODO.md",
-        "reason": "Enthält bewusst die verbleibenden Stable-Gates"
-      },
-      {
-        "label": "Externe Qualitätswerkzeuge",
-        "path": "QUALITY_GATE_ATTEMPT_2.8.3-rc24.md",
-        "reason": "Technische Provenienzdatei der inzwischen bestandenen Python-Qualitätsgates; bleibt bewusst ohne _save_-Suffix und ist kein Stable-Blocker mehr"
-      },
-      {
-        "label": "Stable-Freigabeiteration",
-        "path": "STABLE_GATE_ITERATION_2.8.3-rc24_2026-09-11.md",
-        "reason": "Aktueller Stable-Arbeitsstand; reale Zielsystemabnahme und Langzeitrender sind noch offen"
-      },
-      {
-        "label": "Langzeitrender",
-        "path": "docs/LONG_RENDER_2.8.3-rc24.md",
-        "reason": "Realer Langzeitrender mit großer Auswahl und langsamem Ziel fehlt"
-      },
-      {
-        "label": "Stable-Abnahmenachweis",
-        "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
-        "reason": "Physische Desktop- und Langzeitnachweise fehlen"
-      },
-      {
-        "label": "Desktop-Sichtprüfung",
-        "path": "VISUAL_DESKTOP_APPROVAL.md",
-        "reason": "Physische Kubuntu-26.04-Plasma-Wayland-Abnahme bleibt offen"
-      },
-      {
-        "label": "Qualitätsumgebung",
-        "path": "QUALITY_ENVIRONMENT_STATUS.json",
-        "reason": "Maschinenlesbarer Status; automatisierte Qualitätsgates sind bestanden, Stable bleibt wegen physischer Kubuntu-26.04-Wayland-Abnahme und Langzeitrender offen"
-      },
-      {
-        "label": "Visuelles Prüfmanifest",
-        "path": "VISUAL_INSPECTION_MANIFEST.json",
-        "reason": "Aktueller physischer Lauf ist nicht vollständig bestätigt"
-      }
+      {"label": "Offene Arbeitsliste", "path": "TODO.md", "reason": "Enthält bewusst die verbleibenden Stable-Gates"},
+      {"label": "Externe Qualitätswerkzeuge", "path": "QUALITY_GATE_ATTEMPT_2.8.3-rc24.md", "reason": "Technische Provenienzdatei der inzwischen bestandenen Python-Qualitätsgates; bleibt bewusst ohne _save_-Suffix und ist kein Stable-Blocker mehr"},
+      {"label": "Stable-Freigabeiteration", "path": "STABLE_GATE_ITERATION_2.8.3-rc24_2026-09-11.md", "reason": "Aktueller Stable-Arbeitsstand; reale Zielsystemabnahme und Langzeitrender sind noch offen"},
+      {"label": "Langzeitrender", "path": "docs/LONG_RENDER_2.8.3-rc24.md", "reason": "Realer Langzeitrender mit großer Auswahl und langsamem Ziel fehlt"},
+      {"label": "Stable-Abnahmenachweis", "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md", "reason": "Physische Desktop- und Langzeitnachweise fehlen"},
+      {"label": "Desktop-Sichtprüfung", "path": "VISUAL_DESKTOP_APPROVAL.md", "reason": "Physische Kubuntu-26.04-Plasma-Wayland-Abnahme bleibt offen"},
+      {"label": "Qualitätsumgebung", "path": "QUALITY_ENVIRONMENT_STATUS.json", "reason": "Maschinenlesbarer Status; automatisierte Qualitätsgates sind bestanden, Stable bleibt wegen physischer Kubuntu-26.04-Wayland-Abnahme und Langzeitrender offen"},
+      {"label": "Visuelles Prüfmanifest", "path": "VISUAL_INSPECTION_MANIFEST.json", "reason": "Aktueller physischer Lauf ist nicht vollständig bestätigt"}
     ]
   },
   "runtime_start": {
@@ -239,42 +146,12 @@
   },
   "schema_version": 1,
   "stable_gates": [
-    {
-      "id": "ruff_0_16_1",
-      "label": "Ruff 0.16.1",
-      "reason": "Exakt gepinnter Offline-Lauf bestanden; Ruff 0.16.1, Rückgabecode 0, GitHub Actions Run 34421827176, Commit 5d7c1949e7995126b7b58ca444ae6e112ecefcea",
-      "status": "passed"
-    },
-    {
-      "id": "mypy_2_3_0",
-      "label": "MyPy 2.3.0",
-      "reason": "Exakt gepinnter Offline-Lauf bestanden; MyPy 2.3.0, Rückgabecode 0, GitHub Actions Run 34421827176, Commit 5d7c1949e7995126b7b58ca444ae6e112ecefcea",
-      "status": "passed"
-    },
-    {
-      "id": "bandit_1_9_4",
-      "label": "Bandit 1.9.4",
-      "reason": "Exakt gepinnter Offline-Lauf bestanden; Bandit 1.9.4, Rückgabecode 0 nach fachlicher B112-Korrektur, GitHub Actions Run 34421827176, Commit 5d7c1949e7995126b7b58ca444ae6e112ecefcea",
-      "status": "passed"
-    },
-    {
-      "id": "pip_audit_2_10_1",
-      "label": "pip-audit 2.10.1",
-      "reason": "Exakt gepinnter Offline-Lauf bestanden; pip-audit 2.10.1, Rückgabecode 0, GitHub Actions Run 34421827176, Commit 5d7c1949e7995126b7b58ca444ae6e112ecefcea",
-      "status": "passed"
-    },
-    {
-      "id": "physical_kubuntu_26_04_wayland",
-      "label": "Physische Kubuntu-26.04-Plasma-Wayland-Abnahme",
-      "reason": "Reale Zielsystem-Abnahme auf Kubuntu 26.04 LTS mit KDE Plasma und nativem Wayland fehlt; die CI-Prüfung ist headless und ersetzt die Sichtabnahme nicht.",
-      "status": "open"
-    },
-    {
-      "id": "large_media_soak",
-      "label": "Langzeitrender mit großer Medienauswahl",
-      "reason": "Realer Lauf auf langsamem externem Ziel fehlt",
-      "status": "open"
-    }
+    {"id": "ruff_0_16_1", "label": "Ruff 0.16.1", "reason": "Exakt gepinnter Offline-Lauf bestanden; Ruff 0.16.1, Rückgabecode 0, GitHub Actions Run 34421827176, Commit 5d7c1949e7995126b7b58ca444ae6e112ecefcea", "status": "passed"},
+    {"id": "mypy_2_3_0", "label": "MyPy 2.3.0", "reason": "Exakt gepinnter Offline-Lauf bestanden; MyPy 2.3.0, Rückgabecode 0, GitHub Actions Run 34421827176, Commit 5d7c1949e7995126b7b58ca444ae6e112ecefcea", "status": "passed"},
+    {"id": "bandit_1_9_4", "label": "Bandit 1.9.4", "reason": "Exakt gepinnter Offline-Lauf bestanden; Bandit 1.9.4, Rückgabecode 0 nach fachlicher B112-Korrektur, GitHub Actions Run 34421827176, Commit 5d7c1949e7995126b7b58ca444ae6e112ecefcea", "status": "passed"},
+    {"id": "pip_audit_2_10_1", "label": "pip-audit 2.10.1", "reason": "Exakt gepinnter Offline-Lauf bestanden; pip-audit 2.10.1, Rückgabecode 0, GitHub Actions Run 34421827176, Commit 5d7c1949e7995126b7b58ca444ae6e112ecefcea", "status": "passed"},
+    {"id": "physical_kubuntu_26_04_wayland", "label": "Physische Kubuntu-26.04-Plasma-Wayland-Abnahme", "reason": "Reale Zielsystem-Abnahme auf Kubuntu 26.04 LTS mit KDE Plasma und nativem Wayland fehlt; die CI-Prüfung ist headless und ersetzt die Sichtabnahme nicht.", "status": "open"},
+    {"id": "large_media_soak", "label": "Langzeitrender mit großer Medienauswahl", "reason": "Realer Lauf auf langsamem externem Ziel fehlt", "status": "open"}
   ],
   "stable_ready": false,
   "tests": {
@@ -284,12 +161,7 @@
     "failed": 0,
     "fault_lab": "12/12",
     "full_regression": "325/325",
-    "full_regression_groups": [
-      98,
-      89,
-      83,
-      55
-    ],
+    "full_regression_groups": [98, 89, 83, 55],
     "line_coverage_percent": 82.43,
     "passed": 325,
     "selected_media_click_stress": "120 rapid selection changes, passed",
