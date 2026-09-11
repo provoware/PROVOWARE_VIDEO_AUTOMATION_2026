@@ -165,7 +165,7 @@ def export_long_render(source: Path, evidence_root: Path) -> Path | None:
     checks = {
         "large_media_selection": len(jobs) == 96 and len(completed_jobs) == 96,
         "slow_external_target": target_info.get("external_usb") is True
-        and str(target_info.get("fstype") or "").lower() == "ext4"
+        and str(target_info.get("filesystem") or "").lower() == "ext4"
         and isinstance(target_info.get("write_mib_s"), (int, float))
         and float(target_info["write_mib_s"]) <= 35.0,
         "render_completed": state.get("state") == "completed"
