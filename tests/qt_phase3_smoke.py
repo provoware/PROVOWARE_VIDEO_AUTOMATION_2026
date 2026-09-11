@@ -9,6 +9,13 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtWidgets import QApplication
 
+from videobatch_fast.qt_legacy_parity import (
+    _archive_last_results,
+    _plugin_scan,
+    _update_package,
+    _visual_approval,
+)
+from videobatch_fast.qt_phase2 import VideoBatchQtPhase2Window
 from videobatch_fast.qt_phase3 import VideoBatchQtPhase3Window
 
 
@@ -19,6 +26,15 @@ def main() -> int:
         os.environ["XDG_STATE_HOME"] = str(temporary_path / "state")
         os.environ["XDG_DATA_HOME"] = str(temporary_path / "data")
         app = QApplication.instance() or QApplication([])
+
+        # The special-tool callbacks must already be replaced before construction,
+        # otherwise Qt would retain references to the historical demo handlers.
+        assert VideoBatchQtPhase2Window._show_plugin_dialog is _plugin_scan
+        assert VideoBatchQtPhase2Window._show_plugin_decision is _plugin_scan
+        assert VideoBatchQtPhase2Window._show_update_dialog is _update_package
+        assert VideoBatchQtPhase2Window._show_archive_dialog is _archive_last_results
+        assert VideoBatchQtPhase2Window._show_visual_approval is _visual_approval
+
         window = VideoBatchQtPhase3Window(autoload_project=False)
         window.show()
         app.processEvents()
