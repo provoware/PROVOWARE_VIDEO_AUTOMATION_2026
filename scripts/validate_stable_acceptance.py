@@ -7,6 +7,7 @@ import hashlib
 import json
 from pathlib import Path
 import sys
+from typing import Any
 
 SCHEMA_VERSION = 1
 MAX_AGE = timedelta(days=30)
@@ -39,6 +40,15 @@ def _blocked(cause: str, solution: str, alternative: str) -> AcceptanceBlocked:
     )
 
 
+def _reject_duplicate_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"doppelter JSON-Schlüssel {key!r}")
+        result[key] = value
+    return result
+
+
 def manifest_sha256(path: Path) -> str:
     if not path.is_file():
         raise _blocked("Das Release-Manifest fehlt.", "Release-Manifest für den unveränderten Kandidaten erzeugen.", "Den Kandidaten erneut bauen und danach abnehmen.")
@@ -49,9 +59,12 @@ def _load(path: Path) -> dict[str, object]:
     if not path.is_file():
         raise _blocked(f"Der Nachweis {path.name} fehlt.", f"Die reale Prüfung durchführen und {path.name} im Nachweisformat ablegen.", "Den Kandidaten als Release Candidate belassen.")
     try:
-        value = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-        raise _blocked(f"Der Nachweis {path.name} ist nicht lesbares JSON ({exc}).", "Den Nachweis als gültiges UTF-8-JSON neu exportieren.", "Den Kandidaten als Release Candidate belassen.") from exc
+        value = json.loads(
+            path.read_text(encoding="utf-8"),
+            object_pairs_hook=_reject_duplicate_pairs,
+        )
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
+        raise _blocked(f"Der Nachweis {path.name} ist nicht lesbares, eindeutiges JSON ({exc}).", "Den Nachweis als gültiges UTF-8-JSON ohne doppelte Schlüssel neu exportieren.", "Den Kandidaten als Release Candidate belassen.") from exc
     if not isinstance(value, dict):
         raise _blocked(f"Der Nachweis {path.name} ist kein JSON-Objekt.", "Ein Objekt gemäß Nachweisformat ablegen.", "Den Kandidaten als Release Candidate belassen.")
     return value
