@@ -4,29 +4,41 @@
 
 **Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6** ist der einzige aktive GUI-Zielpfad. X11, XWayland als GUI-Transport sowie Ubuntu 22.04/24.04 gehören nur noch zur Historie.
 
-## P0 – vor Merge von PR #128
+## Aktueller Stand
 
-- [x] Alte 22.04/24.04-×-X11/Wayland-Matrix-Infrastruktur aus dem aktiven Repo entfernt.
-- [x] Qt-Phase-2-Smoke auf den aktuellen Tabnamen `Weitere Werkzeuge` synchronisiert.
-- [x] Stable-Abnahmevertrag auf Kubuntu 26.04 Plasma Wayland + Langzeitrender reduziert.
-- [ ] Alle GitHub-CI-Gates auf dem finalen Bereinigungs-Commit grün bestätigen.
-- [ ] Reale Start- und Sichtabnahme mit `KUBUNTU_26_04_QT_ABNAHME.sh` auf dem Zielrechner durchführen.
-- [ ] Befunde aus der realen Abnahme nur als kleine reproduzierbare Folgepatches korrigieren.
+- [x] Qt6-/Wayland-Bereinigung aus PR #128 integriert.
+- [x] Beschädigtes Release-Manifest und fehlende Phase-2-Dokumentklassifizierung über PR #130 repariert.
+- [x] Repository-Preflight, Manifestvertrag und Qt6-Wayland-Orchestrierung auf dem Reparaturstand grün bestätigt.
+- [x] Release-Contract-Drift-Schutz und automatische Stable-Nachweisexporte vorbereitet.
+- [ ] Physische Start- und Sichtabnahme auf dem echten Kubuntu-26.04-Plasma-Wayland-Zielrechner durchführen.
+- [ ] Realen Langzeitrender mit großer Medienauswahl auf einem langsamen externen USB-Ziel vollständig durchführen.
 
-## P1 – Stable-Gates
+## P0 – die zwei verbleibenden Stable-Gates
 
-- [ ] `kubuntu_26_04_wayland.json` für den unveränderten finalen Kandidaten erzeugen und mit `scripts/validate_stable_acceptance.py` prüfen.
-- [ ] Realen Langzeitrender mit großer Medienauswahl und langsamem externem Ziel durchführen.
-- [ ] `long_render.json` für denselben Kandidaten und denselben Manifest-Hash erzeugen.
-- [ ] Erst wenn beide Nachweise grün sind, Stable-Finalisierung zulassen.
+### 1. Physische Kubuntu-Abnahme
 
-## P1 – Qt-Migration abschließen
+- [ ] `KUBUNTU_26_04_QT_ABNAHME.sh` auf dem Zielrechner ausführen.
+- [ ] Oberfläche, Vorschau, Skalierung und Bedienbarkeit real prüfen und die Sichtfreigabe nur bei vollständig gutem Ergebnis bestätigen.
+- [ ] Der erfolgreiche Lauf erzeugt `kubuntu_26_04_wayland.json` automatisch und bindet ihn an Kandidat und Manifest-Hash.
+
+### 2. Realer Langzeitrender
+
+- [ ] Den Vertrag aus `docs/LONG_RENDER_2.8.3-rc24.md` mit großer Medienauswahl und langsamem externem USB-Ziel ausführen.
+- [ ] Wiederaufnahme, Eingabe-/Ausgabeintegrität und vollständige Hashprüfung real bestehen.
+- [ ] Der erfolgreiche physische Lauf erzeugt `long_render.json` automatisch und bindet ihn an denselben Kandidaten und Manifest-Hash.
+
+### 3. Stable-Finalisierung
+
+- [ ] Beide automatischen Nachweise gemeinsam mit `scripts/validate_stable_acceptance.py` prüfen.
+- [ ] Erst bei zwei gültigen realen Nachweisen und weiterhin grüner CI den Stable-Kanal in einem getrennten, reproduzierbaren Schritt freigeben.
+
+## Danach – Qt-Migration abschließen
 
 - [ ] Nach realer Zielsystemabnahme entscheiden, ob der kanonische Startpfad vollständig auf Qt Phase 3 umgeschaltet werden kann.
 - [ ] Erst danach verbleibende Tk-/Legacy-UI-Pfade auf tatsächliche Restverwendung prüfen und nicht mehr benötigte Teile separat entfernen.
 - [ ] Projekt-, Diagnose-, Vorschau- und Diashow-Funktionen auf dem realen Zielsystem einmal vollständig durchlaufen.
 
-## P2 – Wartbarkeit
+## Wartbarkeit
 
 - [ ] Historische Nachweise weiterhin nur unter `docs/archive/` ablegen; keine alten Prüfstände zurück in den aktiven Release-Satz kopieren.
 - [ ] Keine neue parallele CI-Matrix einführen, solange der Einzielvertrag Kubuntu 26.04 / Wayland gilt.
