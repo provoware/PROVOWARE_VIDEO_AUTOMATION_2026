@@ -303,9 +303,27 @@ class DiagnosticsPanel(QFrame):
             button.setEnabled(True)
 
 
-# Temporary migration bridge: Phase 3 imports this module only after the Qt Phase 2
-# class is fully defined, so installing here restores old capabilities before the
-# Phase 3 subclass is created without changing the launcher or non-Qt core imports.
-from .qt_legacy_parity import install_legacy_parity
+# Phase 3 imports this module after qt_phase2.py is fully defined but before the
+# Phase-3 subclass is constructed. Install the migration adapter here so all
+# Phase-2 instances inherit the restored start/settings behavior without Tk.
+from .qt_legacy_parity import (
+    _archive_last_results,
+    _offer_recovery,
+    _plugin_scan,
+    _update_package,
+    _visual_approval,
+    install_legacy_parity,
+)
+from .qt_phase2 import VideoBatchQtPhase2Window
 
 install_legacy_parity()
+
+# Qt connects button callbacks while _dialogs_panel() is built. Bind the real
+# services at class level before any window is created, otherwise those buttons
+# would keep references to the old demonstration handlers.
+VideoBatchQtPhase2Window._show_plugin_dialog = _plugin_scan
+VideoBatchQtPhase2Window._show_plugin_decision = _plugin_scan
+VideoBatchQtPhase2Window._show_update_dialog = _update_package
+VideoBatchQtPhase2Window._show_recovery_dialog = lambda self: _offer_recovery(self, manual=True)
+VideoBatchQtPhase2Window._show_archive_dialog = _archive_last_results
+VideoBatchQtPhase2Window._show_visual_approval = _visual_approval
