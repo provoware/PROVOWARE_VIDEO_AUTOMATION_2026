@@ -71,7 +71,12 @@
     "failed": 0,
     "fault_lab": "12/12",
     "full_regression": "325/325",
-    "full_regression_groups": [98, 89, 83, 55],
+    "full_regression_groups": [
+      98,
+      89,
+      83,
+      55
+    ],
     "line_coverage_percent": 82.43,
     "passed": 325,
     "selected_media_click_stress": "120 rapid selection changes, passed",
