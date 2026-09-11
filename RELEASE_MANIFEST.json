@@ -1,6 +1,8 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
+  "file_count": 467,
+  "files_sha256": "c75e05c506ec83ce0a2c5300f28775d109ad9d0a9dcdd98c2188927a740404a4",
   "file_count": 443,
   "files": [
     {
