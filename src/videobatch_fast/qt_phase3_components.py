@@ -301,3 +301,11 @@ class DiagnosticsPanel(QFrame):
         self._running = False
         for button in self._buttons:
             button.setEnabled(True)
+
+
+# Temporary migration bridge: Phase 3 imports this module only after the Qt Phase 2
+# class is fully defined, so installing here restores old capabilities before the
+# Phase 3 subclass is created without changing the launcher or non-Qt core imports.
+from .qt_legacy_parity import install_legacy_parity
+
+install_legacy_parity()
