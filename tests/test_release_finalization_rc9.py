@@ -131,7 +131,7 @@ def test_long_render_export_requires_full_physical_completion(tmp_path: Path, mo
                 "rehearsal_only": False,
                 "run_id": "physical-1",
                 "resource_mode": "hard-systemd",
-                "target": {"external_usb": True, "fstype": "ext4", "write_mib_s": 20.0},
+                "target": {"external_usb": True, "filesystem": "ext4", "write_mib_s": 20.0},
                 "jobs": [{"state": "completed"} for _ in range(96)],
                 "output_manifest": {
                     "entries": [

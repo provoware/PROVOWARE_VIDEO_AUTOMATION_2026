@@ -9,7 +9,22 @@ on:
       - 'src/videobatch_fast/long_render_contract.py'
       - 'scripts/run_long_render_acceptance.py'
       - 'scripts/build_long_render_contract.py'
+      - 'scripts/export_stable_acceptance_evidence.py'
       - 'tests/test_long_render_contract.py'
+      - 'tests/test_release_finalization_rc9.py'
+      - '.github/workflows/bounded-long-render-rehearsal.yml'
+      - 'docs/LONG_RENDER_*.md'
+  push:
+    branches:
+      - main
+    paths:
+      - 'RELEASE_MANIFEST.json'
+      - 'src/videobatch_fast/long_render_contract.py'
+      - 'scripts/run_long_render_acceptance.py'
+      - 'scripts/build_long_render_contract.py'
+      - 'scripts/export_stable_acceptance_evidence.py'
+      - 'tests/test_long_render_contract.py'
+      - 'tests/test_release_finalization_rc9.py'
       - '.github/workflows/bounded-long-render-rehearsal.yml'
       - 'docs/LONG_RENDER_*.md'
   workflow_dispatch:
@@ -24,12 +39,15 @@ env:
 jobs:
   rehearsal:
     name: Controlled checkpoint and resume
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
 
     steps:
-      - name: Check out candidate
+      - name: Check out exact revision
         uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
 
       - name: Install deterministic FFmpeg runtime
         run: |

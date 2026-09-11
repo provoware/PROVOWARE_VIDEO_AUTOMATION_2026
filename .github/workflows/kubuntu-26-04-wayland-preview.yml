@@ -15,6 +15,20 @@ on:
       - src/videobatch_fast/qt_*.py
       - tests/test_platform_integration.py
       - tests/qt_phase3_smoke.py
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/kubuntu-26-04-wayland-preview.yml
+      - PLATFORM_SUPPORT.json
+      - docs/KUBUNTU_26_04_WAYLAND.md
+      - requirements-qt.txt
+      - scripts/build_wayland_preview_zip.py
+      - scripts/install_kubuntu_26_04_wayland.sh
+      - scripts/kubuntu_26_04_wayland_check.py
+      - src/videobatch_fast/platform_integration.py
+      - src/videobatch_fast/qt_*.py
+      - tests/test_platform_integration.py
+      - tests/qt_phase3_smoke.py
   workflow_dispatch:
 
 permissions:
@@ -32,8 +46,10 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out exact revision
+        uses: actions/checkout@v7
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
       - name: Install pinned test runner
         run: python3 -m pip install pytest==8.4.2
@@ -59,8 +75,10 @@ jobs:
       DESKTOP_SESSION: plasmawayland
       QT_QPA_PLATFORM: wayland
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out exact revision
+        uses: actions/checkout@v7
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
 
       - name: Install Wayland and KDE runtime subset
@@ -154,8 +172,10 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out exact revision
+        uses: actions/checkout@v7
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
           fetch-depth: 1
       - name: Build deterministic complete source ZIP
