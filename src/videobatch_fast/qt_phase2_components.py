@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QPushButton,
+    QScrollArea,
     QVBoxLayout,
     QWidget,
 )
@@ -362,10 +363,17 @@ class SlideshowPanel(QFrame):
     def _build(self) -> None:
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(8)
 
         title = QLabel("Diashow & Szenen")
         title.setObjectName("section")
         layout.addWidget(title)
+        intro = QLabel(
+            "Die drei Grundoptionen bleiben immer sichtbar. Reihenfolge und Waveform sind Zusatzwerkzeuge darunter."
+        )
+        intro.setObjectName("subtitle")
+        intro.setWordWrap(True)
+        layout.addWidget(intro)
 
         mode_row = QHBoxLayout()
         mode_row.addWidget(QLabel("Zuordnung"))
@@ -386,6 +394,28 @@ class SlideshowPanel(QFrame):
         self.scene_sync = QCheckBox("Bildwechsel an erkannten Szenen ausrichten")
         layout.addWidget(self.scene_sync)
 
+        self.summary = QLabel()
+        self.summary.setObjectName("safeHint")
+        self.summary.setWordWrap(True)
+        layout.addWidget(self.summary)
+
+        advanced_title = QLabel("Weitere Diashow-Werkzeuge")
+        advanced_title.setObjectName("section")
+        layout.addWidget(advanced_title)
+
+        scroll = QScrollArea()
+        scroll.setObjectName("secondaryScroll")
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        advanced_content = QWidget()
+        advanced = QVBoxLayout(advanced_content)
+        advanced.setContentsMargins(0, 0, 6, 0)
+        advanced.setSpacing(8)
+
+        order_hint = QLabel("Optional: Bildreihenfolge ändern")
+        order_hint.setObjectName("subtitle")
+        advanced.addWidget(order_hint)
         order_buttons = QHBoxLayout()
         for text, callback in (
             ("A–Z", lambda: self._apply_order(ORDER_ALPHABETICAL)),
@@ -396,7 +426,7 @@ class SlideshowPanel(QFrame):
             button = QPushButton(text)
             button.clicked.connect(callback)
             order_buttons.addWidget(button)
-        layout.addLayout(order_buttons)
+        advanced.addLayout(order_buttons)
 
         anchor_buttons = QHBoxLayout()
         start_button = QPushButton("Als START")
@@ -408,38 +438,42 @@ class SlideshowPanel(QFrame):
         anchor_buttons.addWidget(start_button)
         anchor_buttons.addWidget(end_button)
         anchor_buttons.addWidget(clear_button)
-        layout.addLayout(anchor_buttons)
+        advanced.addLayout(anchor_buttons)
 
         self.strip = ThumbnailOrderStrip()
+        self.strip.setMinimumHeight(130)
         self.strip.orderChanged.connect(self._manual_order)
         self.strip.selectedPathChanged.connect(self._select_image)
-        layout.addWidget(self.strip)
+        advanced.addWidget(self.strip)
 
         self.order_status = QLabel("Noch keine Bilder.")
         self.order_status.setObjectName("subtitle")
         self.order_status.setWordWrap(True)
-        layout.addWidget(self.order_status)
+        advanced.addWidget(self.order_status)
 
+        audio_hint = QLabel("Optional: Audioanalyse / Waveform")
+        audio_hint.setObjectName("subtitle")
+        advanced.addWidget(audio_hint)
         audio_row = QHBoxLayout()
         audio_row.addWidget(QLabel("Waveform-Audio"))
         self.audio_select = QComboBox()
         audio_row.addWidget(self.audio_select, 1)
         self.analyze = QPushButton("Analysieren")
         audio_row.addWidget(self.analyze)
-        layout.addLayout(audio_row)
+        advanced.addLayout(audio_row)
 
         self.waveform = WaveformSceneView()
-        layout.addWidget(self.waveform, 1)
+        self.waveform.setMinimumHeight(190)
+        advanced.addWidget(self.waveform)
 
         self.analysis_status = QLabel("Noch keine Audioanalyse.")
         self.analysis_status.setObjectName("subtitle")
         self.analysis_status.setWordWrap(True)
-        layout.addWidget(self.analysis_status)
+        advanced.addWidget(self.analysis_status)
+        advanced.addStretch()
 
-        self.summary = QLabel()
-        self.summary.setObjectName("subtitle")
-        self.summary.setWordWrap(True)
-        layout.addWidget(self.summary)
+        scroll.setWidget(advanced_content)
+        layout.addWidget(scroll, 1)
 
         self.assignment.currentIndexChanged.connect(self._state_changed)
         self.transition.currentIndexChanged.connect(self._state_changed)

@@ -248,3 +248,46 @@ def test_remote_safe_mode_reuses_verified_runtime_without_leaving_its_test_home(
         '"docs/KUBUNTU_26_04_QT_ABNAHME.md"',
     ):
         assert token in workflow
+
+
+def test_beginner_main_flow_is_three_real_decisions_with_persistent_action_footer() -> None:
+    source = _text(SRC / "qt_ui.py")
+    for text in (
+        "Einfacher Ablauf",
+        "1 · Dateien auswählen",
+        "2 · Ausgabe festlegen",
+        "3 · Videos erstellen",
+        "Nächster Schritt:",
+        "Hier nur prüfen",
+        "Ordner wählen …",
+    ):
+        assert text in source
+
+    splitter_end = source.index("outer.addWidget(splitter, 1)")
+    footer = source.index('footer.setObjectName("actionFooter")')
+    assert splitter_end < footer
+    assert "QScrollArea" not in source
+    assert 'self.log.setVisible(False)' in source
+    assert 'self.output.textChanged.connect(self._refresh)' in source
+    assert 'ready = files_ready and output_ready' in source
+
+
+def test_phase3_secondary_docks_do_not_squeeze_beginner_dashboard() -> None:
+    source = _text(SRC / "qt_phase3.py")
+    build = source.index("def _build_phase3_workspace")
+    connect = source.index("def _connect_phase3", build)
+    build_source = source[build:connect]
+    assert "self.phase2_dock.hide()" in build_source
+    assert "self.phase3_dock.hide()" in build_source
+
+    route = source[source.index("def _route_workspace"):source.index("def _collect_project_state")]
+    assert 'route in {"dashboard", "media", "effects", "queue"}' in route
+    assert route.count("self.phase2_dock.hide()") >= 3
+    assert route.count("self.phase3_dock.hide()") >= 3
+
+    navigation = _text(SRC / "qt_phase3_components.py")
+    assert '("media", "1 · Dateien"' in navigation
+    assert '("effects", "2 · Ausgabe"' in navigation
+    assert '("queue", "3 · Produktion"' in navigation
+    assert 'button = QPushButton(label)' in navigation
+    assert 'QPushButton(f"{label}\n{description}")' not in navigation

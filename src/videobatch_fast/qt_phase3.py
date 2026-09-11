@@ -66,15 +66,15 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         )
 
     def _build_phase3_workspace(self) -> None:
-        self.navigation_dock = QDockWidget("Workspace", self)
+        self.navigation_dock = QDockWidget("Bereiche", self)
         self.navigation_dock.setObjectName("phase3NavigationDock")
         self.navigation_dock.setAllowedAreas(Qt.DockWidgetArea.LeftDockWidgetArea)
         self.workspace_navigation = WorkspaceNavigationPanel()
         self.navigation_dock.setWidget(self.workspace_navigation)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.navigation_dock)
-        self.resizeDocks([self.navigation_dock], [245], Qt.Orientation.Horizontal)
+        self.resizeDocks([self.navigation_dock], [205], Qt.Orientation.Horizontal)
 
-        self.phase3_dock = QDockWidget("Werkzeuge · Phase 3", self)
+        self.phase3_dock = QDockWidget("Projekt & Hilfe", self)
         self.phase3_dock.setObjectName("phase3Dock")
         self.phase3_dock.setAllowedAreas(
             Qt.DockWidgetArea.RightDockWidgetArea | Qt.DockWidgetArea.BottomDockWidgetArea
@@ -91,7 +91,11 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         self.phase3_dock.setWidget(self.phase3_tabs)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.phase3_dock)
         self.tabifyDockWidget(self.phase2_dock, self.phase3_dock)
-        self.phase2_dock.raise_()
+
+        # Zusatzwerkzeuge bleiben beim Start geschlossen. So behält der einfache
+        # Drei-Schritt-Ablauf die volle Breite und keine Kernoption wird verdrängt.
+        self.phase2_dock.hide()
+        self.phase3_dock.hide()
 
     def _connect_phase3(self) -> None:
         self.workspace_navigation.routeRequested.connect(self._route_workspace)
@@ -112,16 +116,25 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
 
     def _route_workspace(self, route: str) -> None:
         self.workspace_navigation.set_active(route)
+
+        # Nur der gerade benötigte Zusatzbereich darf Platz beanspruchen.
+        # Dashboard, Dateien, Ausgabe und Produktion bleiben dadurch übersichtlich.
+        if route in {"dashboard", "media", "effects", "queue"}:
+            self.phase2_dock.hide()
+            self.phase3_dock.hide()
+
         if route == "dashboard":
             self.centralWidget().setFocus()
         elif route == "media":
             self.audio.setFocus()
         elif route == "preview":
+            self.phase3_dock.hide()
             self.phase2_dock.show()
             self.phase2_dock.raise_()
             self.phase2_tabs.setCurrentWidget(self.preview_panel)
             self.preview_panel.setFocus()
         elif route == "slideshow":
+            self.phase3_dock.hide()
             self.phase2_dock.show()
             self.phase2_dock.raise_()
             self.phase2_tabs.setCurrentWidget(self.slideshow)
@@ -131,16 +144,18 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         elif route == "queue":
             self.table.setFocus()
         elif route == "project":
+            self.phase2_dock.hide()
             self.phase3_dock.show()
             self.phase3_dock.raise_()
             self.phase3_tabs.setCurrentWidget(self.project_panel)
             self.project_panel.name.setFocus()
         elif route == "diagnostics":
+            self.phase2_dock.hide()
             self.phase3_dock.show()
             self.phase3_dock.raise_()
             self.phase3_tabs.setCurrentWidget(self.diagnostics_panel)
             self.diagnostics_panel.setFocus()
-        self._write_log(f"Workspace: {route} geöffnet.")
+        self._write_log(f"Bereich: {route} geöffnet.")
 
     def _collect_project_state(self) -> dict[str, object]:
         state = dict(self._project_state)

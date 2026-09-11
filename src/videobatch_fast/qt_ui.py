@@ -27,6 +27,7 @@ from PySide6.QtWidgets import (
     QSplitter,
     QTableWidget,
     QTableWidgetItem,
+    QToolButton,
     QVBoxLayout,
     QWidget,
 )
@@ -101,8 +102,8 @@ class VideoBatchQtWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("PROVOWARE VideoBatch 2026 · Qt 6")
-        self.setMinimumSize(1024, 700)
-        self.resize(1440, 900)
+        self.setMinimumSize(980, 640)
+        self.resize(1360, 820)
         self.events = EventBuffer()
         self.runner = BatchRunner(self.events.put)
         self.prepare_queue: queue.Queue[tuple[str, object]] = queue.Queue()
@@ -157,7 +158,7 @@ class VideoBatchQtWindow(QMainWindow):
         brand = QVBoxLayout()
         title = QLabel("VideoBatch 2026")
         title.setObjectName("title")
-        subtitle = QLabel("Native Qt 6 · FFmpeg · X11 + Wayland")
+        subtitle = QLabel("Kubuntu 26.04 · KDE Plasma · Wayland · Qt 6")
         subtitle.setObjectName("subtitle")
         brand.addWidget(title)
         brand.addWidget(subtitle)
@@ -168,7 +169,25 @@ class VideoBatchQtWindow(QMainWindow):
         header.addWidget(self.status, alignment=Qt.AlignmentFlag.AlignTop)
         outer.addLayout(header)
 
+        guide = QFrame()
+        guide.setObjectName("workflowGuide")
+        guide_row = QHBoxLayout(guide)
+        guide_row.setContentsMargins(12, 8, 12, 8)
+        guide_row.setSpacing(8)
+        guide_title = QLabel("Einfacher Ablauf")
+        guide_title.setObjectName("guideTitle")
+        guide_row.addWidget(guide_title)
+        self.step_files = QLabel("1 · Dateien")
+        self.step_output = QLabel("2 · Ausgabe")
+        self.step_start = QLabel("3 · Start")
+        for step in (self.step_files, self.step_output, self.step_start):
+            step.setObjectName("stepChip")
+            guide_row.addWidget(step)
+        guide_row.addStretch()
+        outer.addWidget(guide)
+
         kpis = QHBoxLayout()
+        kpis.setSpacing(8)
         self.kpi_values: dict[str, QLabel] = {}
         for key, label in (("audio", "Audios"), ("media", "Medien"), ("jobs", "Aufträge"), ("done", "Fertig")):
             card, value = self._kpi(label)
@@ -187,28 +206,41 @@ class VideoBatchQtWindow(QMainWindow):
         outer.addWidget(splitter, 1)
 
         footer = QFrame()
-        footer.setObjectName("panel")
-        row = QHBoxLayout(footer)
+        footer.setObjectName("actionFooter")
+        footer_layout = QVBoxLayout(footer)
+        footer_layout.setContentsMargins(12, 9, 12, 9)
+        footer_layout.setSpacing(7)
+        self.next_step = QLabel("Nächster Schritt: 1 · Dateien auswählen")
+        self.next_step.setObjectName("nextStep")
+        self.next_step.setWordWrap(True)
+        footer_layout.addWidget(self.next_step)
+
+        row = QHBoxLayout()
         self.progress = QProgressBar()
         self.progress.setRange(0, 100)
         self.progress.setFormat("Bereit · %p %")
         self.cancel = QPushButton("Abbrechen")
         self.cancel.setObjectName("danger")
         self.cancel.setEnabled(False)
-        self.start = QPushButton("▶ Stapel starten")
+        self.start = QPushButton("▶ 3 · Videos erstellen")
         self.start.setObjectName("primary")
+        self.start.setMinimumWidth(220)
         row.addWidget(self.progress, 1)
         row.addWidget(self.cancel)
         row.addWidget(self.start)
+        footer_layout.addLayout(row)
         outer.addWidget(footer)
 
     def _sources_panel(self) -> QWidget:
-        panel, layout = self._panel("1 · Quellen", "Audio und Bild/Video paarweise hinzufügen. Drag & Drop ist aktiv.")
+        panel, layout = self._panel(
+            "1 · Dateien auswählen",
+            "Zuerst Audio, dann passende Bilder/Videos wählen. Position 1 wird mit Position 1 kombiniert.",
+        )
         self.audio = DropList(AUDIO_EXTS)
         self.media = DropList(MEDIA_EXTS)
         for label, widget, add_text in (
-            ("Audio", self.audio, "+ Audio"),
-            ("Bild / Video", self.media, "+ Medien"),
+            ("Audiodateien", self.audio, "Audio auswählen …"),
+            ("Bilder / Videos", self.media, "Bilder/Videos auswählen …"),
         ):
             layout.addWidget(QLabel(label))
             layout.addWidget(widget, 1)
@@ -220,12 +252,15 @@ class VideoBatchQtWindow(QMainWindow):
             row.addWidget(add)
             row.addWidget(remove)
             layout.addLayout(row)
-        self.clear = QPushButton("Listen leeren")
+        self.clear = QPushButton("Alle ausgewählten Dateien entfernen")
         layout.addWidget(self.clear)
         return panel
 
     def _queue_panel(self) -> QWidget:
-        panel, layout = self._panel("2 · Aufträge", "Reihenfolge links = Paarung. Originaldateien bleiben unverändert.")
+        panel, layout = self._panel(
+            "Kontrolle · automatische Paarung",
+            "Hier nur prüfen: 1. Audio + 1. Medium = 1 Video. Du musst hier nichts einstellen.",
+        )
         self.table = QTableWidget(0, 4)
         self.table.setHorizontalHeaderLabels(["#", "Audio", "Medium", "Status"])
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -234,26 +269,36 @@ class VideoBatchQtWindow(QMainWindow):
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setColumnWidth(0, 42)
         layout.addWidget(self.table, 1)
+        self.log_toggle = QToolButton()
+        self.log_toggle.setText("▸ Technische Meldungen anzeigen")
+        self.log_toggle.setCheckable(True)
+        self.log_toggle.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
+        layout.addWidget(self.log_toggle)
         self.log = QPlainTextEdit()
         self.log.setReadOnly(True)
         self.log.setMaximumBlockCount(1000)
-        self.log.setMaximumHeight(150)
-        self.log.setPlaceholderText("Diagnose und FFmpeg-Meldungen …")
+        self.log.setMaximumHeight(120)
+        self.log.setPlaceholderText("Technische Diagnose- und FFmpeg-Meldungen …")
+        self.log.setVisible(False)
         layout.addWidget(self.log)
+        self.log_toggle.toggled.connect(self._toggle_log)
         return panel
 
     def _settings_panel(self) -> QWidget:
-        panel, layout = self._panel("3 · Ausgabe", "Sichere Automatik. Spezialfunktionen folgen in weiteren Qt-Migrationsstufen.")
-        layout.addWidget(QLabel("Zielordner"))
+        panel, layout = self._panel(
+            "2 · Ausgabe festlegen",
+            "Für den ersten Durchlauf reichen die empfohlenen Einstellungen.",
+        )
+        layout.addWidget(QLabel("Wo sollen die fertigen Videos gespeichert werden?"))
         target = QHBoxLayout()
         self.output = QLineEdit(str(Path.home() / "Videos" / "VideoBatch"))
-        self.output_button = QPushButton("…")
-        self.output_button.setFixedWidth(44)
+        self.output_button = QPushButton("Ordner wählen …")
+        self.output_button.setMinimumWidth(125)
         target.addWidget(self.output, 1)
         target.addWidget(self.output_button)
         layout.addLayout(target)
 
-        layout.addWidget(QLabel("Schnellmodus"))
+        layout.addWidget(QLabel("Verarbeitung"))
         self.mode = QComboBox()
         for key, spec in QUICK_MODES.items():
             if key != "custom":
@@ -266,16 +311,36 @@ class VideoBatchQtWindow(QMainWindow):
         self.mode_hint.setWordWrap(True)
         layout.addWidget(self.mode_hint)
 
-        layout.addWidget(QLabel("Prüfung"))
+        layout.addWidget(QLabel("Kontrolle nach der Erstellung"))
         self.verification = QComboBox()
         self.verification.addItems(["Vollständig", "Schnell"])
         layout.addWidget(self.verification)
-        safety = QLabel(
-            "🛡 Originalsicherheit\n• Quellen unverändert\n• eindeutige Ausgaben\n"
-            "• Fehlerprotokoll\n• kontrollierter FFmpeg-Abbruch"
-        )
-        safety.setObjectName("subtitle")
+        verification_hint = QLabel("Empfehlung: Vollständig. Schnell spart Zeit, prüft aber weniger.")
+        verification_hint.setObjectName("subtitle")
+        verification_hint.setWordWrap(True)
+        layout.addWidget(verification_hint)
+
+        safety = QLabel("🛡 Originaldateien bleiben unverändert.")
+        safety.setObjectName("safeHint")
+        safety.setWordWrap(True)
         layout.addWidget(safety)
+
+        self.details_toggle = QToolButton()
+        self.details_toggle.setText("▸ Technische Details & Sicherheit")
+        self.details_toggle.setCheckable(True)
+        self.details_toggle.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
+        layout.addWidget(self.details_toggle)
+        self.safety_details = QLabel(
+            "• eindeutige Ausgabedateien\n"
+            "• Fehlerprotokoll\n"
+            "• kontrollierter FFmpeg-Abbruch"
+        )
+        self.safety_details.setObjectName("subtitle")
+        self.safety_details.setWordWrap(True)
+        self.safety_details.setVisible(False)
+        layout.addWidget(self.safety_details)
+        self.details_toggle.toggled.connect(self._toggle_details)
+
         layout.addStretch()
         self.runtime = QLabel()
         self.runtime.setObjectName("subtitle")
@@ -289,9 +354,22 @@ class VideoBatchQtWindow(QMainWindow):
         self.media.changed.connect(self._refresh)
         self.clear.clicked.connect(self._clear_lists)
         self.output_button.clicked.connect(self._choose_output)
+        self.output.textChanged.connect(self._refresh)
         self.mode.currentIndexChanged.connect(self._mode_changed)
         self.start.clicked.connect(self._start)
         self.cancel.clicked.connect(self._cancel)
+
+    def _toggle_log(self, visible: bool) -> None:
+        self.log.setVisible(visible)
+        self.log_toggle.setText(
+            "▾ Technische Meldungen ausblenden" if visible else "▸ Technische Meldungen anzeigen"
+        )
+
+    def _toggle_details(self, visible: bool) -> None:
+        self.safety_details.setVisible(visible)
+        self.details_toggle.setText(
+            "▾ Technische Details & Sicherheit" if visible else "▸ Technische Details & Sicherheit"
+        )
 
     def _choose_audio(self) -> None:
         files, _ = QFileDialog.getOpenFileNames(
@@ -337,10 +415,35 @@ class VideoBatchQtWindow(QMainWindow):
             for col, text in enumerate(values):
                 self.table.setItem(row, col, QTableWidgetItem(text))
         jobs = len(audios) if audios and len(audios) == len(media) else 0
+        output_ready = bool(self.output.text().strip())
+        files_ready = bool(jobs)
         self.kpi_values["jobs"].setText(str(jobs))
-        self.start.setEnabled(bool(jobs) and not self.runner.running and not self.preparing)
+        ready = files_ready and output_ready and not self.runner.running and not self.preparing
+        self.start.setEnabled(ready)
+
+        self.step_files.setText("1 · Dateien ✓" if files_ready else "1 · Dateien")
+        self.step_output.setText("2 · Ausgabe ✓" if output_ready else "2 · Ausgabe")
+        self.step_start.setText("3 · Start bereit" if ready else "3 · Start")
+
+        if self.runner.running:
+            self.next_step.setText("Produktion läuft. Fortschritt und Abbrechen bleiben hier immer sichtbar.")
+        elif self.preparing:
+            self.next_step.setText("Dateien werden geprüft. Danach startet die Verarbeitung automatisch.")
+        elif not audios and not media:
+            self.next_step.setText("Nächster Schritt: 1 · Audiodateien und passende Bilder/Videos auswählen.")
+        elif not audios:
+            self.next_step.setText("Nächster Schritt: 1 · Mindestens eine Audiodatei hinzufügen.")
+        elif len(audios) != len(media):
+            self.next_step.setText(
+                f"Nächster Schritt: 1 · Paarung vervollständigen — {len(audios)} Audio, {len(media)} Medien."
+            )
+        elif not output_ready:
+            self.next_step.setText("Nächster Schritt: 2 · Einen Ausgabeordner wählen.")
+        else:
+            self.next_step.setText(f"Bereit: {jobs} Video(s). Nächster Schritt: 3 · Videos erstellen.")
+
         if not self.runner.running and not self.preparing:
-            self._status("BEREIT" if jobs or not self.table.rowCount() else "PRÜFEN")
+            self._status("BEREIT" if ready or not self.table.rowCount() else "PRÜFEN")
 
     def _mode_changed(self) -> None:
         spec = QUICK_MODES.get(str(self.mode.currentData()), QUICK_MODES["smart_auto"])
@@ -394,6 +497,8 @@ class VideoBatchQtWindow(QMainWindow):
         self.progress.setRange(0, 0)
         self.progress.setFormat("Quellen werden geprüft …")
         self._status("PRÜFT")
+        self.step_start.setText("3 · Start …")
+        self.next_step.setText("Dateien werden geprüft. Danach startet die Verarbeitung automatisch.")
         self._write_log(f"Prüfe {len(audios)} Auftrag/Aufträge mit FFprobe.")
 
         def prepare() -> None:
@@ -466,6 +571,8 @@ class VideoBatchQtWindow(QMainWindow):
                 self.progress.setFormat("Verarbeitung · %p %")
                 self.kpi_values["done"].setText("0")
                 self._status("LÄUFT")
+                self.step_start.setText("3 · Läuft …")
+                self.next_step.setText("Produktion läuft. Fortschritt und Abbrechen bleiben hier immer sichtbar.")
             elif name == "job_started":
                 self._row_status(int(p.get("position", 1)) - 1, "Läuft …")
             elif name == "progress":

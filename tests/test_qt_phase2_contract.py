@@ -77,10 +77,27 @@ def test_phase2_entrypoint_contains_all_requested_workflows() -> None:
     for label in (
         "Vorschau",
         "Diashow & Waveform",
-        "Spezialdialoge",
+        "Weitere Werkzeuge",
         "Audio-Browser",
         "Medien-Browser",
         "Recovery",
         "Visuelle Freigabe",
     ):
         assert label in source
+
+
+def test_beginner_slideshow_keeps_primary_options_fixed_above_secondary_scroll() -> None:
+    source = _text(SRC / "qt_phase2_components.py")
+    build = source.index("class SlideshowPanel")
+    assignment = source.index("self.assignment = QComboBox()", build)
+    transition = source.index("self.transition = QComboBox()", build)
+    scene_sync = source.index("self.scene_sync = QCheckBox", build)
+    scroll = source.index("scroll = QScrollArea()", build)
+    ordering = source.index('order_hint = QLabel("Optional: Bildreihenfolge ändern")', build)
+
+    assert assignment < scroll
+    assert transition < scroll
+    assert scene_sync < scroll
+    assert scroll < ordering
+    assert 'scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)' in source
+    assert "Die drei Grundoptionen bleiben immer sichtbar" in source

@@ -24,14 +24,14 @@ from .fault_lab import FaultLabResult, run_fault_lab
 
 
 WORKSPACE_ROUTES: tuple[tuple[str, str, str], ...] = (
-    ("dashboard", "Dashboard", "Gesamtübersicht und Status"),
-    ("media", "Medien", "Audio, Bilder und Videos"),
-    ("preview", "Vorschau", "Ausgewählte Datei prüfen"),
-    ("slideshow", "Diashow & Waveform", "Reihenfolge und Szenen"),
-    ("effects", "Effekte & Ausgabe", "Schnellmodus und Ziel"),
-    ("queue", "Queue & Produktion", "Aufträge und Protokoll"),
-    ("project", "Projekt", "Öffnen, speichern und Notiz"),
-    ("diagnostics", "Diagnose & Hilfe", "Diagnose, Assurance und Fehlerlabor"),
+    ("dashboard", "Übersicht", "Einfacher Drei-Schritt-Ablauf und aktueller Status"),
+    ("media", "1 · Dateien", "Audio, Bilder und Videos auswählen"),
+    ("preview", "Vorschau", "Eine ausgewählte Datei ansehen und prüfen"),
+    ("slideshow", "Diashow", "Reihenfolge, Übergänge und Szenen einstellen"),
+    ("effects", "2 · Ausgabe", "Zielordner, Verarbeitung und Kontrolle festlegen"),
+    ("queue", "3 · Produktion", "Automatische Aufträge und Fortschritt prüfen"),
+    ("project", "Projekt", "Projekt öffnen, speichern und Notiz verwalten"),
+    ("diagnostics", "Hilfe & Diagnose", "System prüfen und technische Diagnose öffnen"),
 )
 
 
@@ -45,18 +45,20 @@ class WorkspaceNavigationPanel(QFrame):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(10, 10, 10, 10)
 
-        title = QLabel("Workspace")
+        title = QLabel("Bereiche")
         title.setObjectName("section")
         layout.addWidget(title)
-        hint = QLabel("Alle Arbeitsbereiche über einen festen Weg erreichbar.")
-        hint.setObjectName("subtitle")
-        hint.setWordWrap(True)
-        layout.addWidget(hint)
+        self.hint = QLabel("Übersicht: einfacher Drei-Schritt-Ablauf und aktueller Status")
+        self.hint.setObjectName("subtitle")
+        self.hint.setWordWrap(True)
+        layout.addWidget(self.hint)
 
         for route, label, description in WORKSPACE_ROUTES:
-            button = QPushButton(f"{label}\n{description}")
+            button = QPushButton(label)
             button.setObjectName("workspaceNav")
             button.setToolTip(description)
+            button.setAccessibleName(label)
+            button.setAccessibleDescription(description)
             button.clicked.connect(lambda _checked=False, key=route: self.routeRequested.emit(key))
             self.buttons[route] = button
             layout.addWidget(button)
@@ -64,6 +66,8 @@ class WorkspaceNavigationPanel(QFrame):
         self.set_active("dashboard")
 
     def set_active(self, route: str) -> None:
+        descriptions = {key: description for key, _label, description in WORKSPACE_ROUTES}
+        self.hint.setText(descriptions.get(route, "Arbeitsbereich auswählen."))
         for key, button in self.buttons.items():
             button.setProperty("active", key == route)
             button.style().unpolish(button)
