@@ -23,6 +23,25 @@ class ManifestContractError(RuntimeError):
     pass
 
 
+def _reject_duplicate_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ManifestContractError(f"Doppelter JSON-Schlüssel: {key!r}")
+        result[key] = value
+    return result
+
+
+def _strict_json(path: Path) -> Any:
+    try:
+        return json.loads(
+            path.read_text(encoding="utf-8"),
+            object_pairs_hook=_reject_duplicate_pairs,
+        )
+    except (OSError, UnicodeError, json.JSONDecodeError, ManifestContractError) as exc:
+        raise ManifestContractError(f"{path.relative_to(ROOT)} kann nicht eindeutig gelesen werden: {exc}") from exc
+
+
 def sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
@@ -60,11 +79,9 @@ def files_digest(files: Sequence[Mapping[str, Any]]) -> str:
 def build_payload(*, compact: bool = False) -> dict[str, Any]:
     files = expected_files()
     visual_path = ROOT / "VISUAL_INSPECTION_MANIFEST.json"
-    visual = (
-        json.loads(visual_path.read_text(encoding="utf-8"))
-        if visual_path.is_file()
-        else {}
-    )
+    visual = _strict_json(visual_path) if visual_path.is_file() else {}
+    if visual and not isinstance(visual, dict):
+        raise ManifestContractError("VISUAL_INSPECTION_MANIFEST.json muss ein JSON-Objekt sein")
     approval = verify_visual_approval(visual, ROOT) if visual else None
     version = version_info()
     payload: dict[str, Any] = {
@@ -96,10 +113,7 @@ def build_payload(*, compact: bool = False) -> dict[str, Any]:
 
 
 def load_manifest() -> dict[str, Any]:
-    try:
-        value = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-        raise ManifestContractError(f"Manifest kann nicht gelesen werden: {exc}") from exc
+    value = _strict_json(MANIFEST)
     if not isinstance(value, dict):
         raise ManifestContractError("Manifest-Wurzel muss ein JSON-Objekt sein")
     return value
