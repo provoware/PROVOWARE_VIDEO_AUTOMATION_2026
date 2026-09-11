@@ -5,6 +5,7 @@ on:
     branches:
       - main
     paths:
+      - 'RELEASE_MANIFEST.json'
       - 'src/videobatch_fast/long_render_contract.py'
       - 'scripts/run_long_render_acceptance.py'
       - 'scripts/build_long_render_contract.py'
@@ -28,7 +29,7 @@ jobs:
 
     steps:
       - name: Check out candidate
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install deterministic FFmpeg runtime
         run: |
