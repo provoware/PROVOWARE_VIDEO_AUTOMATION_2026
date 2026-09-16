@@ -5,6 +5,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from .models import BatchOptions, PairJob
+from .quick_modes import processing_options_for_job
 
 _MIB = 1024**2
 _MIN_VIDEO_BYTES_PER_SECOND = 1_200_000
@@ -62,12 +63,13 @@ def estimate_job_output_bytes(job: PairJob, options: BatchOptions) -> int:
     to avoid starting renders that are likely to exhaust the destination while
     CRF encoding is still in progress.
     """
+    selected = processing_options_for_job(job, options)
     duration = max(1.0, float(job.audio_info.duration or 60.0))
-    pixels = _target_pixels(job, options.resolution)
+    pixels = _target_pixels(job, selected.resolution)
     pixel_factor = max(0.55, pixels / float(1280 * 720))
-    fps_factor = max(0.75, float(max(1, options.fps)) / 25.0)
-    codec_factor = _CODEC_FACTORS.get(str(options.codec).lower(), 1.15)
-    profile_factor = _PROFILE_FACTORS.get(str(options.profile).lower(), 1.20)
+    fps_factor = max(0.75, float(max(1, selected.fps)) / 25.0)
+    codec_factor = _CODEC_FACTORS.get(str(selected.codec).lower(), 1.15)
+    profile_factor = _PROFILE_FACTORS.get(str(selected.profile).lower(), 1.20)
 
     video_rate = int(
         _MIN_VIDEO_BYTES_PER_SECOND
@@ -77,7 +79,7 @@ def estimate_job_output_bytes(job: PairJob, options: BatchOptions) -> int:
         * profile_factor
     )
     video_rate = max(_MIN_VIDEO_BYTES_PER_SECOND, video_rate)
-    audio_rate = _audio_bytes_per_second(options.audio_bitrate)
+    audio_rate = _audio_bytes_per_second(selected.audio_bitrate)
     encoded_estimate = int(duration * (video_rate + audio_rate))
 
     # Fast-copy output can be driven more by the existing video stream than by
