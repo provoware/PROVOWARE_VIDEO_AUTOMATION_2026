@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 
 from videobatch_fast.models import BatchOptions, JobResult, MediaInfo, PairJob
@@ -74,40 +75,33 @@ def test_storage_estimate_is_grouped_by_real_output_directory(tmp_path: Path) ->
     second = tmp_path / "second"
     first.mkdir()
     second.mkdir()
-    jobs = [
-        _job(tmp_path, output_dir=first),
-        PairJob(
-            **{
-                **_job(tmp_path, output_dir=second).__dict__,
-            }
-        ),
-    ]
-    required = estimate_required_by_directory(jobs, BatchOptions(output_dir=tmp_path))
+    first_job = _job(tmp_path, output_dir=first)
+    second_job = replace(first_job, index=2, output=second / "output-2.mp4")
+    required = estimate_required_by_directory(
+        [first_job, second_job], BatchOptions(output_dir=tmp_path)
+    )
     assert set(required) == {first, second}
     assert all(value > 512 * 1024**2 for value in required.values())
 
 
-def test_retry_policy_blocks_environmental_failures() -> None:
-    job = PairJob.__new__(PairJob)
-    result = JobResult(job, False, 1, 0.1, "No space left on device")
+def test_retry_policy_blocks_environmental_failures(tmp_path: Path) -> None:
+    result = JobResult(_job(tmp_path), False, 1, 0.1, "No space left on device")
     decision = classify_retry(result)
     assert decision.category == "environment_blocker"
     assert decision.automatic_retry_allowed is False
     assert decision.safe_fallback_allowed is False
 
 
-def test_retry_policy_allows_one_transient_retry_class() -> None:
-    job = PairJob.__new__(PairJob)
-    result = JobResult(job, False, 1, 0.1, "Resource temporarily unavailable")
+def test_retry_policy_allows_one_transient_retry_class(tmp_path: Path) -> None:
+    result = JobResult(_job(tmp_path), False, 1, 0.1, "Resource temporarily unavailable")
     decision = classify_retry(result)
     assert decision.category == "transient"
     assert decision.automatic_retry_allowed is True
     assert decision.safe_fallback_allowed is True
 
 
-def test_verification_failure_allows_safe_alternative_but_not_identical_retry() -> None:
-    job = PairJob.__new__(PairJob)
-    result = JobResult(job, False, 0, 0.1, "Ausgabeprüfung fehlgeschlagen")
+def test_verification_failure_allows_safe_alternative_but_not_identical_retry(tmp_path: Path) -> None:
+    result = JobResult(_job(tmp_path), False, 0, 0.1, "Ausgabeprüfung fehlgeschlagen")
     decision = classify_retry(result)
     assert decision.category == "verification_failed"
     assert decision.automatic_retry_allowed is False
