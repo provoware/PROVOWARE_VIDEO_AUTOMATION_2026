@@ -8,7 +8,6 @@ from .models import JobResult
 @dataclass(frozen=True, slots=True)
 class RetryDecision:
     category: str
-    automatic_retry_allowed: bool
     safe_fallback_allowed: bool
     reason: str
 
@@ -54,11 +53,13 @@ _TRANSIENT_MARKERS = (
 
 
 def classify_retry(result: JobResult) -> RetryDecision:
-    """Classify whether repeating the unchanged operation can reasonably help.
+    """Classify whether a different safe command can reasonably help.
 
-    Automatic retries are intentionally fail-closed. Safe fallback encoding is
-    broader: format/codec failures may benefit from a different command, while
-    environmental blockers such as disk-full or permissions must be fixed first.
+    The rc25 queue remains deliberately manual. Environmental blockers,
+    cancellations, invalid inputs and transient environment failures must not
+    trigger an automatic encode or fallback loop. Only failures that can
+    plausibly benefit from a different command may use the existing one-shot
+    safe fallback path.
     """
     text = str(result.message or "").casefold()
     returncode = int(result.returncode)
@@ -67,14 +68,12 @@ def classify_retry(result: JobResult) -> RetryDecision:
         return RetryDecision(
             "cancelled",
             False,
-            False,
             "Der Auftrag wurde kontrolliert beendet; automatisches Wiederholen würde den Nutzerabbruch missachten.",
         )
 
     if returncode == 127 or any(marker in text for marker in _HARD_BLOCK_MARKERS):
         return RetryDecision(
             "environment_blocker",
-            False,
             False,
             "Die Umgebung muss sich zuerst ändern; eine identische Wiederholung kann den Fehler nicht beheben.",
         )
@@ -83,36 +82,28 @@ def classify_retry(result: JobResult) -> RetryDecision:
         return RetryDecision(
             "invalid_input",
             False,
-            False,
             "Die Eingabe oder der Auftrag ist ungültig; blindes Wiederholen wäre deterministisch erfolglos.",
         )
 
     if any(marker in text for marker in _TRANSIENT_MARKERS):
         return RetryDecision(
             "transient",
-            True,
-            True,
-            "Der Fehler kann vorübergehend sein; genau ein begrenzter Wiederholungsversuch ist vertretbar.",
+            False,
+            "Der Fehler kann vorübergehend sein; der Auftrag bleibt manuell retrybar, startet aber nicht autonom neu.",
         )
 
     if returncode == 0 and not result.success:
         return RetryDecision(
             "verification_failed",
-            False,
             True,
             "Der Prozess lief durch, aber die Ausgabeprüfung scheiterte; eine sichere Alternativcodierung kann helfen.",
         )
 
     return RetryDecision(
         "processing",
-        False,
         True,
-        "Kein transienter Fehler ist belegt; keine identische automatische Wiederholung, aber sichere Alternativcodierung bleibt erlaubt.",
+        "Kein Umweltblocker ist belegt; eine einmalige sichere Alternativcodierung bleibt erlaubt.",
     )
-
-
-def automatic_retry_allowed(result: JobResult) -> bool:
-    return classify_retry(result).automatic_retry_allowed
 
 
 def safe_fallback_allowed(result: JobResult) -> bool:
