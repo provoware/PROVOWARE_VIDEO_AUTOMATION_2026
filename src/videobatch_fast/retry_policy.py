@@ -36,7 +36,6 @@ _HARD_BLOCK_MARKERS = (
 )
 _INVALID_INPUT_MARKERS = (
     "invalid data found when processing input",
-    "invalid argument",
     "moov atom not found",
     "could not find codec parameters",
 )
