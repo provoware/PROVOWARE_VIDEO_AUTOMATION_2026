@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
+from dataclasses import dataclass
 from pathlib import Path
 
 from .models import BatchOptions, PairJob
@@ -29,6 +30,12 @@ _PROFILE_FACTORS = {
     "balanced": 1.16,
     "quality": 1.32,
 }
+
+
+@dataclass(frozen=True, slots=True)
+class FilesystemRequirement:
+    directories: tuple[Path, ...]
+    required_bytes: int
 
 
 def _audio_bytes_per_second(value: str) -> int:
@@ -106,3 +113,39 @@ def estimate_required_by_directory(
         batch_headroom = max(_MIN_DIRECTORY_HEADROOM, int(estimated * _BATCH_HEADROOM_RATIO))
         required[directory] = estimated + batch_headroom
     return required
+
+
+def estimate_required_by_filesystem(
+    jobs: list[PairJob], options: BatchOptions
+) -> tuple[FilesystemRequirement, ...]:
+    """Aggregate directory requirements by the real destination filesystem.
+
+    Different output folders on one mounted device share the same free-space
+    pool. Grouping by ``st_dev`` prevents each folder from independently passing
+    against the same free-byte value when their combined batch would not fit.
+    If a device id cannot be read, that directory remains isolated rather than
+    being combined with an unrelated target.
+    """
+    by_directory = estimate_required_by_directory(jobs, options)
+    grouped_directories: dict[object, list[Path]] = defaultdict(list)
+    grouped_required: dict[object, int] = defaultdict(int)
+
+    for directory, required in by_directory.items():
+        try:
+            key: object = ("device", directory.stat().st_dev)
+        except OSError:
+            key = ("path", str(directory))
+        grouped_directories[key].append(directory)
+        grouped_required[key] += required
+
+    ordered_keys = sorted(
+        grouped_directories,
+        key=lambda key: str(grouped_directories[key][0]),
+    )
+    return tuple(
+        FilesystemRequirement(
+            directories=tuple(grouped_directories[key]),
+            required_bytes=grouped_required[key],
+        )
+        for key in ordered_keys
+    )
