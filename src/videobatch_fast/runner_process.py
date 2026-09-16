@@ -116,8 +116,8 @@ class ProcessExecution:
     ) -> tuple[threading.Thread, threading.Thread]:
         def append_stderr(value: str) -> None:
             stderr_lines.append(value)
-            if len(stderr_lines) > 120:
-                del stderr_lines[:40]
+            if len(stderr_lines) > 240:
+                del stderr_lines[:80]
 
         stdout_thread = threading.Thread(
             target=self._reader,
@@ -322,7 +322,8 @@ class ProcessExecution:
             return JobResult(job, False, returncode, elapsed, "Vom Nutzer abgebrochen.", command=command)
         if returncode:
             meaningful = [line for line in stderr_lines if line.strip()]
-            message = override_message or (meaningful[-1] if meaningful else f"FFmpeg endete mit Code {returncode}.")
+            diagnostic = "\n".join(meaningful)[-16_000:]
+            message = override_message or diagnostic or f"FFmpeg endete mit Code {returncode}."
             return JobResult(job, False, returncode, elapsed, message, command=command)
         self.emit(
             "progress",
