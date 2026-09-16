@@ -1,17 +1,22 @@
 from __future__ import annotations
 
+import time
 from dataclasses import replace
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from videobatch_fast.models import BatchOptions, JobResult, MediaInfo, PairJob
 from videobatch_fast.resource_estimation import (
     estimate_job_output_bytes,
     estimate_required_by_directory,
+    estimate_required_by_filesystem,
 )
 from videobatch_fast.retry_policy import classify_retry
 from videobatch_fast.retry_queue import RetryQueueStore
 from videobatch_fast.runner import BatchRunner
+from videobatch_fast.runner_process import ProcessExecution
+from videobatch_fast.validation import validate_pairs
 
 
 def _job(
@@ -87,31 +92,74 @@ def test_storage_estimate_is_grouped_by_real_output_directory(tmp_path: Path) ->
     assert all(value > 512 * 1024**2 for value in required.values())
 
 
+def test_storage_estimate_combines_directories_on_same_filesystem(tmp_path: Path) -> None:
+    first = tmp_path / "first"
+    second = tmp_path / "second"
+    first.mkdir()
+    second.mkdir()
+    first_job = _job(tmp_path, output_dir=first)
+    second_job = replace(first_job, index=2, output=second / "output-2.mp4")
+    options = BatchOptions(output_dir=tmp_path)
+
+    by_directory = estimate_required_by_directory([first_job, second_job], options)
+    by_filesystem = estimate_required_by_filesystem([first_job, second_job], options)
+
+    assert len(by_filesystem) == 1
+    assert set(by_filesystem[0].directories) == {first, second}
+    assert by_filesystem[0].required_bytes == sum(by_directory.values())
+
+
+def test_validation_blocks_combined_space_shortage_on_same_filesystem(tmp_path: Path) -> None:
+    first = tmp_path / "first"
+    second = tmp_path / "second"
+    first.mkdir()
+    second.mkdir()
+    first_job = _job(tmp_path, output_dir=first)
+    second_job = replace(first_job, index=2, output=second / "output-2.mp4")
+    options = BatchOptions(output_dir=tmp_path)
+    by_directory = estimate_required_by_directory([first_job, second_job], options)
+    simulated_free = max(by_directory.values()) + 1
+    assert simulated_free < sum(by_directory.values())
+
+    with (
+        patch("videobatch_fast.validation.validate_runtime", return_value=[]),
+        patch("videobatch_fast.validation.validate_output_dir", return_value=[]),
+        patch("videobatch_fast.validation.ffmpeg_path", return_value=None),
+        patch(
+            "videobatch_fast.validation.shutil.disk_usage",
+            return_value=SimpleNamespace(free=simulated_free),
+        ),
+    ):
+        issues = validate_pairs([first_job, second_job], options)
+
+    disk_issues = [issue for issue in issues if issue.code == "DISK_LOW"]
+    assert len(disk_issues) == 1
+    assert str(first) in disk_issues[0].message
+    assert str(second) in disk_issues[0].message
+
+
 def test_retry_policy_blocks_environmental_failures(tmp_path: Path) -> None:
     result = JobResult(_job(tmp_path), False, 1, 0.1, "No space left on device")
     decision = classify_retry(result)
     assert decision.category == "environment_blocker"
-    assert decision.automatic_retry_allowed is False
     assert decision.safe_fallback_allowed is False
 
 
-def test_retry_policy_allows_one_transient_retry_class(tmp_path: Path) -> None:
+def test_transient_failure_stays_manual_and_does_not_allow_fallback(tmp_path: Path) -> None:
     result = JobResult(_job(tmp_path), False, 1, 0.1, "Resource temporarily unavailable")
     decision = classify_retry(result)
     assert decision.category == "transient"
-    assert decision.automatic_retry_allowed is True
-    assert decision.safe_fallback_allowed is True
+    assert decision.safe_fallback_allowed is False
 
 
-def test_verification_failure_allows_safe_alternative_but_not_identical_retry(tmp_path: Path) -> None:
+def test_verification_failure_allows_safe_alternative(tmp_path: Path) -> None:
     result = JobResult(_job(tmp_path), False, 0, 0.1, "Ausgabeprüfung fehlgeschlagen")
     decision = classify_retry(result)
     assert decision.category == "verification_failed"
-    assert decision.automatic_retry_allowed is False
     assert decision.safe_fallback_allowed is True
 
 
-def test_retry_queue_persists_automatic_retry_classification(tmp_path: Path) -> None:
+def test_retry_queue_keeps_transient_failure_manual_only(tmp_path: Path) -> None:
     job = _job(tmp_path)
     queue = RetryQueueStore(tmp_path / "retry.json", max_attempts=2)
     entry = queue.record_failure(
@@ -120,16 +168,60 @@ def test_retry_queue_persists_automatic_retry_classification(tmp_path: Path) -> 
         protection="Originale geschützt.",
     )
     assert entry["retry_allowed"] is True
-    assert entry["automatic_retry_allowed"] is True
     assert entry["retry_category"] == "transient"
-    assert queue.automatic_entries()[0]["job_id"] == entry["job_id"]
+    assert entry["safe_fallback_allowed"] is False
+    assert "automatic_retry_allowed" not in entry
+    assert queue.eligible_entries()[0]["job_id"] == entry["job_id"]
 
 
-def test_runner_does_not_fallback_when_environment_is_blocked(tmp_path: Path) -> None:
+def test_ffmpeg_diagnostics_preserve_hard_blocker_before_generic_tail(tmp_path: Path) -> None:
+    job = _job(tmp_path)
+    execution = ProcessExecution(
+        emit=lambda *_args, **_kwargs: None,
+        cancelled=lambda: False,
+        set_process=lambda _process: None,
+        terminate=lambda _process: 1,
+        cpu_ticks=lambda _pid: 0,
+    )
+    result = execution._result(
+        ["ffmpeg"],
+        job,
+        1,
+        1,
+        1,
+        ["No space left on device", "Conversion failed!"],
+        time.monotonic(),
+    )
+
+    assert "No space left on device" in result.message
+    assert result.message.endswith("Conversion failed!")
+    assert classify_retry(result).category == "environment_blocker"
+    assert classify_retry(result).safe_fallback_allowed is False
+
+
+def test_runner_does_not_fallback_when_preserved_diagnostic_is_blocking(tmp_path: Path) -> None:
     job = _job(tmp_path, fast_path=False)
     options = BatchOptions(output_dir=tmp_path, quick_mode="techno_clean")
     runner = BatchRunner(lambda _event: None, retry_queue_path=tmp_path / "retry.json")
-    failed = JobResult(job, False, 1, 0.1, "No space left on device")
+    failed = JobResult(
+        job,
+        False,
+        1,
+        0.1,
+        "No space left on device\nConversion failed!",
+    )
+    with patch.object(runner, "_execute", return_value=failed) as execute:
+        result = runner._run_job(job, 1, 1, options)
+    assert result.success is False
+    assert result.retried is False
+    assert execute.call_count == 1
+
+
+def test_runner_does_not_fallback_or_loop_on_transient_failure(tmp_path: Path) -> None:
+    job = _job(tmp_path, fast_path=False)
+    options = BatchOptions(output_dir=tmp_path, quick_mode="techno_clean")
+    runner = BatchRunner(lambda _event: None, retry_queue_path=tmp_path / "retry.json")
+    failed = JobResult(job, False, 1, 0.1, "Resource temporarily unavailable")
     with patch.object(runner, "_execute", return_value=failed) as execute:
         result = runner._run_job(job, 1, 1, options)
     assert result.success is False
