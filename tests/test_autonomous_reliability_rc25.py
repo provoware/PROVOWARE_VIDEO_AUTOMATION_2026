@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 from pathlib import Path
+from unittest.mock import patch
 
 from videobatch_fast.models import BatchOptions, JobResult, MediaInfo, PairJob
 from videobatch_fast.resource_estimation import (
@@ -9,6 +10,8 @@ from videobatch_fast.resource_estimation import (
     estimate_required_by_directory,
 )
 from videobatch_fast.retry_policy import classify_retry
+from videobatch_fast.retry_queue import RetryQueueStore
+from videobatch_fast.runner import BatchRunner
 
 
 def _job(
@@ -106,3 +109,29 @@ def test_verification_failure_allows_safe_alternative_but_not_identical_retry(tm
     assert decision.category == "verification_failed"
     assert decision.automatic_retry_allowed is False
     assert decision.safe_fallback_allowed is True
+
+
+def test_retry_queue_persists_automatic_retry_classification(tmp_path: Path) -> None:
+    job = _job(tmp_path)
+    queue = RetryQueueStore(tmp_path / "retry.json", max_attempts=2)
+    entry = queue.record_failure(
+        JobResult(job, False, 1, 0.1, "Resource temporarily unavailable"),
+        operation_id="rc25",
+        protection="Originale geschützt.",
+    )
+    assert entry["retry_allowed"] is True
+    assert entry["automatic_retry_allowed"] is True
+    assert entry["retry_category"] == "transient"
+    assert queue.automatic_entries()[0]["job_id"] == entry["job_id"]
+
+
+def test_runner_does_not_fallback_when_environment_is_blocked(tmp_path: Path) -> None:
+    job = _job(tmp_path, fast_path=False)
+    options = BatchOptions(output_dir=tmp_path, quick_mode="techno_clean")
+    runner = BatchRunner(lambda _event: None, retry_queue_path=tmp_path / "retry.json")
+    failed = JobResult(job, False, 1, 0.1, "No space left on device")
+    with patch.object(runner, "_execute", return_value=failed) as execute:
+        result = runner._run_job(job, 1, 1, options)
+    assert result.success is False
+    assert result.retried is False
+    assert execute.call_count == 1
