@@ -152,6 +152,44 @@ def test_transient_failure_stays_manual_and_does_not_allow_fallback(tmp_path: Pa
     assert decision.safe_fallback_allowed is False
 
 
+def test_generic_invalid_argument_allows_one_safe_fallback(tmp_path: Path) -> None:
+    job = _job(tmp_path, fast_path=False)
+    failed = JobResult(job, False, 1, 0.1, "Error applying option: Invalid argument")
+    decision = classify_retry(failed)
+    assert decision.category == "processing"
+    assert decision.safe_fallback_allowed is True
+
+    options = BatchOptions(output_dir=tmp_path, quick_mode="techno_clean")
+    runner = BatchRunner(lambda _event: None, retry_queue_path=tmp_path / "retry.json")
+    with patch.object(runner, "_execute", side_effect=[failed, failed]) as execute:
+        result = runner._run_job(job, 1, 1, options)
+    assert result.success is False
+    assert result.retried is True
+    assert execute.call_count == 2
+
+
+def test_invalid_input_diagnostic_remains_blocked(tmp_path: Path) -> None:
+    job = _job(tmp_path, fast_path=False)
+    failed = JobResult(
+        job,
+        False,
+        1,
+        0.1,
+        "Invalid data found when processing input",
+    )
+    decision = classify_retry(failed)
+    assert decision.category == "invalid_input"
+    assert decision.safe_fallback_allowed is False
+
+    options = BatchOptions(output_dir=tmp_path, quick_mode="techno_clean")
+    runner = BatchRunner(lambda _event: None, retry_queue_path=tmp_path / "retry.json")
+    with patch.object(runner, "_execute", return_value=failed) as execute:
+        result = runner._run_job(job, 1, 1, options)
+    assert result.success is False
+    assert result.retried is False
+    assert execute.call_count == 1
+
+
 def test_verification_failure_allows_safe_alternative(tmp_path: Path) -> None:
     result = JobResult(_job(tmp_path), False, 0, 0.1, "Ausgabeprüfung fehlgeschlagen")
     decision = classify_retry(result)
