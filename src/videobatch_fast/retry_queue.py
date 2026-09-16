@@ -73,10 +73,9 @@ class RetryQueueSummary:
 class RetryQueueStore:
     """Durable, bounded list of failed and not-yet-started jobs.
 
-    This store never starts work itself. It only preserves transparent retry
-    candidates and marks entries ineligible after the configured attempt limit.
-    Automatic retry classification is stored separately so a future autonomous
-    retry never weakens the existing manual recovery semantics.
+    This store never starts work itself. It only preserves transparent manual
+    retry candidates and marks entries ineligible after the configured attempt
+    limit. Failure classification is diagnostic only and never executes work.
     """
 
     def __init__(
@@ -175,9 +174,6 @@ class RetryQueueStore:
                 "attempts": attempts,
                 "max_attempts": self.max_attempts,
                 "retry_allowed": retry_allowed,
-                "automatic_retry_allowed": bool(
-                    retry_allowed and decision.automatic_retry_allowed
-                ),
                 "retry_category": decision.category[:80],
                 "retry_reason": decision.reason[:1000],
                 "safe_fallback_allowed": bool(decision.safe_fallback_allowed),
@@ -213,7 +209,6 @@ class RetryQueueStore:
                 "attempts": attempts,
                 "max_attempts": self.max_attempts,
                 "retry_allowed": retry_allowed,
-                "automatic_retry_allowed": False,
                 "retry_category": "not_started",
                 "retry_reason": "Nicht gestartete Aufträge werden nie ohne erneute Vorprüfung automatisch ausgeführt.",
                 "safe_fallback_allowed": False,
@@ -241,14 +236,6 @@ class RetryQueueStore:
 
     def eligible_entries(self) -> tuple[dict[str, Any], ...]:
         return tuple(item for item in self.entries() if bool(item.get("retry_allowed")))
-
-    def automatic_entries(self) -> tuple[dict[str, Any], ...]:
-        return tuple(
-            item
-            for item in self.entries()
-            if bool(item.get("retry_allowed"))
-            and bool(item.get("automatic_retry_allowed"))
-        )
 
     def summary(self) -> RetryQueueSummary:
         entries = self.entries()
