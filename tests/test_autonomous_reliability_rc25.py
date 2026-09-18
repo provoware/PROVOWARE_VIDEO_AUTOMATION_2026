@@ -103,10 +103,15 @@ def test_storage_estimate_combines_directories_on_same_filesystem(tmp_path: Path
 
     by_directory = estimate_required_by_directory([first_job, second_job], options)
     by_filesystem = estimate_required_by_filesystem([first_job, second_job], options)
+    raw_estimate = estimate_job_output_bytes(first_job, options) + estimate_job_output_bytes(
+        second_job, options
+    )
+    expected = raw_estimate + max(512 * 1024**2, int(raw_estimate * 0.20))
 
     assert len(by_filesystem) == 1
     assert set(by_filesystem[0].directories) == {first, second}
-    assert by_filesystem[0].required_bytes == sum(by_directory.values())
+    assert by_filesystem[0].required_bytes == expected
+    assert by_filesystem[0].required_bytes < sum(by_directory.values())
 
 
 def test_validation_blocks_combined_space_shortage_on_same_filesystem(tmp_path: Path) -> None:
@@ -140,6 +145,13 @@ def test_validation_blocks_combined_space_shortage_on_same_filesystem(tmp_path: 
 
 def test_retry_policy_blocks_environmental_failures(tmp_path: Path) -> None:
     result = JobResult(_job(tmp_path), False, 1, 0.1, "No space left on device")
+    decision = classify_retry(result)
+    assert decision.category == "environment_blocker"
+    assert decision.safe_fallback_allowed is False
+
+
+def test_retry_policy_blocks_exhausted_disk_quota(tmp_path: Path) -> None:
+    result = JobResult(_job(tmp_path), False, 1, 0.1, "Disk quota exceeded")
     decision = classify_retry(result)
     assert decision.category == "environment_blocker"
     assert decision.safe_fallback_allowed is False
