@@ -20,6 +20,8 @@ _CANCEL_MARKERS = (
 )
 _HARD_BLOCK_MARKERS = (
     "no space left on device",
+    "disk quota exceeded",
+    "quota exceeded",
     "kein speicherplatz",
     "permission denied",
     "keine schreibberechtigung",
