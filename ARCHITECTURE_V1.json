@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "architecture": "VideoBatch Architecture V1",
+  "checkpoint": "CP-02",
+  "target_platform": {
+    "os": "Kubuntu 26.04 LTS",
+    "desktop": "KDE Plasma",
+    "display_server": "Wayland",
+    "gui_framework": "PySide6/Qt6"
+  },
+  "canonical_entrypoint": {
+    "module_file": "src/videobatch_fast/__main__.py",
+    "target_module": "videobatch_fast.qt_phase3",
+    "target_function": "main"
+  },
+  "active_gui_modules": [
+    "src/videobatch_fast/__main__.py",
+    "src/videobatch_fast/qt_ui.py",
+    "src/videobatch_fast/qt_phase2.py",
+    "src/videobatch_fast/qt_phase3.py",
+    "src/videobatch_fast/qt_phase2_components.py",
+    "src/videobatch_fast/qt_phase3_components.py"
+  ],
+  "forbidden_in_active_gui": [
+    "tkinter",
+    "PyQt5",
+    "PyQt6"
+  ],
+  "legacy_noncanonical_gui": [
+    "src/videobatch_fast/app.py",
+    "src/videobatch_fast/canonical_ui.py"
+  ],
+  "ffmpeg": {
+    "production_runner": "src/videobatch_fast/runner.py",
+    "process_executor": "src/videobatch_fast/runner_process.py",
+    "probe_module": "src/videobatch_fast/probe.py",
+    "ui_must_use": "BatchRunner"
+  },
+  "persistence": {
+    "format": "versioned atomic JSON",
+    "project_store": "src/videobatch_fast/project_state.py",
+    "config_store": "src/videobatch_fast/config.py",
+    "retry_store": "src/videobatch_fast/retry_queue.py",
+    "atomic_writer": "atomic_write_json",
+    "sqlite_status": "not_required_without_proven_relational_need"
+  },
+  "collision_rules": [
+    "The canonical module entrypoint must route only to qt_phase3.main.",
+    "Active GUI modules must not import Tkinter, PyQt5 or PyQt6.",
+    "The active Qt UI must delegate production work to BatchRunner.",
+    "BatchRunner must delegate process execution to ProcessExecution.",
+    "Canonical persistence stores must keep using the shared atomic JSON writer.",
+    "Legacy GUI modules may remain temporarily but must not become reachable from the canonical entrypoint."
+  ],
+  "change_policy": {
+    "single_writer": true,
+    "smallest_meaningful_patch": true,
+    "big_bang_rewrite": false,
+    "product_logic_changes_in_cp02": false
+  }
+}
