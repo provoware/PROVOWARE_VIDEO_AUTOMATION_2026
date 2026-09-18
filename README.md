@@ -9,7 +9,7 @@
 - 82.43 % Zeilenabdeckung
 - 67.21 % Zweigabdeckung
 - 18/18 visuelle Szenarien bestanden
-- Release-Manifest: 473 Dateien
+- Release-Manifest: 474 Dateien
 - Kubuntu-CI-Matrix: 1/1 Kombinationen bestanden
 
 ### Offene Stable-Gates
