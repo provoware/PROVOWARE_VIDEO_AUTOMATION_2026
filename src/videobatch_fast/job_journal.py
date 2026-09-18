@@ -136,6 +136,9 @@ def recoverable_batches() -> list[dict[str, Any]]:
             continue
         if not isinstance(payload, dict):
             continue
+        schema_version = payload.get("schema_version")
+        if type(schema_version) is not int or schema_version != SCHEMA_VERSION:
+            continue
         payload = dict(payload)
         payload["journal_path"] = str(path)
         payload["recoverable_jobs"] = sum(
