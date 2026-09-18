@@ -408,7 +408,7 @@ def launch_application(
     try:
         with app_log.open("a", encoding="utf-8", errors="replace") as output:
             process = subprocess.Popen(
-                [str(python), "-m", "videobatch_fast.qt_phase3"],
+                [str(python), "-m", "videobatch_fast"],
                 cwd=ROOT,
                 env=child_env,
                 text=True,

@@ -62,7 +62,8 @@ def test_supported_wayland_bootstrap_contains_no_tk_dependency() -> None:
     ):
         assert "tkinter" not in source.lower(), f"{name} enthält noch Tkinter im unterstützten Startpfad"
 
-    assert '"videobatch_fast.qt_phase3"' in bootstrap
+    assert '[str(python), "-m", "videobatch_fast"]' in bootstrap
+    assert '"videobatch_fast.qt_phase3"' not in bootstrap
     assert '"QT_QPA_PLATFORM": "wayland"' in bootstrap
     assert "KDialogProgress" in bootstrap
     assert "kdialog" in bootstrap
@@ -76,6 +77,33 @@ def test_canonical_module_entrypoint_routes_to_qt_wayland() -> None:
     source = (SRC / "videobatch_fast" / "__main__.py").read_text(encoding="utf-8")
     assert "from .qt_phase3 import main" in source
     assert "from .app import main" not in source
+
+
+def test_supported_launchers_converge_on_one_canonical_entrypoint() -> None:
+    starten = (ROOT / "STARTEN.sh").read_text(encoding="utf-8")
+    start = (ROOT / "start.sh").read_text(encoding="utf-8")
+    videobatch = (ROOT / "videobatch.sh").read_text(encoding="utf-8")
+    debug_launcher = (ROOT / "scripts" / "debug_launcher.py").read_text(encoding="utf-8")
+    bootstrap = (ROOT / "scripts" / "bootstrap.py").read_text(encoding="utf-8")
+
+    assert 'exec "$BOOTSTRAP_PYTHON" "$DEBUG_LAUNCHER" "$@"' in starten
+    assert 'exec "$ROOT_DIR/STARTEN.sh"' in start
+    assert 'start_application() {\n  exec "$ROOT_DIR/STARTEN.sh"\n}' in videobatch
+    assert 'str(ROOT / "scripts" / "bootstrap.py")' in debug_launcher
+    assert '[str(python), "-m", "videobatch_fast"]' in bootstrap
+
+    supported_sources = "\n".join((starten, start, debug_launcher, bootstrap))
+    assert "canonical_ui" not in supported_sources
+    assert "videobatch_fast.app" not in supported_sources
+    assert "videobatch_fast.qt_phase3" not in bootstrap
+
+
+def test_default_videobatch_start_has_no_tk_preflight() -> None:
+    source = (ROOT / "videobatch.sh").read_text(encoding="utf-8")
+    start_function = source.split("start_application() {", 1)[1].split("}", 1)[0]
+    assert "require_system" not in start_function
+    assert "tkinter" not in start_function
+    assert "STARTEN.sh" in start_function
 
 
 def test_qt_phase3_owns_ready_lock_and_clean_shutdown_contract() -> None:
