@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "checkpoint": "CP-07",
+  "title": "FFmpeg V1 inventory and collision audit",
+  "mode": "inventory_only",
+  "base_commit": "1b2febdb07fe95af09deb6ba9f314aa7c0a41a74",
+  "product_code_changed": false,
+  "persistence_dependency": {
+    "status": "frozen",
+    "rule": "Persistence V1 bleibt unangetastet; Änderungen erfordern ein explizites REOPEN mit Regression-/Dependency-Befund."
+  },
+  "canonical_render_path": [
+    "src/videobatch_fast/qt_ui.py -> BatchRunner",
+    "src/videobatch_fast/runner.py -> command_builder.build_command",
+    "src/videobatch_fast/runner.py -> ProcessExecution",
+    "src/videobatch_fast/runner_process.py -> subprocess.Popen"
+  ],
+  "ownership": {
+    "ui_owner": {
+      "module": "src/videobatch_fast/qt_ui.py",
+      "responsibility": "Start/Cancel/Status an BatchRunner delegieren",
+      "evidence": [
+        "from .runner import BatchRunner",
+        "self.runner = BatchRunner(self.events.put)"
+      ]
+    },
+    "batch_owner": {
+      "module": "src/videobatch_fast/runner.py",
+      "responsibility": "Batch-Lebenszyklus, Retry/Journal, Cancel, Prozessgruppen-Bereinigung und Übergabe an ProcessExecution",
+      "direct_render_spawn": false,
+      "evidence": [
+        "from .runner_process import ProcessExecution",
+        "execution = ProcessExecution(...)",
+        "execution.run(...)"
+      ]
+    },
+    "command_owner": {
+      "module": "src/videobatch_fast/command_builder.py",
+      "responsibility": "Kanonische FFmpeg-Kommandoerzeugung für Video/Bild/Slideshow und Copy-vs-Encode-Auswahl",
+      "binary_source": "probe.ffmpeg_path()"
+    },
+    "process_owner": {
+      "module": "src/videobatch_fast/runner_process.py",
+      "responsibility": "Produktiver FFmpeg-Prozessstart, stdout/stderr-Leser, Fortschritt, Watchdog und Rückgabecode",
+      "process_primitive": "subprocess.Popen",
+      "start_new_session": true
+    },
+    "probe_owner": {
+      "module": "src/videobatch_fast/probe.py",
+      "responsibility": "Read-only Medienmetadaten, ffprobe und FFmpeg-Versionsermittlung",
+      "process_primitive": "subprocess.run",
+      "render_engine": false,
+      "bounded_timeouts": {
+        "ffprobe_seconds": 20,
+        "ffmpeg_version_seconds": 5
+      }
+    }
+  },
+  "active_qt_boundary": {
+    "modules_checked": [
+      "src/videobatch_fast/qt_ui.py",
+      "src/videobatch_fast/qt_phase2.py",
+      "src/videobatch_fast/qt_phase3.py",
+      "src/videobatch_fast/qt_phase2_components.py",
+      "src/videobatch_fast/qt_phase3_components.py",
+      "src/videobatch_fast/ui_event_handlers_mixin.py",
+      "src/videobatch_fast/qt_legacy_parity.py",
+      "src/videobatch_fast/qt_legacy_parity_completion.py"
+    ],
+    "direct_subprocess_render_calls_found": 0,
+    "direct_qprocess_render_calls_found": 0,
+    "canonical_ui_delegate": "BatchRunner"
+  },
+  "collision_findings": [
+    {
+      "id": "FFMPEG-COLLISION-01",
+      "status": "green",
+      "finding": "Im geprüften aktiven Qt6-Pfad existiert kein zweiter produktiver FFmpeg-Start neben BatchRunner -> ProcessExecution."
+    },
+    {
+      "id": "FFMPEG-COLLISION-02",
+      "status": "green",
+      "finding": "runner.py hält Prozesszustand und Abbruchlogik, startet den produktiven FFmpeg-Prozess aber nicht selbst; der Spawn liegt in runner_process.py."
+    },
+    {
+      "id": "FFMPEG-COLLISION-03",
+      "status": "green",
+      "finding": "probe.py nutzt subprocess.run nur für read-only ffprobe/Versionsabfragen mit festen Timeouts und ist keine zweite Render-Engine."
+    },
+    {
+      "id": "FFMPEG-COLLISION-04",
+      "status": "green",
+      "finding": "command_builder.py nutzt probe.ffmpeg_path() als gemeinsame Binary-Auflösung für die produktiven Render-Kommandos."
+    }
+  ],
+  "invariants": [
+    "Aktive Qt6-UI startet FFmpeg niemals direkt.",
+    "Produktive Renderjobs laufen ausschließlich über BatchRunner.",
+    "BatchRunner delegiert den Prozesslauf ausschließlich an ProcessExecution.",
+    "Produktiver FFmpeg-Popen bleibt in runner_process.py.",
+    "FFmpeg-Kommandos für produktive Renderjobs werden über command_builder.py erzeugt.",
+    "probe.py bleibt read-only und darf keine Renderausgaben erzeugen.",
+    "Persistence V1 bleibt für CP-07 eingefroren."
+  ],
+  "consciously_not_changed": [
+    "FFmpeg-Parameter oder Presets",
+    "Copy-vs-Encode-Logik",
+    "Watchdog-Zeiten",
+    "Cancel-/Kill-Verhalten",
+    "Probe-Timeouts",
+    "UI",
+    "Persistence V1",
+    "Entrypoint",
+    "SQLite"
+  ],
+  "freeze_candidate": true,
+  "next_checkpoint_candidate": "CP-08: fokussierte FFmpeg-Architektur- und Collision-Guards, ohne Renderlogik oder Presets zu verändern."
+}
