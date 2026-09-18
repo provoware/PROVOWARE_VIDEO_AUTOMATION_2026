@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "checkpoint": "CP-04",
+  "title": "Persistence V1 inventory",
+  "mode": "inventory_only",
+  "base_commit": "a82024a1c07b17e919d579e7083d49ca43c3d9e3",
+  "product_code_changed": false,
+  "sqlite": {
+    "status": "deferred_not_required",
+    "reason": "No proven relational query, join, multi-table transaction, or concurrent writer requirement exists in the inventoried canonical product/recovery stores.",
+    "rule": "Do not introduce SQLite unless a later checkpoint proves a concrete relational or concurrency requirement that atomic versioned JSON cannot satisfy safely."
+  },
+  "shared_io": {
+    "module": "src/videobatch_fast/safe_io.py",
+    "writer": "atomic_write_json",
+    "durability": [
+      "temporary file in target directory",
+      "file fsync",
+      "os.replace",
+      "directory fsync"
+    ],
+    "default_mode": "0600",
+    "corruption_action": "quarantine_file"
+  },
+  "durable_product_stores": [
+    {
+      "id": "project_state",
+      "module": "src/videobatch_fast/project_state.py",
+      "schema_version": 3,
+      "path": "$XDG_STATE_HOME/VideoBatchFast/projects/*.vbfast.json",
+      "writer": "atomic_write_json",
+      "load_protection": [
+        "normalization",
+        "corrupt-file quarantine",
+        "safe default recreation"
+      ],
+      "purpose": "User project state, media paths, output settings, slideshow/calendar/layout project data"
+    },
+    {
+      "id": "config",
+      "module": "src/videobatch_fast/config.py",
+      "schema_version": 3,
+      "path": "$XDG_CONFIG_HOME/VideoBatchFast/config.json",
+      "writer": "atomic_write_json",
+      "load_protection": [
+        "schema normalization",
+        "enum/range normalization",
+        "corrupt-file quarantine",
+        "safe defaults"
+      ],
+      "purpose": "Application preferences and current-project pointer"
+    },
+    {
+      "id": "retry_queue",
+      "module": "src/videobatch_fast/retry_queue.py",
+      "schema_version": 1,
+      "path": "$XDG_STATE_HOME/VideoBatchFast/jobs/retry_queue.json",
+      "writer": "atomic_write_json",
+      "load_protection": [
+        "thread lock",
+        "bounded entries",
+        "attempt limit",
+        "corrupt/invalid quarantine"
+      ],
+      "purpose": "Durable failed/not-started jobs for explicit retry"
+    },
+    {
+      "id": "job_journal",
+      "module": "src/videobatch_fast/job_journal.py",
+      "schema_version": 2,
+      "path": "$XDG_STATE_HOME/VideoBatchFast/jobs/{active,history}/*.json",
+      "writer": "atomic_write_json + os.replace + directory fsync",
+      "load_protection": [
+        "schema-aware recovery readers",
+        "active/history separation",
+        "recovery consistency checks"
+      ],
+      "purpose": "Crash/power-loss durable batch operation state and recovery history"
+    }
+  ],
+  "operational_json_not_core_database": [
+    {
+      "id": "ui_ready_marker",
+      "module": "src/videobatch_fast/startup_handshake.py",
+      "schema_version": 2,
+      "path": "VIDEOBATCH_UI_READY_FILE",
+      "writer": "atomic_write_json",
+      "purpose": "Ephemeral bootstrap/UI readiness handshake"
+    },
+    {
+      "id": "startup_report",
+      "module": "scripts/startup_check.py",
+      "schema_version": 3,
+      "path": "$XDG_STATE_HOME/VideoBatchFast/startup/latest.json",
+      "writer": "atomic_write_json",
+      "purpose": "Latest startup-health report"
+    },
+    {
+      "id": "long_render_state",
+      "module": "src/videobatch_fast/long_render_state.py",
+      "schema_version": null,
+      "path": "contract-defined rehearsal/evidence paths",
+      "writer": "atomic_write_json plus JSONL evidence",
+      "purpose": "Bounded long-render rehearsal state/evidence; not canonical user data"
+    }
+  ],
+  "observed_read_only_consumers": [
+    "src/videobatch_fast/recovery_consistency.py",
+    "src/videobatch_fast/retry_diagnostics.py",
+    "src/videobatch_fast/debug_runtime.py"
+  ],
+  "findings": [
+    "Canonical persistence is already centralized around safe_io.atomic_write_json.",
+    "Job journals are a fourth durable recovery store and must be included beside project/config/retry state.",
+    "Operational startup/evidence JSON must remain separate from user/recovery persistence.",
+    "No SQLite migration is justified by the inventoried requirements.",
+    "CP-04 inventory does not authorize product persistence refactors."
+  ],
+  "next_checkpoint_candidate": "Add focused persistence architecture guards and integrity tests without changing storage technology."
+}
