@@ -84,7 +84,7 @@ def test_launcher_is_noninteractive_and_visible() -> None:
     launcher = (ROOT / "videobatch.sh").read_text(encoding="utf-8")
     debug_launcher = (ROOT / "scripts" / "debug_launcher.py").read_text(encoding="utf-8")
     assert "--auto-repair" in launcher
-    assert 'exec "$BOOTSTRAP_PYTHON" "$ROOT_DIR/scripts/debug_launcher.py"' in launcher
+    assert 'start_application() {\n  exec "$ROOT_DIR/STARTEN.sh"\n}' in launcher
     assert 'str(ROOT / "scripts" / "bootstrap.py")' in debug_launcher
     assert "read -" not in launcher
     assert "input(" not in (ROOT / "scripts" / "toolchain.py").read_text(encoding="utf-8")
