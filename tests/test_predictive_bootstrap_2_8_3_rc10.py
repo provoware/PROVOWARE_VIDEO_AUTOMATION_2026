@@ -70,7 +70,7 @@ def test_launcher_uses_predictive_bootstrap_and_does_not_require_ffmpeg_to_open_
     launcher = (ROOT / "videobatch.sh").read_text(encoding="utf-8")
     debug_launcher = (SCRIPTS / "debug_launcher.py").read_text(encoding="utf-8")
     bootstrap = (SCRIPTS / "bootstrap.py").read_text(encoding="utf-8")
-    assert 'exec "$BOOTSTRAP_PYTHON" "$ROOT_DIR/scripts/debug_launcher.py"' in launcher
+    assert 'start_application() {\n  exec "$ROOT_DIR/STARTEN.sh"\n}' in launcher
     assert 'command = [sys.executable, str(ROOT / "scripts" / "bootstrap.py"), *sys.argv[1:]]' in debug_launcher
     assert 'command -v "$tool"' not in launcher
     assert '"prepare", "--scope", "runtime"' in bootstrap
