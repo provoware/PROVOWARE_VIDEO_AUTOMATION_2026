@@ -7,7 +7,9 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from unittest.mock import patch
 
+from videobatch_fast.job_journal import SCHEMA_VERSION, recoverable_batches
 from videobatch_fast.recovery_consistency import inspect_recovery_consistency
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -215,3 +217,90 @@ def test_module_has_no_mutating_file_operations() -> None:
     source = path.read_text(encoding="utf-8")
     assert "RetryQueueStore" not in source
     assert "BatchJournal" not in source
+
+def test_recoverable_batches_accepts_schema_2_without_modifying_journal(tmp_path: Path) -> None:
+    state = tmp_path / "state"
+    journal = state / "jobs" / "active" / "valid.json"
+    _write(
+        journal,
+        {
+            "schema_version": SCHEMA_VERSION,
+            "operation_id": "valid",
+            "state": "running",
+            "jobs": [{"index": 1, "state": "pending"}],
+            "options": {},
+        },
+    )
+    before = journal.read_bytes(), journal.stat().st_mtime_ns
+
+    with patch("videobatch_fast.job_journal.state_dir", return_value=state):
+        recovered = recoverable_batches()
+
+    assert len(recovered) == 1
+    assert recovered[0]["schema_version"] == SCHEMA_VERSION
+    assert recovered[0]["operation_id"] == "valid"
+    assert recovered[0]["recoverable_jobs"] == 1
+    assert recovered[0]["journal_path"] == str(journal)
+    assert journal.read_bytes() == before[0]
+    assert journal.stat().st_mtime_ns == before[1]
+
+
+def test_recoverable_batches_rejects_missing_invalid_old_and_future_schemas(tmp_path: Path) -> None:
+    state = tmp_path / "state"
+    active = state / "jobs" / "active"
+    payloads = {
+        "missing.json": {
+            "operation_id": "missing",
+            "state": "running",
+            "jobs": [{"index": 1, "state": "pending"}],
+        },
+        "string.json": {
+            "schema_version": str(SCHEMA_VERSION),
+            "operation_id": "string",
+            "state": "running",
+            "jobs": [{"index": 1, "state": "pending"}],
+        },
+        "old.json": {
+            "schema_version": SCHEMA_VERSION - 1,
+            "operation_id": "old",
+            "state": "running",
+            "jobs": [{"index": 1, "state": "pending"}],
+        },
+        "future.json": {
+            "schema_version": SCHEMA_VERSION + 1,
+            "operation_id": "future",
+            "state": "running",
+            "jobs": [{"index": 1, "state": "pending"}],
+        },
+    }
+    before: dict[Path, tuple[bytes, int]] = {}
+    for name, payload in payloads.items():
+        path = active / name
+        _write(path, payload)
+        before[path] = (path.read_bytes(), path.stat().st_mtime_ns)
+
+    with patch("videobatch_fast.job_journal.state_dir", return_value=state):
+        recovered = recoverable_batches()
+
+    assert recovered == []
+    for path, (content, mtime) in before.items():
+        assert path.is_file()
+        assert path.read_bytes() == content
+        assert path.stat().st_mtime_ns == mtime
+
+
+def test_recoverable_batches_leaves_corrupt_journal_untouched(tmp_path: Path) -> None:
+    state = tmp_path / "state"
+    journal = state / "jobs" / "active" / "corrupt.json"
+    journal.parent.mkdir(parents=True)
+    journal.write_bytes(b"{broken-json")
+    before = journal.read_bytes(), journal.stat().st_mtime_ns
+
+    with patch("videobatch_fast.job_journal.state_dir", return_value=state):
+        recovered = recoverable_batches()
+
+    assert recovered == []
+    assert journal.is_file()
+    assert journal.read_bytes() == before[0]
+    assert journal.stat().st_mtime_ns == before[1]
+
