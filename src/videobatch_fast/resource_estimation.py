@@ -118,25 +118,29 @@ def estimate_required_by_directory(
 def estimate_required_by_filesystem(
     jobs: list[PairJob], options: BatchOptions
 ) -> tuple[FilesystemRequirement, ...]:
-    """Aggregate directory requirements by the real destination filesystem.
+    """Aggregate raw job estimates by filesystem and add reserve exactly once.
 
     Different output folders on one mounted device share the same free-space
-    pool. Grouping by ``st_dev`` prevents each folder from independently passing
-    against the same free-byte value when their combined batch would not fit.
-    If a device id cannot be read, that directory remains isolated rather than
-    being combined with an unrelated target.
+    pool. The safety reserve therefore belongs to the shared filesystem, not to
+    every directory independently. If a device id cannot be read, that
+    directory remains isolated rather than being combined with an unrelated
+    target.
     """
-    by_directory = estimate_required_by_directory(jobs, options)
-    grouped_directories: dict[object, list[Path]] = defaultdict(list)
-    grouped_required: dict[object, int] = defaultdict(int)
+    raw_by_directory: dict[Path, int] = defaultdict(int)
+    for job in jobs:
+        directory = Path(job.output).expanduser().parent
+        raw_by_directory[directory] += estimate_job_output_bytes(job, options)
 
-    for directory, required in by_directory.items():
+    grouped_directories: dict[object, list[Path]] = defaultdict(list)
+    grouped_estimated: dict[object, int] = defaultdict(int)
+
+    for directory, estimated in raw_by_directory.items():
         try:
             key: object = ("device", directory.stat().st_dev)
         except OSError:
             key = ("path", str(directory))
         grouped_directories[key].append(directory)
-        grouped_required[key] += required
+        grouped_estimated[key] += estimated
 
     ordered_keys = sorted(
         grouped_directories,
@@ -145,7 +149,11 @@ def estimate_required_by_filesystem(
     return tuple(
         FilesystemRequirement(
             directories=tuple(grouped_directories[key]),
-            required_bytes=grouped_required[key],
+            required_bytes=grouped_estimated[key]
+            + max(
+                _MIN_DIRECTORY_HEADROOM,
+                int(grouped_estimated[key] * _BATCH_HEADROOM_RATIO),
+            ),
         )
         for key in ordered_keys
     )
