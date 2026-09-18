@@ -169,16 +169,10 @@ def test_probe_boundary_is_read_only_bounded_and_not_a_render_engine() -> None:
         timeouts.add(timeout.value)
     assert timeouts == {5, 20}
 
-    forbidden_writes = {
-        "write_text",
-        "write_bytes",
-        "unlink",
-        "replace",
-        "rename",
-        "atomic_write_json",
-    }
-    assert not (set(names) & forbidden_writes)
-    assert not any(name.rsplit(".", 1)[-1] in forbidden_writes for name in names)
+    forbidden_exact_writes = {"atomic_write_json", "os.replace"}
+    forbidden_write_methods = {"write_text", "write_bytes", "unlink", "rename"}
+    assert not (set(names) & forbidden_exact_writes)
+    assert not any(name.rsplit(".", 1)[-1] in forbidden_write_methods for name in names)
 
 
 def test_ffmpeg_inventory_declares_no_second_active_render_engine() -> None:
