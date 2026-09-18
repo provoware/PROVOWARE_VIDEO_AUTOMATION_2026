@@ -3,7 +3,7 @@
   "checkpoint": "CP-04",
   "title": "Persistence V1 inventory",
   "mode": "inventory_only",
-  "base_commit": "a82024a1c07b17e919d579e7083d49ca43c3d9e3",
+  "base_commit": "e0352fca8e0ed6a2e171d6bdc1af7c7562a3c291",
   "product_code_changed": false,
   "sqlite": {
     "status": "deferred_not_required",
@@ -27,14 +27,15 @@
       "id": "project_state",
       "module": "src/videobatch_fast/project_state.py",
       "schema_version": 3,
-      "path": "$XDG_STATE_HOME/VideoBatchFast/projects/*.vbfast.json",
+      "path": "$XDG_STATE_HOME/VideoBatchFast/projects/*.vbfast.json (default); arbitrary user-selected filesystem paths are also supported by open/save-as",
       "writer": "atomic_write_json",
       "load_protection": [
         "normalization",
         "corrupt-file quarantine",
         "safe default recreation"
       ],
-      "purpose": "User project state, media paths, output settings, slideshow/calendar/layout project data"
+      "purpose": "User project state, media paths, output settings, slideshow/calendar/layout project data",
+      "path_boundary": "Default XDG project directory plus any explicit user-selected project file path."
     },
     {
       "id": "config",
@@ -71,11 +72,39 @@
       "path": "$XDG_STATE_HOME/VideoBatchFast/jobs/{active,history}/*.json",
       "writer": "atomic_write_json + os.replace + directory fsync",
       "load_protection": [
-        "schema-aware recovery readers",
         "active/history separation",
-        "recovery consistency checks"
+        "recovery consistency inspector validates schema 2",
+        "primary recoverable_batches reader currently accepts any JSON object without enforcing schema_version"
       ],
-      "purpose": "Crash/power-loss durable batch operation state and recovery history"
+      "purpose": "Crash/power-loss durable batch operation state and recovery history",
+      "known_limitation": "Canonical recovery can consume active journal objects without a schema-version gate; a future integrity checkpoint should cover this explicitly."
+    },
+    {
+      "id": "archive_transactions",
+      "module": "src/videobatch_fast/archive_service.py",
+      "schema_version": 2,
+      "path": "<project>/Verwendet/.transactions/*.json plus <project>/used_files_manifest.json",
+      "writer": "atomic_write_json; exclusive target reservation; verified publish/remove transaction flow",
+      "load_protection": [
+        "target size/hash verification before source removal",
+        "recover_archive_transactions classifies unfinished transactions without deleting source data",
+        "terminal transaction states are retained as durable evidence"
+      ],
+      "purpose": "Verified archival/publication transaction state and manifest for original media moved into the project archive"
+    },
+    {
+      "id": "plugin_approvals",
+      "module": "src/videobatch_fast/plugin_approvals.py",
+      "schema_version": 1,
+      "path": "$XDG_STATE_HOME/VideoBatchFast/plugin_approvals.json",
+      "writer": "atomic_write_json",
+      "load_protection": [
+        "store normalization",
+        "corrupt-file quarantine",
+        "approval identity includes version, payload hash, signing key, capability and permission fingerprint",
+        "revocation and automatic expiry state"
+      ],
+      "purpose": "Security-relevant durable plugin approval, revocation and expiry state"
     }
   ],
   "operational_json_not_core_database": [
@@ -110,11 +139,13 @@
     "src/videobatch_fast/debug_runtime.py"
   ],
   "findings": [
-    "Canonical persistence is already centralized around safe_io.atomic_write_json.",
-    "Job journals are a fourth durable recovery store and must be included beside project/config/retry state.",
+    "Canonical persistence is centered on safe_io.atomic_write_json, with additional transaction-specific durability around archive publication and job journals.",
+    "Durable persistence boundaries include project state, config, retry queue, batch journals, archive transactions/manifests and plugin approvals.",
+    "Project files are not restricted to the default XDG directory; explicit user-selected paths are canonical persistence locations too.",
+    "The primary job-journal recovery reader currently lacks an explicit schema_version gate; only the consistency inspector enforces schema 2.",
     "Operational startup/evidence JSON must remain separate from user/recovery persistence.",
     "No SQLite migration is justified by the inventoried requirements.",
     "CP-04 inventory does not authorize product persistence refactors."
   ],
-  "next_checkpoint_candidate": "Add focused persistence architecture guards and integrity tests without changing storage technology."
+  "next_checkpoint_candidate": "Add focused persistence architecture guards and integrity tests for all inventoried durable stores without changing storage technology."
 }
