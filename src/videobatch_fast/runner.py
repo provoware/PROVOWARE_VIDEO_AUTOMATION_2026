@@ -17,6 +17,7 @@ from .job_journal import BatchJournal
 from .models import BatchOptions, JobResult, PairJob
 from .naming import OutputReservation, release_output_reservations, reserve_output_targets
 from .quick_modes import fallback_options, mode_spec
+from .retry_policy import safe_fallback_allowed
 from .retry_queue import DEFAULT_MAX_ATTEMPTS, DEFAULT_MAX_ENTRIES, RetryQueueStore
 from .runner_events import (
     BatchFailedInternalPayload,
@@ -498,7 +499,12 @@ class BatchRunner:
         else:
             valid, message = False, result.message
 
-        if not valid and not self._cancel.is_set() and job.fast_path:
+        if (
+            not valid
+            and not self._cancel.is_set()
+            and job.fast_path
+            and safe_fallback_allowed(result)
+        ):
             retried = True
             self._publish_mapping(
                 "log",
@@ -514,7 +520,12 @@ class BatchRunner:
                 else (False, result.message)
             )
 
-        if not valid and not self._cancel.is_set() and not job.fast_path:
+        if (
+            not valid
+            and not self._cancel.is_set()
+            and not job.fast_path
+            and safe_fallback_allowed(result)
+        ):
             safe_options = fallback_options(options)
             if safe_options is not None:
                 retried = True

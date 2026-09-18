@@ -1,8 +1,8 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 468,
-  "files_sha256": "45024d2bf6b86151f48a094efb83986e85c7d9a5142a0668ae9c2f0204f123c6",
+  "file_count": 471,
+  "files_sha256": "2f9c9c9b9866b406a4b0f4bcb87ef800b85e46b4017c3aa776390beeb60981cb",
   "name": "provoware - videoautomation - 2026",
   "representation": "compact",
   "schema_version": 3,

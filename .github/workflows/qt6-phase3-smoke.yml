@@ -43,6 +43,7 @@ on:
       - "tests/test_qt_runtime_toolchain_contract.py"
       - "tests/test_tk_free_core_contract.py"
       - "tests/test_quality_wheelhouse_2_8_3.py"
+      - "tests/test_autonomous_reliability_rc25.py"
       - "tests/qt_phase2_smoke.py"
       - "tests/qt_phase3_smoke.py"
       - ".github/workflows/qt6-phase3-smoke.yml"
@@ -146,7 +147,8 @@ jobs:
             tests/test_update_integrity_2_8_2.py \
             tests/test_debug_runtime_contract.py \
             tests/test_ui_ready_handshake_contract.py \
-            tests/test_multipart_installer.py
+            tests/test_multipart_installer.py \
+            tests/test_autonomous_reliability_rc25.py
 
   offline-qt-runtime-gate:
     name: "2B · Runtime-Prüfer / offline Qt"

@@ -11,6 +11,7 @@ from .effects import TRANSITIONS, VISUAL_EFFECTS
 from .ffmpeg_capabilities import encoder_smoke_test, read_ffmpeg_capabilities, required_filter_names
 from .probe import ffmpeg_path, ffprobe_path
 from .quick_modes import QUICK_MODES, validate_quick_modes
+from .resource_estimation import estimate_required_by_filesystem
 
 
 @dataclass(frozen=True, slots=True)
@@ -153,7 +154,6 @@ def validate_pairs(jobs: list[PairJob], options: BatchOptions) -> list[Validatio
                 ", ".join(sorted(missing_filters)),
                 "Wähle einen einfacheren Look oder installiere den vollständigen FFmpeg-Build.",
             ))
-    estimated = 0
     checked_directories: set[Path] = {Path(options.output_dir).expanduser()}
     for job in jobs:
         parent = job.output.parent
@@ -193,16 +193,23 @@ def validate_pairs(jobs: list[PairJob], options: BatchOptions) -> list[Validatio
                 f"{len(job.media_sequence)} Bilder ausgewählt.",
                 "Teile die Bildmenge in kleinere Projekte mit höchstens 250 Bildern.",
             ))
-        duration = job.audio_info.duration or 60.0
-        estimated += int(duration * 1_200_000)
-    try:
-        free = shutil.disk_usage(options.output_dir).free
-        if free < max(256 * 1024**2, estimated):
+
+    for requirement in estimate_required_by_filesystem(jobs, options):
+        directory = requirement.directories[0]
+        try:
+            free = shutil.disk_usage(directory).free
+        except OSError:
+            continue
+        if free < requirement.required_bytes:
+            targets = ", ".join(str(path) for path in requirement.directories)
             issues.append(ValidationIssue(
-                "DISK_LOW", "Wenig freier Speicher", f"Frei: {free / 1024**3:.1f} GB",
+                "DISK_LOW",
+                "Wenig freier Speicher",
+                (
+                    f"Ziel-Dateisystem für {targets} · frei: {free / 1024**3:.1f} GB · "
+                    f"mit Sicherheitsreserve benötigt: {requirement.required_bytes / 1024**3:.1f} GB"
+                ),
                 "Wähle einen anderen Ordner oder erstelle einen Ausgabeordner auf einem Laufwerk mit mehr Platz.",
                 actions=("choose_output", "create_output_folder"),
             ))
-    except OSError:
-        pass
     return issues

@@ -10,6 +10,7 @@ from typing import Any
 
 from .models import JobResult, PairJob
 from .paths import state_dir
+from .retry_policy import classify_retry
 from .safe_io import atomic_write_json, quarantine_file, read_json
 
 SCHEMA_VERSION = 1
@@ -72,8 +73,9 @@ class RetryQueueSummary:
 class RetryQueueStore:
     """Durable, bounded list of failed and not-yet-started jobs.
 
-    This store never starts work itself. It only preserves transparent retry
-    candidates and marks entries ineligible after the configured attempt limit.
+    This store never starts work itself. It only preserves transparent manual
+    retry candidates and marks entries ineligible after the configured attempt
+    limit. Failure classification is diagnostic only and never executes work.
     """
 
     def __init__(
@@ -163,6 +165,7 @@ class RetryQueueStore:
             attempts = max(0, int(existing.get("attempts", 0) or 0)) + 1
             first_error = str(existing.get("first_error", "") or result.message)
             retry_allowed = attempts < self.max_attempts
+            decision = classify_retry(result)
             entry = {
                 "job_id": job_id,
                 **_job_payload(result.job),
@@ -171,6 +174,9 @@ class RetryQueueStore:
                 "attempts": attempts,
                 "max_attempts": self.max_attempts,
                 "retry_allowed": retry_allowed,
+                "retry_category": decision.category[:80],
+                "retry_reason": decision.reason[:1000],
+                "safe_fallback_allowed": bool(decision.safe_fallback_allowed),
                 "first_error": first_error[:4000],
                 "latest_error": str(result.message)[:4000],
                 "returncode": int(result.returncode),
@@ -203,6 +209,9 @@ class RetryQueueStore:
                 "attempts": attempts,
                 "max_attempts": self.max_attempts,
                 "retry_allowed": retry_allowed,
+                "retry_category": "not_started",
+                "retry_reason": "Nicht gestartete Aufträge werden nie ohne erneute Vorprüfung automatisch ausgeführt.",
+                "safe_fallback_allowed": False,
                 "first_error": first_error[:4000],
                 "latest_error": str(reason)[:4000],
                 "returncode": None,
