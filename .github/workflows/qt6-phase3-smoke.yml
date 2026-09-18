@@ -32,6 +32,10 @@ on:
       - "src/videobatch_fast/linux_installation.py"
       - "src/videobatch_fast/platform_integration.py"
       - "src/videobatch_fast/project_state.py"
+      - "src/videobatch_fast/runner.py"
+      - "src/videobatch_fast/runner_process.py"
+      - "src/videobatch_fast/command_builder.py"
+      - "src/videobatch_fast/probe.py"
       - "src/videobatch_fast/startup_handshake.py"
       - "src/videobatch_fast/instance_lock.py"
       - "src/videobatch_fast/assurance.py"
@@ -47,6 +51,7 @@ on:
       - "tests/test_autonomous_reliability_rc25.py"
       - "tests/test_architecture_v1_collision_contract.py"
       - "tests/test_persistence_v1_contract.py"
+      - "tests/test_ffmpeg_v1_contract.py"
       - "tests/qt_phase2_smoke.py"
       - "tests/qt_phase3_smoke.py"
       - ".github/workflows/qt6-phase3-smoke.yml"
@@ -109,7 +114,8 @@ jobs:
             tests/test_qt_runtime_toolchain_contract.py \
             tests/test_tk_free_core_contract.py \
             tests/test_architecture_v1_collision_contract.py \
-            tests/test_persistence_v1_contract.py
+            tests/test_persistence_v1_contract.py \
+            tests/test_ffmpeg_v1_contract.py
 
   core-regression:
     name: "2A · Kern-Prüfer / unterstützte Regression"
