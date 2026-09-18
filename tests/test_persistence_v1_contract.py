@@ -4,6 +4,7 @@ import json
 import stat
 import sys
 from pathlib import Path
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -12,6 +13,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from videobatch_fast.archive_service import recover_archive_transactions  # noqa: E402
+from videobatch_fast.job_journal import SCHEMA_VERSION, recoverable_batches  # noqa: E402
 from videobatch_fast.plugin_approvals import load_approvals  # noqa: E402
 from videobatch_fast.safe_io import atomic_write_json, quarantine_file, read_json  # noqa: E402
 
@@ -72,7 +74,7 @@ def test_project_state_inventory_includes_user_selected_paths() -> None:
     assert "explicit user-selected project file path" in str(project["path_boundary"])
 
 
-def test_job_journal_schema_gap_is_explicitly_recorded_as_open_limitation() -> None:
+def test_cp04_inventory_preserves_historical_job_journal_schema_finding() -> None:
     payload = _inventory()
     stores = payload["durable_product_stores"]
     journal = next(item for item in stores if isinstance(item, dict) and item.get("id") == "job_journal")
@@ -139,3 +141,90 @@ def test_invalid_archive_transaction_is_reported_without_destructive_cleanup(tmp
     ]
     assert journal.is_file()
     assert journal.read_text(encoding="utf-8") == "{broken-json"
+
+def test_recoverable_batches_accepts_schema_2_without_modifying_journal(tmp_path: Path) -> None:
+    state = tmp_path / "state"
+    journal = state / "jobs" / "active" / "valid.json"
+    atomic_write_json(
+        journal,
+        {
+            "schema_version": SCHEMA_VERSION,
+            "operation_id": "valid",
+            "state": "running",
+            "jobs": [{"index": 1, "state": "pending"}],
+            "options": {},
+        },
+    )
+    before = journal.read_bytes(), journal.stat().st_mtime_ns
+
+    with patch("videobatch_fast.job_journal.state_dir", return_value=state):
+        recovered = recoverable_batches()
+
+    assert len(recovered) == 1
+    assert recovered[0]["schema_version"] == SCHEMA_VERSION
+    assert recovered[0]["operation_id"] == "valid"
+    assert recovered[0]["recoverable_jobs"] == 1
+    assert recovered[0]["journal_path"] == str(journal)
+    assert journal.read_bytes() == before[0]
+    assert journal.stat().st_mtime_ns == before[1]
+
+
+def test_recoverable_batches_rejects_missing_invalid_old_and_future_schemas(tmp_path: Path) -> None:
+    state = tmp_path / "state"
+    active = state / "jobs" / "active"
+    payloads = {
+        "missing.json": {
+            "operation_id": "missing",
+            "state": "running",
+            "jobs": [{"index": 1, "state": "pending"}],
+        },
+        "string.json": {
+            "schema_version": str(SCHEMA_VERSION),
+            "operation_id": "string",
+            "state": "running",
+            "jobs": [{"index": 1, "state": "pending"}],
+        },
+        "old.json": {
+            "schema_version": SCHEMA_VERSION - 1,
+            "operation_id": "old",
+            "state": "running",
+            "jobs": [{"index": 1, "state": "pending"}],
+        },
+        "future.json": {
+            "schema_version": SCHEMA_VERSION + 1,
+            "operation_id": "future",
+            "state": "running",
+            "jobs": [{"index": 1, "state": "pending"}],
+        },
+    }
+    before: dict[Path, tuple[bytes, int]] = {}
+    for name, payload in payloads.items():
+        path = active / name
+        atomic_write_json(path, payload)
+        before[path] = (path.read_bytes(), path.stat().st_mtime_ns)
+
+    with patch("videobatch_fast.job_journal.state_dir", return_value=state):
+        recovered = recoverable_batches()
+
+    assert recovered == []
+    for path, (content, mtime) in before.items():
+        assert path.is_file()
+        assert path.read_bytes() == content
+        assert path.stat().st_mtime_ns == mtime
+
+
+def test_recoverable_batches_leaves_corrupt_journal_untouched(tmp_path: Path) -> None:
+    state = tmp_path / "state"
+    journal = state / "jobs" / "active" / "corrupt.json"
+    journal.parent.mkdir(parents=True)
+    journal.write_bytes(b"{broken-json")
+    before = journal.read_bytes(), journal.stat().st_mtime_ns
+
+    with patch("videobatch_fast.job_journal.state_dir", return_value=state):
+        recovered = recoverable_batches()
+
+    assert recovered == []
+    assert journal.is_file()
+    assert journal.read_bytes() == before[0]
+    assert journal.stat().st_mtime_ns == before[1]
+
