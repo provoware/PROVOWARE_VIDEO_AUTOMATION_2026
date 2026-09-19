@@ -20,7 +20,12 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from videobatch_fast.ffmpeg_capabilities import (  # noqa: E402
+    encoder_smoke_test,
+    read_ffmpeg_capabilities,
+)
 from videobatch_fast.linux_installation import normalize_linux_installation  # noqa: E402
+from videobatch_fast.probe import ffmpeg_path, ffprobe_path  # noqa: E402
 from videobatch_fast.startup_handshake import read_ready_marker  # noqa: E402
 
 CHECK_ONLY = "--check-only" in sys.argv
@@ -46,6 +51,8 @@ SYSTEM_PACKAGES = (
     "libwayland-client0",
     "libxkbcommon0",
 )
+
+REQUIRED_FFMPEG_FILTERS = frozenset({"eq", "fade", "fps", "pad", "scale", "setpts", "trim", "xfade", "concat"})
 
 
 class BootstrapFailure(RuntimeError):
@@ -266,6 +273,11 @@ def load_startup_contract() -> dict[str, Any]:
         "startup_probe_never_blocks_ui_launch",
         "system_python_runtime_fallback_allowed",
         "system_fallback_forces_safe_mode",
+        "system_dependencies_checked_on_every_start",
+        "missing_system_dependencies_offer_graphical_auto_repair",
+        "system_dependency_repair_uses_kubuntu_package_manager",
+        "system_dependency_repair_requires_post_validation",
+        "system_dependency_repair_never_uses_unattended_sudo",
     )
     missing = [name for name in required_true if policy.get(name) is not True]
     if missing:
@@ -289,6 +301,30 @@ def _missing_system_packages(sink: EventSink) -> list[str]:
             missing.append(package)
     return missing
 
+
+def _ffmpeg_stack_issues() -> list[str]:
+    issues: list[str] = []
+    ffmpeg = ffmpeg_path()
+    if not ffmpeg:
+        issues.append("FFmpeg fehlt")
+    if not ffprobe_path():
+        issues.append("FFprobe fehlt")
+    if not ffmpeg:
+        return issues
+
+    read_ffmpeg_capabilities.cache_clear()
+    encoder_smoke_test.cache_clear()
+    capabilities = read_ffmpeg_capabilities(ffmpeg)
+    if capabilities.error:
+        issues.append(capabilities.error)
+    else:
+        missing_filters = REQUIRED_FFMPEG_FILTERS - capabilities.filters
+        if missing_filters:
+            issues.append("FFmpeg-Kernfilter fehlen: " + ", ".join(sorted(missing_filters)))
+    aac_ok, detail = encoder_smoke_test(ffmpeg, "aac", "audio")
+    if not aac_ok:
+        issues.append("AAC-Kurztest fehlgeschlagen" + (f": {detail}" if detail else ""))
+    return issues
 
 def _confirm_online_system_repair(packages: list[str], sink: EventSink) -> bool:
     if not packages:
@@ -327,13 +363,20 @@ def _confirm_online_system_repair(packages: list[str], sink: EventSink) -> bool:
 
 
 def ensure_system_dependencies(sink: EventSink) -> bool:
-    """Repair missing Kubuntu packages once, then verify the result."""
+    """Repair missing or functionally broken Kubuntu dependencies once."""
     missing = _missing_system_packages(sink)
-    if not missing:
+    media_issues = _ffmpeg_stack_issues()
+    if not missing and not media_issues:
         sink.log("SYSTEM DEPENDENCIES VERIFIED")
         return True
-    sink.log("SYSTEM DEPENDENCIES MISSING: " + ", ".join(missing))
-    if not _confirm_online_system_repair(missing, sink):
+    if missing:
+        sink.log("SYSTEM DEPENDENCIES MISSING: " + ", ".join(missing))
+    if media_issues:
+        sink.log("MEDIA STACK ISSUES: " + " | ".join(media_issues))
+    repair_packages = list(missing)
+    if media_issues and "ffmpeg" not in repair_packages:
+        repair_packages.append("ffmpeg")
+    if not _confirm_online_system_repair(repair_packages, sink):
         return False
 
     apt_get = shutil.which("apt-get")
@@ -353,18 +396,32 @@ def ensure_system_dependencies(sink: EventSink) -> bool:
     if update.returncode != 0:
         sink.log("SYSTEM DEPENDENCY REPAIR failed during apt-get update")
         return False
-    install = run_logged(
-        [*prefix, apt_get, "install", "-y", "--no-install-recommends", *missing],
-        sink,
-        timeout=1800,
-    )
-    if install.returncode != 0:
-        sink.log("SYSTEM DEPENDENCY REPAIR failed during apt-get install")
-        return False
+    if missing:
+        install = run_logged(
+            [*prefix, apt_get, "install", "-y", "--no-install-recommends", *missing],
+            sink,
+            timeout=1800,
+        )
+        if install.returncode != 0:
+            sink.log("SYSTEM DEPENDENCY REPAIR failed during apt-get install")
+            return False
+    if media_issues and "ffmpeg" not in missing:
+        reinstall = run_logged(
+            [*prefix, apt_get, "install", "--reinstall", "-y", "--no-install-recommends", "ffmpeg"],
+            sink,
+            timeout=1800,
+        )
+        if reinstall.returncode != 0:
+            sink.log("SYSTEM DEPENDENCY REPAIR failed during FFmpeg reinstall")
+            return False
 
     remaining = _missing_system_packages(sink)
-    if remaining:
-        sink.log("SYSTEM DEPENDENCY REPAIR incomplete: " + ", ".join(remaining))
+    remaining_media = _ffmpeg_stack_issues()
+    if remaining or remaining_media:
+        detail = ", ".join(remaining) if remaining else "Pakete vollständig"
+        if remaining_media:
+            detail += " | " + " | ".join(remaining_media)
+        sink.log("SYSTEM DEPENDENCY REPAIR incomplete: " + detail)
         return False
     sink.log("SYSTEM DEPENDENCY REPAIR VERIFIED")
     return True
