@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import ast
 import copy
 import unittest
+from pathlib import Path
 
 from videobatch_fast.layout_profiles import (
     contract_version,
@@ -135,6 +137,66 @@ class WorkspaceLayoutProfileTests(unittest.TestCase):
         state = normalize_project_state({"workspace_layout_profiles": copy.deepcopy(saved.store)})
         self.assertEqual(state["schema_version"], 3)
         self.assertIn(display_profile_key(2560, 1440, 140), state["workspace_layout_profiles"]["profiles"])
+
+
+ROOT = Path(__file__).resolve().parents[1]
+WORKSPACE_GRID = ROOT / "src/videobatch_fast/ui_workspace_grid_mixin.py"
+SHELL_LAYOUT = ROOT / "src/videobatch_fast/ui_workspace_shell_layout_mixin.py"
+SHELL_METHODS = {
+    "_build_ui",
+    "_scrollable_dashboard_body",
+    "_workflow_page",
+    "_build_global_toolbar",
+    "_build_menu_bar",
+    "_build_status_bar",
+}
+
+
+def _class_methods(path: Path, class_name: str) -> tuple[set[str], set[str]]:
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    for node in tree.body:
+        if isinstance(node, ast.ClassDef) and node.name == class_name:
+            methods = {
+                child.name
+                for child in node.body
+                if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef))
+            }
+            bases = {
+                base.id
+                for base in node.bases
+                if isinstance(base, ast.Name)
+            }
+            return methods, bases
+    raise AssertionError(f"Klasse {class_name} fehlt in {path}")
+
+
+def test_workspace_shell_layout_is_extracted_without_api_duplication() -> None:
+    shell_methods, _bases = _class_methods(SHELL_LAYOUT, "UiWorkspaceShellLayoutMixin")
+    grid_methods, grid_bases = _class_methods(WORKSPACE_GRID, "UiWorkspaceGridMixin")
+
+    assert SHELL_METHODS <= shell_methods
+    assert SHELL_METHODS.isdisjoint(grid_methods)
+    assert "UiWorkspaceShellLayoutMixin" in grid_bases
+    assert len(SHELL_LAYOUT.read_text(encoding="utf-8").splitlines()) <= 250
+
+
+def test_workspace_shell_layout_keeps_primary_callbacks_and_shortcuts() -> None:
+    source = SHELL_LAYOUT.read_text(encoding="utf-8")
+    for token in (
+        "self._new_project",
+        "self._add_audio",
+        "self._add_media",
+        "self._start",
+        "self._cancel",
+        "self._open_settings",
+        "self._show_help_center",
+        "<Control-n>",
+        "<Control-o>",
+        "<Control-s>",
+        "<F9>",
+        "<F1>",
+    ):
+        assert token in source
 
 
 if __name__ == "__main__":
