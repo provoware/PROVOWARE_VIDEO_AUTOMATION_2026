@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from videobatch_fast.registry import REQUIRED_REGISTRIES
+
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / "registries" / "ARTIFACT_ROLE_REGISTRY.json"
 
@@ -60,3 +62,7 @@ def test_known_architecture_inventories_are_explicitly_protected() -> None:
         "docs/archive/diagnostics-checkpoints/architecture/CP-04_PERSISTENCE_INVENTORY.json",
         "docs/archive/diagnostics-checkpoints/architecture/CP-07_FFMPEG_INVENTORY.json",
     }
+
+
+def test_artifact_role_registry_uses_shared_strict_registry_validation() -> None:
+    assert "registries/ARTIFACT_ROLE_REGISTRY.json" in REQUIRED_REGISTRIES
