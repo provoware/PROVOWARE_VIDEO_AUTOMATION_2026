@@ -1,3 +1,35 @@
+# Repository hygiene
+#
+# Keep Linux/Kubuntu source files deterministic across editors and platforms.
+# Git may detect generic text automatically, while project-critical source,
+# configuration and launcher formats are pinned to LF explicitly.
+* text=auto
+*.py text eol=lf
+*.sh text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.desktop text eol=lf
+
+# Media, archives and generated visual baselines must never be line-normalized.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.mp3 binary
+*.wav binary
+*.flac binary
+*.mp4 binary
+*.mkv binary
+*.webm binary
+*.zip binary
+*.whl binary
+
 # Release archive hygiene: keep development-only debugging helpers in Git,
 # but never ship them in git-archive based verified project ZIPs.
 debugging export-ignore
