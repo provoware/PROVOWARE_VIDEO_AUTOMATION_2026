@@ -15,7 +15,7 @@ if str(ROOT / "src") not in sys.path:
 
 import toolchain  # noqa: E402
 from toolchain_common import load_contract  # noqa: E402
-from videobatch_fast.ffmpeg_capabilities import _parse_encoders  # noqa: E402
+from videobatch_fast.ffmpeg_capabilities import _parse_encoders, _parse_filters  # noqa: E402
 from videobatch_fast.validation import validate_runtime  # noqa: E402
 
 
@@ -103,3 +103,35 @@ def test_startup_contract_prevents_future_start_blocker_regressions() -> None:
     assert policy["real_encoder_smoke_test_is_authoritative"] is True
     assert policy["runtime_environment_must_not_be_moved_after_creation"] is True
     assert policy["maximum_automatic_repair_attempts"] == 2
+
+
+def test_ffmpeg_filter_parser_accepts_old_and_new_flag_widths() -> None:
+    output = """
+Filters:
+ T.. fade              V->V       Fade in/out
+ ... eq                V->V       Equalizer
+ TS scale              V->V       Scale
+ .. xfade              VV->V      Cross fade
+"""
+    assert _parse_filters(output) == frozenset({"fade", "eq", "scale", "xfade"})
+
+
+def test_bootstrap_checks_repairs_and_revalidates_system_dependencies() -> None:
+    source = (SCRIPTS / "bootstrap.py").read_text(encoding="utf-8")
+    contract = __import__("json").loads((ROOT / "STARTUP_CONTRACT.json").read_text(encoding="utf-8"))
+    assert "def ensure_system_dependencies" in source
+    assert '"ffmpeg"' in source
+    assert '"python3-venv"' in source
+    assert '"xdg-desktop-portal-kde"' in source
+    assert '"--yes-label"' in source
+    assert '"Online reparieren"' in source
+    assert '"Offline bleiben"' in source
+    assert '"pkexec"' in source
+    assert '"apt-get", "install"' in source
+    assert "remaining = _missing_system_packages(sink)" in source
+    assert "system_ready = ensure_system_dependencies(sink)" in source
+    policy = contract["policy"]
+    assert policy["system_dependencies_checked_on_every_start"] is True
+    assert policy["missing_system_dependencies_offer_graphical_auto_repair"] is True
+    assert policy["system_dependency_repair_requires_post_validation"] is True
+    assert policy["system_dependency_repair_never_uses_unattended_sudo"] is True
