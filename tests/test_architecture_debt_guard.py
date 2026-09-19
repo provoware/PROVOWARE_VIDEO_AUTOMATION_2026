@@ -28,8 +28,9 @@ def test_architecture_debt_baseline_covers_every_oversized_source_file() -> None
         if lines > limit:
             oversized[relative] = lines
             assert relative in ceilings, f"{relative} mit {lines} Zeilen fehlt in der Debt-Baseline"
-            assert lines <= ceilings[relative], (
-                f"{relative} ist von {ceilings[relative]} auf {lines} Zeilen gewachsen"
+            assert lines == ceilings[relative], (
+                f"{relative}: Baseline {ceilings[relative]} stimmt nicht mit aktuellem Stand "
+                f"{lines} überein; jede Verkleinerung muss das Ceiling sofort absenken"
             )
 
     assert set(ceilings) == set(oversized)
@@ -52,6 +53,7 @@ def test_internal_quality_gate_enforces_no_growth_semantics() -> None:
         "FILE_DEBT_GREW",
         "DEBT_BASELINE_REDUNDANT",
         "DEBT_BASELINE_ORPHAN",
+        "DEBT_BASELINE_STALE",
         '"architecture_debt_files"',
         '"long_functions"',
         '"large_classes"',
