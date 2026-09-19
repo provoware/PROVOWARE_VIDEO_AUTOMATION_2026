@@ -373,7 +373,11 @@ def build(contract: dict[str, Any], *, allow_online: bool, scope: str = "all") -
     if not QUIET:
         print(completed.stdout, end="")
     if completed.returncode:
-        raise RuntimeError("Paketbasis konnte nicht aufgebaut werden. Details stehen im Toolchain-Protokoll.")
+        details = completed.stdout[-8000:].strip()
+        message = "Paketbasis konnte nicht aufgebaut werden."
+        if details:
+            message = f"{message}\n{details}"
+        raise RuntimeError(message)
     verify(contract, scope)
     store_cache(contract)
 

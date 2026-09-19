@@ -2,7 +2,14 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
+import sys
 from pathlib import Path
+
+import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+import toolchain  # noqa: E402
 
 EXPECTED_QUALITY = {
     "bandit": "1.9.4",
@@ -40,3 +47,15 @@ def test_release_paths_use_unified_toolchain_fail_closed() -> None:
         text = (root() / filename).read_text(encoding="utf-8")
         assert "scripts/toolchain.py" in text
         assert "path --scope quality" in text or filename == "stable_release.sh"
+
+
+def test_failed_wheelhouse_build_reports_captured_diagnostics(monkeypatch: pytest.MonkeyPatch) -> None:
+    failure = subprocess.CompletedProcess([], 1, "pip: no matching distribution found\n")
+    monkeypatch.setattr(toolchain, "QUIET", True)
+    monkeypatch.setattr(toolchain, "required_file", lambda _relative: Path("build_toolchain_wheelhouse.py"))
+    monkeypatch.setattr(toolchain, "run", lambda *_args, **_kwargs: failure)
+
+    with pytest.raises(RuntimeError, match="no matching distribution found") as raised:
+        toolchain.build({"policy": {"public_index": "https://example.invalid"}}, allow_online=True)
+
+    assert "Toolchain-Protokoll" not in str(raised.value)
