@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QApplication
 
 from videobatch_fast.config import DEFAULT_CONFIG, load_config, save_config
 from videobatch_fast.models import BatchOptions
+from videobatch_fast.qt_legacy_appearance import apply_theme
 from videobatch_fast.qt_legacy_calendar import load_calendar_selection
 from videobatch_fast.qt_legacy_playlist import refresh_playlist_list
 from videobatch_fast.qt_legacy_parity import LEGACY_OPTION_KEYS, PROJECT_PARITY_KEYS
@@ -236,3 +237,30 @@ def test_extracted_legacy_playlist_refreshes_visible_items(tmp_path: Path, monke
     assert window.parity_playlist_list.currentRow() == 1
     window.close()
     app.processEvents()
+
+
+def test_extracted_legacy_appearance_applies_theme_and_font_scale(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "data"))
+    monkeypatch.setenv("VIDEOBATCH_FFMPEG", str(_fake_executable(tmp_path / "private-ffmpeg")))
+    monkeypatch.setenv("VIDEOBATCH_FFPROBE", str(_fake_executable(tmp_path / "private-ffprobe")))
+
+    app = QApplication.instance() or QApplication([])
+    window = VideoBatchQtPhase3Window(autoload_project=False)
+    original_style = app.styleSheet()
+    original_font = app.font()
+    try:
+        window._parity_base_font_size = 10.0
+        window.parity_theme.setCurrentIndex(window.parity_theme.findData("acid_paper"))
+        window.parity_font_scale.setValue(120)
+
+        apply_theme(window)
+
+        assert "#f2f0d8" in app.styleSheet()
+        assert abs(app.font().pointSizeF() - 12.0) < 0.01
+    finally:
+        app.setStyleSheet(original_style)
+        app.setFont(original_font)
+        window.close()
+        app.processEvents()

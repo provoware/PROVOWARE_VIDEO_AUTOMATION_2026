@@ -8,7 +8,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from PySide6.QtCore import QObject, QDate, QTimer, QUrl, Signal, Qt
-from PySide6.QtGui import QAction, QDesktopServices, QFont, QKeySequence
+from PySide6.QtGui import QAction, QDesktopServices, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -32,6 +32,7 @@ from .archive_service import append_manifest, archive_file, recover_archive_tran
 from .command_builder import PROFILES
 from .config import DEFAULT_CONFIG, load_config, save_config
 from .effects import TRANSITIONS, VISUAL_EFFECTS
+from .qt_legacy_appearance import apply_theme
 from .qt_legacy_calendar import build_calendar_tab, load_calendar_selection
 from .qt_legacy_playlist import build_playlist_tab, poll_playlist, refresh_playlist_list
 from .job_journal import (
@@ -48,7 +49,6 @@ from .plugin_runtime import run_plugin_in_sandbox
 from .plugins import scan_plugins
 from .probe import ffmpeg_path, ffprobe_path, probe_media
 from .quick_modes import QUICK_MODES
-from .qt_theme import APP_STYLE
 from .qt_workflow_dialogs import (
     PluginPermissionDecisionDialog,
     VisualApprovalSignDialog,
@@ -92,27 +92,6 @@ PROJECT_PARITY_KEYS = (
     "calendar_marks",
     "calendar_notes",
 )
-
-_THEME_OVERRIDES = {
-    "neon_gravity": """
-        QMainWindow, QWidget { background-color: #10141b; color: #eef4ff; }
-        QFrame#panel, QFrame#card { background-color: #171d27; }
-    """,
-    "acid_paper": """
-        QMainWindow, QWidget { background-color: #f2f0d8; color: #1b2415; }
-        QFrame#panel, QFrame#card { background-color: #fffde8; }
-        QLineEdit, QListWidget, QComboBox { background-color: #ffffff; color: #172012; }
-    """,
-    "toxic_candy": """
-        QMainWindow, QWidget { background-color: #1b1020; color: #fff0fb; }
-        QFrame#panel, QFrame#card { background-color: #28152f; }
-    """,
-    "ultraviolet": """
-        QMainWindow, QWidget { background-color: #151126; color: #f2edff; }
-        QFrame#panel, QFrame#card { background-color: #201936; }
-    """,
-}
-
 
 class _ParityBridge(QObject):
     taskFinished = Signal(str, object, str)
@@ -342,19 +321,6 @@ def _patch_phase2_class() -> None:
         slideshow_cls._tk_parity_installed = True
 
     VideoBatchQtPhase2Window._tk_parity_installed = True
-
-
-def _apply_theme(window: object) -> None:
-    app = QApplication.instance()
-    if app is None:
-        return
-    theme = str(window.parity_theme.currentData() or "neon_gravity")
-    scale = int(window.parity_font_scale.value())
-    app.setStyleSheet(APP_STYLE + "\n" + _THEME_OVERRIDES.get(theme, ""))
-    font = QFont(app.font())
-    base = float(getattr(window, "_parity_base_font_size", 10.0) or 10.0)
-    font.setPointSizeF(max(7.0, base * scale / 100.0))
-    app.setFont(font)
 
 
 def _save_settings(window: object) -> None:
@@ -1135,10 +1101,10 @@ def _connect_settings(window: object) -> None:
             widget.editingFinished.connect(lambda: _save_settings(window))
 
     window.parity_theme.currentIndexChanged.connect(
-        lambda *_: (_apply_theme(window), _save_settings(window))
+        lambda *_: (apply_theme(window), _save_settings(window))
     )
     window.parity_font_scale.valueChanged.connect(
-        lambda *_: (_apply_theme(window), _save_settings(window))
+        lambda *_: (apply_theme(window), _save_settings(window))
     )
     window.output.editingFinished.connect(lambda: _save_settings(window))
     window.verification.currentIndexChanged.connect(lambda *_: _save_settings(window))
@@ -1209,7 +1175,7 @@ def _finish_parity_init(window: object) -> None:
     window._parity_ready = True
     _connect_settings(window)
     _sync_manual_controls_from_mode(window)
-    _apply_theme(window)
+    apply_theme(window)
 
     try:
         _apply_project_extras(window, dict(window._project_state))
