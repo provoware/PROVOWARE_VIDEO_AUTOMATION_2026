@@ -109,6 +109,19 @@ def main() -> int:
                         f"{lines} Zeilen überschreiten das erlaubte Ceiling {allowed_lines}.",
                     )
                 )
+            elif is_legacy and lines < allowed_lines:
+                findings.append(
+                    Finding(
+                        "error",
+                        "DEBT_BASELINE_STALE",
+                        relative,
+                        1,
+                        (
+                            f"Datei ist auf {lines} Zeilen geschrumpft, "
+                            f"Legacy-Ceiling steht noch auf {allowed_lines}; Ceiling absenken."
+                        ),
+                    )
+                )
             elif lines > line_limit:
                 metrics["architecture_debt_files"] += 1
         try:
