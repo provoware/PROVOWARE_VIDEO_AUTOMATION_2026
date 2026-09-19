@@ -217,6 +217,27 @@ Lockdateien verwenden keine Versionsbereiche. Jede Abhängigkeitsänderung benö
 5. Manifestaktualisierung;
 6. Dokumentation der Auswirkungen.
 
+## Architektur-Schulden: No-Growth-Regel
+
+Für Python-Produktcode unter `src/` gilt ein Standardlimit von **250 Zeilen pro Datei**.
+
+Historisch größere Module sind in `registries/CODE_QUALITY_REGISTRY.json` mit einem exakten `legacy_source_line_ceilings`-Wert erfasst. Diese Einträge sind keine Freigabe zum weiteren Wachstum:
+
+- ein historisches Modul darf sein Ceiling niemals überschreiten;
+- Verkleinerung ist jederzeit erlaubt und erwünscht;
+- fällt eine Datei auf 250 Zeilen oder weniger, muss ihr Legacy-Eintrag entfernt werden;
+- neue Dateien erhalten grundsätzlich kein Legacy-Ceiling;
+- Funktionen über 30 Zeilen und Klassen über 24 Methoden werden als Wartbarkeitsmetriken sichtbar gemacht und sollen bei betroffenen Refactorings reduziert werden.
+
+**Warum notwendig?** Damit technische Schuld kontrolliert sinkt, ohne stabile Altmodule in einem riskanten Big-Bang-Umbau gleichzeitig neu schreiben zu müssen.
+
+**Prüfung:**
+
+```bash
+PYTHONPATH=src python3 scripts/internal_quality_gate.py
+PYTHONPATH=src python3 -m pytest -q tests/test_architecture_debt_guard.py
+```
+
 ## Fehler und Rücknahme
 
 ### Test schlägt fehl
