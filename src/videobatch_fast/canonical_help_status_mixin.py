@@ -171,6 +171,8 @@ class CanonicalHelpStatusMixin:
             anchor="w",
             justify="left",
         )
+        if hasattr(self, "_refresh_semantic_status_styles"):
+            self._refresh_semantic_status_styles()
         bar.bind("<Configure>", self._layout_canonical_status_bar, add="+")
         self.root.after_idle(
             lambda: self._layout_canonical_status_bar(width=bar.winfo_width())
