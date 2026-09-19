@@ -31,6 +31,22 @@ LOG_DIR = STATE / "logs"
 TOOLCHAIN = ROOT / "scripts" / "toolchain.py"
 STARTUP_CONTRACT = ROOT / "STARTUP_CONTRACT.json"
 
+SYSTEM_PACKAGES = (
+    "python3",
+    "python3-venv",
+    "ffmpeg",
+    "wl-clipboard",
+    "xdg-utils",
+    "xdg-desktop-portal",
+    "xdg-desktop-portal-kde",
+    "libnotify-bin",
+    "libegl1",
+    "libgl1",
+    "libfontconfig1",
+    "libwayland-client0",
+    "libxkbcommon0",
+)
+
 
 class BootstrapFailure(RuntimeError):
     pass
@@ -257,6 +273,102 @@ def load_startup_contract() -> dict[str, Any]:
     return contract
 
 
+def _missing_system_packages(sink: EventSink) -> list[str]:
+    dpkg_query = shutil.which("dpkg-query")
+    if not dpkg_query:
+        sink.log("SYSTEM DEPENDENCY CHECK skipped: dpkg-query fehlt")
+        return []
+    missing: list[str] = []
+    for package in SYSTEM_PACKAGES:
+        completed = run_logged(
+            [dpkg_query, "-W", "-f=${Status}", package],
+            sink,
+            timeout=10,
+        )
+        if completed.returncode != 0 or "install ok installed" not in completed.stdout:
+            missing.append(package)
+    return missing
+
+
+def _confirm_online_system_repair(packages: list[str], sink: EventSink) -> bool:
+    if not packages:
+        return False
+    kdialog = shutil.which("kdialog")
+    if not kdialog or not os.environ.get("WAYLAND_DISPLAY"):
+        sink.log("SYSTEM DEPENDENCY REPAIR skipped: keine grafische Wayland-Freigabe verfügbar")
+        return False
+    message = (
+        "VideoBatch hat fehlende Systemabhängigkeiten erkannt:\n\n"
+        + ", ".join(packages)
+        + "\n\nDie fehlenden Pakete jetzt automatisch über die Kubuntu-Paketverwaltung reparieren?"
+    )
+    try:
+        completed = subprocess.run(
+            [
+                kdialog,
+                "--title",
+                "VideoBatch · System automatisch reparieren",
+                "--yes-label",
+                "Online reparieren",
+                "--no-label",
+                "Offline bleiben",
+                "--yesno",
+                message,
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=120,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        sink.log(f"SYSTEM DEPENDENCY REPAIR confirmation failed: {exc}")
+        return False
+    return completed.returncode == 0
+
+
+def ensure_system_dependencies(sink: EventSink) -> bool:
+    """Repair missing Kubuntu packages once, then verify the result."""
+    missing = _missing_system_packages(sink)
+    if not missing:
+        sink.log("SYSTEM DEPENDENCIES VERIFIED")
+        return True
+    sink.log("SYSTEM DEPENDENCIES MISSING: " + ", ".join(missing))
+    if not _confirm_online_system_repair(missing, sink):
+        return False
+
+    apt_get = shutil.which("apt-get")
+    if not apt_get:
+        sink.log("SYSTEM DEPENDENCY REPAIR failed: apt-get fehlt")
+        return False
+    if os.geteuid() == 0:
+        prefix: list[str] = []
+    else:
+        pkexec = shutil.which("pkexec")
+        if not pkexec:
+            sink.log("SYSTEM DEPENDENCY REPAIR failed: pkexec fehlt")
+            return False
+        prefix = [pkexec]
+
+    update = run_logged([*prefix, apt_get, "update"], sink, timeout=900)
+    if update.returncode != 0:
+        sink.log("SYSTEM DEPENDENCY REPAIR failed during apt-get update")
+        return False
+    install = run_logged(
+        [*prefix, apt_get, "install", "-y", "--no-install-recommends", *missing],
+        sink,
+        timeout=1800,
+    )
+    if install.returncode != 0:
+        sink.log("SYSTEM DEPENDENCY REPAIR failed during apt-get install")
+        return False
+
+    remaining = _missing_system_packages(sink)
+    if remaining:
+        sink.log("SYSTEM DEPENDENCY REPAIR incomplete: " + ", ".join(remaining))
+        return False
+    sink.log("SYSTEM DEPENDENCY REPAIR VERIFIED")
+    return True
+
 def install_user_launchers(sink: EventSink) -> None:
     """Maintain exactly one XDG menu entry and one stable user launcher."""
     try:
@@ -461,6 +573,7 @@ def worker(sink: EventSink) -> None:
         verify_project()
         startup_contract = load_startup_contract()
         install_user_launchers(sink)
+        system_ready = ensure_system_dependencies(sink)
 
         sink.stage(2, "Qt-Laufzeit automatisch vorbereiten")
         attempts = int(startup_contract["policy"].get("maximum_automatic_repair_attempts", 2))
@@ -468,8 +581,13 @@ def worker(sink: EventSink) -> None:
 
         sink.stage(3, "Projekt und Medienfunktionen prüfen")
         report = run_startup_probe(python, sink)
-        if runtime_fallback:
-            report = {**report, "status": "degraded", "runtime_fallback": True}
+        if runtime_fallback or not system_ready:
+            report = {
+                **report,
+                "status": "degraded",
+                "runtime_fallback": runtime_fallback,
+                "system_dependencies_ready": system_ready,
+            }
 
         sink.stage(4, "Native Qt-Wayland-Oberfläche öffnen")
         environment = {
