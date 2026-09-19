@@ -57,13 +57,37 @@ def _source_files() -> list[Path]:
     return sorted(files)
 
 
+def _source_line_ceiling(relative: str, py_policy: dict[str, object]) -> tuple[int, bool]:
+    default_limit = int(py_policy["source_line_limit"])
+    raw = py_policy.get("legacy_source_line_ceilings", {})
+    legacy = raw if isinstance(raw, dict) else {}
+    if relative not in legacy:
+        return default_limit, False
+    return int(legacy[relative]), True
+
+
 def main() -> int:
     policy = json.loads(REGISTRY.read_text(encoding="utf-8"))
     py_policy = policy["python"]
     line_limit = int(py_policy["source_line_limit"])
     complexity_limit = int(py_policy["function_complexity_limit"])
+    function_line_target = int(py_policy.get("function_line_target", 30))
+    class_method_target = int(py_policy.get("class_method_target", 24))
+    raw_ceilings = py_policy.get("legacy_source_line_ceilings", {})
+    legacy_line_ceilings = raw_ceilings if isinstance(raw_ceilings, dict) else {}
     findings: list[Finding] = []
-    metrics = {"files": 0, "functions": 0, "classes": 0, "max_lines": 0, "max_complexity": 0}
+    metrics = {
+        "files": 0,
+        "functions": 0,
+        "classes": 0,
+        "max_lines": 0,
+        "max_complexity": 0,
+        "architecture_debt_files": 0,
+        "long_functions": 0,
+        "large_classes": 0,
+        "max_function_lines": 0,
+        "max_class_methods": 0,
+    }
     forbidden_calls = {"os.system": "SEC_OS_SYSTEM", "tempfile.mktemp": "SEC_MKTEMP"}
 
     for path in _source_files():
@@ -72,8 +96,21 @@ def main() -> int:
         metrics["files"] += 1
         lines = len(source.splitlines())
         metrics["max_lines"] = max(metrics["max_lines"], lines)
-        if relative.startswith("src/") and lines > line_limit:
-            findings.append(Finding("error", "FILE_TOO_LONG", relative, 1, f"{lines} Zeilen überschreiten das Limit {line_limit}."))
+        if relative.startswith("src/"):
+            allowed_lines, is_legacy = _source_line_ceiling(relative, py_policy)
+            if lines > allowed_lines:
+                code = "FILE_DEBT_GREW" if is_legacy else "FILE_TOO_LONG"
+                findings.append(
+                    Finding(
+                        "error",
+                        code,
+                        relative,
+                        1,
+                        f"{lines} Zeilen überschreiten das erlaubte Ceiling {allowed_lines}.",
+                    )
+                )
+            elif lines > line_limit:
+                metrics["architecture_debt_files"] += 1
         try:
             tree = ast.parse(source, filename=relative)
         except SyntaxError as exc:
@@ -82,8 +119,22 @@ def main() -> int:
         for node in ast.walk(tree):
             if isinstance(node, ast.ClassDef):
                 metrics["classes"] += 1
+                method_count = sum(
+                    isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef))
+                    for child in node.body
+                )
+                metrics["max_class_methods"] = max(metrics["max_class_methods"], method_count)
+                if method_count > class_method_target:
+                    metrics["large_classes"] += 1
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 metrics["functions"] += 1
+                function_lines = max(
+                    1,
+                    int(getattr(node, "end_lineno", node.lineno) or node.lineno) - node.lineno + 1,
+                )
+                metrics["max_function_lines"] = max(metrics["max_function_lines"], function_lines)
+                if function_lines > function_line_target:
+                    metrics["long_functions"] += 1
                 value = _complexity(node)
                 metrics["max_complexity"] = max(metrics["max_complexity"], value)
                 if value > complexity_limit:
@@ -104,6 +155,30 @@ def main() -> int:
         if re.search(r"-----BEGIN (?:OPENSSH |EC |RSA )?PRIVATE KEY-----", source):
             findings.append(Finding("error", "PRIVATE_KEY", relative, 1, "Privates Schlüsselmaterial im Quelltext erkannt."))
 
+    for relative, raw_ceiling in sorted(legacy_line_ceilings.items()):
+        ceiling = int(raw_ceiling)
+        target = ROOT / relative
+        if ceiling <= line_limit:
+            findings.append(
+                Finding(
+                    "error",
+                    "DEBT_BASELINE_REDUNDANT",
+                    relative,
+                    0,
+                    f"Legacy-Ceiling {ceiling} liegt nicht über dem Standardlimit {line_limit}.",
+                )
+            )
+        if not target.is_file():
+            findings.append(
+                Finding(
+                    "error",
+                    "DEBT_BASELINE_ORPHAN",
+                    relative,
+                    0,
+                    "Legacy-Ceiling verweist auf eine nicht vorhandene Datei.",
+                )
+            )
+
     findings.extend(_exact_lock(ROOT / "requirements.lock"))
     findings.extend(_exact_lock(ROOT / "requirements-quality.lock"))
     errors = [item for item in findings if item.severity == "error"]
@@ -118,7 +193,16 @@ def main() -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
     output = output_dir / "internal_quality_latest.json"
     output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"INTERNE CODEQUALITÄT: {metrics['files']} Dateien · {metrics['functions']} Funktionen · max. Komplexität {metrics['max_complexity']} · Befunde {len(errors)}")
+    print(
+        "INTERNE CODEQUALITÄT: "
+        f"{metrics['files']} Dateien · "
+        f"{metrics['functions']} Funktionen · "
+        f"Architektur-Altlasten {metrics['architecture_debt_files']} · "
+        f"Funktionen >{function_line_target} Zeilen {metrics['long_functions']} · "
+        f"Klassen >{class_method_target} Methoden {metrics['large_classes']} · "
+        f"max. Komplexität {metrics['max_complexity']} · "
+        f"Befunde {len(errors)}"
+    )
     for item in errors:
         print(f"✕ {item.code} · {item.path}:{item.line} · {item.message}")
     return 1 if errors else 0
