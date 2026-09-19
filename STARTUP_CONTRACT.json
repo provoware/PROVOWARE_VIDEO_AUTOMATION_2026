@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "contract_id": "videobatch-fast.predictive-startup/2.8.3-rc24-v4",
+  "contract_id": "videobatch-fast.predictive-startup/2.8.3-rc24-v5",
   "release_target": "2.8.3-rc24",
   "goal": "Die native Qt-Oberfläche auf Kubuntu 26.04 Plasma Wayland ohne Terminal- oder Texteingaben nach einer bestätigten UI-Bereitschaftsmeldung öffnen; nur wenn lokale Abhängigkeiten nicht ausreichen, darf eine klar beschriftete grafische Online-Freigabe angeboten werden.",
   "stages": [
@@ -63,6 +63,11 @@
     "startup_probe_never_blocks_ui_launch": true,
     "application_ready_timeout_seconds": 35,
     "system_python_runtime_fallback_allowed": true,
-    "system_fallback_forces_safe_mode": true
+    "system_fallback_forces_safe_mode": true,
+    "system_dependencies_checked_on_every_start": true,
+    "missing_system_dependencies_offer_graphical_auto_repair": true,
+    "system_dependency_repair_uses_kubuntu_package_manager": true,
+    "system_dependency_repair_requires_post_validation": true,
+    "system_dependency_repair_never_uses_unattended_sudo": true
   }
 }

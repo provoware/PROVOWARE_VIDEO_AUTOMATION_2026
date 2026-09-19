@@ -48,9 +48,15 @@ def _parse_encoders(output: str) -> frozenset[str]:
 
 
 def _parse_filters(output: str) -> frozenset[str]:
+    """Parse filter listings across FFmpeg flag-layout generations.
+
+    FFmpeg has used different widths for the capability flag column. The
+    filter signature (for example V->V or VV->V) is the stable discriminator;
+    legend rows therefore cannot be mistaken for filters.
+    """
     values: set[str] = set()
     for line in output.splitlines():
-        match = re.match(r"^\s*[A-Z\.]{3}\s+([^\s]+)", line)
+        match = re.match(r"^\s*[A-Z\.]{2,4}\s+([^\s=]+)\s+\S*->\S*", line)
         if match:
             values.add(match.group(1))
     return frozenset(values)
