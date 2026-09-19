@@ -11,7 +11,6 @@ from PySide6.QtCore import QObject, QDate, QTimer, QUrl, Signal, Qt
 from PySide6.QtGui import QAction, QDesktopServices, QFont, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
-    QCalendarWidget,
     QCheckBox,
     QComboBox,
     QDockWidget,
@@ -34,6 +33,7 @@ from .archive_service import append_manifest, archive_file, recover_archive_tran
 from .command_builder import PROFILES
 from .config import DEFAULT_CONFIG, load_config, save_config
 from .effects import TRANSITIONS, VISUAL_EFFECTS
+from .qt_legacy_calendar import build_calendar_tab, load_calendar_selection
 from .job_journal import (
     acknowledge_recovery,
     recoverable_batches,
@@ -643,95 +643,6 @@ def _poll_playlist(window: object) -> None:
             _playlist_play(window)
 
 
-def _build_calendar_tab(window: object) -> QWidget:
-    tab = QWidget()
-    layout = QVBoxLayout(tab)
-    window.parity_calendar = QCalendarWidget()
-    layout.addWidget(window.parity_calendar, 1)
-
-    form = QFormLayout()
-    window.parity_calendar_type = _combo(
-        tab,
-        [("Notiz", "note"), ("Aufgabe", "task"), ("Erinnerung", "reminder"), ("Termin", "deadline")],
-        "note",
-    )
-    window.parity_calendar_color = _combo(
-        tab,
-        [
-            ("Neutral", "none"),
-            ("Erledigt / Erfolg", "success"),
-            ("Beachten", "warning"),
-            ("Blockiert", "error"),
-            ("Information", "info"),
-            ("Aktiv", "active"),
-        ],
-        "none",
-    )
-    window.parity_calendar_note = QLineEdit()
-    window.parity_calendar_note.setPlaceholderText("Kurze Notiz zum ausgewählten Tag")
-    form.addRow("Art", window.parity_calendar_type)
-    form.addRow("Markierung", window.parity_calendar_color)
-    form.addRow("Notiz", window.parity_calendar_note)
-    layout.addLayout(form)
-
-    actions = QHBoxLayout()
-    save = QPushButton("Kalendereintrag speichern")
-    save.setObjectName("primary")
-    remove = QPushButton("Eintrag löschen")
-    actions.addWidget(remove)
-    actions.addStretch()
-    actions.addWidget(save)
-    layout.addLayout(actions)
-    window.parity_calendar.selectionChanged.connect(lambda: _calendar_load_selected(window))
-    save.clicked.connect(lambda: _calendar_save(window))
-    remove.clicked.connect(lambda: _calendar_remove(window))
-    return tab
-
-
-def _calendar_key(window: object) -> str:
-    return window.parity_calendar.selectedDate().toString("yyyy-MM-dd")
-
-
-def _calendar_load_selected(window: object) -> None:
-    key = _calendar_key(window)
-    entry = window._parity_calendar_notes.get(key, {})
-    type_index = window.parity_calendar_type.findData(str(entry.get("entry_type", "note")))
-    color_index = window.parity_calendar_color.findData(
-        str(entry.get("color", window._parity_calendar_marks.get(key, "none")))
-    )
-    window.parity_calendar_type.setCurrentIndex(max(0, type_index))
-    window.parity_calendar_color.setCurrentIndex(max(0, color_index))
-    window.parity_calendar_note.setText(str(entry.get("note", "")))
-
-
-def _calendar_save(window: object) -> None:
-    key = _calendar_key(window)
-    note = window.parity_calendar_note.text().strip()[:500]
-    entry_type = str(window.parity_calendar_type.currentData() or "note")
-    color = str(window.parity_calendar_color.currentData() or "none")
-    if note or color != "none":
-        window._parity_calendar_notes[key] = {
-            "note": note,
-            "entry_type": entry_type,
-            "color": color,
-        }
-    else:
-        window._parity_calendar_notes.pop(key, None)
-    if color == "none":
-        window._parity_calendar_marks.pop(key, None)
-    else:
-        window._parity_calendar_marks[key] = color
-    _save_project_silent(window)
-
-
-def _calendar_remove(window: object) -> None:
-    key = _calendar_key(window)
-    window._parity_calendar_notes.pop(key, None)
-    window._parity_calendar_marks.pop(key, None)
-    _calendar_load_selected(window)
-    _save_project_silent(window)
-
-
 def _build_maintenance_tab(window: object) -> QWidget:
     tab = QWidget()
     layout = QVBoxLayout(tab)
@@ -769,7 +680,7 @@ def _build_parity_dock(window: object) -> None:
     window.parity_tabs = tabs
     tabs.addTab(_build_settings_tab(window), "Einstellungen")
     tabs.addTab(_build_playlist_tab(window), "Playlist")
-    tabs.addTab(_build_calendar_tab(window), "Kalender")
+    tabs.addTab(build_calendar_tab(window, combo_factory=_combo, save_project=_save_project_silent), "Kalender")
     tabs.addTab(_build_maintenance_tab(window), "Wartung")
     window.parity_dock.setWidget(tabs)
     window.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, window.parity_dock)
@@ -822,7 +733,7 @@ def _apply_project_extras(window: object, state: dict[str, object]) -> None:
         window.parity_calendar.setCurrentPage(year, month)
     except (TypeError, ValueError):
         pass
-    _calendar_load_selected(window)
+    load_calendar_selection(window)
 
 
 def _collect_project_extras(window: object, state: dict[str, object]) -> dict[str, object]:

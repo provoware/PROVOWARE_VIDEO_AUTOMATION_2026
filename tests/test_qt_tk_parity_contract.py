@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QApplication
 
 from videobatch_fast.config import DEFAULT_CONFIG, load_config, save_config
 from videobatch_fast.models import BatchOptions
+from videobatch_fast.qt_legacy_calendar import load_calendar_selection
 from videobatch_fast.qt_legacy_parity import LEGACY_OPTION_KEYS, PROJECT_PARITY_KEYS
 from videobatch_fast.qt_legacy_parity_completion import _apply_view_order
 from videobatch_fast.qt_phase3 import VideoBatchQtPhase3Window
@@ -181,3 +182,29 @@ def test_qt_phase3_restores_legacy_options_and_uses_configured_media_tools(
     assert saved["area_zoom"]["media"] == 130
     assert saved["audio_sort"] == "import"
     assert saved["media_sort"] == "size_asc"
+
+
+def test_extracted_legacy_calendar_restores_selected_entry(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "data"))
+    monkeypatch.setenv("VIDEOBATCH_FFMPEG", str(_fake_executable(tmp_path / "private-ffmpeg")))
+    monkeypatch.setenv("VIDEOBATCH_FFPROBE", str(_fake_executable(tmp_path / "private-ffprobe")))
+
+    app = QApplication.instance() or QApplication([])
+    window = VideoBatchQtPhase3Window(autoload_project=False)
+    window._parity_calendar_notes["2026-09-19"] = {
+        "note": "Debt-Burn-Down",
+        "entry_type": "task",
+        "color": "active",
+    }
+    window._parity_calendar_marks["2026-09-19"] = "active"
+    window.parity_calendar.setSelectedDate(window.parity_calendar.selectedDate().fromString("2026-09-19", "yyyy-MM-dd"))
+
+    load_calendar_selection(window)
+
+    assert window.parity_calendar_note.text() == "Debt-Burn-Down"
+    assert window.parity_calendar_type.currentData() == "task"
+    assert window.parity_calendar_color.currentData() == "active"
+    window.close()
+    app.processEvents()
