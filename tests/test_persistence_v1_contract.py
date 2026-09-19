@@ -18,7 +18,7 @@ from videobatch_fast.plugin_approvals import load_approvals  # noqa: E402
 from videobatch_fast.safe_io import atomic_write_json, quarantine_file, read_json  # noqa: E402
 
 
-INVENTORY = ROOT / "diagnostics" / "architecture" / "CP-04_PERSISTENCE_INVENTORY.json"
+INVENTORY = ROOT / "docs" / "archive" / "diagnostics-checkpoints" / "architecture" / "CP-04_PERSISTENCE_INVENTORY.json"
 EXPECTED_DURABLE_STORES = {
     "project_state",
     "config",
