@@ -1,0 +1,31 @@
+name: Export final checked main
+
+on:
+  push:
+    branches:
+      - export/final-zip-e62fb1a
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout final main commit
+        uses: actions/checkout@v4
+        with:
+          ref: e62fb1a99b9dd0c28c2570992ce6d8a8c3c88b14
+          fetch-depth: 1
+
+      - name: Upload exact project tree
+        uses: actions/upload-artifact@v4
+        with:
+          name: PROVOWARE_VIDEO_AUTOMATION_2026_checked_e62fb1a
+          path: |
+            .
+            !.git/**
+          include-hidden-files: true
+          if-no-files-found: error
+          compression-level: 6
+          retention-days: 7
