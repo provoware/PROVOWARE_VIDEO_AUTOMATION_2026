@@ -38,3 +38,6 @@ Thumbs.db
 *.swo
 *.bak
 *.tmp
+
+# Generated local quality reports are runtime/CI output, never source.
+/diagnostics/internal_quality_latest.json
