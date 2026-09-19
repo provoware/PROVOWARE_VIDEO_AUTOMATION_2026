@@ -290,17 +290,20 @@ def _missing_system_packages(sink: EventSink) -> list[str]:
     if not dpkg_query:
         sink.log("SYSTEM DEPENDENCY CHECK skipped: dpkg-query fehlt")
         return []
-    missing: list[str] = []
-    for package in SYSTEM_PACKAGES:
-        completed = run_logged(
-            [dpkg_query, "-W", "-f=${Status}", package],
-            sink,
-            timeout=10,
-        )
-        if completed.returncode != 0 or "install ok installed" not in completed.stdout:
-            missing.append(package)
-    return missing
-
+    completed = run_logged(
+        [dpkg_query, "-W", "-f=${binary:Package}\t${Status}\n", *SYSTEM_PACKAGES],
+        sink,
+        timeout=20,
+    )
+    installed: set[str] = set()
+    for line in completed.stdout.splitlines():
+        try:
+            package, status = line.split("\t", 1)
+        except ValueError:
+            continue
+        if status.strip() == "install ok installed":
+            installed.add(package.split(":", 1)[0])
+    return [package for package in SYSTEM_PACKAGES if package not in installed]
 
 def _ffmpeg_stack_issues() -> list[str]:
     issues: list[str] = []
