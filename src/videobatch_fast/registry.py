@@ -24,6 +24,7 @@ REQUIRED_REGISTRIES = (
     "registries/UI_COMPONENT_REGISTRY.json",
     "registries/WORKSPACE_LAYOUT_REGISTRY.json",
     "registries/CODE_QUALITY_REGISTRY.json",
+    "registries/ARTIFACT_ROLE_REGISTRY.json",
 )
 
 
