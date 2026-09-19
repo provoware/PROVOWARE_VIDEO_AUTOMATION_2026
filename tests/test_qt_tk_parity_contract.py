@@ -5,7 +5,7 @@ from pathlib import Path
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QDate, Qt
 from PySide6.QtWidgets import QApplication
 
 from videobatch_fast.config import DEFAULT_CONFIG, load_config, save_config
@@ -199,7 +199,7 @@ def test_extracted_legacy_calendar_restores_selected_entry(tmp_path: Path, monke
         "color": "active",
     }
     window._parity_calendar_marks["2026-09-19"] = "active"
-    window.parity_calendar.setSelectedDate(window.parity_calendar.selectedDate().fromString("2026-09-19", "yyyy-MM-dd"))
+    window.parity_calendar.setSelectedDate(QDate(2026, 9, 19))
 
     load_calendar_selection(window)
 
