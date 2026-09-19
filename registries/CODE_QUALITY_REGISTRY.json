@@ -29,7 +29,7 @@
     "minimum": "3.10",
     "source_line_limit": 250,
     "legacy_source_line_ceilings": {
-      "src/videobatch_fast/qt_legacy_parity.py": 1366,
+      "src/videobatch_fast/qt_legacy_parity.py": 1249,
       "src/videobatch_fast/qt_legacy_parity_completion.py": 815,
       "src/videobatch_fast/ui_workspace_grid_mixin.py": 528,
       "src/videobatch_fast/media_import_dialog.py": 683,

@@ -20,7 +20,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QListWidget,
     QMessageBox,
     QPushButton,
     QSpinBox,
@@ -34,6 +33,7 @@ from .command_builder import PROFILES
 from .config import DEFAULT_CONFIG, load_config, save_config
 from .effects import TRANSITIONS, VISUAL_EFFECTS
 from .qt_legacy_calendar import build_calendar_tab, load_calendar_selection
+from .qt_legacy_playlist import build_playlist_tab, poll_playlist, refresh_playlist_list
 from .job_journal import (
     acknowledge_recovery,
     recoverable_batches,
@@ -518,131 +518,6 @@ def _build_settings_tab(window: object) -> QWidget:
     return tab
 
 
-def _build_playlist_tab(window: object) -> QWidget:
-    tab = QWidget()
-    layout = QVBoxLayout(tab)
-    intro = QLabel(
-        "Audio direkt vorhören. Die Wiedergabe nutzt weiterhin den vorhandenen FFplay-basierten Player."
-    )
-    intro.setWordWrap(True)
-    layout.addWidget(intro)
-    window.parity_playlist_list = QListWidget()
-    layout.addWidget(window.parity_playlist_list, 1)
-
-    row = QHBoxLayout()
-    add = QPushButton("Audios übernehmen")
-    remove = QPushButton("Aus Liste entfernen")
-    play = QPushButton("▶ Abspielen")
-    pause = QPushButton("⏯ Pause/Fortsetzen")
-    stop = QPushButton("■ Stop")
-    for button in (add, remove, play, pause, stop):
-        row.addWidget(button)
-    layout.addLayout(row)
-
-    options = QHBoxLayout()
-    options.addWidget(QLabel("Wiederholen"))
-    window.parity_repeat = _combo(
-        tab,
-        [("Aus", "off"), ("Aktuelles Audio", "one"), ("Alle", "all")],
-        str(window._parity_config.get("playlist_repeat", "off")),
-    )
-    window.parity_shuffle = QCheckBox("Zufällige Reihenfolge")
-    window.parity_shuffle.setChecked(bool(window._parity_config.get("playlist_shuffle", False)))
-    options.addWidget(window.parity_repeat)
-    options.addWidget(window.parity_shuffle)
-    options.addStretch()
-    layout.addLayout(options)
-    window.parity_playlist_status = QLabel("Noch keine Wiedergabe.")
-    window.parity_playlist_status.setWordWrap(True)
-    layout.addWidget(window.parity_playlist_status)
-
-    add.clicked.connect(lambda: _playlist_add_from_sources(window))
-    remove.clicked.connect(lambda: _playlist_remove(window))
-    play.clicked.connect(lambda: _playlist_play(window))
-    pause.clicked.connect(lambda: _playlist_pause(window))
-    stop.clicked.connect(lambda: _playlist_stop(window))
-    window.parity_repeat.currentIndexChanged.connect(lambda *_: _playlist_options(window))
-    window.parity_shuffle.toggled.connect(lambda *_: _playlist_options(window))
-    return tab
-
-
-def _refresh_playlist_list(window: object) -> None:
-    selected = window.parity_playlist.current
-    window.parity_playlist_list.clear()
-    for index, path in enumerate(window.parity_playlist.items):
-        window.parity_playlist_list.addItem(f"{index + 1:02d} · {path.name}")
-    if 0 <= selected < window.parity_playlist_list.count():
-        window.parity_playlist_list.setCurrentRow(selected)
-
-
-def _playlist_add_from_sources(window: object) -> None:
-    window.parity_playlist.add(window.audio.paths())
-    _refresh_playlist_list(window)
-    _save_project_silent(window)
-
-
-def _playlist_remove(window: object) -> None:
-    rows = [window.parity_playlist_list.row(item) for item in window.parity_playlist_list.selectedItems()]
-    window.parity_playlist.remove(rows)
-    _refresh_playlist_list(window)
-    _save_project_silent(window)
-
-
-def _playlist_options(window: object) -> None:
-    window.parity_playlist.repeat = str(window.parity_repeat.currentData() or "off")
-    window.parity_playlist.shuffle = window.parity_shuffle.isChecked()
-    _save_settings(window)
-
-
-def _playlist_play(window: object) -> None:
-    row = window.parity_playlist_list.currentRow()
-    if row >= 0:
-        window.parity_playlist.current = row
-    if window.parity_playlist.current < 0 and window.parity_playlist.items:
-        window.parity_playlist.current = 0
-    if window.parity_playlist.current < 0:
-        window.parity_playlist_status.setText("Noch kein Audio in der Playlist.")
-        return
-    path = window.parity_playlist.items[window.parity_playlist.current]
-    try:
-        window.parity_audio_player.play(path)
-    except Exception as exc:
-        QMessageBox.warning(window, "Audio konnte nicht gestartet werden", str(exc))
-        return
-    window.parity_playlist_status.setText(f"Spielt: {path.name}")
-    _refresh_playlist_list(window)
-
-
-def _playlist_pause(window: object) -> None:
-    try:
-        paused = window.parity_audio_player.toggle_pause()
-    except OSError as exc:
-        QMessageBox.warning(window, "Pause fehlgeschlagen", str(exc))
-        return
-    window.parity_playlist_status.setText("Pausiert" if paused else "Wiedergabe läuft")
-
-
-def _playlist_stop(window: object) -> None:
-    window.parity_audio_player.stop()
-    window.parity_playlist_status.setText("Wiedergabe gestoppt.")
-
-
-def _poll_playlist(window: object) -> None:
-    player = getattr(window, "parity_audio_player", None)
-    playlist = getattr(window, "parity_playlist", None)
-    if player is None or playlist is None:
-        return
-    process = player.process
-    if process is not None and process.poll() is not None:
-        player.process = None
-        next_index = playlist.next_index()
-        if next_index is None:
-            window.parity_playlist_status.setText("Wiedergabe beendet.")
-        else:
-            playlist.current = next_index
-            _playlist_play(window)
-
-
 def _build_maintenance_tab(window: object) -> QWidget:
     tab = QWidget()
     layout = QVBoxLayout(tab)
@@ -679,7 +554,15 @@ def _build_parity_dock(window: object) -> None:
     tabs = QTabWidget()
     window.parity_tabs = tabs
     tabs.addTab(_build_settings_tab(window), "Einstellungen")
-    tabs.addTab(_build_playlist_tab(window), "Playlist")
+    tabs.addTab(
+        build_playlist_tab(
+            window,
+            combo_factory=_combo,
+            save_project=_save_project_silent,
+            save_settings=_save_settings,
+        ),
+        "Playlist",
+    )
     tabs.addTab(build_calendar_tab(window, combo_factory=_combo, save_project=_save_project_silent), "Kalender")
     tabs.addTab(_build_maintenance_tab(window), "Wartung")
     window.parity_dock.setWidget(tabs)
@@ -702,7 +585,7 @@ def _apply_project_extras(window: object, state: dict[str, object]) -> None:
     playlist_paths = [Path(str(value)) for value in list(state.get("playlist_paths", []))]
     window.parity_playlist.items = [path for path in playlist_paths if path.is_file()]
     window.parity_playlist.current = 0 if window.parity_playlist.items else -1
-    _refresh_playlist_list(window)
+    refresh_playlist_list(window)
 
     slideshow = window.slideshow
     slideshow._parity_order_mode = str(state.get("slideshow_order_mode", "manual"))
@@ -1342,7 +1225,7 @@ def _finish_parity_init(window: object) -> None:
 
     playlist_timer = QTimer(window)
     playlist_timer.setInterval(500)
-    playlist_timer.timeout.connect(lambda: _poll_playlist(window))
+    playlist_timer.timeout.connect(lambda: poll_playlist(window))
     playlist_timer.start()
     window._parity_playlist_timer = playlist_timer
 
