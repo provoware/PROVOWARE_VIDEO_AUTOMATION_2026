@@ -230,5 +230,37 @@ class UpdateValidationErrorPathTests(unittest.TestCase):
             self.assertIn("visuelle Freigabe", result.message)
 
 
+class ArchitectureNoGrowthContractTests(unittest.TestCase):
+    def test_quality_registry_has_current_no_growth_baseline(self):
+        root = Path(__file__).resolve().parents[1]
+        policy = json.loads(
+            (root / "registries" / "CODE_QUALITY_REGISTRY.json").read_text(encoding="utf-8")
+        )["python"]
+        self.assertEqual(int(policy["source_line_limit"]), 250)
+        ceilings = {str(path): int(value) for path, value in policy["legacy_source_line_ceilings"].items()}
+        oversized = {}
+        for path in (root / "src").rglob("*.py"):
+            relative = path.relative_to(root).as_posix()
+            lines = len(path.read_text(encoding="utf-8").splitlines())
+            if lines > 250:
+                oversized[relative] = lines
+        self.assertEqual(ceilings, oversized)
+
+    def test_internal_quality_gate_enforces_no_growth(self):
+        root = Path(__file__).resolve().parents[1]
+        source = (root / "scripts" / "internal_quality_gate.py").read_text(encoding="utf-8")
+        for token in (
+            "_source_line_ceiling",
+            "FILE_DEBT_GREW",
+            "DEBT_BASELINE_STALE",
+            "DEBT_BASELINE_REDUNDANT",
+            "DEBT_BASELINE_ORPHAN",
+            '"architecture_debt_files"',
+            '"long_functions"',
+            '"large_classes"',
+        ):
+            self.assertIn(token, source)
+
+
 if __name__ == "__main__":
     unittest.main()
