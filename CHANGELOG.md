@@ -4,6 +4,7 @@ Alle wichtigen Änderungen dieses Projekts werden hier in zusammengefasster, chr
 
 ## Unveröffentlicht · RC24-Finalbereinigung
 
+- Nutzerfeedback im Footer klar in **Status** und **Nächster Schritt** getrennt, semantisch eingefärbt und für schmale Fenster responsiv gestapelt
 - Hilfevertrag auf die tatsächlich zuständige Hilfeseite ausgerichtet
 - Zustandsberechnung für Medien, Aufträge und Effekte getrennt, ohne sichtbare Ausgabe zu ändern
 - Gestaltungsprüfung in kleine, gleichwertige Teilprüfungen gegliedert

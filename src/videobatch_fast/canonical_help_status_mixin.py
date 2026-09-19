@@ -5,8 +5,28 @@ from tkinter import StringVar, ttk
 from .canonical_shell_contract import responsive_column_count
 
 
+def compact_feedback_text(
+    status: str,
+    guidance: str,
+    *,
+    status_limit: int = 72,
+    guidance_limit: int = 180,
+) -> tuple[str, str]:
+    """Return concise, explicitly labelled status and next-step text."""
+
+    def compact(value: str, limit: int) -> str:
+        normalized = " ".join(value.replace("\n", " ").split()).strip()
+        if len(normalized) <= limit:
+            return normalized
+        return normalized[: max(1, limit - 1)].rstrip() + "…"
+
+    status_value = compact(status, status_limit) or "Bereit"
+    guidance_value = compact(guidance, guidance_limit) or "Keine Aktion erforderlich."
+    return f"Status: {status_value}", f"Nächster Schritt: {guidance_value}"
+
+
 class CanonicalHelpStatusMixin:
-    """Intent-based help and a bounded single-line footer."""
+    """Intent-based help and a bounded, responsive feedback footer."""
 
     def _build_canonical_help_page(self, parent) -> None:
         parent.columnconfigure(0, weight=1)
@@ -121,27 +141,64 @@ class CanonicalHelpStatusMixin:
     def _build_canonical_status_bar(self, parent) -> None:
         bar = ttk.Frame(parent, style="Toolbar.TFrame", padding=(10, 5))
         bar.pack(fill="x")
-        bar.columnconfigure(0, weight=1)
+        self._canonical_status_bar = bar
         self.shell_footer_guidance = StringVar(value="")
+        self.shell_footer_status = StringVar(value="")
 
-        def sync_guidance(*_args) -> None:
-            value = self.guidance_text.get().replace("\n", " ").strip()
-            self.shell_footer_guidance.set(
-                value if len(value) <= 180 else value[:177] + "…"
+        def sync_feedback(*_args) -> None:
+            status, guidance = compact_feedback_text(
+                self.status_text.get(),
+                self.guidance_text.get(),
             )
+            self.shell_footer_status.set(status)
+            self.shell_footer_guidance.set(guidance)
 
-        self.guidance_text.trace_add("write", sync_guidance)
-        sync_guidance()
-        ttk.Label(
+        self.guidance_text.trace_add("write", sync_feedback)
+        self.status_text.trace_add("write", sync_feedback)
+        sync_feedback()
+
+        self._footer_status_label = ttk.Label(
+            bar,
+            textvariable=self.shell_footer_status,
+            style="Status.TLabel",
+            anchor="w",
+        )
+        self._semantic_footer_status_label = self._footer_status_label
+        self._footer_guidance_label = ttk.Label(
             bar,
             textvariable=self.shell_footer_guidance,
             style="ShellHint.TLabel",
-            width=1,
             anchor="w",
-        ).grid(row=0, column=0, sticky="ew")
-        ttk.Label(
-            bar,
-            textvariable=self.status_text,
-            style="Status.TLabel",
-            anchor="e",
-        ).grid(row=0, column=1, sticky="e", padx=(10, 0))
+            justify="left",
+        )
+        if hasattr(self, "_refresh_semantic_status_styles"):
+            self._refresh_semantic_status_styles()
+        bar.bind("<Configure>", self._layout_canonical_status_bar, add="+")
+        self.root.after_idle(
+            lambda: self._layout_canonical_status_bar(width=bar.winfo_width())
+        )
+
+    def _layout_canonical_status_bar(self, event=None, *, width: int | None = None) -> None:
+        if not hasattr(self, "_footer_status_label"):
+            return
+        available = int(width if width is not None else getattr(event, "width", 0))
+        bar = self._canonical_status_bar
+        status = self._footer_status_label
+        guidance = self._footer_guidance_label
+
+        status.grid_forget()
+        guidance.grid_forget()
+        for column in range(2):
+            bar.columnconfigure(column, weight=0, minsize=0)
+
+        if available and available < 760:
+            bar.columnconfigure(0, weight=1)
+            status.grid(row=0, column=0, sticky="ew", pady=(0, 2))
+            guidance.configure(wraplength=max(240, available - 20))
+            guidance.grid(row=1, column=0, sticky="ew")
+        else:
+            bar.columnconfigure(0, weight=0)
+            bar.columnconfigure(1, weight=1)
+            status.grid(row=0, column=0, sticky="w", padx=(0, 14))
+            guidance.configure(wraplength=max(360, available - 260))
+            guidance.grid(row=0, column=1, sticky="ew")
