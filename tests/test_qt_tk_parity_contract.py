@@ -13,6 +13,7 @@ from videobatch_fast.models import BatchOptions
 from videobatch_fast.qt_legacy_appearance import apply_theme
 from videobatch_fast.qt_legacy_calendar import load_calendar_selection
 from videobatch_fast.qt_legacy_playlist import refresh_playlist_list
+from videobatch_fast.qt_legacy_settings import build_settings_tab
 from videobatch_fast.qt_legacy_parity import LEGACY_OPTION_KEYS, PROJECT_PARITY_KEYS
 from videobatch_fast.qt_legacy_parity_completion import _apply_view_order
 from videobatch_fast.qt_phase3 import VideoBatchQtPhase3Window
@@ -264,3 +265,35 @@ def test_extracted_legacy_appearance_applies_theme_and_font_scale(tmp_path: Path
         app.setFont(original_font)
         window.close()
         app.processEvents()
+
+
+def test_extracted_legacy_settings_builds_widgets_from_config(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "data"))
+    monkeypatch.setenv("VIDEOBATCH_FFMPEG", str(_fake_executable(tmp_path / "private-ffmpeg")))
+    monkeypatch.setenv("VIDEOBATCH_FFPROBE", str(_fake_executable(tmp_path / "private-ffprobe")))
+
+    app = QApplication.instance() or QApplication([])
+    window = VideoBatchQtPhase3Window(autoload_project=False)
+    tab = build_settings_tab(window, combo_factory=window.__class__.__module__ and __import__(
+        "videobatch_fast.qt_legacy_parity",
+        fromlist=["_combo"],
+    )._combo)
+
+    assert window.parity_output_mode.currentData() == str(
+        window._parity_config.get("output_mode", "Gemeinsamer Ordner")
+    )
+    assert window.parity_codec.currentData() == str(
+        window._parity_config.get("codec", "libx264")
+    )
+    assert window.parity_theme.currentData() == str(
+        window._parity_config.get("theme", "neon_gravity")
+    )
+    assert window.parity_font_scale.value() == int(
+        window._parity_config.get("font_scale", 105)
+    )
+    assert tab.layout() is not None
+    tab.deleteLater()
+    window.close()
+    app.processEvents()
