@@ -13,6 +13,7 @@ if str(SCRIPTS) not in sys.path:
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
+import bootstrap  # noqa: E402
 import toolchain  # noqa: E402
 from toolchain_common import load_contract  # noqa: E402
 from videobatch_fast.ffmpeg_capabilities import _parse_encoders, _parse_filters  # noqa: E402
@@ -135,3 +136,43 @@ def test_bootstrap_checks_repairs_and_revalidates_system_dependencies() -> None:
     assert policy["missing_system_dependencies_offer_graphical_auto_repair"] is True
     assert policy["system_dependency_repair_requires_post_validation"] is True
     assert policy["system_dependency_repair_never_uses_unattended_sudo"] is True
+
+
+def test_system_dependency_repair_installs_missing_packages_and_revalidates(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[list[str]] = []
+    checks = iter([["ffmpeg"], []])
+    media = iter([[], []])
+    monkeypatch.setattr(bootstrap, "_missing_system_packages", lambda _sink: next(checks))
+    monkeypatch.setattr(bootstrap, "_ffmpeg_stack_issues", lambda: next(media))
+    monkeypatch.setattr(bootstrap, "_confirm_online_system_repair", lambda _packages, _sink: True)
+    monkeypatch.setattr(bootstrap.os, "geteuid", lambda: 1000)
+    monkeypatch.setattr(bootstrap.shutil, "which", lambda name: f"/usr/bin/{name}" if name in {"apt-get", "pkexec"} else None)
+
+    def fake_run(command, _sink, **_kwargs):
+        calls.append(list(command))
+        return subprocess.CompletedProcess(command, 0, stdout="ok")
+
+    monkeypatch.setattr(bootstrap, "run_logged", fake_run)
+    sink = mock.Mock()
+    assert bootstrap.ensure_system_dependencies(sink) is True
+    assert ["/usr/bin/pkexec", "/usr/bin/apt-get", "update"] in calls
+    assert ["/usr/bin/pkexec", "/usr/bin/apt-get", "install", "-y", "--no-install-recommends", "ffmpeg"] in calls
+
+
+def test_system_dependency_repair_reinstalls_broken_ffmpeg_and_revalidates(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[list[str]] = []
+    media = iter([["FFmpeg-Kernfilter fehlen: scale"], []])
+    monkeypatch.setattr(bootstrap, "_missing_system_packages", lambda _sink: [])
+    monkeypatch.setattr(bootstrap, "_ffmpeg_stack_issues", lambda: next(media))
+    monkeypatch.setattr(bootstrap, "_confirm_online_system_repair", lambda _packages, _sink: True)
+    monkeypatch.setattr(bootstrap.os, "geteuid", lambda: 0)
+    monkeypatch.setattr(bootstrap.shutil, "which", lambda name: "/usr/bin/apt-get" if name == "apt-get" else None)
+
+    def fake_run(command, _sink, **_kwargs):
+        calls.append(list(command))
+        return subprocess.CompletedProcess(command, 0, stdout="ok")
+
+    monkeypatch.setattr(bootstrap, "run_logged", fake_run)
+    sink = mock.Mock()
+    assert bootstrap.ensure_system_dependencies(sink) is True
+    assert ["/usr/bin/apt-get", "install", "--reinstall", "-y", "--no-install-recommends", "ffmpeg"] in calls
