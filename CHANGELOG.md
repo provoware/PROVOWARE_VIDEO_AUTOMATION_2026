@@ -4,6 +4,7 @@ Alle wichtigen Änderungen dieses Projekts werden hier in zusammengefasster, chr
 
 ## Unveröffentlicht · RC24-Finalbereinigung
 
+- Workspace-Shell-Layout aus dem 699-Zeilen-Mixin in einen 185-Zeilen-Baustein extrahiert; Callback-, Shortcut- und Bedienvertrag unverändert abgesichert
 - Architektur-Qualitätsvertrag auf **No-Growth** gehärtet: neue `src`-Module maximal 250 Zeilen; historische Großmodule erhalten ein fixes Ceiling und dürfen nur noch schrumpfen
 - Qualitätsreport um Architektur-Altlasten, Funktionen über 30 Zeilen und Klassen über 24 Methoden als sichtbare Wartbarkeitsmetriken ergänzt
 - Hilfevertrag auf die tatsächlich zuständige Hilfeseite ausgerichtet
