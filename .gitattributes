@@ -34,3 +34,8 @@
 # but never ship them in git-archive based verified project ZIPs.
 debugging export-ignore
 .gitattributes export-ignore
+
+# Historical and generated evidence is intentionally tracked for auditability,
+# but must not bloat user/source archives.
+diagnostics export-ignore
+docs/archive export-ignore
