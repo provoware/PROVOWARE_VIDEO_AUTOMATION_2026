@@ -1,0 +1,46 @@
+name: Export frozen main source archive
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/export-frozen-source.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout frozen main commit
+        uses: actions/checkout@v4
+        with:
+          ref: 0a986551a70565e22ec1a76382f97e9d17835635
+          fetch-depth: 1
+
+      - name: Verify frozen commit
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test "$(git rev-parse HEAD)" = "0a986551a70565e22ec1a76382f97e9d17835635"
+
+      - name: Build source ZIP
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git archive \
+            --format=zip \
+            --prefix=PROVOWARE_VIDEO_AUTOMATION_2026_2.8.3-rc24/ \
+            --output=PROVOWARE_VIDEO_AUTOMATION_2026_2.8.3-rc24_AUTO_REPAIR_0a98655.zip \
+            HEAD
+          sha256sum PROVOWARE_VIDEO_AUTOMATION_2026_2.8.3-rc24_AUTO_REPAIR_0a98655.zip > PROVOWARE_VIDEO_AUTOMATION_2026_2.8.3-rc24_AUTO_REPAIR_0a98655.zip.sha256
+
+      - name: Upload source archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: PROVOWARE_VIDEO_AUTOMATION_2026_2.8.3-rc24_AUTO_REPAIR_0a98655
+          path: |
+            PROVOWARE_VIDEO_AUTOMATION_2026_2.8.3-rc24_AUTO_REPAIR_0a98655.zip
+            PROVOWARE_VIDEO_AUTOMATION_2026_2.8.3-rc24_AUTO_REPAIR_0a98655.zip.sha256
+          if-no-files-found: error
+          retention-days: 7
