@@ -16,5 +16,8 @@ Verbindliche Registries:
 - `VISUAL_INSPECTION_REGISTRY.json`
 - `VISUAL_APPROVAL_REGISTRY.json`
 - `CODE_QUALITY_REGISTRY.json`
+- `ARTIFACT_ROLE_REGISTRY.json`
+
+`ARTIFACT_ROLE_REGISTRY.json` kennzeichnet Dateien, die trotz Archivpfad weiterhin aktive Vertragsquellen sind. Solche Dateien dürfen nicht verschoben oder gelöscht werden, ohne Registry und alle deklarierten Verbraucher im selben Patch anzupassen.
 
 Doppelte JSON-Schlüssel, fehlende Schemas und unvollständige Verträge blockieren die Anwendung oder Releaseprüfung.

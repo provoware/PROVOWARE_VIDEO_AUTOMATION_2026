@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "contract_version": "artifact-role-1",
+  "artifacts": [
+    {
+      "path": "docs/archive/diagnostics-checkpoints/architecture/CP-04_PERSISTENCE_INVENTORY.json",
+      "role": "active_contract_source",
+      "status": "active",
+      "consumers": [
+        "tests/test_persistence_v1_contract.py"
+      ],
+      "release_included": false,
+      "relocation_policy": "update_registry_and_all_consumers_same_change",
+      "deletion_policy": "forbidden_while_active"
+    },
+    {
+      "path": "docs/archive/diagnostics-checkpoints/architecture/CP-07_FFMPEG_INVENTORY.json",
+      "role": "active_contract_source",
+      "status": "active",
+      "consumers": [
+        "tests/test_ffmpeg_v1_contract.py"
+      ],
+      "release_included": false,
+      "relocation_policy": "update_registry_and_all_consumers_same_change",
+      "deletion_policy": "forbidden_while_active"
+    }
+  ]
+}
