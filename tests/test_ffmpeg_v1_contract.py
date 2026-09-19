@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-INVENTORY = ROOT / "diagnostics" / "architecture" / "CP-07_FFMPEG_INVENTORY.json"
+INVENTORY = ROOT / "docs" / "archive" / "diagnostics-checkpoints" / "architecture" / "CP-07_FFMPEG_INVENTORY.json"
 
 
 def _source(relative: str) -> str:
