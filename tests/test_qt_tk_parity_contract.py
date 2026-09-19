@@ -21,42 +21,7 @@ def _fake_executable(path: Path) -> Path:
     return path
 
 
-def test_qt_phase3_restores_legacy_options_and_uses_configured_media_tools(
-    tmp_path: Path, monkeypatch
-) -> None:
-    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
-    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
-    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "data"))
-    monkeypatch.setenv("VIDEOBATCH_FFMPEG", str(_fake_executable(tmp_path / "private-ffmpeg")))
-    monkeypatch.setenv("VIDEOBATCH_FFPROBE", str(_fake_executable(tmp_path / "private-ffprobe")))
-
-    config = dict(DEFAULT_CONFIG)
-    config.update(
-        {
-            "window_geometry": "1100x700",
-            "preview_zoom": 150,
-            "audio_sort": "name_desc",
-            "media_sort": "size_asc",
-            "area_zoom": {
-                "start": 100,
-                "media": 130,
-                "preview": 90,
-                "modes": 100,
-                "production": 110,
-                "help": 100,
-            },
-            "last_audio_dir": str(tmp_path),
-            "last_media_dir": str(tmp_path),
-            "active_tab": 4,
-        }
-    )
-    save_config(config)
-
-    app = QApplication.instance() or QApplication([])
-    window = VideoBatchQtPhase3Window(autoload_project=False)
-    window.show()
-    app.processEvents()
-
+def _assert_restored_session(window, tmp_path: Path) -> None:
     assert window._parity_ready is True
     assert window._parity_completion_ready is True
     assert window.mode.findData("custom") >= 0
@@ -70,8 +35,6 @@ def test_qt_phase3_restores_legacy_options_and_uses_configured_media_tools(
     ]
     assert window.start.isEnabled(), "Start muss auch bei unvollständiger Auswahl anklickbar bleiben."
     assert "FFmpeg + FFprobe gefunden" in window.runtime.text()
-
-    # Previously working view/session settings are restored as real Qt controls.
     assert window.preview_panel.parity_zoom.minimum() == 25
     assert window.preview_panel.parity_zoom.maximum() == 800
     assert window.preview_panel.parity_zoom.value() == 150
@@ -82,6 +45,8 @@ def test_qt_phase3_restores_legacy_options_and_uses_configured_media_tools(
     assert Path(load_config()["last_audio_dir"]) == tmp_path
     assert Path(load_config()["last_media_dir"]) == tmp_path
 
+
+def _assert_option_contract(window) -> None:
     expected_batch_fields = {
         "output_dir",
         "output_mode",
@@ -121,6 +86,60 @@ def test_qt_phase3_restores_legacy_options_and_uses_configured_media_tools(
     assert options.transition == "soft"
     assert options.keep_lists is False
 
+
+def _assert_project_state(window, audio_a: Path) -> None:
+    state = window._collect_project_state()
+    for key in PROJECT_PARITY_KEYS:
+        assert key in state
+    assert state["playlist_paths"] == [str(audio_a)]
+    assert state["slideshow_order_mode"] == "random"
+    assert state["slideshow_random_seed"] == 42
+    assert state["archive_used"] is True
+    assert state["calendar_notes"]["2026-09-11"]["note"] == "Test"
+    assert state["audio_sort"] == "import"
+    assert state["media_sort"] == "size_asc"
+    assert state["meta"]["qt_active_workspace"] == "preview"
+
+
+def test_qt_phase3_restores_legacy_options_and_uses_configured_media_tools(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "data"))
+    monkeypatch.setenv("VIDEOBATCH_FFMPEG", str(_fake_executable(tmp_path / "private-ffmpeg")))
+    monkeypatch.setenv("VIDEOBATCH_FFPROBE", str(_fake_executable(tmp_path / "private-ffprobe")))
+
+    config = dict(DEFAULT_CONFIG)
+    config.update(
+        {
+            "window_geometry": "1100x700",
+            "preview_zoom": 150,
+            "audio_sort": "name_desc",
+            "media_sort": "size_asc",
+            "area_zoom": {
+                "start": 100,
+                "media": 130,
+                "preview": 90,
+                "modes": 100,
+                "production": 110,
+                "help": 100,
+            },
+            "last_audio_dir": str(tmp_path),
+            "last_media_dir": str(tmp_path),
+            "active_tab": 4,
+        }
+    )
+    save_config(config)
+
+    app = QApplication.instance() or QApplication([])
+    window = VideoBatchQtPhase3Window(autoload_project=False)
+    window.show()
+    app.processEvents()
+
+    _assert_restored_session(window, tmp_path)
+    _assert_option_contract(window)
+
     audio_z = tmp_path / "z-song.wav"
     audio_a = tmp_path / "a-song.wav"
     image_z = tmp_path / "z-cover.png"
@@ -157,17 +176,7 @@ def test_qt_phase3_restores_legacy_options_and_uses_configured_media_tools(
     window._parity_calendar_marks["2026-09-11"] = "active"
     window._route_workspace("preview")
 
-    state = window._collect_project_state()
-    for key in PROJECT_PARITY_KEYS:
-        assert key in state
-    assert state["playlist_paths"] == [str(audio_a)]
-    assert state["slideshow_order_mode"] == "random"
-    assert state["slideshow_random_seed"] == 42
-    assert state["archive_used"] is True
-    assert state["calendar_notes"]["2026-09-11"]["note"] == "Test"
-    assert state["audio_sort"] == "import"
-    assert state["media_sort"] == "size_asc"
-    assert state["meta"]["qt_active_workspace"] == "preview"
+    _assert_project_state(window, audio_a)
 
     menu_titles = [action.text().replace("&", "") for action in window.menuBar().actions()]
     assert menu_titles == ["Datei", "Medien", "Ansicht", "Produktion", "Werkzeuge", "Hilfe"]
