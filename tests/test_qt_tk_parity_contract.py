@@ -11,6 +11,7 @@ from PySide6.QtWidgets import QApplication
 from videobatch_fast.config import DEFAULT_CONFIG, load_config, save_config
 from videobatch_fast.models import BatchOptions
 from videobatch_fast.qt_legacy_calendar import load_calendar_selection
+from videobatch_fast.qt_legacy_playlist import refresh_playlist_list
 from videobatch_fast.qt_legacy_parity import LEGACY_OPTION_KEYS, PROJECT_PARITY_KEYS
 from videobatch_fast.qt_legacy_parity_completion import _apply_view_order
 from videobatch_fast.qt_phase3 import VideoBatchQtPhase3Window
@@ -206,5 +207,32 @@ def test_extracted_legacy_calendar_restores_selected_entry(tmp_path: Path, monke
     assert window.parity_calendar_note.text() == "Debt-Burn-Down"
     assert window.parity_calendar_type.currentData() == "task"
     assert window.parity_calendar_color.currentData() == "active"
+    window.close()
+    app.processEvents()
+
+
+def test_extracted_legacy_playlist_refreshes_visible_items(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "data"))
+    monkeypatch.setenv("VIDEOBATCH_FFMPEG", str(_fake_executable(tmp_path / "private-ffmpeg")))
+    monkeypatch.setenv("VIDEOBATCH_FFPROBE", str(_fake_executable(tmp_path / "private-ffprobe")))
+
+    audio_a = tmp_path / "alpha.wav"
+    audio_b = tmp_path / "beta.wav"
+    audio_a.write_bytes(b"RIFF")
+    audio_b.write_bytes(b"RIFF")
+
+    app = QApplication.instance() or QApplication([])
+    window = VideoBatchQtPhase3Window(autoload_project=False)
+    window.parity_playlist.items = [audio_a, audio_b]
+    window.parity_playlist.current = 1
+
+    refresh_playlist_list(window)
+
+    assert window.parity_playlist_list.count() == 2
+    assert window.parity_playlist_list.item(0).text() == "01 · alpha.wav"
+    assert window.parity_playlist_list.item(1).text() == "02 · beta.wav"
+    assert window.parity_playlist_list.currentRow() == 1
     window.close()
     app.processEvents()
