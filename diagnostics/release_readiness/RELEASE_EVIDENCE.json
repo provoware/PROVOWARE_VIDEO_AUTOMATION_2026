@@ -117,7 +117,15 @@
     "manifest_regeneration_run_id": 30965984513,
     "matrix_workflow_run_id": 30966067548,
     "repository_finalization_commit": "76689511d2c35bb2ef626e96cb513c3d3672b20c",
-    "verified_source_commit": "ef003d2c01fa94b899d0ebac9947f1795dd23e8f"
+    "verified_source_commit": "ef003d2c01fa94b899d0ebac9947f1795dd23e8f",
+    "latest_debt_burn_down": {
+      "source_commit": "b5777e9e3853ae1a5ae0aab488ebc34147a22fd1",
+      "test_followup_commit": "c63364ddee3ac9d1f4746f65b868041e0081527c",
+      "scope": "qt_legacy_parity calendar extraction",
+      "legacy_ceiling_before": 1455,
+      "legacy_ceiling_after": 1366,
+      "extracted_module": "src/videobatch_fast/qt_legacy_calendar.py"
+    }
   },
   "release_cleanup": {
     "historical_reports_archived": 66,
