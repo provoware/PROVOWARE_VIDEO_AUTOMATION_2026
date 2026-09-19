@@ -83,11 +83,14 @@ class CanonicalSemanticStatusMixin:
     def _refresh_semantic_status_styles(self, *_args) -> None:
         header = getattr(self, "_semantic_header_status_label", None)
         sidebar = getattr(self, "_semantic_sidebar_status_label", None)
+        footer = getattr(self, "_semantic_footer_status_label", None)
         try:
             if header is not None:
                 header.configure(style=self._semantic_status_style())
             if sidebar is not None:
                 sidebar.configure(style=self._semantic_status_style(sidebar=True))
+            if footer is not None:
+                footer.configure(style=self._semantic_status_style())
         except TclError:
             return
 
