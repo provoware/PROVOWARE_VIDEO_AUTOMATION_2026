@@ -76,7 +76,7 @@
     "maximum_complexity": 29
   },
   "manifest": {
-    "file_count": 481,
+    "file_count": 482,
     "path": "RELEASE_MANIFEST.json",
     "status": "passed"
   },
@@ -119,11 +119,11 @@
     "repository_finalization_commit": "76689511d2c35bb2ef626e96cb513c3d3672b20c",
     "verified_source_commit": "ef003d2c01fa94b899d0ebac9947f1795dd23e8f",
     "latest_debt_burn_down": {
-      "source_commit": "fe29990f804125298f096551e07e2d0706270ed9",
-      "scope": "qt_legacy_parity playlist extraction",
-      "legacy_ceiling_before": 1366,
-      "legacy_ceiling_after": 1249,
-      "extracted_module": "src/videobatch_fast/qt_legacy_playlist.py"
+      "source_commit": "af8ee1a4787816c811abe9fb8b2f7e871cb5063d",
+      "scope": "qt_legacy_parity appearance extraction",
+      "legacy_ceiling_before": 1249,
+      "legacy_ceiling_after": 1215,
+      "extracted_module": "src/videobatch_fast/qt_legacy_appearance.py"
     }
   },
   "release_cleanup": {
