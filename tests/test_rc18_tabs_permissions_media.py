@@ -59,7 +59,7 @@ def test_install_root_quarantines_non_writable_child(tmp_path: Path) -> None:
 
 
 def test_tabbed_ui_contract_and_menu_are_in_source() -> None:
-    source = (ROOT / "src/videobatch_fast/ui_workspace_grid_mixin.py").read_text(encoding="utf-8")
+    source = (ROOT / "src/videobatch_fast/ui_workspace_shell_layout_mixin.py").read_text(encoding="utf-8")
     assert 'text("ui.tabs.media")' in source
     assert 'text("ui.tabs.preview")' in source
     assert 'text("ui.tabs.production")' in source

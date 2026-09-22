@@ -215,7 +215,10 @@ def write_log(output: str | None) -> Path:
 
 
 def publish(staging: Path, output: Path) -> None:
-    """Kompatibler, sicherer Einstieg für ältere Tests und Werkzeuge."""
+    """Publish wheels atomically without deleting the tracked local guide."""
+    guide = output / "README.md"
+    if guide.is_file():
+        shutil.copy2(guide, staging / guide.name)
     publish_directory(staging, output)
 
 
@@ -285,7 +288,7 @@ def main() -> int:
             return 6
 
         progress(5, 5, "Geprüftes Wheelhouse atomar veröffentlichen")
-        publish_directory(staging, output)
+        publish(staging, output)
         staging = None
         print(f"✓ Einheits-Wheelhouse bereit: {manifest['wheel_count']} Wheels")
         print(f"  Speicherort: {output}")

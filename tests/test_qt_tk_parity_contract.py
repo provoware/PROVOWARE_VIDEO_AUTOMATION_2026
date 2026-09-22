@@ -196,6 +196,7 @@ def test_extracted_legacy_calendar_restores_selected_entry(tmp_path: Path, monke
 
     app = QApplication.instance() or QApplication([])
     window = VideoBatchQtPhase3Window(autoload_project=False)
+    app.processEvents()
     window._parity_calendar_notes["2026-09-19"] = {
         "note": "Debt-Burn-Down",
         "entry_type": "task",
@@ -227,6 +228,7 @@ def test_extracted_legacy_playlist_refreshes_visible_items(tmp_path: Path, monke
 
     app = QApplication.instance() or QApplication([])
     window = VideoBatchQtPhase3Window(autoload_project=False)
+    app.processEvents()
     window.parity_playlist.items = [audio_a, audio_b]
     window.parity_playlist.current = 1
 
@@ -249,6 +251,7 @@ def test_extracted_legacy_appearance_applies_theme_and_font_scale(tmp_path: Path
 
     app = QApplication.instance() or QApplication([])
     window = VideoBatchQtPhase3Window(autoload_project=False)
+    app.processEvents()
     original_style = app.styleSheet()
     original_font = app.font()
     try:
@@ -276,6 +279,7 @@ def test_extracted_legacy_settings_builds_widgets_from_config(tmp_path: Path, mo
 
     app = QApplication.instance() or QApplication([])
     window = VideoBatchQtPhase3Window(autoload_project=False)
+    app.processEvents()
     tab = build_settings_tab(window, combo_factory=_combo)
 
     assert window.parity_output_mode.currentData() == str(

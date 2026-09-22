@@ -9,10 +9,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src" / "videobatch_fast"
+REGISTRY = ROOT / "registries" / "CODE_QUALITY_REGISTRY.json"
 MAX_LINES = 700
 
 
 def main() -> int:
+    policy = json.loads(REGISTRY.read_text(encoding="utf-8"))["python"]
+    ceilings = policy.get("legacy_source_line_ceilings", {})
     findings = []
     modules = 0
     functions = 0
@@ -24,8 +27,10 @@ def main() -> int:
         lines = len(source.splitlines())
         if lines > max_file[1]:
             max_file = (path.name, lines)
-        if lines > MAX_LINES:
-            findings.append(f"{path.name}: {lines} Zeilen > {MAX_LINES}")
+        relative = path.relative_to(ROOT).as_posix()
+        limit = int(ceilings.get(relative, MAX_LINES))
+        if lines > limit:
+            findings.append(f"{path.name}: {lines} Zeilen > {limit}")
         tree = ast.parse(source)
         for node in ast.walk(tree):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):

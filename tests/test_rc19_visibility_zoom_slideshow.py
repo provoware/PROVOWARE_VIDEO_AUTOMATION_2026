@@ -147,7 +147,7 @@ def test_real_two_image_slideshow_render(tmp_path: Path) -> None:
 
 def test_ctrl_mousewheel_and_header_font_controls_are_bound() -> None:
     zoom_source = (ROOT / "src/videobatch_fast/ui_area_zoom_mixin.py").read_text(encoding="utf-8")
-    header_source = (ROOT / "src/videobatch_fast/ui_workspace_grid_mixin.py").read_text(encoding="utf-8")
+    header_source = (ROOT / "src/videobatch_fast/ui_workspace_shell_layout_mixin.py").read_text(encoding="utf-8")
     assert "<Control-MouseWheel>" in zoom_source
     assert "<Control-Button-4>" in zoom_source
     assert "<Control-Button-5>" in zoom_source
@@ -156,7 +156,9 @@ def test_ctrl_mousewheel_and_header_font_controls_are_bound() -> None:
 
 
 def test_dashboard_is_scrollable_on_compact_displays() -> None:
-    source = (ROOT / "src/videobatch_fast/ui_workspace_grid_mixin.py").read_text(encoding="utf-8")
+    shell = (ROOT / "src/videobatch_fast/ui_workspace_shell_layout_mixin.py").read_text(encoding="utf-8")
+    grid = (ROOT / "src/videobatch_fast/workflow_grid.py").read_text(encoding="utf-8")
+    source = shell + grid
     assert "_scrollable_dashboard_body" in source
     assert "scrollregion" in source
     assert "ttk.Scrollbar" in source

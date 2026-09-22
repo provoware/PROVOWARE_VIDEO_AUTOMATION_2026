@@ -7,11 +7,13 @@ from pathlib import Path
 import sys
 from typing import Any, Mapping
 
+from videobatch_fast.versioning import build_label
+
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "RELEASE_MANIFEST.json"
 EVIDENCE_PATH = ROOT / "diagnostics/release_readiness/RELEASE_EVIDENCE.json"
 QUALITY_PATH = ROOT / "QUALITY_ENVIRONMENT_STATUS.json"
-BUILD_REPORT_PATH = ROOT / "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json"
+BUILD_REPORT_PATH = ROOT / f"VideoBatch_Fast_{build_label()}_BUILD_REPORT_save_.json"
 README_PATH = ROOT / "README.md"
 STATUS_PATH = ROOT / "STATUS.md"
 TODO_PATH = ROOT / "TODO.md"

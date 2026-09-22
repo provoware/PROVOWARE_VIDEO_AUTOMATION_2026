@@ -129,7 +129,7 @@ def test_bootstrap_checks_repairs_and_revalidates_system_dependencies() -> None:
     assert '"Online reparieren"' in source
     assert '"Offline bleiben"' in source
     assert '"pkexec"' in source
-    assert '"apt-get", "install"' in source
+    assert 'apt_get, "install"' in source
     assert "remaining = _missing_system_packages(sink)" in source
     assert "system_ready = ensure_system_dependencies(sink)" in source
     policy = contract["policy"]

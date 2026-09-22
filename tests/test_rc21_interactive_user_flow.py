@@ -88,7 +88,9 @@ def test_start_flow_autorepairs_and_prompts_missing_parts() -> None:
 
 
 def test_header_selection_statistics_are_always_bound() -> None:
-    source = (ROOT / "src/videobatch_fast/ui_workspace_grid_mixin.py").read_text(encoding="utf-8")
+    shell = (ROOT / "src/videobatch_fast/ui_workspace_shell_layout_mixin.py").read_text(encoding="utf-8")
+    grid = (ROOT / "src/videobatch_fast/ui_workspace_grid_mixin.py").read_text(encoding="utf-8")
+    source = shell + grid
     assert "ui.header.current_selection" in source
     assert "header_selection_stats" in source
     assert "_bind_header_statistics" in source
