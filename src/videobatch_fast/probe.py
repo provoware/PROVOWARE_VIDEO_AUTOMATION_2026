@@ -47,7 +47,9 @@ def probe_media_cached(path_text: str, mtime_ns: int, size: int) -> MediaInfo:
     path = Path(path_text)
     binary = ffprobe_path()
     if not binary:
-        return MediaInfo(path, classify_extension(path), size_bytes=size)
+        # An extension is only a hint.  Without ffprobe no content validation
+        # happened, so callers must not treat a damaged file as valid media.
+        return MediaInfo(path, "unknown", size_bytes=size)
     command = [
         binary, "-v", "error", "-show_entries",
         "format=duration:stream=index,codec_type,codec_name,width,height,duration",

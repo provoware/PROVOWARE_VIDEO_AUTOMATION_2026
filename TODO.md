@@ -13,6 +13,7 @@
 - [x] Repository-Preflight, Manifestvertrag, Qt6-Wayland-Orchestrierung und Langzeitrender-Probelauf auf dem Abschlussstand grün bestätigt.
 - [ ] Physische Start- und Sichtabnahme auf dem echten Kubuntu-26.04-Plasma-Wayland-Zielrechner durchführen.
 - [ ] Realen Langzeitrender mit großer Medienauswahl auf einem langsamen externen USB-Ziel vollständig durchführen.
+- [x] Lokale Funktionsverträge nach den Extraktionen repariert: 573 Tests in der isolierten, hashgeprüften Qualitätsumgebung bestanden.
 
 ## P0 – die zwei verbleibenden Stable-Gates
 

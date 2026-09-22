@@ -6,7 +6,9 @@ import platform
 import resource
 import shutil
 import subprocess
+import sys
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -216,4 +218,13 @@ def probe_sandbox_support() -> SandboxStatus:
         abi = _landlock_abi(libc)
     except SandboxUnavailable:
         pass
+    interpreter = Path(sys.executable).resolve()
+    mounted_roots = (Path("/usr"), Path("/lib"), Path("/lib64"), Path("/opt/pyvenv"))
+    if not any(interpreter.is_relative_to(root) for root in mounted_roots):
+        return SandboxStatus(
+            False,
+            f"Interpreter {interpreter} ist im Plugin-Chroot nicht verfügbar; Plugin-Ausführung bleibt sicher blockiert.",
+            abi,
+            True,
+        )
     return SandboxStatus(True, "Chroot/Namespace/Seccomp-Isolierung ist verfügbar.", abi, True)

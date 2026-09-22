@@ -97,7 +97,8 @@ def test_four_complete_theme_contracts_exist() -> None:
 
 
 def test_workspace_source_binds_requested_user_flows() -> None:
-    source = (ROOT / "src" / "videobatch_fast" / "ui_workspace_grid_mixin.py").read_text(encoding="utf-8")
+    shell = (ROOT / "src" / "videobatch_fast" / "ui_workspace_shell_layout_mixin.py").read_text(encoding="utf-8")
+    source = shell + (ROOT / "src" / "videobatch_fast" / "ui_workspace_grid_mixin.py").read_text(encoding="utf-8")
     events = (ROOT / "src" / "videobatch_fast" / "ui_event_handlers_mixin.py").read_text(encoding="utf-8")
     assert "ScrollableWorkflowGrid" in source
     assert "_scrollable_dashboard_body" in source

@@ -71,3 +71,17 @@ def test_missing_system_pip_is_repairable_not_network_fatal(tmp_path: Path) -> N
         mock.patch.object(builder.subprocess, "run", return_value=failed_download),
     ):
         assert builder.main() == 23
+
+
+def test_publish_preserves_tracked_wheelhouse_guide(tmp_path: Path) -> None:
+    output = tmp_path / "wheelhouse"
+    staging = tmp_path / "staging"
+    output.mkdir()
+    staging.mkdir()
+    (output / "README.md").write_text("local guide\n", encoding="utf-8")
+    (staging / "package.whl").write_bytes(b"wheel")
+
+    builder.publish(staging, output)
+
+    assert (output / "README.md").read_text(encoding="utf-8") == "local guide\n"
+    assert (output / "package.whl").read_bytes() == b"wheel"

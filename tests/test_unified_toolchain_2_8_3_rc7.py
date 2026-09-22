@@ -113,9 +113,10 @@ def test_orchestrator_verifies_without_legacy_modules(tmp_path: Path) -> None:
 
 def test_single_entrypoint_and_compatibility_wrappers_are_bound() -> None:
     entry = (ROOT / "videobatch.sh").read_text(encoding="utf-8")
+    start = (ROOT / "STARTEN.sh").read_text(encoding="utf-8")
     debug_launcher = (ROOT / "scripts" / "debug_launcher.py").read_text(encoding="utf-8")
     assert "scripts/toolchain.py" in entry
-    assert "scripts/debug_launcher.py" in entry
+    assert "scripts/debug_launcher.py" in start
     assert 'str(ROOT / "scripts" / "bootstrap.py")' in debug_launcher
     assert "toolchain_python" in entry
     for filename in ("start.sh", "setup.sh"):

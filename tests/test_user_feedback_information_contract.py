@@ -34,16 +34,17 @@ def test_compact_feedback_text_has_safe_fallbacks_and_bounds() -> None:
 
 def test_feedback_footer_is_responsive_and_updates_both_information_channels() -> None:
     source = inspect.getsource(CanonicalHelpStatusMixin)
+    formatter = inspect.getsource(compact_feedback_text)
     for token in (
         'self.guidance_text.trace_add("write", sync_feedback)',
         'self.status_text.trace_add("write", sync_feedback)',
-        '"Status: {status_value}"',
-        '"Nächster Schritt: {guidance_value}"',
         '_semantic_footer_status_label',
         'available < 760',
         'guidance.configure(wraplength=max(240, available - 20))',
     ):
         assert token in source
+    assert 'f"Status: {status_value}"' in formatter
+    assert 'f"Nächster Schritt: {guidance_value}"' in formatter
 
 
 def test_feedback_footer_remains_presentation_only() -> None:

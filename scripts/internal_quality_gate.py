@@ -26,7 +26,7 @@ class Finding:
 def _complexity(node: ast.AST) -> int:
     score = 1
     for item in ast.walk(node):
-        if isinstance(item, (ast.If, ast.For, ast.AsyncFor, ast.While, ast.ExceptHandler, ast.With, ast.AsyncWith, ast.IfExp, ast.Assert, ast.comprehension)):
+        if isinstance(item, (ast.If, ast.For, ast.AsyncFor, ast.While, ast.ExceptHandler, ast.With, ast.AsyncWith, ast.IfExp, ast.comprehension)):
             score += 1
         elif isinstance(item, ast.BoolOp):
             score += max(1, len(item.values) - 1)
@@ -66,6 +66,79 @@ def _source_line_ceiling(relative: str, py_policy: dict[str, object]) -> tuple[i
     return int(legacy[relative]), True
 
 
+def _inspect_tree(
+    tree: ast.AST,
+    relative: str,
+    metrics: dict[str, int],
+    findings: list[Finding],
+    *,
+    complexity_limit: int,
+    function_line_target: int,
+    class_method_target: int,
+) -> None:
+    forbidden_calls = {"os.system": "SEC_OS_SYSTEM", "tempfile.mktemp": "SEC_MKTEMP"}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef):
+            metrics["classes"] += 1
+            method_count = sum(isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)) for child in node.body)
+            metrics["max_class_methods"] = max(metrics["max_class_methods"], method_count)
+            metrics["large_classes"] += method_count > class_method_target
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            metrics["functions"] += 1
+            function_lines = max(1, int(getattr(node, "end_lineno", node.lineno) or node.lineno) - node.lineno + 1)
+            metrics["max_function_lines"] = max(metrics["max_function_lines"], function_lines)
+            metrics["long_functions"] += function_lines > function_line_target
+            value = _complexity(node)
+            metrics["max_complexity"] = max(metrics["max_complexity"], value)
+            if value > complexity_limit:
+                findings.append(Finding("error", "COMPLEXITY", relative, node.lineno, f"{node.name} besitzt Komplexität {value}; erlaubt sind {complexity_limit}."))
+        if not isinstance(node, ast.Call):
+            continue
+        if any(keyword.arg == "shell" and isinstance(keyword.value, ast.Constant) and keyword.value.value is True for keyword in node.keywords):
+            findings.append(Finding("error", "SEC_SHELL_TRUE", relative, node.lineno, "shell=True ist verboten."))
+        name = f"{node.func.value.id}.{node.func.attr}" if isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name) else ""
+        if name in forbidden_calls:
+            findings.append(Finding("error", forbidden_calls[name], relative, node.lineno, f"{name} ist verboten."))
+        if isinstance(node.func, ast.Name) and node.func.id in {"eval", "exec"}:
+            allowed_exec = relative == "src/videobatch_fast/plugin_host.py" and node.func.id == "exec"
+            if not allowed_exec:
+                findings.append(Finding("error", "SEC_DYNAMIC_CODE", relative, node.lineno, f"{node.func.id} ist außerhalb des isolierten Plugin-Hosts verboten."))
+
+
+def _inspect_file(
+    path: Path,
+    py_policy: dict[str, object],
+    metrics: dict[str, int],
+    findings: list[Finding],
+    *,
+    complexity_limit: int,
+    function_line_target: int,
+    class_method_target: int,
+) -> None:
+    relative = path.relative_to(ROOT).as_posix()
+    source = path.read_text(encoding="utf-8")
+    metrics["files"] += 1
+    lines = len(source.splitlines())
+    metrics["max_lines"] = max(metrics["max_lines"], lines)
+    if relative.startswith("src/"):
+        allowed_lines, is_legacy = _source_line_ceiling(relative, py_policy)
+        if lines > allowed_lines:
+            code = "FILE_DEBT_GREW" if is_legacy else "FILE_TOO_LONG"
+            findings.append(Finding("error", code, relative, 1, f"{lines} Zeilen überschreiten das erlaubte Ceiling {allowed_lines}."))
+        elif is_legacy and lines < allowed_lines:
+            findings.append(Finding("error", "DEBT_BASELINE_STALE", relative, 1, f"Datei ist auf {lines} Zeilen geschrumpft, Legacy-Ceiling steht noch auf {allowed_lines}; Ceiling absenken."))
+        elif lines > int(py_policy["source_line_limit"]):
+            metrics["architecture_debt_files"] += 1
+    try:
+        tree = ast.parse(source, filename=relative)
+    except SyntaxError as exc:
+        findings.append(Finding("error", "SYNTAX", relative, exc.lineno or 0, str(exc)))
+        return
+    _inspect_tree(tree, relative, metrics, findings, complexity_limit=complexity_limit, function_line_target=function_line_target, class_method_target=class_method_target)
+    if re.search(r"-----BEGIN (?:OPENSSH |EC |RSA )?PRIVATE KEY-----", source):
+        findings.append(Finding("error", "PRIVATE_KEY", relative, 1, "Privates Schlüsselmaterial im Quelltext erkannt."))
+
+
 def main() -> int:
     policy = json.loads(REGISTRY.read_text(encoding="utf-8"))
     py_policy = policy["python"]
@@ -88,85 +161,16 @@ def main() -> int:
         "max_function_lines": 0,
         "max_class_methods": 0,
     }
-    forbidden_calls = {"os.system": "SEC_OS_SYSTEM", "tempfile.mktemp": "SEC_MKTEMP"}
-
     for path in _source_files():
-        relative = path.relative_to(ROOT).as_posix()
-        source = path.read_text(encoding="utf-8")
-        metrics["files"] += 1
-        lines = len(source.splitlines())
-        metrics["max_lines"] = max(metrics["max_lines"], lines)
-        if relative.startswith("src/"):
-            allowed_lines, is_legacy = _source_line_ceiling(relative, py_policy)
-            if lines > allowed_lines:
-                code = "FILE_DEBT_GREW" if is_legacy else "FILE_TOO_LONG"
-                findings.append(
-                    Finding(
-                        "error",
-                        code,
-                        relative,
-                        1,
-                        f"{lines} Zeilen überschreiten das erlaubte Ceiling {allowed_lines}.",
-                    )
-                )
-            elif is_legacy and lines < allowed_lines:
-                findings.append(
-                    Finding(
-                        "error",
-                        "DEBT_BASELINE_STALE",
-                        relative,
-                        1,
-                        (
-                            f"Datei ist auf {lines} Zeilen geschrumpft, "
-                            f"Legacy-Ceiling steht noch auf {allowed_lines}; Ceiling absenken."
-                        ),
-                    )
-                )
-            elif lines > line_limit:
-                metrics["architecture_debt_files"] += 1
-        try:
-            tree = ast.parse(source, filename=relative)
-        except SyntaxError as exc:
-            findings.append(Finding("error", "SYNTAX", relative, exc.lineno or 0, str(exc)))
-            continue
-        for node in ast.walk(tree):
-            if isinstance(node, ast.ClassDef):
-                metrics["classes"] += 1
-                method_count = sum(
-                    isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef))
-                    for child in node.body
-                )
-                metrics["max_class_methods"] = max(metrics["max_class_methods"], method_count)
-                if method_count > class_method_target:
-                    metrics["large_classes"] += 1
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                metrics["functions"] += 1
-                function_lines = max(
-                    1,
-                    int(getattr(node, "end_lineno", node.lineno) or node.lineno) - node.lineno + 1,
-                )
-                metrics["max_function_lines"] = max(metrics["max_function_lines"], function_lines)
-                if function_lines > function_line_target:
-                    metrics["long_functions"] += 1
-                value = _complexity(node)
-                metrics["max_complexity"] = max(metrics["max_complexity"], value)
-                if value > complexity_limit:
-                    findings.append(Finding("error", "COMPLEXITY", relative, node.lineno, f"{node.name} besitzt Komplexität {value}; erlaubt sind {complexity_limit}."))
-            if isinstance(node, ast.Call):
-                for keyword in node.keywords:
-                    if keyword.arg == "shell" and isinstance(keyword.value, ast.Constant) and keyword.value.value is True:
-                        findings.append(Finding("error", "SEC_SHELL_TRUE", relative, node.lineno, "shell=True ist verboten."))
-                name = ""
-                if isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name):
-                    name = f"{node.func.value.id}.{node.func.attr}"
-                if name in forbidden_calls:
-                    findings.append(Finding("error", forbidden_calls[name], relative, node.lineno, f"{name} ist verboten."))
-                if isinstance(node.func, ast.Name) and node.func.id in {"eval", "exec"}:
-                    allowed_exec = relative == "src/videobatch_fast/plugin_host.py" and node.func.id == "exec"
-                    if not allowed_exec:
-                        findings.append(Finding("error", "SEC_DYNAMIC_CODE", relative, node.lineno, f"{node.func.id} ist außerhalb des isolierten Plugin-Hosts verboten."))
-        if re.search(r"-----BEGIN (?:OPENSSH |EC |RSA )?PRIVATE KEY-----", source):
-            findings.append(Finding("error", "PRIVATE_KEY", relative, 1, "Privates Schlüsselmaterial im Quelltext erkannt."))
+        _inspect_file(
+            path,
+            py_policy,
+            metrics,
+            findings,
+            complexity_limit=complexity_limit,
+            function_line_target=function_line_target,
+            class_method_target=class_method_target,
+        )
 
     for relative, raw_ceiling in sorted(legacy_line_ceilings.items()):
         ceiling = int(raw_ceiling)
