@@ -18,6 +18,7 @@ python3 "$ROOT_DIR/scripts/toolchain.py" gate --scope quality --run-external --q
 "$ENV_PYTHON" "$ROOT_DIR/scripts/render_release_docs.py" --check
 "$ENV_PYTHON" "$ROOT_DIR/scripts/internal_quality_gate.py"
 "$ENV_PYTHON" "$ROOT_DIR/scripts/validate_text_resources.py"
+"$ENV_PYTHON" "$ROOT_DIR/scripts/check_github_actions_pins.py" --json
 "$ENV_PYTHON" -m pytest -q -p no:cacheprovider \
   --cov=videobatch_fast \
   --cov-config="$ROOT_DIR/pyproject.toml" \
