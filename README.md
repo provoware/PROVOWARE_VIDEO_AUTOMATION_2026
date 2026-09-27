@@ -18,125 +18,81 @@
 - Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt
 <!-- release-status:end -->
 
-## Dokumentation
+## Überblick
 
-| Aufgabe | Datei | Pflichtgrad |
-|---|---|---|
-| erster Start und erstes Testvideo | `START_HIER_save_.md` | Pflicht |
-| vollständige Bedienung | `docs/BENUTZERHANDBUCH.md` | Empfohlen |
-| automatische Installation | `AUTOINSTALLATION_save_.md` | Pflicht bei Installation |
-| Fehler beheben | `ERROR_HANDLING.md` | Pflicht bei Fehlern |
-| Update und Rückfall | `UPDATE_SYSTEM.md` | Pflicht bei Updates |
-| Projektordner verstehen | `PROJEKTORDNERSTRUKTUR_save_.md` | Empfohlen |
-| alle Dokumente einordnen | `docs/DOKUMENTATIONSINDEX.md` | Empfohlen |
-| Dokumentationen schreiben | `docs/DOKUMENTATIONSSTANDARD.md` | Pflicht für Beiträge |
+VideoBatch Fast ist die lokale Video-Automation für **Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6**. Der aktuelle Stand ist **2.8.3-rc24**. Die automatisierten Qualitäts- und CI-Verträge sind grün; Stable bleibt bewusst gesperrt, bis die zwei oben genannten realen Abnahmen vorliegen.
 
 ## Schnellstart
 
-### Schritt 1: ZIP vollständig entpacken
-
-VideoBatch nicht direkt aus dem ZIP starten.
-
-**Warum notwendig?** Einstellungen, Protokolle und Projektzustände müssen geschrieben werden können.
-
-**Kann entfallen?** Nein.
-
-### Schritt 2: Terminal im Projektordner öffnen
-
-### Schritt 3: Starter ausführbar machen
+1. Projekt-ZIP vollständig entpacken.
+2. Terminal im Projektordner öffnen.
+3. Falls nötig den Starter ausführbar machen:
 
 ```bash
 chmod +x videobatch.sh
 ```
 
-**Kann entfallen?** Ja, wenn die Datei bereits ausführbar ist.
-
-### Schritt 4: VideoBatch starten
+4. VideoBatch starten:
 
 ```bash
 ./videobatch.sh
 ```
 
-**Erwartetes Ergebnis:** Die Oberfläche öffnet sich nach der Laufzeit-, FFmpeg-, Ordner- und Projektprüfung.
+5. Für den ersten Lauf einen **kurzen Testauftrag** verwenden und das Ergebnis am Anfang, in der Mitte und am Ende abspielen.
 
-**Bei einem Fehler:** Nicht mit `sudo`, `chmod -R 777` oder rekursiven Besitzänderungen reagieren. `ERROR_HANDLING.md` verwenden.
+**Sicherheitsregel:** Bei einem Fehler nicht mit `sudo`, `chmod -R 777` oder rekursiven Besitzänderungen reagieren. Stattdessen `ERROR_HANDLING.md` verwenden.
 
-## Erster Bedienablauf
+## Repository auf einen Blick
 
-1. Audiodateien hinzufügen.
-2. Bilder oder Videos hinzufügen.
-3. Quellenzahlen und Vorschau kontrollieren.
-4. Beim ersten Test die Automatik verwenden.
-5. Beschreibbaren Ausgabeordner bestätigen.
-6. Produktion starten.
-7. Queue und Abschlussmeldung abwarten.
-8. Anfang, Mitte und Ende des Ergebnisses abspielen.
+| Bereich | Zweck |
+|---|---|
+| `videobatch.sh`, `start.sh`, `STARTEN.sh` | Start- und Launcherpfade |
+| `START_HIER_save_.md`, `AUTOINSTALLATION_save_.md` | Einstieg und Installation |
+| `src/` | Anwendungscode |
+| `scripts/` | Prüf-, Build-, Release- und Wartungsskripte |
+| `tests/` | automatisierte Funktions- und Vertragsprüfungen |
+| `.github/workflows/` | CI- und Merge-Gates |
+| `docs/` | aktuelle Fach- und Projektdokumentation |
+| `docs/reference/` | technische Referenzdokumente, bewusst aus dem Hauptverzeichnis ausgelagert |
+| `docs/archive/` | historische interne Nachweise und alte Prüfstände |
+| `diagnostics/release_readiness/` | kanonische Release-Evidence |
+| `RELEASE_MANIFEST.json` | kompakter reproduzierbarer Release-Vertrag |
 
-**Warum ist die Ergebnisprüfung notwendig?** Ein technisch abgeschlossener Render beweist noch nicht, dass Inhalt, Ton und Wirkung korrekt sind.
+**Ordnungskonzept:** Im Hauptverzeichnis bleiben vor allem Startdateien, aktive Release-Unterlagen und maschinenlesbare Verträge. Technische Hintergrunddokumente gehören nach `docs/reference/`; historische interne Nachweise nach `docs/archive/`.
 
-**Kann sie entfallen?** Vor Veröffentlichung oder Archivierung: nein.
+## Dokumentation
 
-## Was VideoBatch schützt
+| Aufgabe | Datei |
+|---|---|
+| erster Start und erstes Testvideo | `START_HIER_save_.md` |
+| vollständige Bedienung | `docs/BENUTZERHANDBUCH.md` |
+| automatische Installation | `AUTOINSTALLATION_save_.md` |
+| Fehler sicher beheben | `ERROR_HANDLING.md` |
+| Update und Rückfall | `UPDATE_SYSTEM.md` |
+| Projektstruktur verstehen | `PROJEKTORDNERSTRUKTUR_save_.md` |
+| Dokumente einordnen | `docs/DOKUMENTATIONSINDEX.md` |
+| Entwickler-Einstieg | `DEVELOPER_GUIDE.md` |
+| technische Referenzen | `docs/reference/` |
+| Dokumentationsstandard | `docs/DOKUMENTATIONSSTANDARD.md` |
+
+## Sicherheitsprinzipien
 
 - Originalmedien werden nicht überschrieben.
-- Projektzustände werden bei Fehlern nicht stillschweigend verworfen.
-- Schreibziele werden mit einer echten Schreibprobe geprüft.
-- pauschale Rootrechte und `chmod 777` sind nicht vorgesehen.
-- Wiederanlaufquellen werden geladen, aber nicht automatisch gestartet.
-- ungültige Effekte können auf eine sichere Automatik zurückgesetzt werden.
-- der Vorschau-Cache entfernt nur eigene, eindeutig erkannte Vorschaudateien.
+- Schreibziele werden vor produktiven Vorgängen geprüft.
+- Wiederanlaufzustände werden kontrolliert geladen und nicht stillschweigend gestartet.
+- Projekt- und Qualitätsprüfungen sollen lesend beziehungsweise reproduzierbar bleiben.
+- Stable wird nicht aus CI-Ergebnissen allein abgeleitet: die physische Kubuntu-Abnahme und der reale Langzeitrender bleiben echte Freigabegrenzen.
 
-## Kernfunktionen
+## Erster Test
 
-- Audio-, Bild- und Videoimport
-- automatische Moduswahl und Schnellmodi
-- Render-Queue mit Fehler- und Wiederanlaufzuständen
-- Vorschau und Thumbnail-Datenträgercache
-- direkte sichere Fehlerlösungen
-- persistente Projekteinstellungen
-- A/B-Update- und Rückfallkonzept
-- kanonische Themes, Schriftprofile und KPI-Dashboard
-- Design-, Manifest- und Linux-Matrix-Gates
+1. Wenige Audio-, Bild- oder Videoquellen hinzufügen.
+2. Vorschau und erkannte Quellen kontrollieren.
+3. Einen beschreibbaren Ausgabeordner auswählen.
+4. Produktion starten und Queue bis zum Abschluss beobachten.
+5. Ergebnis vollständig stichprobenartig prüfen.
+6. Erst danach größere Aufträge verwenden.
 
-## Vorschau-Cache
-
-Vorschaubilder werden im XDG-Benutzercache gespeichert. Standardgrenzen:
-
-- maximal 1 GiB
-- maximal 2.000 VideoBatch-PNG-Dateien
-
-Bei Überschreitung werden zuerst lange nicht verwendete eigene Cacheeinträge entfernt. Originalmedien, Projektdateien und fremde Dateien bleiben unberührt.
-
-### Cache prüfen
-
-1. Bilder- oder Videoauswahl öffnen.
-2. `Vorschau-Cache` wählen.
-3. Anzahl, Größe, Auslastung, Pfad und letzte Bereinigung kontrollieren.
-
-### Cache leeren
-
-1. `Vorschau-Cache leeren` wählen.
-2. Sicherheitsabfrage lesen.
-3. Nur bei Platzmangel, Diagnose oder beschädigten Vorschauen bestätigen.
-
-**Kann entfallen?** Ja. Die normale Nutzung erfordert keine regelmäßige manuelle Leerung.
-
-## Mehrere Auswahlrunden
-
-1. Dateien markieren.
-2. `Auswahl übernehmen + im Ordner bleiben` wählen.
-3. Weitere Quellen ergänzen.
-4. Erst mit `Fertig` die Gesamtauswahl in das Projekt übernehmen.
-
-**Kann entfallen?** Ja. Bei einem einzelnen Ordner genügt eine Auswahlrunde.
-
-## Fehlerampel
-
-- **Hinweis:** lesen und Zustand kontrollieren.
-- **Warnung:** Ursache prüfen; nur ausdrücklich angebotene sichere Fortsetzung verwenden.
-- **Vorgang gestoppt:** Ursache beheben und Vorprüfung erneut ausführen.
-
-Originalmedien und gespeicherte Projekte bleiben bei blockierenden Fehlern unverändert.
+Für Cache, Mehrfachauswahl, Schnellmodi und weitere Bedienfunktionen ist `docs/BENUTZERHANDBUCH.md` die maßgebliche Anleitung.
 
 ## Release- und Dateistatus
 
@@ -161,14 +117,13 @@ Only standalone user and release deliverables receive _save_. Source modules, CI
 
 **Vor Stable gilt:** Auslieferung als vollständiges Projekt-ZIP. Teil- und Onlineupdates bleiben bis nach der Stable-Freigabe deaktiviert.
 
-## Dokumentationsregel
-
-Aktive Anleitungen müssen Ziel, Pflichtgrad, Voraussetzungen, Sicherung, nummerierte Schritte, Begründung, Weglassbarkeit, erwartetes Ergebnis, Fehlerfall, Abschlussprüfung und nächsten Schritt enthalten. Historische Berichte bleiben unverändert und werden im `docs/DOKUMENTATIONSINDEX.md` als Archiv beziehungsweise Nachweis eingeordnet.
-
 ## Abschlussprüfung
 
-Der erste Lauf ist abgeschlossen, wenn die Oberfläche ohne Fehlermeldung startet, ein kurzer Testauftrag beendet wird und das Ergebnis vollständig abgespielt wurde. Stable bleibt bis zu den oben genannten realen Prüfungen gesperrt.
+Ein erster Lauf gilt als erfolgreich, wenn die Oberfläche ohne Fehlermeldung startet, ein kurzer Testauftrag abgeschlossen wird und das erzeugte Ergebnis plausibel abgespielt wurde. **Stable bleibt gesperrt**, bis die physische Kubuntu-26.04-Plasma-Wayland-Abnahme und der reale Langzeitrender beide gültige Nachweise erzeugt haben.
 
 ## Nächster Schritt
 
-Einsteiger öffnen `START_HIER_save_.md`. Fortgeschrittene Nutzer verwenden `docs/BENUTZERHANDBUCH.md`. Entwickler beginnen mit `DEVELOPER_GUIDE.md` und `docs/DOKUMENTATIONSSTANDARD.md`.
+- **Einsteiger:** `START_HIER_save_.md`
+- **Nutzer:** `docs/BENUTZERHANDBUCH.md`
+- **Entwickler:** `DEVELOPER_GUIDE.md`
+- **Aktueller Arbeitsplan:** `TODO.md`
