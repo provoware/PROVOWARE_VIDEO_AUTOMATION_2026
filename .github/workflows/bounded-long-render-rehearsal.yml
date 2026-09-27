@@ -44,7 +44,7 @@ jobs:
 
     steps:
       - name: Check out exact revision
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
@@ -189,7 +189,7 @@ jobs:
           PY
 
       - name: Upload bounded rehearsal evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: bounded-long-render-rehearsal
           path: |
