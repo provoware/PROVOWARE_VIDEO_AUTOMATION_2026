@@ -24,18 +24,22 @@ Dieser Wegweiser ordnet jede aktuelle Anleitung und jeden historischen Nachweis 
 | Ziel | Richtige Datei |
 |---|---|
 | Entwicklungsumgebung und erster Beitrag | `DEVELOPER_GUIDE.md` |
-| Architektur und Arbeitsregeln | `DEVELOPER_HANDBOOK.md`, `docs/ARCHITEKTUR.md`, `AGENTS.md` |
+| Architektur und Arbeitsregeln | `docs/reference/DEVELOPER_HANDBOOK.md`, `docs/ARCHITEKTUR.md`, `AGENTS.md` |
 | Codequalitätsprüfung | `docs/CODE_QUALITY_PIPELINE.md`, `docs/OFFLINE_QUALITY_ENVIRONMENT.md` |
 | reproduzierbare Updates | `docs/REPRODUCIBLE_UPDATE_PIPELINE.md` |
-| Plugins prüfen | `PLUGIN_SYSTEM.md`, `docs/PLUGIN_PERMISSIONS.md`, `docs/PLUGIN_SIGNING.md`, `docs/PLUGIN_APPROVALS.md`, `docs/PLUGIN_APPROVAL_MANAGEMENT.md`, `docs/PLUGIN_OS_ISOLATION.md` |
+| Plugins prüfen | `docs/reference/PLUGIN_SYSTEM.md`, `docs/PLUGIN_PERMISSIONS.md`, `docs/PLUGIN_SIGNING.md`, `docs/PLUGIN_APPROVALS.md`, `docs/PLUGIN_APPROVAL_MANAGEMENT.md`, `docs/PLUGIN_OS_ISOLATION.md` |
 | visuelle Prüfung | `docs/VISUAL_INSPECTION_HTML.md`, `docs/VISUAL_REGRESSION.md`, `docs/WORKSPACE_VISUAL_REGRESSION.md` |
 | Designvertrag | `docs/design/VIDEOBATCH_GRAPHICS_MANIFEST.md`, `docs/design/VIDEOBATCH_DESIGN_IMPLEMENTATION_PLAN.md` |
 
 ## Technische Fachanleitungen
 
-Diese Dateien beschreiben weiterhin gültige Teilbereiche, setzen aber technisches Grundwissen voraus:
+Technische Referenzdokumente liegen gebündelt unter `docs/reference/`. Diese Dateien beschreiben weiterhin gültige Teilbereiche, setzen aber technisches Grundwissen voraus:
 
-- `BEST_PRACTICES.md`
+- `docs/reference/BEST_PRACTICES.md`
+- `docs/reference/KEY_ARCHIVE.md`
+- `docs/reference/REGISTRY_MANIFEST.md`
+- `docs/reference/STABLE_UPDATE.md`
+- `docs/reference/TEST_SYSTEM.md`
 - `docs/DATA_INTEGRITY_HARDENING.md`
 - `docs/FAST_EFFECTS.md`
 - `docs/WORKSPACE_2X2_AND_DEBUGGING.md`
@@ -74,7 +78,7 @@ Diese Dateien sind interne Planungshilfen und keine Nutzeranleitungen.
 
 ## 6. Visuelle Freigaben und Normalisierung
 
-- `VISUAL_APPROVAL_NORMALIZATION.md`
+- `docs/reference/VISUAL_APPROVAL_NORMALIZATION.md`
 - `VISUAL_DESKTOP_APPROVAL.md`
 - `docs/VISUAL_DESKTOP_APPROVAL.md`
 
