@@ -32,13 +32,13 @@ jobs:
       PYTHONPATH: src
     steps:
       - name: Check out exact revision
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
 
       - name: Set up stable validation Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.12'
 
@@ -83,13 +83,13 @@ jobs:
       EXPECTED_RUFF_WHEEL_SHA256: 39897739f112253ee4fdd2e8aa9a4f9ded99fb2be367d5f31dfa4ded6025584c
     steps:
       - name: Check out exact revision
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
 
       - name: Set up stable validation Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.12'
 
@@ -116,7 +116,7 @@ jobs:
           printf '%s  %s\n' "$actual" "$(basename "$wheel")" > "$wheelhouse/WHEELHOUSE_SHA256.txt"
 
       - name: Upload immutable Ruff wheelhouse
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ruff-0.16.1-wheelhouse-${{ github.event.pull_request.head.sha || github.sha }}
           path: ${{ runner.temp }}/ruff-wheelhouse/
@@ -132,18 +132,18 @@ jobs:
       PIP_NO_INDEX: '1'
     steps:
       - name: Check out exact revision
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
 
       - name: Set up stable validation Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.12'
 
       - name: Download prepared Ruff wheelhouse
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: ruff-0.16.1-wheelhouse-${{ github.event.pull_request.head.sha || github.sha }}
           path: ${{ runner.temp }}/ruff-wheelhouse
@@ -195,7 +195,7 @@ jobs:
 
       - name: Upload Ruff stable-gate evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ruff-stable-gate-evidence-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
@@ -213,13 +213,13 @@ jobs:
       VIDEOBATCH_CI_ALLOW_PUBLIC_PYPI: '1'
     steps:
       - name: Check out exact revision
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
 
       - name: Set up stable validation Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.12'
 
@@ -314,7 +314,7 @@ jobs:
 
       - name: Upload complete Python stable-gate evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: python-stable-gates-evidence-${{ github.event.pull_request.head.sha || github.sha }}
           path: ${{ runner.temp }}/videobatch-quality/evidence/

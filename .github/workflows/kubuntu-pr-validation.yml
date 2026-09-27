@@ -52,7 +52,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Check out exact PR head
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ inputs.head_sha }}
           fetch-depth: 0
@@ -71,7 +71,7 @@ jobs:
 
       - name: Upload ancestry evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: trusted-pr-ancestry-${{ inputs.head_sha }}
           path: PR_ANCESTRY_REPORT.json
@@ -89,7 +89,7 @@ jobs:
       RUFF_CACHE_DIR: /tmp/preflight-ruff-cache
     steps:
       - name: Check out exact PR head
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ inputs.head_sha }}
           persist-credentials: false
@@ -139,7 +139,7 @@ jobs:
       PYTHONDONTWRITEBYTECODE: '1'
     steps:
       - name: Check out exact PR head
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ inputs.head_sha }}
           persist-credentials: false
@@ -229,7 +229,7 @@ jobs:
 
       - name: Upload target evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: kubuntu-26-04-wayland-status-${{ inputs.head_sha }}
           path: |
@@ -275,7 +275,7 @@ jobs:
       PYTHONPYCACHEPREFIX: /tmp/archive-pycache
     steps:
       - name: Check out exact verified PR head
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ inputs.head_sha }}
           fetch-depth: 1
@@ -307,7 +307,7 @@ jobs:
           echo "ARCHIVE=$archive" >> "$GITHUB_ENV"
 
       - name: Upload verified full source
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: verified-full-source-${{ inputs.head_sha }}
           path: |
