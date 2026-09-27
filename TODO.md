@@ -36,8 +36,9 @@
 
 ## Repository-Schutz
 
-- [x] `main` wird durch das aktive Repository-Ruleset **„Design manifest contract“** geschützt: Branch-Löschung und Non-Fast-Forward-Updates sind gesperrt; der **Design manifest contract** ist strikt als Pflichtprüfung hinterlegt.
-- [ ] Separat entscheiden, welche weiteren zentralen CI-Gates zusätzlich als Pflichtprüfungen im Ruleset verankert werden sollen. Der aktuelle Schutz erzwingt noch nicht pauschal alle Release-, Qt6-, Wayland- und Langzeitrender-Gates.
+- [x] `main` wird durch das aktive Repository-Ruleset **„Design manifest contract“** geschützt: Branch-Löschung und Non-Fast-Forward-Updates sind gesperrt.
+- [x] Als verpflichtende GitHub-Actions-Prüfungen sind **Design manifest contract** und **Release contract sync** hinterlegt.
+- [ ] Weitere schwere CI-Gates wie Qt6-/Wayland- und Langzeitrender-Prüfungen bleiben bewusst außerhalb des Pflicht-Rulesets; eine spätere Erweiterung nur separat und risikobasiert entscheiden.
 
 ## Danach – Qt-Migration abschließen
 
