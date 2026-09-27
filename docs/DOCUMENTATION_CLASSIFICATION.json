@@ -16,9 +16,6 @@
         "Nächster Schritt"
       ]
     },
-    "BEST_PRACTICES.md": {
-      "category": "technical"
-    },
     "CHANGELOG.md": {
       "category": "historical"
     },
@@ -36,9 +33,6 @@
         "Abschlussprüfung",
         "Nächster Schritt"
       ]
-    },
-    "DEVELOPER_HANDBOOK.md": {
-      "category": "technical"
     },
     "ERROR_HANDLING.md": {
       "category": "active",
@@ -60,12 +54,6 @@
     "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md": {
       "category": "historical"
     },
-    "KEY_ARCHIVE.md": {
-      "category": "technical"
-    },
-    "PLUGIN_SYSTEM.md": {
-      "category": "technical"
-    },
     "PROJEKTORDNERSTRUKTUR_save_.md": {
       "category": "technical"
     },
@@ -83,14 +71,8 @@
         "Abschlussprüfung"
       ]
     },
-    "REGISTRY_MANIFEST.md": {
-      "category": "technical"
-    },
     "RELEASE_NOTES_save_.md": {
       "category": "historical"
-    },
-    "STABLE_UPDATE.md": {
-      "category": "technical"
     },
     "START_HIER_save_.md": {
       "category": "active",
@@ -109,9 +91,6 @@
     "TEST_REPORT_save_.md": {
       "category": "technical"
     },
-    "TEST_SYSTEM.md": {
-      "category": "technical"
-    },
     "TODO.md": {
       "category": "internal"
     },
@@ -126,9 +105,6 @@
         "Abschlussprüfung",
         "Nächster Schritt"
       ]
-    },
-    "VISUAL_APPROVAL_NORMALIZATION.md": {
-      "category": "technical"
     },
     "VISUAL_DESKTOP_APPROVAL.md": {
       "category": "technical"
@@ -253,6 +229,30 @@
     },
     "STABLE_GATE_ITERATION_2.8.3-rc24_2026-09-11.md": {
       "category": "internal"
+    },
+    "docs/reference/BEST_PRACTICES.md": {
+      "category": "technical"
+    },
+    "docs/reference/DEVELOPER_HANDBOOK.md": {
+      "category": "technical"
+    },
+    "docs/reference/KEY_ARCHIVE.md": {
+      "category": "technical"
+    },
+    "docs/reference/PLUGIN_SYSTEM.md": {
+      "category": "technical"
+    },
+    "docs/reference/REGISTRY_MANIFEST.md": {
+      "category": "technical"
+    },
+    "docs/reference/STABLE_UPDATE.md": {
+      "category": "technical"
+    },
+    "docs/reference/TEST_SYSTEM.md": {
+      "category": "technical"
+    },
+    "docs/reference/VISUAL_APPROVAL_NORMALIZATION.md": {
+      "category": "technical"
     }
   },
   "excluded_relative_links": [],
