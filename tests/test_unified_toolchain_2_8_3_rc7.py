@@ -7,11 +7,14 @@ import sys
 import zipfile
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
+import toolchain  # noqa: E402
 import toolchain_common as common  # noqa: E402
 
 RUNTIME = {
@@ -123,3 +126,12 @@ def test_single_entrypoint_and_compatibility_wrappers_are_bound() -> None:
         assert "videobatch.sh" in (ROOT / filename).read_text(encoding="utf-8")
     assert "--scope runtime" in (ROOT / "runtime-toolchain.sh").read_text(encoding="utf-8")
     assert "--scope quality" in (ROOT / "quality-toolchain.sh").read_text(encoding="utf-8")
+
+
+def test_orchestrator_reports_wheelhouse_build_diagnostics(monkeypatch: pytest.MonkeyPatch) -> None:
+    output = "Paketdownload fehlgeschlagen. Detailprotokoll: /tmp/toolchain.log"
+    completed = subprocess.CompletedProcess(["build"], 4, stdout=output)
+    monkeypatch.setattr(toolchain, "run", lambda *args, **kwargs: completed)
+
+    with pytest.raises(RuntimeError, match=r"Detailprotokoll: /tmp/toolchain\.log"):
+        toolchain.build(common.load_contract(ROOT), allow_online=True, scope="quality")
