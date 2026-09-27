@@ -2,7 +2,7 @@
 
 ## Ziel
 
-Diese Anleitung führt neue Mitwirkende vom sauberen Arbeitszweig bis zum geprüften Pull Request. Sie ergänzt `DEVELOPER_HANDBOOK.md`, ersetzt aber keine Architektur- oder Sicherheitsverträge.
+Diese Anleitung führt neue Mitwirkende vom sauberen Arbeitszweig bis zum geprüften Pull Request. Sie ergänzt `docs/reference/DEVELOPER_HANDBOOK.md`, ersetzt aber keine Architektur- oder Sicherheitsverträge.
 
 ## Pflichtgrad
 
@@ -253,4 +253,4 @@ Uncommittete Dateien nur gezielt zurücksetzen. Keine pauschalen Löschbefehle v
 
 ## Nächster Schritt
 
-Architekturdetails in `DEVELOPER_HANDBOOK.md`, Dokumentationsregeln in `docs/DOKUMENTATIONSSTANDARD.md` und die vollständige Dateieinordnung in `docs/DOKUMENTATIONSINDEX.md` lesen.
+Architekturdetails in `docs/reference/DEVELOPER_HANDBOOK.md`, Dokumentationsregeln in `docs/DOKUMENTATIONSSTANDARD.md` und die vollständige Dateieinordnung in `docs/DOKUMENTATIONSINDEX.md` lesen.
