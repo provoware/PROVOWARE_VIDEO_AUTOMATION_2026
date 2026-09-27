@@ -36,7 +36,8 @@
 
 ## Repository-Schutz
 
-- [ ] GitHub-Schutz für `main` aktivieren und die zentralen Prüfungen als Pflichtprüfungen festlegen. Dieser Kontoschutz kann von der aktuell verbundenen GitHub-Schnittstelle nicht administrativ eingeschaltet werden und bleibt deshalb als sichtbare manuelle Aufgabe bestehen.
+- [x] `main` wird durch das aktive Repository-Ruleset **„Design manifest contract“** geschützt: Branch-Löschung und Non-Fast-Forward-Updates sind gesperrt; der **Design manifest contract** ist strikt als Pflichtprüfung hinterlegt.
+- [ ] Separat entscheiden, welche weiteren zentralen CI-Gates zusätzlich als Pflichtprüfungen im Ruleset verankert werden sollen. Der aktuelle Schutz erzwingt noch nicht pauschal alle Release-, Qt6-, Wayland- und Langzeitrender-Gates.
 
 ## Danach – Qt-Migration abschließen
 
