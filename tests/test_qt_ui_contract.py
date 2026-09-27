@@ -58,3 +58,18 @@ def test_qt_theme_exposes_high_visibility_accessibility_contract() -> None:
         "selection-color: #ffffff;",
     ):
         assert token in theme
+
+
+def test_media_selection_lists_support_bounded_ctrl_wheel_zoom() -> None:
+    source = QT_UI.read_text(encoding="utf-8")
+
+    for token in (
+        "zoomChanged = Signal(int)",
+        "MIN_ZOOM_POINT_SIZE = 10.0",
+        "MAX_ZOOM_POINT_SIZE = 22.0",
+        "def wheelEvent(self, event: QWheelEvent)",
+        "Qt.KeyboardModifier.ControlModifier",
+        "event.angleDelta().y() or event.pixelDelta().y()",
+        "Strg + Mausrad",
+    ):
+        assert token in source
