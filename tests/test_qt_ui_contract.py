@@ -42,3 +42,27 @@ def test_qt_theme_and_dependency_contract_exist() -> None:
     assert 'qt = ["PySide6==6.11.2"]' in pyproject
     assert "-r requirements.lock" in requirements
     assert "PySide6==6.11.2" in runtime_lock
+
+
+def test_qt_theme_exposes_high_visibility_accessibility_contract() -> None:
+    theme = QT_THEME.read_text(encoding="utf-8")
+
+    for token in (
+        "background: #05070a;",
+        "color: #ffffff;",
+        "background: #1f2c3c;",
+        "border: 2px solid #9db7d6;",
+        "QLabel#subtitle { color: #eef4ff; }",
+        "QCheckBox {",
+        "QCheckBox::indicator {",
+        "width: 26px;",
+        "height: 26px;",
+        "border: 3px solid #f7fbff;",
+        "QCheckBox::indicator:checked {",
+        "background: #1687ff;",
+        "QCheckBox::indicator:hover {",
+        "border-color: #ffd166;",
+        "QComboBox QAbstractItemView {",
+        "selection-color: #ffffff;",
+    ):
+        assert token in theme
