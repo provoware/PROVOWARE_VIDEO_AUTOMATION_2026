@@ -45,6 +45,28 @@ MEDIA_EXTS = {
     ".mpeg", ".mpg", ".png", ".tif", ".tiff", ".webm", ".webp",
 }
 
+SORT_MODES = (
+    ("Name A–Z", "name"),
+    ("Änderung neu → alt", "modified"),
+    ("Größe groß → klein", "size"),
+)
+
+
+def media_path_sort_key(path: Path, mode: str) -> tuple[object, ...]:
+    try:
+        stat = path.stat()
+        modified = float(stat.st_mtime)
+        size = int(stat.st_size)
+    except OSError:
+        modified = 0.0
+        size = -1
+    stable = (path.name.casefold(), str(path).casefold())
+    if mode == "modified":
+        return (-modified, *stable)
+    if mode == "size":
+        return (-size, *stable)
+    return stable
+
 
 class DropList(QListWidget):
     changed = Signal()
@@ -126,6 +148,27 @@ class DropList(QListWidget):
             event.accept()
             return
         super().wheelEvent(event)
+
+    def sort_by(self, mode: str) -> None:
+        selected = {str(item.data(Qt.ItemDataRole.UserRole)) for item in self.selectedItems()}
+        current = self.currentItem()
+        current_path = str(current.data(Qt.ItemDataRole.UserRole)) if current is not None else ""
+        ordered = sorted(self.paths(), key=lambda path: media_path_sort_key(path, mode))
+        if ordered == self.paths():
+            return
+        self.blockSignals(True)
+        try:
+            self.clear()
+            self.add_paths(ordered)
+            for row in range(self.count()):
+                item = self.item(row)
+                raw = str(item.data(Qt.ItemDataRole.UserRole))
+                item.setSelected(raw in selected)
+                if raw == current_path:
+                    self.setCurrentItem(item)
+        finally:
+            self.blockSignals(False)
+        self.changed.emit()
 
 
 class VideoBatchQtWindow(QMainWindow):
@@ -274,11 +317,27 @@ class VideoBatchQtWindow(QMainWindow):
         zoom_hint.setObjectName("subtitle")
         zoom_hint.setWordWrap(True)
         layout.addWidget(zoom_hint)
+        sort_hint = QLabel("Sortieren ordnet die jeweilige Liste neu und verändert damit die Positions-Paarung.")
+        sort_hint.setObjectName("subtitle")
+        sort_hint.setWordWrap(True)
+        layout.addWidget(sort_hint)
         for label, widget, add_text in (
             ("Audiodateien", self.audio, "Audio auswählen …"),
             ("Bilder / Videos", self.media, "Bilder/Videos auswählen …"),
         ):
-            layout.addWidget(QLabel(label))
+            heading = QHBoxLayout()
+            heading.addWidget(QLabel(label))
+            heading.addStretch()
+            sorter = QComboBox()
+            sorter.setAccessibleName(f"{label} sortieren")
+            sorter.setMinimumWidth(155)
+            for sort_label, sort_mode in SORT_MODES:
+                sorter.addItem(sort_label, sort_mode)
+            sorter.currentIndexChanged.connect(
+                lambda _index, target=widget, control=sorter: target.sort_by(str(control.currentData()))
+            )
+            heading.addWidget(sorter)
+            layout.addLayout(heading)
             layout.addWidget(widget, 1)
             row = QHBoxLayout()
             add = QPushButton(add_text)
