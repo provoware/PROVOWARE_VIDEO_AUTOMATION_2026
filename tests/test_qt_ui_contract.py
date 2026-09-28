@@ -96,3 +96,19 @@ def test_media_selection_lists_offer_deterministic_sort_modes() -> None:
         "Sortieren ordnet die jeweilige Liste neu",
     ):
         assert token in source
+
+
+def test_media_selection_lists_show_metadata_and_image_thumbnails() -> None:
+    source = QT_UI.read_text(encoding="utf-8")
+    for token in (
+        "def media_size_text(size: int) -> str:",
+        "def media_path_display_text(path: Path) -> str:",
+        "geändert {changed}",
+        "IMAGE_THUMBNAIL_EXTS",
+        "item = QListWidgetItem(media_path_display_text(path))",
+        "pixmap = QPixmap(resolved)",
+        "item.setIcon(QIcon(pixmap))",
+        "self.setIconSize(QSize(72, 54))",
+        "scale = bounded / 11.0",
+    ):
+        assert token in source
