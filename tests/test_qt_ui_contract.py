@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import importlib.util
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -73,3 +74,32 @@ def test_media_selection_lists_support_bounded_ctrl_wheel_zoom() -> None:
         "Strg + Mausrad",
     ):
         assert token in source
+
+
+def _load_qt_ui_module():
+    spec = importlib.util.spec_from_file_location("qt_ui_sort_contract", QT_UI)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_media_selection_lists_offer_deterministic_sort_modes(tmp_path: Path) -> None:
+    source = QT_UI.read_text(encoding="utf-8")
+    for token in (
+        '("Name A–Z", "name")',
+        '("Änderung neu → alt", "modified")',
+        '("Größe groß → klein", "size")',
+        "def media_path_sort_key",
+        "def sort_by(self, mode: str)",
+        "Sortieren ordnet die jeweilige Liste neu",
+    ):
+        assert token in source
+
+    module = _load_qt_ui_module()
+    small = tmp_path / "b-small.bin"
+    large = tmp_path / "a-large.bin"
+    small.write_bytes(b"x")
+    large.write_bytes(b"xxxx")
+    assert sorted((small, large), key=lambda p: module.media_path_sort_key(p, "name")) == [large, small]
+    assert sorted((small, large), key=lambda p: module.media_path_sort_key(p, "size")) == [large, small]
