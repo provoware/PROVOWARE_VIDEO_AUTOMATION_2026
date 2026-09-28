@@ -4,10 +4,11 @@ import queue
 import shutil
 import sys
 import threading
+from datetime import datetime
 from pathlib import Path
 
-from PySide6.QtCore import QTimer, Qt, Signal
-from PySide6.QtGui import QCloseEvent, QDragEnterEvent, QDropEvent
+from PySide6.QtCore import QSize, QTimer, Qt, Signal
+from PySide6.QtGui import QCloseEvent, QDragEnterEvent, QDropEvent, QIcon, QPixmap, QWheelEvent
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QApplication,
@@ -45,16 +46,71 @@ MEDIA_EXTS = {
     ".mpeg", ".mpg", ".png", ".tif", ".tiff", ".webm", ".webp",
 }
 
+SORT_MODES = (
+    ("Name A–Z", "name"),
+    ("Änderung neu → alt", "modified"),
+    ("Größe groß → klein", "size"),
+)
+
+IMAGE_THUMBNAIL_EXTS = {
+    ".avif", ".bmp", ".gif", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp",
+}
+
+
+def media_size_text(size: int) -> str:
+    value = float(max(0, size))
+    units = ("B", "KB", "MB", "GB", "TB")
+    for unit in units:
+        if value < 1024.0 or unit == units[-1]:
+            return f"{value:.1f} {unit}"
+        value /= 1024.0
+    return f"{value:.1f} TB"
+
+
+def media_path_display_text(path: Path) -> str:
+    try:
+        stat = path.stat()
+        changed = datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M")
+        return f"{path.name}\n{media_size_text(stat.st_size)} · geändert {changed}"
+    except OSError:
+        return f"{path.name}\nGröße / Änderungsdatum nicht verfügbar"
+
+
+def media_path_sort_key(path: Path, mode: str) -> tuple[object, ...]:
+    try:
+        stat = path.stat()
+        modified = float(stat.st_mtime)
+        size = int(stat.st_size)
+    except OSError:
+        modified = 0.0
+        size = -1
+    stable = (path.name.casefold(), str(path).casefold())
+    if mode == "modified":
+        return (-modified, *stable)
+    if mode == "size":
+        return (-size, *stable)
+    return stable
+
 
 class DropList(QListWidget):
     changed = Signal()
+    zoomChanged = Signal(int)
+
+    MIN_ZOOM_POINT_SIZE = 10.0
+    MAX_ZOOM_POINT_SIZE = 22.0
 
     def __init__(self, extensions: set[str]) -> None:
         super().__init__()
         self.extensions = {value.lower() for value in extensions}
+        self._zoom_point_size = max(
+            self.MIN_ZOOM_POINT_SIZE,
+            min(self.MAX_ZOOM_POINT_SIZE, float(self.font().pointSizeF() or 11.0)),
+        )
         self.setAcceptDrops(True)
         self.setDragDropMode(QAbstractItemView.DragDropMode.DropOnly)
         self.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self.setIconSize(QSize(72, 54))
+        self.setToolTip("Strg + Mausrad: Liste vergrößern oder verkleinern")
 
     def paths(self) -> list[Path]:
         return [Path(self.item(row).data(Qt.ItemDataRole.UserRole)) for row in range(self.count())]
@@ -69,9 +125,13 @@ class DropList(QListWidget):
             resolved = str(path.resolve())
             if resolved in known:
                 continue
-            item = QListWidgetItem(path.name)
+            item = QListWidgetItem(media_path_display_text(path))
             item.setData(Qt.ItemDataRole.UserRole, resolved)
             item.setToolTip(resolved)
+            if path.suffix.lower() in IMAGE_THUMBNAIL_EXTS:
+                pixmap = QPixmap(resolved)
+                if not pixmap.isNull():
+                    item.setIcon(QIcon(pixmap))
             self.addItem(item)
             known.add(resolved)
             added = True
@@ -94,6 +154,53 @@ class DropList(QListWidget):
     def dropEvent(self, event: QDropEvent) -> None:
         self.add_paths([Path(url.toLocalFile()) for url in event.mimeData().urls() if url.isLocalFile()])
         event.acceptProposedAction()
+
+    def zoom_percent(self) -> int:
+        return int(round(self._zoom_point_size / 11.0 * 100))
+
+    def _apply_zoom(self, point_size: float) -> None:
+        bounded = max(self.MIN_ZOOM_POINT_SIZE, min(self.MAX_ZOOM_POINT_SIZE, point_size))
+        if abs(bounded - self._zoom_point_size) < 0.01:
+            return
+        self._zoom_point_size = bounded
+        font = self.font()
+        font.setPointSizeF(bounded)
+        self.setFont(font)
+        scale = bounded / 11.0
+        self.setIconSize(QSize(max(48, round(72 * scale)), max(36, round(54 * scale))))
+        self.setSpacing(max(2, int(round((bounded - self.MIN_ZOOM_POINT_SIZE) / 2.0)) + 2))
+        self.zoomChanged.emit(self.zoom_percent())
+
+    def wheelEvent(self, event: QWheelEvent) -> None:
+        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            delta = event.angleDelta().y() or event.pixelDelta().y()
+            if delta:
+                self._apply_zoom(self._zoom_point_size + (1.0 if delta > 0 else -1.0))
+            event.accept()
+            return
+        super().wheelEvent(event)
+
+    def sort_by(self, mode: str) -> None:
+        selected = {str(item.data(Qt.ItemDataRole.UserRole)) for item in self.selectedItems()}
+        current = self.currentItem()
+        current_path = str(current.data(Qt.ItemDataRole.UserRole)) if current is not None else ""
+        original = self.paths()
+        ordered = sorted(original, key=lambda path: media_path_sort_key(path, mode))
+        if ordered == original:
+            return
+        self.blockSignals(True)
+        try:
+            self.clear()
+            self.add_paths(ordered)
+            for row in range(self.count()):
+                item = self.item(row)
+                raw = str(item.data(Qt.ItemDataRole.UserRole))
+                item.setSelected(raw in selected)
+                if raw == current_path:
+                    self.setCurrentItem(item)
+        finally:
+            self.blockSignals(False)
+        self.changed.emit()
 
 
 class VideoBatchQtWindow(QMainWindow):
@@ -238,11 +345,40 @@ class VideoBatchQtWindow(QMainWindow):
         )
         self.audio = DropList(AUDIO_EXTS)
         self.media = DropList(MEDIA_EXTS)
+        zoom_hint = QLabel("Tipp: Strg + Mausrad vergrößert oder verkleinert die jeweilige Auswahl-Liste.")
+        zoom_hint.setObjectName("subtitle")
+        zoom_hint.setWordWrap(True)
+        layout.addWidget(zoom_hint)
+        sort_hint = QLabel("Sortieren verändert die Reihenfolge und damit die Positions-Paarung.")
+        sort_hint.setObjectName("subtitle")
+        sort_hint.setWordWrap(True)
+        layout.addWidget(sort_hint)
         for label, widget, add_text in (
             ("Audiodateien", self.audio, "Audio auswählen …"),
             ("Bilder / Videos", self.media, "Bilder/Videos auswählen …"),
         ):
-            layout.addWidget(QLabel(label))
+            heading = QHBoxLayout()
+            heading.addWidget(QLabel(label))
+            heading.addStretch()
+            zoom_value = QLabel(f"{widget.zoom_percent()} %")
+            zoom_value.setObjectName("subtitle")
+            zoom_value.setMinimumWidth(52)
+            zoom_value.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            zoom_value.setAccessibleName(f"{label} Zoom")
+            widget.zoomChanged.connect(
+                lambda percent, target=zoom_value: target.setText(f"{percent} %")
+            )
+            heading.addWidget(zoom_value)
+            sorter = QComboBox()
+            sorter.setAccessibleName(f"{label} sortieren")
+            sorter.setMinimumWidth(155)
+            for sort_label, sort_mode in SORT_MODES:
+                sorter.addItem(sort_label, sort_mode)
+            sorter.currentIndexChanged.connect(
+                lambda _index, target=widget, control=sorter: target.sort_by(str(control.currentData()))
+            )
+            heading.addWidget(sorter)
+            layout.addLayout(heading)
             layout.addWidget(widget, 1)
             row = QHBoxLayout()
             add = QPushButton(add_text)
