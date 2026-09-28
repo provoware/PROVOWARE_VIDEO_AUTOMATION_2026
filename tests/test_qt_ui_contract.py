@@ -112,3 +112,26 @@ def test_media_selection_lists_show_metadata_and_image_thumbnails() -> None:
         "scale = bounded / 11.0",
     ):
         assert token in source
+
+
+def test_header_dashboard_exposes_graphical_cpu_ram_swap_load() -> None:
+    source = QT_UI.read_text(encoding="utf-8")
+    theme = QT_THEME.read_text(encoding="utf-8")
+    for token in (
+        "SystemLoadSampler",
+        "self.load_timer.setInterval(1000)",
+        'for key, label in (("cpu", "CPU"), ("ram", "RAM"), ("swap", "SWAP"))',
+        'bar.setAccessibleName(f"{label}-Auslastung")',
+        "def _refresh_system_load(self)",
+        "sample.cpu_percent",
+        "sample.ram_percent",
+        "sample.swap_percent",
+    ):
+        assert token in source
+    for token in (
+        "QFrame#loadDashboard",
+        "QLabel#loadLabel",
+        "QProgressBar#loadMeter",
+        "border: 2px solid #7f98b8;",
+    ):
+        assert token in theme

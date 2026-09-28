@@ -39,6 +39,7 @@ from .models import BatchOptions, PairJob
 from .qt_theme import APP_STYLE
 from .quick_modes import QUICK_MODES, apply_quick_mode
 from .runner import BatchRunner
+from .system_load import SystemLoadSampler
 
 AUDIO_EXTS = {".aac", ".flac", ".m4a", ".mp3", ".ogg", ".opus", ".wav", ".wma"}
 MEDIA_EXTS = {
@@ -219,6 +220,8 @@ class VideoBatchQtWindow(QMainWindow):
         self.prepare_thread: threading.Thread | None = None
         self.close_after_stop = False
         self.jobs: list[PairJob] = []
+        self._load_sampler = SystemLoadSampler()
+        self.load_bars: dict[str, QProgressBar] = {}
         self._build_ui()
         self._connect()
         self._refresh()
@@ -226,6 +229,11 @@ class VideoBatchQtWindow(QMainWindow):
         self.timer.setInterval(80)
         self.timer.timeout.connect(self._poll)
         self.timer.start()
+        self.load_timer = QTimer(self)
+        self.load_timer.setInterval(1000)
+        self.load_timer.timeout.connect(self._refresh_system_load)
+        self.load_timer.start()
+        self._refresh_system_load()
 
     @staticmethod
     def _panel(title: str, hint: str) -> tuple[QFrame, QVBoxLayout]:
@@ -255,6 +263,42 @@ class VideoBatchQtWindow(QMainWindow):
         layout.addWidget(caption)
         return box, value
 
+    @staticmethod
+    def _memory_text(used_bytes: int, total_bytes: int) -> str:
+        gib = float(1024 ** 3)
+        if total_bytes <= 0:
+            return "aus"
+        return f"{used_bytes / gib:.1f}/{total_bytes / gib:.1f} GiB"
+
+    def _set_load_bar(self, key: str, percent: float | None, tooltip: str) -> None:
+        bar = self.load_bars[key]
+        if percent is None:
+            bar.setValue(0)
+            bar.setFormat("—")
+        else:
+            value = max(0, min(100, int(round(percent))))
+            bar.setValue(value)
+            bar.setFormat(f"{value}%")
+        bar.setToolTip(tooltip)
+
+    def _refresh_system_load(self) -> None:
+        sample = self._load_sampler.sample()
+        self._set_load_bar(
+            "cpu",
+            sample.cpu_percent,
+            "CPU-Auslastung seit der letzten Messung.",
+        )
+        self._set_load_bar(
+            "ram",
+            sample.ram_percent,
+            f"RAM: {self._memory_text(sample.ram_used_bytes, sample.ram_total_bytes)}",
+        )
+        self._set_load_bar(
+            "swap",
+            sample.swap_percent,
+            f"SWAP: {self._memory_text(sample.swap_used_bytes, sample.swap_total_bytes)}",
+        )
+
     def _build_ui(self) -> None:
         root = QWidget()
         self.setCentralWidget(root)
@@ -271,6 +315,32 @@ class VideoBatchQtWindow(QMainWindow):
         brand.addWidget(subtitle)
         header.addLayout(brand)
         header.addStretch()
+
+        load_dashboard = QFrame()
+        load_dashboard.setObjectName("loadDashboard")
+        load_row = QHBoxLayout(load_dashboard)
+        load_row.setContentsMargins(9, 6, 9, 6)
+        load_row.setSpacing(8)
+        for key, label in (("cpu", "CPU"), ("ram", "RAM"), ("swap", "SWAP")):
+            meter = QVBoxLayout()
+            meter.setSpacing(2)
+            caption = QLabel(label)
+            caption.setObjectName("loadLabel")
+            caption.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            bar = QProgressBar()
+            bar.setObjectName("loadMeter")
+            bar.setRange(0, 100)
+            bar.setValue(0)
+            bar.setFormat("—")
+            bar.setTextVisible(True)
+            bar.setMinimumWidth(82)
+            bar.setAccessibleName(f"{label}-Auslastung")
+            self.load_bars[key] = bar
+            meter.addWidget(caption)
+            meter.addWidget(bar)
+            load_row.addLayout(meter)
+        header.addWidget(load_dashboard, alignment=Qt.AlignmentFlag.AlignTop)
+
         self.status = QLabel("BEREIT")
         self.status.setObjectName("statusChip")
         header.addWidget(self.status, alignment=Qt.AlignmentFlag.AlignTop)

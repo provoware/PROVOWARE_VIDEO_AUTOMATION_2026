@@ -14,6 +14,22 @@ QFrame#panel, QFrame#card, QFrame#workflowGuide, QFrame#actionFooter {
     border-radius: 12px;
 }
 QFrame#card { min-height: 56px; }
+QFrame#loadDashboard {
+    background: #101822;
+    border: 2px solid #7f98b8;
+    border-radius: 10px;
+}
+QLabel#loadLabel {
+    color: #e2eaf5;
+    font-size: 8.5pt;
+    font-weight: 750;
+}
+QProgressBar#loadMeter {
+    min-height: 15px;
+    max-height: 15px;
+    font-size: 8pt;
+    font-weight: 700;
+}
 QLabel#title { font-size: 22pt; font-weight: 800; }
 QLabel#subtitle { color: #e2eaf5; }
 QLabel#section { font-size: 13pt; font-weight: 700; }
