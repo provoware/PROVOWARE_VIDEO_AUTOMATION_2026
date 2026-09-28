@@ -66,3 +66,28 @@ def test_qt_theme_exposes_high_visibility_accessibility_contract() -> None:
         "selection-color: #ffffff;",
     ):
         assert token in theme
+
+
+def test_media_selection_lists_support_zoom_sorting_metadata_and_thumbnails() -> None:
+    source = QT_UI.read_text(encoding="utf-8")
+
+    for token in (
+        "zoomChanged = Signal(int)",
+        "MIN_ZOOM_POINT_SIZE = 10.0",
+        "MAX_ZOOM_POINT_SIZE = 22.0",
+        "def wheelEvent(self, event: QWheelEvent)",
+        "Qt.KeyboardModifier.ControlModifier",
+        '("Name A–Z", "name")',
+        '("Änderung neu → alt", "modified")',
+        '("Größe groß → klein", "size")',
+        "def media_path_sort_key",
+        "def sort_by(self, mode: str)",
+        "media_path_display_text(path)",
+        "IMAGE_THUMBNAIL_EXTS",
+        "pixmap = QPixmap(resolved)",
+        "item.setIcon(QIcon(pixmap))",
+        "self.setIconSize(QSize(72, 54))",
+        "Strg + Mausrad",
+        'zoom_value = QLabel(f"{widget.zoom_percent()} %")',
+    ):
+        assert token in source
