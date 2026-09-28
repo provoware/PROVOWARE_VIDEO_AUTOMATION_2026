@@ -9,16 +9,16 @@ QWidget {
 }
 QMainWindow { background: #070b10; }
 QFrame#panel, QFrame#card, QFrame#workflowGuide, QFrame#actionFooter {
-    background: #161f2b;
-    border: 1px solid #3f526a;
+    background: #182433;
+    border: 2px solid #6f87a3;
     border-radius: 12px;
 }
 QFrame#card { min-height: 56px; }
 QLabel#title { font-size: 22pt; font-weight: 800; }
-QLabel#subtitle { color: #c3d0e3; }
+QLabel#subtitle { color: #e2eaf5; }
 QLabel#section { font-size: 13pt; font-weight: 700; }
 QLabel#kpiValue { font-size: 16pt; font-weight: 800; }
-QLabel#kpiLabel { color: #c3d0e3; font-size: 9.5pt; }
+QLabel#kpiLabel { color: #e2eaf5; font-size: 9.5pt; }
 QLabel#statusChip {
     background: #202c3b;
     border: 1px solid #5b7392;
@@ -34,7 +34,7 @@ QPushButton {
     font-weight: 650;
 }
 QPushButton:hover { background: #31445e; }
-QPushButton:disabled { color: #96a4b7; background: #171f2a; }
+QPushButton:disabled { color: #b6c2d2; background: #171f2a; }
 QPushButton#primary {
     background: #316bf4;
     border-color: #4b7df5;
@@ -110,14 +110,25 @@ QCheckBox {
 QCheckBox::indicator {
     width: 22px;
     height: 22px;
+    border: 2px solid #dbe8f8;
+    border-radius: 4px;
+    background: #05080d;
+}
+QCheckBox::indicator:checked {
+    background: #2f7cff;
+    border: 2px solid #ffffff;
+}
+QCheckBox::indicator:disabled {
+    background: #202a37;
+    border-color: #8999ad;
 }
 
 QListWidget, QTableWidget, QPlainTextEdit, QLineEdit, QComboBox {
-    background: #080d13;
-    border: 1px solid #526985;
+    background: #05080d;
+    border: 2px solid #7f98b8;
     border-radius: 8px;
     padding: 5px;
-    selection-background-color: #275fb2;
+    selection-background-color: #2f6fd2;
     selection-color: #ffffff;
 }
 QHeaderView::section {

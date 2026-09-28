@@ -50,11 +50,17 @@ def test_qt_theme_exposes_high_visibility_accessibility_contract() -> None:
     for token in (
         "background: #0b1016;",
         "color: #f3f7ff;",
-        "border: 1px solid #526985;",
+        "border: 2px solid #6f87a3;",
         "QCheckBox {",
         "QCheckBox::indicator {",
         "width: 22px;",
         "height: 22px;",
+        "border: 2px solid #dbe8f8;",
+        "QCheckBox::indicator:checked {",
+        "background: #2f7cff;",
+        "border: 2px solid #ffffff;",
+        "QLabel#subtitle { color: #e2eaf5; }",
+        "border: 2px solid #7f98b8;",
         "selection-color: #ffffff;",
     ):
         assert token in theme
@@ -88,5 +94,21 @@ def test_media_selection_lists_offer_deterministic_sort_modes() -> None:
         "def sort_by(self, mode: str)",
         "selected = {str(item.data(Qt.ItemDataRole.UserRole))",
         "Sortieren ordnet die jeweilige Liste neu",
+    ):
+        assert token in source
+
+
+def test_media_selection_lists_show_metadata_and_image_thumbnails() -> None:
+    source = QT_UI.read_text(encoding="utf-8")
+    for token in (
+        "def media_size_text(size: int) -> str:",
+        "def media_path_display_text(path: Path) -> str:",
+        "geändert {changed}",
+        "IMAGE_THUMBNAIL_EXTS",
+        "item = QListWidgetItem(media_path_display_text(path))",
+        "pixmap = QPixmap(resolved)",
+        "item.setIcon(QIcon(pixmap))",
+        "self.setIconSize(QSize(72, 54))",
+        "scale = bounded / 11.0",
     ):
         assert token in source

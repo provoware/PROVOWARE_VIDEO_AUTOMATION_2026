@@ -4,10 +4,11 @@ import queue
 import shutil
 import sys
 import threading
+from datetime import datetime
 from pathlib import Path
 
-from PySide6.QtCore import QTimer, Qt, Signal
-from PySide6.QtGui import QCloseEvent, QDragEnterEvent, QDropEvent, QWheelEvent
+from PySide6.QtCore import QSize, QTimer, Qt, Signal
+from PySide6.QtGui import QCloseEvent, QDragEnterEvent, QDropEvent, QIcon, QPixmap, QWheelEvent
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QApplication,
@@ -52,6 +53,30 @@ SORT_MODES = (
 )
 
 
+IMAGE_THUMBNAIL_EXTS = {
+    ".avif", ".bmp", ".gif", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp",
+}
+
+
+def media_size_text(size: int) -> str:
+    value = float(max(0, size))
+    units = ("B", "KB", "MB", "GB", "TB")
+    for unit in units:
+        if value < 1024.0 or unit == units[-1]:
+            return f"{value:.1f} {unit}"
+        value /= 1024.0
+    return f"{value:.1f} TB"
+
+
+def media_path_display_text(path: Path) -> str:
+    try:
+        stat = path.stat()
+        changed = datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M")
+        return f"{path.name}\n{media_size_text(stat.st_size)} · geändert {changed}"
+    except OSError:
+        return f"{path.name}\nGröße / Änderungsdatum nicht verfügbar"
+
+
 def media_path_sort_key(path: Path, mode: str) -> tuple[object, ...]:
     try:
         stat = path.stat()
@@ -85,6 +110,7 @@ class DropList(QListWidget):
         self.setAcceptDrops(True)
         self.setDragDropMode(QAbstractItemView.DragDropMode.DropOnly)
         self.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self.setIconSize(QSize(72, 54))
         self.setToolTip("Strg + Mausrad: Liste vergrößern oder verkleinern")
 
     def paths(self) -> list[Path]:
@@ -100,9 +126,13 @@ class DropList(QListWidget):
             resolved = str(path.resolve())
             if resolved in known:
                 continue
-            item = QListWidgetItem(path.name)
+            item = QListWidgetItem(media_path_display_text(path))
             item.setData(Qt.ItemDataRole.UserRole, resolved)
             item.setToolTip(resolved)
+            if path.suffix.lower() in IMAGE_THUMBNAIL_EXTS:
+                pixmap = QPixmap(resolved)
+                if not pixmap.isNull():
+                    item.setIcon(QIcon(pixmap))
             self.addItem(item)
             known.add(resolved)
             added = True
@@ -137,6 +167,8 @@ class DropList(QListWidget):
         font = self.font()
         font.setPointSizeF(bounded)
         self.setFont(font)
+        scale = bounded / 11.0
+        self.setIconSize(QSize(max(48, round(72 * scale)), max(36, round(54 * scale))))
         self.setSpacing(max(2, int(round((bounded - self.MIN_ZOOM_POINT_SIZE) / 2.0)) + 2))
         self.zoomChanged.emit(self.zoom_percent())
 
