@@ -7,7 +7,7 @@ import threading
 from pathlib import Path
 
 from PySide6.QtCore import QTimer, Qt, Signal
-from PySide6.QtGui import QCloseEvent, QDragEnterEvent, QDropEvent
+from PySide6.QtGui import QCloseEvent, QDragEnterEvent, QDropEvent, QWheelEvent
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QApplication,
@@ -48,13 +48,22 @@ MEDIA_EXTS = {
 
 class DropList(QListWidget):
     changed = Signal()
+    zoomChanged = Signal(int)
+
+    MIN_ZOOM_POINT_SIZE = 10.0
+    MAX_ZOOM_POINT_SIZE = 22.0
 
     def __init__(self, extensions: set[str]) -> None:
         super().__init__()
         self.extensions = {value.lower() for value in extensions}
+        self._zoom_point_size = max(
+            self.MIN_ZOOM_POINT_SIZE,
+            min(self.MAX_ZOOM_POINT_SIZE, float(self.font().pointSizeF() or 11.0)),
+        )
         self.setAcceptDrops(True)
         self.setDragDropMode(QAbstractItemView.DragDropMode.DropOnly)
         self.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self.setToolTip("Strg + Mausrad: Liste vergrößern oder verkleinern")
 
     def paths(self) -> list[Path]:
         return [Path(self.item(row).data(Qt.ItemDataRole.UserRole)) for row in range(self.count())]
@@ -94,6 +103,29 @@ class DropList(QListWidget):
     def dropEvent(self, event: QDropEvent) -> None:
         self.add_paths([Path(url.toLocalFile()) for url in event.mimeData().urls() if url.isLocalFile()])
         event.acceptProposedAction()
+
+    def zoom_percent(self) -> int:
+        return int(round(self._zoom_point_size / 11.0 * 100))
+
+    def _apply_zoom(self, point_size: float) -> None:
+        bounded = max(self.MIN_ZOOM_POINT_SIZE, min(self.MAX_ZOOM_POINT_SIZE, point_size))
+        if abs(bounded - self._zoom_point_size) < 0.01:
+            return
+        self._zoom_point_size = bounded
+        font = self.font()
+        font.setPointSizeF(bounded)
+        self.setFont(font)
+        self.setSpacing(max(2, int(round((bounded - self.MIN_ZOOM_POINT_SIZE) / 2.0)) + 2))
+        self.zoomChanged.emit(self.zoom_percent())
+
+    def wheelEvent(self, event: QWheelEvent) -> None:
+        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            delta = event.angleDelta().y() or event.pixelDelta().y()
+            if delta:
+                self._apply_zoom(self._zoom_point_size + (1.0 if delta > 0 else -1.0))
+            event.accept()
+            return
+        super().wheelEvent(event)
 
 
 class VideoBatchQtWindow(QMainWindow):
@@ -238,6 +270,10 @@ class VideoBatchQtWindow(QMainWindow):
         )
         self.audio = DropList(AUDIO_EXTS)
         self.media = DropList(MEDIA_EXTS)
+        zoom_hint = QLabel("Tipp: Strg + Mausrad vergrößert oder verkleinert die Auswahl-Listen.")
+        zoom_hint.setObjectName("subtitle")
+        zoom_hint.setWordWrap(True)
+        layout.addWidget(zoom_hint)
         for label, widget, add_text in (
             ("Audiodateien", self.audio, "Audio auswählen …"),
             ("Bilder / Videos", self.media, "Bilder/Videos auswählen …"),

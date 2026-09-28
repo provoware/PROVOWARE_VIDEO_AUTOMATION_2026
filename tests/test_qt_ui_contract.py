@@ -42,3 +42,34 @@ def test_qt_theme_and_dependency_contract_exist() -> None:
     assert 'qt = ["PySide6==6.11.2"]' in pyproject
     assert "-r requirements.lock" in requirements
     assert "PySide6==6.11.2" in runtime_lock
+
+
+def test_qt_theme_exposes_high_visibility_accessibility_contract() -> None:
+    theme = QT_THEME.read_text(encoding="utf-8")
+
+    for token in (
+        "background: #0b1016;",
+        "color: #f3f7ff;",
+        "border: 1px solid #526985;",
+        "QCheckBox {",
+        "QCheckBox::indicator {",
+        "width: 22px;",
+        "height: 22px;",
+        "selection-color: #ffffff;",
+    ):
+        assert token in theme
+
+
+def test_media_selection_lists_support_bounded_ctrl_wheel_zoom() -> None:
+    source = QT_UI.read_text(encoding="utf-8")
+
+    for token in (
+        "zoomChanged = Signal(int)",
+        "MIN_ZOOM_POINT_SIZE = 10.0",
+        "MAX_ZOOM_POINT_SIZE = 22.0",
+        "def wheelEvent(self, event: QWheelEvent)",
+        "Qt.KeyboardModifier.ControlModifier",
+        "event.angleDelta().y() or event.pixelDelta().y()",
+        "Strg + Mausrad",
+    ):
+        assert token in source
