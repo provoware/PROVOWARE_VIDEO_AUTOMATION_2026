@@ -116,6 +116,13 @@ class VideoBatchQtPhase2Window(VideoBatchQtWindow):
         self.slideshow.stateChanged.connect(self._refresh)
         self.slideshow.analysisChanged.connect(self._refresh)
 
+    def _show_selection_preview(self) -> None:
+        if hasattr(self, "phase3_dock"):
+            self.phase3_dock.hide()
+        self.phase2_dock.show()
+        self.phase2_dock.raise_()
+        self.phase2_tabs.setCurrentWidget(self.preview_panel)
+
     def _preview_audio_selection(self) -> None:
         item = self.audio.currentItem()
         if item is None:
@@ -125,7 +132,7 @@ class VideoBatchQtPhase2Window(VideoBatchQtWindow):
         raw = item.data(Qt.ItemDataRole.UserRole)
         if raw:
             self.preview_panel.set_source(Path(str(raw)), include_image=False)
-            self.phase2_tabs.setCurrentWidget(self.preview_panel)
+            self._show_selection_preview()
 
     def _preview_media_selection(self) -> None:
         item = self.media.currentItem()
@@ -134,7 +141,7 @@ class VideoBatchQtPhase2Window(VideoBatchQtWindow):
         raw = item.data(Qt.ItemDataRole.UserRole)
         if raw:
             self.preview_panel.set_source(Path(str(raw)), include_image=True)
-            self.phase2_tabs.setCurrentWidget(self.preview_panel)
+            self._show_selection_preview()
 
     def _apply_slideshow_media_order(self, ordered_object: object) -> None:
         if self.runner.running or self.preparing:
