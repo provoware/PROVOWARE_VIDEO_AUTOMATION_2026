@@ -73,3 +73,20 @@ def test_media_selection_lists_support_bounded_ctrl_wheel_zoom() -> None:
         "Strg + Mausrad",
     ):
         assert token in source
+
+
+
+def test_media_selection_lists_offer_deterministic_sort_modes() -> None:
+    source = QT_UI.read_text(encoding="utf-8")
+    for token in (
+        '("Name A–Z", "name")',
+        '("Änderung neu → alt", "modified")',
+        '("Größe groß → klein", "size")',
+        "def media_path_sort_key",
+        'if mode == "modified":',
+        'if mode == "size":',
+        "def sort_by(self, mode: str)",
+        "selected = {str(item.data(Qt.ItemDataRole.UserRole))",
+        "Sortieren ordnet die jeweilige Liste neu",
+    ):
+        assert token in source
