@@ -50,11 +50,17 @@ def test_qt_theme_exposes_high_visibility_accessibility_contract() -> None:
     for token in (
         "background: #0b1016;",
         "color: #f3f7ff;",
-        "border: 1px solid #526985;",
+        "border: 2px solid #6f87a3;",
         "QCheckBox {",
         "QCheckBox::indicator {",
         "width: 22px;",
         "height: 22px;",
+        "border: 2px solid #dbe8f8;",
+        "QCheckBox::indicator:checked {",
+        "background: #2f7cff;",
+        "border: 2px solid #ffffff;",
+        "QLabel#subtitle { color: #e2eaf5; }",
+        "border: 2px solid #7f98b8;",
         "selection-color: #ffffff;",
     ):
         assert token in theme
