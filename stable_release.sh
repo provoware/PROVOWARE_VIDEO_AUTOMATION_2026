@@ -8,15 +8,25 @@ if [[ "$CHANNEL" != "stable" ]]; then
   printf 'STABLE BLOCKIERT: Ursache: Der Kanal ist %s statt stable. Auswirkung: Das Stable-Paket wird nicht erzeugt. Automatische Schutzmaßnahme: Die Paketierung stoppt vor dem Schreiben. Lösung: Den Kandidaten vollständig prüfen und danach in einer getrennten Arbeitskopie auf stable setzen. Alternative: Den Stand als Release Candidate paketieren.\n' "$CHANNEL" >&2
   exit 12
 fi
-DEFAULT_EVIDENCE_ROOT="${XDG_STATE_HOME:-${HOME:?HOME ist nicht gesetzt}/.local/state}/VideoBatchFast/stable-evidence"
-EVIDENCE_DIR="${VIDEOBATCH_ACCEPTANCE_EVIDENCE:-$DEFAULT_EVIDENCE_ROOT/$VERSION}"
-if [[ ! -d "$EVIDENCE_DIR" ]]; then
-  printf 'STABLE BLOCKIERT: Ursache: Der kandidatengebundene Abnahmeordner fehlt: %s. Auswirkung: Das Stable-Paket wird nicht erzeugt. Automatische Schutzmaßnahme: Die Freigabe stoppt, ohne Nachweise zu ändern oder zu erzeugen. Lösung: Zuerst KUBUNTU_26_04_QT_ABNAHME.sh und den realen Langzeitrender vollständig ausführen. Alternative: VIDEOBATCH_ACCEPTANCE_EVIDENCE auf einen bereits vollständigen externen Nachweisordner setzen.\n' "$EVIDENCE_DIR" >&2
-  exit 14
+if [[ "${VIDEOBATCH_OPERATOR_ACCEPTANCE:-0}" == "1" ]]; then
+  OPERATOR_ROOT="${VIDEOBATCH_OPERATOR_ACCEPTANCE_ROOT:?VIDEOBATCH_OPERATOR_ACCEPTANCE_ROOT fehlt}"
+  CANDIDATE="${VIDEOBATCH_OPERATOR_ACCEPTANCE_CANDIDATE:?VIDEOBATCH_OPERATOR_ACCEPTANCE_CANDIDATE fehlt}"
+  MANIFEST_SHA256="${VIDEOBATCH_OPERATOR_ACCEPTANCE_MANIFEST_SHA256:?VIDEOBATCH_OPERATOR_ACCEPTANCE_MANIFEST_SHA256 fehlt}"
+  python3 "$ROOT_DIR/scripts/validate_operator_stable_acceptance.py" \
+    --source-root "$OPERATOR_ROOT" \
+    --candidate "$CANDIDATE" \
+    --manifest-sha256 "$MANIFEST_SHA256"
+else
+  DEFAULT_EVIDENCE_ROOT="${XDG_STATE_HOME:-${HOME:?HOME ist nicht gesetzt}/.local/state}/VideoBatchFast/stable-evidence"
+  EVIDENCE_DIR="${VIDEOBATCH_ACCEPTANCE_EVIDENCE:-$DEFAULT_EVIDENCE_ROOT/$VERSION}"
+  if [[ ! -d "$EVIDENCE_DIR" ]]; then
+    printf 'STABLE BLOCKIERT: Ursache: Der kandidatengebundene Abnahmeordner fehlt: %s. Auswirkung: Das Stable-Paket wird nicht erzeugt. Automatische Schutzmaßnahme: Die Freigabe stoppt, ohne Nachweise zu ändern oder zu erzeugen. Lösung: Reale Nachweise bereitstellen oder den ausdrücklich dokumentierten Operator-Freigabepfad verwenden. Alternative: Den Stand als Release Candidate belassen.\n' "$EVIDENCE_DIR" >&2
+    exit 14
+  fi
+  CANDIDATE="${VIDEOBATCH_ACCEPTANCE_CANDIDATE:-$VERSION}"
+  MANIFEST_SHA256="${VIDEOBATCH_ACCEPTANCE_MANIFEST_SHA256:-$(sha256sum "$ROOT_DIR/RELEASE_MANIFEST.json" | cut -d' ' -f1)}"
+  python3 "$ROOT_DIR/scripts/validate_stable_acceptance.py" --evidence-dir "$EVIDENCE_DIR" --candidate "$CANDIDATE" --manifest-sha256 "$MANIFEST_SHA256"
 fi
-CANDIDATE="${VIDEOBATCH_ACCEPTANCE_CANDIDATE:-$VERSION}"
-MANIFEST_SHA256="${VIDEOBATCH_ACCEPTANCE_MANIFEST_SHA256:-$(sha256sum "$ROOT_DIR/RELEASE_MANIFEST.json" | cut -d' ' -f1)}"
-python3 "$ROOT_DIR/scripts/validate_stable_acceptance.py" --evidence-dir "$EVIDENCE_DIR" --candidate "$CANDIDATE" --manifest-sha256 "$MANIFEST_SHA256"
 python3 "$ROOT_DIR/scripts/toolchain.py" prepare --scope quality --auto-repair --quiet
 python3 "$ROOT_DIR/scripts/toolchain.py" gate --scope quality --run-external --quiet
 export VIDEOBATCH_QUALITY_ALREADY_VERIFIED=1
