@@ -9,6 +9,8 @@ on:
       - "scripts/promote_stable_workspace.py"
       - "scripts/validate_operator_stable_acceptance.py"
       - "stable_release.sh"
+      - "registries/CODE_QUALITY_REGISTRY.json"
+      - ".github/workflows/design-manifest-gate.yml"
       - ".github/workflows/stable-promotion.yml"
   workflow_dispatch:
 
