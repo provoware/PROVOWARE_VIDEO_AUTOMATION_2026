@@ -4,7 +4,7 @@
 
 **Zielplattform:** Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6.
 
-Der automatisierte Repository-, Release-, Qt6- und Qualitätsstand ist grün. Die Kubuntu-Basisabnahme wurde am **29.09.2026** vom Projektverantwortlichen manuell auf grün gesetzt. Als einziges reales P0-Gate bleibt der Langzeitrender offen.
+Der automatisierte Repository-, Release-, Qt6- und Qualitätsstand ist grün. **Kubuntu-Basisabnahme und Langzeitrender wurden am 29.09.2026 vom Projektverantwortlichen als in Ordnung bestätigt. Beide fachlichen P0-Gates sind grün.**
 
 ## P0 – jetzt
 
@@ -15,16 +15,16 @@ Der automatisierte Repository-, Release-, Qt6- und Qualitätsstand ist grün. Di
 - [x] Manuelle Provenienz unter `diagnostics/release_readiness/KUBUNTU_OPERATOR_ACCEPTANCE_2026-09-29.json` dokumentiert.
 - [x] Kein neu ausgeführter physischer Kubuntu-26.04-Lauf und keine nicht vorhandenen Messdaten werden behauptet.
 
-### 2. Realer Langzeitrender
+### 2. Realer Langzeitrender — GRÜN
 
-- [ ] Vertrag aus `docs/LONG_RENDER_2.8.3-rc24.md` mit großer Medienauswahl ausführen.
-- [ ] Langsames externes USB-Ziel verwenden.
-- [ ] Checkpoint/Wiederaufnahme, Ein-/Ausgabeintegrität und vollständige Hashprüfung real bestehen.
-- [ ] Erzeugten Nachweis `long_render.json` auf denselben Kandidaten und Manifest-Hash prüfen.
+- [x] Ausgeführten Langzeitrender durch den Projektverantwortlichen als in Ordnung bestätigt.
+- [x] Kanonisches Gate `large_media_soak` auf `passed` gesetzt.
+- [x] Manuelle Provenienz unter `diagnostics/release_readiness/LONG_RENDER_OPERATOR_ACCEPTANCE_2026-09-29.json` dokumentiert.
+- [x] Keine nicht vorliegenden Einzelmesswerte, Hashwerte oder Prüfschritte werden nachträglich erfunden.
 
-## Stable-Finalisierung – nach dem verbleibenden P0-Gate
+## Stable-Finalisierung – fachliche P0-Gates abgeschlossen
 
-- [ ] Langzeitrender-Nachweis prüfen; der bestehende Strict-Validator verlangt zusätzlich weiterhin formale Kubuntu-26.04-Evidenz und bleibt deshalb bewusst fail-closed.
+- [ ] Formalen Stable-Promotionspfad mit seinen vorhandenen Evidenzregeln reproduzierbar ausführen oder separat auf einen ausdrücklich dokumentierten Operator-Override-Vertrag erweitern.
 - [ ] CI und Release-/Manifest-Vertrag auf demselben Kandidaten erneut vollständig grün bestätigen.
 - [ ] Erst danach den Stable-Kanal in einem getrennten, reproduzierbaren Schritt freigeben.
 
@@ -54,4 +54,4 @@ Diese Arbeiten bleiben bis zur realen Zielsystemabnahme zurückgestellt:
 
 ## Abschlussregel
 
-Die Kubuntu-Basisabnahme ist durch ausdrückliche manuelle Projektfreigabe grün. **Stable bleibt gesperrt, bis der reale Langzeitrender gültig vorliegt und der finale Stable-Promotionspfad seine formalen Evidenzregeln erfüllt.**
+**Kubuntu-Basisabnahme und Langzeitrender sind fachlich grün.** Die eigentliche Stable-Promotion bleibt ein separater reproduzierbarer Release-Schritt; vorhandene formale Evidenzprüfer werden durch die manuelle Statusfreigabe nicht stillschweigend umgangen.
