@@ -61,7 +61,7 @@
     {
       "label": "Offene Arbeitsliste",
       "path": "TODO.md",
-      "reason": "Enthält bewusst das verbleibende Stable-Gate: realer Langzeitrender"
+      "reason": "Fachliche P0-Abnahmen abgeschlossen; enthält nur noch Stable-Promotion, Qt-Migrations- und Wartbarkeitsarbeiten"
     },
     {
       "label": "Externe Qualitätswerkzeuge",
@@ -71,17 +71,17 @@
     {
       "label": "Stable-Freigabeiteration",
       "path": "STABLE_GATE_ITERATION_2.8.3-rc24_2026-09-11.md",
-      "reason": "Kubuntu-Basisabnahme manuell freigegeben; realer Langzeitrender bleibt offen"
+      "reason": "Historischer Stable-Arbeitsstand vor den manuellen Abnahmen vom 29.09.2026"
     },
     {
       "label": "Langzeitrender",
       "path": "docs/LONG_RENDER_2.8.3-rc24.md",
-      "reason": "Realer Langzeitrender mit großer Auswahl und langsamem Ziel fehlt"
+      "reason": "Prüfvertrag bleibt als Referenz erhalten; Langzeitrender wurde am 29.09.2026 manuell als in Ordnung bestätigt"
     },
     {
       "label": "Stable-Abnahmenachweis",
       "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
-      "reason": "Manuelle Kubuntu-Basisfreigabe dokumentiert; formaler Langzeitnachweis fehlt weiterhin"
+      "reason": "Manuelle Kubuntu- und Langzeitrender-Freigaben dokumentiert; technischer Promotionspfad behält seine formalen Evidenzregeln"
     },
     {
       "label": "Desktop-Sichtprüfung",
@@ -91,7 +91,7 @@
     {
       "label": "Qualitätsumgebung",
       "path": "QUALITY_ENVIRONMENT_STATUS.json",
-      "reason": "Maschinenlesbarer Status; Kubuntu-Abnahme ist grün, Stable bleibt ausschließlich wegen des Langzeitrenders offen"
+      "reason": "Maschinenlesbarer Status; alle fachlichen Stable-Gates sind bestanden"
     },
     {
       "label": "Visuelles Prüfmanifest",
