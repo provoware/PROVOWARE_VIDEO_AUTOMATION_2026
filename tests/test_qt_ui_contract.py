@@ -6,6 +6,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 QT_UI = ROOT / "src" / "videobatch_fast" / "qt_ui.py"
 QT_THEME = ROOT / "src" / "videobatch_fast" / "qt_theme.py"
+QT_MEDIA_LIST = ROOT / "src" / "videobatch_fast" / "qt_media_list.py"
+QT_LOAD_DASHBOARD = ROOT / "src" / "videobatch_fast" / "qt_system_load_dashboard.py"
 
 
 def _imports(source: str) -> set[str]:
@@ -67,7 +69,7 @@ def test_qt_theme_exposes_high_visibility_accessibility_contract() -> None:
 
 
 def test_media_selection_lists_support_bounded_ctrl_wheel_zoom() -> None:
-    source = QT_UI.read_text(encoding="utf-8")
+    source = QT_MEDIA_LIST.read_text(encoding="utf-8")
 
     for token in (
         "zoomChanged = Signal(int)",
@@ -83,7 +85,7 @@ def test_media_selection_lists_support_bounded_ctrl_wheel_zoom() -> None:
 
 
 def test_media_selection_lists_offer_deterministic_sort_modes() -> None:
-    source = QT_UI.read_text(encoding="utf-8")
+    source = QT_MEDIA_LIST.read_text(encoding="utf-8") + QT_UI.read_text(encoding="utf-8")
     for token in (
         '("Name A–Z", "name")',
         '("Änderung neu → alt", "modified")',
@@ -99,7 +101,7 @@ def test_media_selection_lists_offer_deterministic_sort_modes() -> None:
 
 
 def test_media_selection_lists_show_metadata_and_image_thumbnails() -> None:
-    source = QT_UI.read_text(encoding="utf-8")
+    source = QT_MEDIA_LIST.read_text(encoding="utf-8")
     for token in (
         "def media_size_text(size: int) -> str:",
         "def media_path_display_text(path: Path) -> str:",
@@ -115,14 +117,14 @@ def test_media_selection_lists_show_metadata_and_image_thumbnails() -> None:
 
 
 def test_header_dashboard_exposes_graphical_cpu_ram_swap_load() -> None:
-    source = QT_UI.read_text(encoding="utf-8")
+    source = QT_LOAD_DASHBOARD.read_text(encoding="utf-8") + QT_UI.read_text(encoding="utf-8")
     theme = QT_THEME.read_text(encoding="utf-8")
     for token in (
         "SystemLoadSampler",
-        "self.load_timer.setInterval(1000)",
+        "self.timer.setInterval(1000)",
         'for key, label in (("cpu", "CPU"), ("ram", "RAM"), ("swap", "SWAP"))',
         'bar.setAccessibleName(f"{label}-Auslastung")',
-        "def _refresh_system_load(self)",
+        "def refresh(self)",
         "sample.cpu_percent",
         "sample.ram_percent",
         "sample.swap_percent",

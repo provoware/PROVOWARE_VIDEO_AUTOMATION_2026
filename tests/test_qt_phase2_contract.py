@@ -10,6 +10,7 @@ SRC = ROOT / "src" / "videobatch_fast"
 PHASE2_FILES = (
     SRC / "qt_phase2.py",
     SRC / "qt_phase2_components.py",
+    SRC / "qt_phase2_selection_preview.py",
     SRC / "qt_preview_panel.py",
     SRC / "qt_media_import_dialog.py",
     SRC / "qt_workflow_dialogs.py",
@@ -108,9 +109,11 @@ def test_beginner_slideshow_keeps_primary_options_fixed_above_secondary_scroll()
 
 
 def test_selecting_audio_or_media_opens_the_live_preview_dock() -> None:
-    source = _text(SRC / "qt_phase2.py")
-    assert "def _show_selection_preview(self)" in source
+    source = _text(SRC / "qt_phase2_selection_preview.py")
+    app = _text(SRC / "qt_phase2.py")
+    assert "class SelectionPreviewMixin" in source
     assert "self.phase2_dock.show()" in source
     assert "self.phase2_dock.raise_()" in source
     assert "self.phase2_tabs.setCurrentWidget(self.preview_panel)" in source
     assert source.count("self._show_selection_preview()") == 2
+    assert "SelectionPreviewMixin" in app

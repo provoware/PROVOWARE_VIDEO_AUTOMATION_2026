@@ -8,5 +8,10 @@
     "diagnostics/release_readiness/KUBUNTU_OPERATOR_ACCEPTANCE_2026-09-29.json",
     "diagnostics/release_readiness/LONG_RENDER_OPERATOR_ACCEPTANCE_2026-09-29.json"
   ],
-  "policy": "Promote only after canonical stable_ready, complete CI gates, native Qt Wayland proof, stable desktop validation and deterministic double packaging."
+  "policy": "Promote only after canonical stable_ready, complete CI gates, native Qt Wayland proof, stable desktop validation and deterministic double packaging.",
+  "retry_after_quality_refactor": {
+    "pr": 187,
+    "reason": "Restore existing architecture-debt ceilings by extracting Qt responsibilities before Stable promotion.",
+    "policy": "Re-run the complete fail-closed Stable workflow after merge; do not bypass any gate."
+  }
 }
