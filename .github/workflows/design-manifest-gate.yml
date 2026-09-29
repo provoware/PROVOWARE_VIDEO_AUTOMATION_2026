@@ -63,6 +63,7 @@ jobs:
             tests/test_github_actions_pinning.py
           python scripts/validate_documentation.py --json
           python scripts/check_github_actions_pins.py --json
+          python scripts/internal_quality_gate.py
 
       - name: Verify release manifest
         run: python scripts/build_release_manifest.py --check --json
