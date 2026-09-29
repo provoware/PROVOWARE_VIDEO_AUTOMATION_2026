@@ -61,7 +61,7 @@
     {
       "label": "Offene Arbeitsliste",
       "path": "TODO.md",
-      "reason": "Enthält bewusst die verbleibenden Stable-Gates"
+      "reason": "Enthält bewusst das verbleibende Stable-Gate: realer Langzeitrender"
     },
     {
       "label": "Externe Qualitätswerkzeuge",
@@ -71,7 +71,7 @@
     {
       "label": "Stable-Freigabeiteration",
       "path": "STABLE_GATE_ITERATION_2.8.3-rc24_2026-09-11.md",
-      "reason": "Aktueller Stable-Arbeitsstand; reale Zielsystemabnahme und Langzeitrender sind noch offen"
+      "reason": "Kubuntu-Basisabnahme manuell freigegeben; realer Langzeitrender bleibt offen"
     },
     {
       "label": "Langzeitrender",
@@ -81,22 +81,22 @@
     {
       "label": "Stable-Abnahmenachweis",
       "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
-      "reason": "Physische Desktop- und Langzeitnachweise fehlen"
+      "reason": "Manuelle Kubuntu-Basisfreigabe dokumentiert; formaler Langzeitnachweis fehlt weiterhin"
     },
     {
       "label": "Desktop-Sichtprüfung",
       "path": "VISUAL_DESKTOP_APPROVAL.md",
-      "reason": "Physische Kubuntu-26.04-Plasma-Wayland-Abnahme bleibt offen"
+      "reason": "Kubuntu-Basiszustand manuell akzeptiert; keine neue physische 26.04-Ausführung behauptet"
     },
     {
       "label": "Qualitätsumgebung",
       "path": "QUALITY_ENVIRONMENT_STATUS.json",
-      "reason": "Maschinenlesbarer Status; automatisierte Qualitätsgates sind bestanden, Stable bleibt wegen physischer Kubuntu-26.04-Wayland-Abnahme und Langzeitrender offen"
+      "reason": "Maschinenlesbarer Status; Kubuntu-Abnahme ist grün, Stable bleibt ausschließlich wegen des Langzeitrenders offen"
     },
     {
       "label": "Visuelles Prüfmanifest",
       "path": "VISUAL_INSPECTION_MANIFEST.json",
-      "reason": "Aktueller physischer Lauf ist nicht vollständig bestätigt"
+      "reason": "Manuelle Basisfreigabe ist separat dokumentiert; das visuelle Prüfmanifest wird nicht als neuer physischer 26.04-Nachweis umgedeutet"
     }
   ]
 }
