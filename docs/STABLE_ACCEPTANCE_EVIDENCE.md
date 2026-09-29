@@ -2,9 +2,13 @@
 
 ## Zweck
 
-Stable bleibt fail-closed, bis zwei reale Nachweise für **denselben unveränderten RC-Kandidaten** vorliegen: die physische Zielsystemabnahme auf **Kubuntu 26.04 LTS · KDE Plasma · natives Wayland** und ein realer Langzeitrender.
+Der kanonische Projektstatus führt die Kubuntu-Basisabnahme seit **29.09.2026** als manuell freigegeben. Diese Freigabe dokumentiert eine ausdrückliche Projektentscheidung und behauptet keinen neu ausgeführten physischen Kubuntu-26.04-Lauf. Der technische Stable-Promotionspfad bleibt davon unabhängig fail-closed und verlangt weiterhin seine formalen Nachweisdateien; zusätzlich bleibt der reale Langzeitrender offen.
 
-## Benötigte Dateien
+## Manuelle Kubuntu-Basisfreigabe 2026-09-29
+
+Die Provenienz liegt unter `diagnostics/release_readiness/KUBUNTU_OPERATOR_ACCEPTANCE_2026-09-29.json`. Sie setzt das kanonische Gate `physical_kubuntu_26_04_wayland` für die Projektfortschrittsanzeige auf grün, ohne nicht vorhandene Messwerte oder eine erneute physische Ausführung zu erfinden.
+
+## Benötigte Dateien für den strikten Stable-Promotionspfad
 
 Der Nachweisordner enthält genau diese beiden JSON-Dateien:
 
