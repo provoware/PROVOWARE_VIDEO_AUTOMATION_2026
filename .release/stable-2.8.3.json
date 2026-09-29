@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "candidate": "2.8.3-rc24",
+  "stable_version": "2.8.3",
+  "requested_on": "2026-09-30",
+  "acceptance_mode": "explicit_operator_signoff",
+  "operator_acceptances": [
+    "diagnostics/release_readiness/KUBUNTU_OPERATOR_ACCEPTANCE_2026-09-29.json",
+    "diagnostics/release_readiness/LONG_RENDER_OPERATOR_ACCEPTANCE_2026-09-29.json"
+  ],
+  "policy": "Promote only after canonical stable_ready, complete CI gates, native Qt Wayland proof, stable desktop validation and deterministic double packaging."
+}

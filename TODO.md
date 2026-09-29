@@ -24,9 +24,9 @@ Der automatisierte Repository-, Release-, Qt6- und Qualitätsstand ist grün. **
 
 ## Stable-Finalisierung – fachliche P0-Gates abgeschlossen
 
-- [ ] Formalen Stable-Promotionspfad mit seinen vorhandenen Evidenzregeln reproduzierbar ausführen oder separat auf einen ausdrücklich dokumentierten Operator-Override-Vertrag erweitern.
-- [ ] CI und Release-/Manifest-Vertrag auf demselben Kandidaten erneut vollständig grün bestätigen.
-- [ ] Erst danach den Stable-Kanal in einem getrennten, reproduzierbaren Schritt freigeben.
+- [x] Expliziten Operator-Freigabevertrag als fail-closed Alternative zum klassischen Nachweispfad implementieren; keine Messwerte werden rekonstruiert.
+- [ ] Release-PR vollständig grün bestätigen.
+- [ ] Danach Stable 2.8.3 in getrennter Arbeitskopie erzeugen, deterministisch doppelt paketieren, Stable-Branch/Tag und GitHub-Release veröffentlichen.
 
 ## Repository-Schutz und Ordnung
 
