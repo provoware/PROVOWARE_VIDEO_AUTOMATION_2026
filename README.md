@@ -14,7 +14,6 @@
 
 ### Offene Stable-Gates
 
-- Keine.
 <!-- release-status:end -->
 
 ## Überblick
