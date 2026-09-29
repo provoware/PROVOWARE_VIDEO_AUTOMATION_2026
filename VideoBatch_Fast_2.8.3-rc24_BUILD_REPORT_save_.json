@@ -58,11 +58,8 @@
     "verified_commit": "92b2089a604b13367cb14c64e69703f97b5381d1",
     "scope_note": "Aktuelle Ziel-CI auf Ubuntu-26.04-Basis mit KDE-/Wayland-Laufzeitteilmenge, headless Weston und nativem Qt-Wayland-QPA; kein Ersatz für die physische Kubuntu-26.04-Abnahme."
   },
-  "stable_blockers": [
-    "Physische Kubuntu-26.04-Plasma-Wayland-Abnahme: Reale Zielsystem-Abnahme auf Kubuntu 26.04 LTS mit KDE Plasma und nativem Wayland fehlt; die CI-Prüfung ist headless und ersetzt die Sichtabnahme nicht.",
-    "Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt"
-  ],
-  "stable_ready": false,
+  "stable_blockers": [],
+  "stable_ready": true,
   "status": "passed",
   "tests": {
     "assurance_scenarios": "12/12",

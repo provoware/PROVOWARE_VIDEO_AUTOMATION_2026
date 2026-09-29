@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "evidence_type": "operator_long_render_acceptance",
+  "candidate_id": "2.8.3-rc24",
+  "accepted_at": "2026-09-29T23:50:00+02:00",
+  "result": "passed",
+  "gate_id": "large_media_soak",
+  "scope": "manual project-owner sign-off",
+  "statement": "Der Projektverantwortliche hat bestätigt, dass der Langzeitrender in Ordnung war, und die Abnahme ausdrücklich freigegeben.",
+  "provenance": "direct project-owner instruction in ChatGPT project workflow",
+  "measurements_reconstructed": false,
+  "formal_long_render_json_claimed": false,
+  "note": "Dieser Nachweis dokumentiert die manuelle Freigabe. Er ergänzt keine nicht vorliegenden Einzelmesswerte oder Hashwerte."
+}
