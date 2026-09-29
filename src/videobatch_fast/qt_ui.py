@@ -4,13 +4,11 @@ import queue
 import shutil
 import sys
 import threading
-from datetime import datetime
 from pathlib import Path
 
-from PySide6.QtCore import QSize, QTimer, Qt, Signal
-from PySide6.QtGui import QCloseEvent, QDragEnterEvent, QDropEvent, QIcon, QPixmap, QWheelEvent
+from PySide6.QtCore import QTimer, Qt
+from PySide6.QtGui import QCloseEvent
 from PySide6.QtWidgets import (
-    QAbstractItemView,
     QApplication,
     QComboBox,
     QFileDialog,
@@ -18,8 +16,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QListWidget,
-    QListWidgetItem,
     QMainWindow,
     QMessageBox,
     QPlainTextEdit,
@@ -39,170 +35,8 @@ from .models import BatchOptions, PairJob
 from .qt_theme import APP_STYLE
 from .quick_modes import QUICK_MODES, apply_quick_mode
 from .runner import BatchRunner
-from .system_load import SystemLoadSampler
-
-AUDIO_EXTS = {".aac", ".flac", ".m4a", ".mp3", ".ogg", ".opus", ".wav", ".wma"}
-MEDIA_EXTS = {
-    ".avif", ".bmp", ".gif", ".jpeg", ".jpg", ".mkv", ".mov", ".mp4",
-    ".mpeg", ".mpg", ".png", ".tif", ".tiff", ".webm", ".webp",
-}
-
-SORT_MODES = (
-    ("Name A–Z", "name"),
-    ("Änderung neu → alt", "modified"),
-    ("Größe groß → klein", "size"),
-)
-
-
-IMAGE_THUMBNAIL_EXTS = {
-    ".avif", ".bmp", ".gif", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp",
-}
-
-
-def media_size_text(size: int) -> str:
-    value = float(max(0, size))
-    units = ("B", "KB", "MB", "GB", "TB")
-    for unit in units:
-        if value < 1024.0 or unit == units[-1]:
-            return f"{value:.1f} {unit}"
-        value /= 1024.0
-    return f"{value:.1f} TB"
-
-
-def media_path_display_text(path: Path) -> str:
-    try:
-        stat = path.stat()
-        changed = datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M")
-        return f"{path.name}\n{media_size_text(stat.st_size)} · geändert {changed}"
-    except OSError:
-        return f"{path.name}\nGröße / Änderungsdatum nicht verfügbar"
-
-
-def media_path_sort_key(path: Path, mode: str) -> tuple[object, ...]:
-    try:
-        stat = path.stat()
-        modified = float(stat.st_mtime)
-        size = int(stat.st_size)
-    except OSError:
-        modified = 0.0
-        size = -1
-    stable = (path.name.casefold(), str(path).casefold())
-    if mode == "modified":
-        return (-modified, *stable)
-    if mode == "size":
-        return (-size, *stable)
-    return stable
-
-
-class DropList(QListWidget):
-    changed = Signal()
-    zoomChanged = Signal(int)
-
-    MIN_ZOOM_POINT_SIZE = 10.0
-    MAX_ZOOM_POINT_SIZE = 22.0
-
-    def __init__(self, extensions: set[str]) -> None:
-        super().__init__()
-        self.extensions = {value.lower() for value in extensions}
-        self._zoom_point_size = max(
-            self.MIN_ZOOM_POINT_SIZE,
-            min(self.MAX_ZOOM_POINT_SIZE, float(self.font().pointSizeF() or 11.0)),
-        )
-        self.setAcceptDrops(True)
-        self.setDragDropMode(QAbstractItemView.DragDropMode.DropOnly)
-        self.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
-        self.setIconSize(QSize(72, 54))
-        self.setToolTip("Strg + Mausrad: Liste vergrößern oder verkleinern")
-
-    def paths(self) -> list[Path]:
-        return [Path(self.item(row).data(Qt.ItemDataRole.UserRole)) for row in range(self.count())]
-
-    def add_paths(self, paths: list[Path]) -> None:
-        known = {str(path) for path in self.paths()}
-        added = False
-        for candidate in paths:
-            path = candidate.expanduser()
-            if not path.is_file() or path.suffix.lower() not in self.extensions:
-                continue
-            resolved = str(path.resolve())
-            if resolved in known:
-                continue
-            item = QListWidgetItem(media_path_display_text(path))
-            item.setData(Qt.ItemDataRole.UserRole, resolved)
-            item.setToolTip(resolved)
-            if path.suffix.lower() in IMAGE_THUMBNAIL_EXTS:
-                pixmap = QPixmap(resolved)
-                if not pixmap.isNull():
-                    item.setIcon(QIcon(pixmap))
-            self.addItem(item)
-            known.add(resolved)
-            added = True
-        if added:
-            self.changed.emit()
-
-    def remove_selected(self) -> None:
-        rows = sorted((self.row(item) for item in self.selectedItems()), reverse=True)
-        for row in rows:
-            self.takeItem(row)
-        if rows:
-            self.changed.emit()
-
-    def dragEnterEvent(self, event: QDragEnterEvent) -> None:
-        event.acceptProposedAction() if event.mimeData().hasUrls() else event.ignore()
-
-    def dragMoveEvent(self, event) -> None:
-        event.acceptProposedAction() if event.mimeData().hasUrls() else event.ignore()
-
-    def dropEvent(self, event: QDropEvent) -> None:
-        self.add_paths([Path(url.toLocalFile()) for url in event.mimeData().urls() if url.isLocalFile()])
-        event.acceptProposedAction()
-
-    def zoom_percent(self) -> int:
-        return int(round(self._zoom_point_size / 11.0 * 100))
-
-    def _apply_zoom(self, point_size: float) -> None:
-        bounded = max(self.MIN_ZOOM_POINT_SIZE, min(self.MAX_ZOOM_POINT_SIZE, point_size))
-        if abs(bounded - self._zoom_point_size) < 0.01:
-            return
-        self._zoom_point_size = bounded
-        font = self.font()
-        font.setPointSizeF(bounded)
-        self.setFont(font)
-        scale = bounded / 11.0
-        self.setIconSize(QSize(max(48, round(72 * scale)), max(36, round(54 * scale))))
-        self.setSpacing(max(2, int(round((bounded - self.MIN_ZOOM_POINT_SIZE) / 2.0)) + 2))
-        self.zoomChanged.emit(self.zoom_percent())
-
-    def wheelEvent(self, event: QWheelEvent) -> None:
-        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            delta = event.angleDelta().y() or event.pixelDelta().y()
-            if delta:
-                self._apply_zoom(self._zoom_point_size + (1.0 if delta > 0 else -1.0))
-            event.accept()
-            return
-        super().wheelEvent(event)
-
-    def sort_by(self, mode: str) -> None:
-        selected = {str(item.data(Qt.ItemDataRole.UserRole)) for item in self.selectedItems()}
-        current = self.currentItem()
-        current_path = str(current.data(Qt.ItemDataRole.UserRole)) if current is not None else ""
-        ordered = sorted(self.paths(), key=lambda path: media_path_sort_key(path, mode))
-        if ordered == self.paths():
-            return
-        self.blockSignals(True)
-        try:
-            self.clear()
-            self.add_paths(ordered)
-            for row in range(self.count()):
-                item = self.item(row)
-                raw = str(item.data(Qt.ItemDataRole.UserRole))
-                item.setSelected(raw in selected)
-                if raw == current_path:
-                    self.setCurrentItem(item)
-        finally:
-            self.blockSignals(False)
-        self.changed.emit()
-
+from .qt_media_list import AUDIO_EXTS, MEDIA_EXTS, SORT_MODES, DropList
+from .qt_system_load_dashboard import SystemLoadDashboard
 
 class VideoBatchQtWindow(QMainWindow):
     """Tk-free Qt 6 frontend that reuses the verified processing core."""
@@ -220,8 +54,7 @@ class VideoBatchQtWindow(QMainWindow):
         self.prepare_thread: threading.Thread | None = None
         self.close_after_stop = False
         self.jobs: list[PairJob] = []
-        self._load_sampler = SystemLoadSampler()
-        self.load_bars: dict[str, QProgressBar] = {}
+        self.load_dashboard = SystemLoadDashboard(self)
         self._build_ui()
         self._connect()
         self._refresh()
@@ -229,11 +62,6 @@ class VideoBatchQtWindow(QMainWindow):
         self.timer.setInterval(80)
         self.timer.timeout.connect(self._poll)
         self.timer.start()
-        self.load_timer = QTimer(self)
-        self.load_timer.setInterval(1000)
-        self.load_timer.timeout.connect(self._refresh_system_load)
-        self.load_timer.start()
-        self._refresh_system_load()
 
     @staticmethod
     def _panel(title: str, hint: str) -> tuple[QFrame, QVBoxLayout]:
@@ -263,42 +91,6 @@ class VideoBatchQtWindow(QMainWindow):
         layout.addWidget(caption)
         return box, value
 
-    @staticmethod
-    def _memory_text(used_bytes: int, total_bytes: int) -> str:
-        gib = float(1024 ** 3)
-        if total_bytes <= 0:
-            return "aus"
-        return f"{used_bytes / gib:.1f}/{total_bytes / gib:.1f} GiB"
-
-    def _set_load_bar(self, key: str, percent: float | None, tooltip: str) -> None:
-        bar = self.load_bars[key]
-        if percent is None:
-            bar.setValue(0)
-            bar.setFormat("—")
-        else:
-            value = max(0, min(100, int(round(percent))))
-            bar.setValue(value)
-            bar.setFormat(f"{value}%")
-        bar.setToolTip(tooltip)
-
-    def _refresh_system_load(self) -> None:
-        sample = self._load_sampler.sample()
-        self._set_load_bar(
-            "cpu",
-            sample.cpu_percent,
-            "CPU-Auslastung seit der letzten Messung.",
-        )
-        self._set_load_bar(
-            "ram",
-            sample.ram_percent,
-            f"RAM: {self._memory_text(sample.ram_used_bytes, sample.ram_total_bytes)}",
-        )
-        self._set_load_bar(
-            "swap",
-            sample.swap_percent,
-            f"SWAP: {self._memory_text(sample.swap_used_bytes, sample.swap_total_bytes)}",
-        )
-
     def _build_ui(self) -> None:
         root = QWidget()
         self.setCentralWidget(root)
@@ -316,30 +108,7 @@ class VideoBatchQtWindow(QMainWindow):
         header.addLayout(brand)
         header.addStretch()
 
-        load_dashboard = QFrame()
-        load_dashboard.setObjectName("loadDashboard")
-        load_row = QHBoxLayout(load_dashboard)
-        load_row.setContentsMargins(9, 6, 9, 6)
-        load_row.setSpacing(8)
-        for key, label in (("cpu", "CPU"), ("ram", "RAM"), ("swap", "SWAP")):
-            meter = QVBoxLayout()
-            meter.setSpacing(2)
-            caption = QLabel(label)
-            caption.setObjectName("loadLabel")
-            caption.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            bar = QProgressBar()
-            bar.setObjectName("loadMeter")
-            bar.setRange(0, 100)
-            bar.setValue(0)
-            bar.setFormat("—")
-            bar.setTextVisible(True)
-            bar.setMinimumWidth(82)
-            bar.setAccessibleName(f"{label}-Auslastung")
-            self.load_bars[key] = bar
-            meter.addWidget(caption)
-            meter.addWidget(bar)
-            load_row.addLayout(meter)
-        header.addWidget(load_dashboard, alignment=Qt.AlignmentFlag.AlignTop)
+        header.addWidget(self.load_dashboard.frame, alignment=Qt.AlignmentFlag.AlignTop)
 
         self.status = QLabel("BEREIT")
         self.status.setObjectName("statusChip")
