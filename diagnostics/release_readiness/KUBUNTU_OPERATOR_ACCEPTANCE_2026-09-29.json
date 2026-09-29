@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "evidence_type": "operator_baseline_acceptance",
+  "candidate_id": "2.8.3-rc24",
+  "accepted_at": "2026-09-29T23:50:00+02:00",
+  "result": "passed",
+  "gate_id": "physical_kubuntu_26_04_wayland",
+  "scope": "manual baseline sign-off",
+  "statement": "Der Projektverantwortliche hat den vorhandenen Basiszustand als in Ordnung bestätigt und die Kubuntu-Abnahme ausdrücklich auf grün gesetzt.",
+  "provenance": "direct project-owner instruction in ChatGPT project workflow",
+  "physical_test_reexecuted": false,
+  "formal_kubuntu_26_04_json_claimed": false,
+  "note": "Dieser Nachweis dokumentiert die manuelle Freigabe. Er behauptet weder einen neu ausgeführten Hardwarelauf noch ersetzt er rückwirkend nicht vorhandene Messdaten."
+}
