@@ -186,7 +186,7 @@ jobs:
             "$RUNNER_TEMP/release/VideoBatch_Fast_2.8.3_FINAL_REPORT.json#Final release report" \
             "$RUNNER_TEMP/release/VideoBatch_Fast_2.8.3_RELEASE_METADATA.json#Release metadata" \
             --title "VideoBatch Fast 2.8.3" \
-            --notes "Stable 2.8.3 promoted from 2.8.3-rc24 after green repository, quality, Wayland, desktop and deterministic packaging gates."
+            --notes "Stable 2.8.3 promoted from $(python -c 'import json; print(json.load(open(\"VERSION.json\"))[\"build\"])') after green repository, quality, Wayland, desktop and deterministic packaging gates."
 
       - name: Upload release artifact for CI retrieval
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
