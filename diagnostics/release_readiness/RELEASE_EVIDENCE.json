@@ -104,10 +104,10 @@
     "version": "2.8.3-rc24"
   },
   "progress": {
-    "completed": 28,
-    "current_todo": "Automatisierte Ziel-CI für Kubuntu-26.04-/Wayland-Vertrag vorhanden; offen bleiben die physische Kubuntu-26.04-Plasma-Wayland-Abnahme und der reale Langzeitrender.",
-    "open": 2,
-    "percent": 93,
+    "completed": 29,
+    "current_todo": "Kubuntu-Basisabnahme am 29.09.2026 manuell freigegeben; als einziges Stable-Gate bleibt der reale Langzeitrender auf langsamem externem Ziel offen.",
+    "open": 1,
+    "percent": 97,
     "total": 30
   },
   "provenance": {
@@ -195,7 +195,7 @@
       {
         "label": "Offene Arbeitsliste",
         "path": "TODO.md",
-        "reason": "Enthält bewusst die verbleibenden Stable-Gates"
+        "reason": "Enthält bewusst das verbleibende Stable-Gate: realer Langzeitrender"
       },
       {
         "label": "Externe Qualitätswerkzeuge",
@@ -205,7 +205,7 @@
       {
         "label": "Stable-Freigabeiteration",
         "path": "STABLE_GATE_ITERATION_2.8.3-rc24_2026-09-11.md",
-        "reason": "Aktueller Stable-Arbeitsstand; reale Zielsystemabnahme und Langzeitrender sind noch offen"
+        "reason": "Kubuntu-Basisabnahme manuell freigegeben; realer Langzeitrender bleibt offen"
       },
       {
         "label": "Langzeitrender",
@@ -215,22 +215,22 @@
       {
         "label": "Stable-Abnahmenachweis",
         "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
-        "reason": "Physische Desktop- und Langzeitnachweise fehlen"
+        "reason": "Manuelle Kubuntu-Basisfreigabe dokumentiert; formaler Langzeitnachweis fehlt weiterhin"
       },
       {
         "label": "Desktop-Sichtprüfung",
         "path": "VISUAL_DESKTOP_APPROVAL.md",
-        "reason": "Physische Kubuntu-26.04-Plasma-Wayland-Abnahme bleibt offen"
+        "reason": "Kubuntu-Basiszustand manuell akzeptiert; keine neue physische 26.04-Ausführung behauptet"
       },
       {
         "label": "Qualitätsumgebung",
         "path": "QUALITY_ENVIRONMENT_STATUS.json",
-        "reason": "Maschinenlesbarer Status; automatisierte Qualitätsgates sind bestanden, Stable bleibt wegen physischer Kubuntu-26.04-Wayland-Abnahme und Langzeitrender offen"
+        "reason": "Maschinenlesbarer Status; Kubuntu-Abnahme ist grün, Stable bleibt ausschließlich wegen des Langzeitrenders offen"
       },
       {
         "label": "Visuelles Prüfmanifest",
         "path": "VISUAL_INSPECTION_MANIFEST.json",
-        "reason": "Aktueller physischer Lauf ist nicht vollständig bestätigt"
+        "reason": "Manuelle Basisfreigabe ist separat dokumentiert; das visuelle Prüfmanifest wird nicht als neuer physischer 26.04-Nachweis umgedeutet"
       }
     ]
   },
@@ -274,8 +274,8 @@
     {
       "id": "physical_kubuntu_26_04_wayland",
       "label": "Physische Kubuntu-26.04-Plasma-Wayland-Abnahme",
-      "reason": "Reale Zielsystem-Abnahme auf Kubuntu 26.04 LTS mit KDE Plasma und nativem Wayland fehlt; die CI-Prüfung ist headless und ersetzt die Sichtabnahme nicht.",
-      "status": "open"
+      "reason": "Manuelle Basis-Abnahme am 29.09.2026 durch den Projektverantwortlichen bestätigt; der vorhandene Kubuntu-/Wayland-Basiszustand wurde als in Ordnung akzeptiert. Es wird kein neu ausgeführter physischer Kubuntu-26.04-Test behauptet. Provenienz: diagnostics/release_readiness/KUBUNTU_OPERATOR_ACCEPTANCE_2026-09-29.json",
+      "status": "passed"
     },
     {
       "id": "large_media_soak",
