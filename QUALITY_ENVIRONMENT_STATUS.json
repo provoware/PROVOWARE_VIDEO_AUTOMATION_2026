@@ -45,8 +45,8 @@
     "bandit_1_9_4": "passed",
     "pip_audit_2_10_1": "passed",
     "physical_kubuntu_26_04_wayland": "passed",
-    "large_media_soak": "Realer Lauf auf langsamem externem Ziel fehlt"
+    "large_media_soak": "passed"
   },
-  "stable_ready": false,
-  "stable_block_reason": "Langzeitrender mit großer Medienauswahl: Realer Lauf auf langsamem externem Ziel fehlt"
+  "stable_ready": true,
+  "stable_block_reason": ""
 }
