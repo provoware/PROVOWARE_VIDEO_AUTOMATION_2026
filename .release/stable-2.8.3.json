@@ -21,5 +21,10 @@
     "status": "requested",
     "reason": "Stable finalizer exposed UI-only Qt/canonical modules inside the core coverage denominator after UI extraction.",
     "policy": "Keep 80/65 thresholds unchanged; exclude only presentation-layer modules already outside the intended core coverage contract."
+  },
+  "retry_after_verify_launch_fix": {
+    "status": "requested",
+    "reason": "Stable finalizer attempted to execute verify_release.sh directly although the tracked Git mode is 100644.",
+    "policy": "Invoke the existing verification contract explicitly through bash; do not weaken or skip verification."
   }
 }
