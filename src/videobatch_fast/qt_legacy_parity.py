@@ -32,6 +32,7 @@ from .qt_legacy_appearance import apply_theme
 from .qt_legacy_calendar import build_calendar_tab, load_calendar_selection
 from .qt_legacy_playlist import build_playlist_tab, poll_playlist, refresh_playlist_list
 from .qt_legacy_settings import build_settings_tab
+from .qt_desktop_actions import open_output_folder
 from .job_journal import (
     acknowledge_recovery,
     recoverable_batches,
@@ -657,13 +658,7 @@ def _open_path(path: Path) -> None:
 
 
 def _open_output(window: object) -> None:
-    path = Path(window.output.text().strip()).expanduser()
-    try:
-        path.mkdir(parents=True, exist_ok=True)
-    except OSError as exc:
-        QMessageBox.warning(window, "Ausgabeordner nicht verfügbar", str(exc))
-        return
-    _open_path(path)
+    open_output_folder(window)
 
 
 def _open_logs(window: object) -> None:

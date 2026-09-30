@@ -251,7 +251,7 @@ def test_remote_safe_mode_reuses_verified_runtime_without_leaving_its_test_home(
 
 
 def test_beginner_main_flow_is_three_real_decisions_with_persistent_action_footer() -> None:
-    source = _text(SRC / "qt_ui.py")
+    source = _text(SRC / "qt_ui.py") + _text(SRC / "qt_main_layout.py")
     for text in (
         "Einfacher Ablauf",
         "1 · Dateien auswählen",

@@ -16,6 +16,8 @@
   "active_gui_modules": [
     "src/videobatch_fast/__main__.py",
     "src/videobatch_fast/qt_ui.py",
+    "src/videobatch_fast/qt_main_layout.py",
+    "src/videobatch_fast/qt_desktop_actions.py",
     "src/videobatch_fast/qt_phase2.py",
     "src/videobatch_fast/qt_phase3.py",
     "src/videobatch_fast/qt_phase2_components.py",

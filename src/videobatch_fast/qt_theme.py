@@ -43,23 +43,30 @@ QLabel#statusChip {
     font-weight: 700;
 }
 QPushButton {
-    background: #243247;
-    border: 1px solid #526985;
+    background: #007f99;
+    border: 2px solid #2ee6ff;
+    color: #ffffff;
     border-radius: 9px;
     padding: 8px 12px;
     font-weight: 650;
 }
-QPushButton:hover { background: #31445e; }
+QPushButton:hover { background: #009fbd; }
+QPushButton:pressed, QPushButton:checked {
+    background: #ffbf3f;
+    border-color: #ffe29a;
+    color: #161006;
+}
 QPushButton:disabled { color: #b6c2d2; background: #171f2a; }
 QPushButton#primary {
-    background: #316bf4;
-    border-color: #4b7df5;
-    color: white;
+    background: #ffbf3f;
+    border-color: #ffe29a;
+    color: #161006;
 }
-QPushButton#primary:hover { background: #3f78ff; }
+QPushButton#primary:hover { background: #ffd36f; }
 QPushButton#danger {
-    background: #3a2026;
-    border-color: #65313d;
+    background: #a61f3b;
+    border-color: #ff7890;
+    color: #ffffff;
 }
 
 QFrame#workflowGuide {
@@ -96,22 +103,28 @@ QLabel#safeHint {
     color: #cdebdc;
 }
 QToolButton {
-    background: transparent;
-    border: 0;
-    color: #d2dcef;
+    background: #007f99;
+    border: 1px solid #2ee6ff;
+    border-radius: 7px;
+    color: #ffffff;
     padding: 5px 2px;
     text-align: left;
     font-weight: 650;
 }
-QToolButton:hover { color: #ffffff; }
+QToolButton:hover { background: #009fbd; }
+QToolButton:checked {
+    background: #ffbf3f;
+    border-color: #ffe29a;
+    color: #161006;
+}
 QPushButton#workspaceNav {
     text-align: left;
     padding: 8px 10px;
 }
 QPushButton#workspaceNav[active="true"] {
-    background: #274f91;
-    border-color: #4b7df5;
-    color: white;
+    background: #ffbf3f;
+    border-color: #ffe29a;
+    color: #161006;
 }
 QScrollArea#secondaryScroll {
     background: transparent;
@@ -162,6 +175,7 @@ QProgressBar {
     min-height: 18px;
     text-align: center;
 }
-QProgressBar::chunk { background: #316bf4; border-radius: 6px; }
+QProgressBar::chunk { background: #00c8e8; border-radius: 6px; }
+QProgressBar#jobProgress::chunk { background: #ffbf3f; }
 QSplitter::handle { background: #0b1017; width: 7px; }
 """
