@@ -215,3 +215,6 @@ def test_result_preserving_refresh_propagates_through_qt_layers() -> None:
     assert 'self.job_progress.setFormat("Aufträge werden vorbereitet …")' in parity
     assert 'self.kpi_values["active"].setText("Prüfung")' in parity
     assert 'self.activity_detail.setText(f"Aktiv · prüfe {len(audios)} Auftrag/Aufträge mit FFprobe")' in parity
+    qt_ui = QT_UI.read_text(encoding="utf-8")
+    assert 'self.table.rowCount() - open_' in qt_ui
+    assert 'self._row_status(row, "Nicht gestartet", "–")' in qt_ui
