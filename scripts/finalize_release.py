@@ -59,7 +59,7 @@ def main() -> int:
 
     run([str(ROOT / "quality.sh")], cwd=ROOT, env=base_env, label="Externe Qualität und Kernprüfung")
     verified_env = {**base_env, "VIDEOBATCH_QUALITY_ALREADY_VERIFIED": "1"}
-    run([str(ROOT / "verify_release.sh")], cwd=ROOT, env=verified_env, label="Releasekandidat vollständig verifizieren")
+    run(["bash", str(ROOT / "verify_release.sh")], cwd=ROOT, env=verified_env, label="Releasekandidat vollständig verifizieren")
     run([str(env_python), str(ROOT / "scripts/live_desktop_gate.py")], cwd=ROOT, env=base_env, label="Reale Desktopprüfung des Releasekandidaten")
 
     args.output.mkdir(parents=True, exist_ok=True)
