@@ -1,7 +1,7 @@
 name: Qt6 Phase 3 orchestrated validation
 
 # The runtime manifest check also exposes the exact compact manifest after workflow-only release hotfixes.
-# It is reused for the final authorization commit so manifest drift stays fail-closed.
+# It is reused for Stable finalizer hotfixes and authorization commits so manifest drift stays fail-closed.
 
 on:
   pull_request:
