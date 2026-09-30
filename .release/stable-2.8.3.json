@@ -15,7 +15,7 @@
     "literal_hygiene_fix_pr": 188,
     "policy": "Run the complete fail-closed Stable workflow on the exact source commit; do not bypass any gate."
   },
-  "source_commit": "f65dccd430b77d6ca4ab3dd015dc77b898ee228f",
+  "source_commit": "668b3ddeb0288c9d0de5843ede4706d12352bb8e",
   "release_intent": "final_stable_promotion",
   "retry_after_coverage_scope_fix": {
     "status": "resolved",
@@ -43,5 +43,10 @@
     "status": "resolved",
     "reason": "Two Stable promotion attempts reproduced the mandatory Tk GUI roundtrip timeout because WAYLAND_DISPLAY remained exported after the native Qt/Wayland proof, so platform detection still classified the finalizer session as Wayland despite XDG_SESSION_TYPE=x11.",
     "policy": "Keep all existing gates and the 180-second fail-closed timeout; clear WAYLAND_DISPLAY only for the Tk/X11 finalizer phase. PR #197 passed release-contract, repository, long-render, core, offline-Qt and native Wayland lifecycle gates."
+  },
+  "retry_after_finalizer_process_boundary_fix": {
+    "status": "resolved",
+    "reason": "The final Stable path must keep the finalizer in the proven Wayland session and isolate only the legacy Tk/X11 subprocesses. PR #199 fixed the process boundary, import context, and synchronized release manifest; all six PR gates passed.",
+    "policy": "Promote exactly source commit 668b3ddeb0288c9d0de5843ede4706d12352bb8e with all existing fail-closed gates unchanged."
   }
 }
