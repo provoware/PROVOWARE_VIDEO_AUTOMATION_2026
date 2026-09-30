@@ -58,7 +58,7 @@
       "src/videobatch_fast/audio_waveform.py": 352,
       "src/videobatch_fast/visual_approval.py": 347,
       "src/videobatch_fast/runner_process.py": 343,
-      "src/videobatch_fast/qt_phase3_components.py": 334,
+      "src/videobatch_fast/qt_phase3_components.py": 327,
       "src/videobatch_fast/ui_event_handlers_mixin.py": 315,
       "src/videobatch_fast/event_registry.py": 304,
       "src/videobatch_fast/ui_components.py": 302,
