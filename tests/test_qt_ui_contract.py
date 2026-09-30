@@ -218,3 +218,6 @@ def test_result_preserving_refresh_propagates_through_qt_layers() -> None:
     qt_ui = QT_UI.read_text(encoding="utf-8")
     assert 'self.table.rowCount() - open_' in qt_ui
     assert 'self._row_status(row, "Nicht gestartet", "–")' in qt_ui
+    assert 'output_dir = Path(self.output.text().strip()).expanduser()' in qt_ui
+    assert 'self.open_output.setEnabled(output_dir.is_dir())' in qt_ui
+    assert 'Path(self.output.text().strip()).expanduser().is_dir()' in qt_ui
