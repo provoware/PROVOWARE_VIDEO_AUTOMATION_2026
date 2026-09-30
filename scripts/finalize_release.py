@@ -11,9 +11,14 @@ import subprocess
 import sys
 import tempfile
 
-from promote_stable_workspace import validate_promotion_source
-from validate_operator_stable_acceptance import validate_operator_acceptance
-from validate_stable_acceptance import manifest_sha256, validate_evidence
+try:
+    from .promote_stable_workspace import validate_promotion_source
+    from .validate_operator_stable_acceptance import validate_operator_acceptance
+    from .validate_stable_acceptance import manifest_sha256, validate_evidence
+except ImportError:
+    from promote_stable_workspace import validate_promotion_source
+    from validate_operator_stable_acceptance import validate_operator_acceptance
+    from validate_stable_acceptance import manifest_sha256, validate_evidence
 
 ROOT = Path(__file__).resolve().parents[1]
 
