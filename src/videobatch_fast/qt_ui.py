@@ -293,7 +293,9 @@ class VideoBatchQtWindow(QMainWindow):
                 for col, text in enumerate(values):
                     self.table.setItem(row, col, QTableWidgetItem(text))
         jobs = len(audios) if audios and len(audios) == len(media) else 0
+        output_dir = Path(self.output.text().strip()).expanduser()
         output_ready = bool(self.output.text().strip())
+        self.open_output.setEnabled(output_dir.is_dir())
         files_ready = bool(jobs)
         self.kpi_values["jobs"].setText(str(jobs))
         ready = files_ready and output_ready and not self.runner.running and not self.preparing
@@ -530,7 +532,7 @@ class VideoBatchQtWindow(QMainWindow):
         self.cancel.setEnabled(False)
         self.kpi_values["active"].setText("Nein")
         self.kpi_values["done"].setText(str(ok))
-        self.open_output.setEnabled(Path(self.output.text()).expanduser().is_dir())
+        self.open_output.setEnabled(Path(self.output.text().strip()).expanduser().is_dir())
         self.show_result_log.setEnabled(bool(self.log.toPlainText().strip()))
         self.activity_detail.setText(f"Beendet · {ok} erfolgreich · {failed} Fehler · {open_} offen")
         self._write_log(f"Abschluss: {ok} erfolgreich · {failed} Fehler · {open_} offen.")
