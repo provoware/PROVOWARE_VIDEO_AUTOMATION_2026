@@ -8,13 +8,7 @@ from pathlib import Path
 os.environ.setdefault("QT_QPA_PLATFORM", "wayland")
 
 from PySide6.QtCore import QTimer, Qt
-from PySide6.QtWidgets import (
-    QApplication,
-    QDockWidget,
-    QFileDialog,
-    QMessageBox,
-    QTabWidget,
-)
+from PySide6.QtWidgets import QApplication, QDockWidget, QFileDialog, QMessageBox, QTabWidget
 
 from .debug_runtime import RUNTIME
 from .diagnostics_service import build_diagnostic_payload
@@ -26,14 +20,10 @@ from .instance_lock import (
 )
 from .paths import state_dir
 from .platform_integration import PlatformCompatibilityError, prepare_gui_environment
-from .project_state import (
-    default_project_file,
-    load_project_state,
-    projects_dir,
-    save_project_state,
-)
+from .project_state import default_project_file, load_project_state, projects_dir, save_project_state
 from .qt_phase2 import VideoBatchQtPhase2Window
-from .qt_phase3_components import DiagnosticsPanel, HelpPanel, ProjectPanel, WorkspaceNavigationPanel
+from .qt_main_layout import HelpPanel
+from .qt_phase3_components import DiagnosticsPanel, ProjectPanel, WorkspaceNavigationPanel
 from .qt_theme import APP_STYLE
 from .startup_handshake import signal_ui_ready
 
