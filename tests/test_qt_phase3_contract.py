@@ -46,6 +46,7 @@ def test_phase3_reuses_verified_project_and_assurance_services() -> None:
         "run_fault_lab",
         "WorkspaceNavigationPanel",
         "ProjectPanel",
+        "HelpPanel",
         "DiagnosticsPanel",
     ):
         assert symbol in components
@@ -61,6 +62,7 @@ def test_phase3_workspace_routes_cover_complete_operator_flow() -> None:
         "effects",
         "queue",
         "project",
+        "help",
         "diagnostics",
     ):
         assert f'(\"{route}\",' in source
@@ -291,3 +293,24 @@ def test_phase3_secondary_docks_do_not_squeeze_beginner_dashboard() -> None:
     assert '("queue", "3 · Produktion"' in navigation
     assert 'button = QPushButton(label)' in navigation
     assert 'QPushButton(f"{label}\n{description}")' not in navigation
+
+
+def test_phase3_help_is_beginner_oriented_and_safely_routed() -> None:
+    components = _text(SRC / "qt_phase3_components.py")
+    app = _text(SRC / "qt_phase3.py")
+    for token in (
+        "Schnellhilfe · ohne Fachbegriffe",
+        "1 · Dateien auswählen",
+        "2 · Ausgabe festlegen",
+        "3 · Produktion öffnen",
+        "GRÜN = bereit",
+        "GELB = prüfen",
+        "ROT = Vorgang gestoppt",
+        "sudo, chmod -R 777",
+        "Technische Diagnose öffnen",
+    ):
+        assert token in components
+    assert '("help", "Hilfe"' in components
+    assert "self.help_panel = HelpPanel()" in app
+    assert 'elif route == "help":' in app
+    assert "self.help_panel.routeRequested.connect(self._route_workspace)" in app
