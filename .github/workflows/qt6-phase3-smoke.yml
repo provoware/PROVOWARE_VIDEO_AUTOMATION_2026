@@ -1,5 +1,7 @@
 name: Qt6 Phase 3 orchestrated validation
 
+# The runtime manifest check also exposes the exact compact manifest after workflow-only release hotfixes.
+
 on:
   pull_request:
     branches: [main]

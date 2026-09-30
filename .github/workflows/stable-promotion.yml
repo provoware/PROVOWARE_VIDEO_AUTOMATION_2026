@@ -132,6 +132,9 @@ jobs:
           # separately proven Qt/Wayland gate above. Keep the Tk phase in one
           # coherent session instead of advertising Wayland and X11 at once.
           XDG_SESSION_TYPE: x11
+          # WAYLAND_DISPLAY was exported through GITHUB_ENV by the native Qt gate.
+          # Clear it explicitly: platform detection treats any non-empty value as Wayland.
+          WAYLAND_DISPLAY: ""
         run: |
           set -Eeuo pipefail
           python scripts/finalize_release.py \
