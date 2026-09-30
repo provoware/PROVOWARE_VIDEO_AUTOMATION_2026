@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import _tkinter
 import os
 import tempfile
 from itertools import combinations
@@ -22,7 +23,12 @@ def _destroy(root, app) -> None:
     try:
         controller = getattr(app, "selection_previews", None)
         if controller is not None:
-            controller.close()
+            close = getattr(controller, "close", None)
+            shutdown = getattr(controller, "shutdown", None)
+            if callable(close):
+                close()
+            elif callable(shutdown):
+                shutdown()
     except Exception:
         pass
     _cancel_callbacks(root)
@@ -74,9 +80,18 @@ def _assert_inside_parent(parent, widgets, label: str, tolerance: int = 2) -> No
             )
 
 
-def _settle(root) -> None:
+def _settle(root, *, max_events: int = 1200) -> None:
+    """Drain Tk events without allowing a self-rescheduling callback to hang CI.
+
+    Layout and idle work is still executed and all geometry assertions remain
+    mandatory. The only behavioral change is that the test harness no longer
+    delegates termination to Tk's unbounded update loop.
+    """
     root.update_idletasks()
-    root.update()
+    for _ in range(max(1, int(max_events))):
+        processed = root.tk.dooneevent(_tkinter.ALL_EVENTS | _tkinter.DONT_WAIT)
+        if not processed:
+            break
     root.update_idletasks()
 
 
@@ -159,6 +174,7 @@ def main() -> int:
             ("1366x768+0+0", 105),
             ("1500x920+0+0", 90),
         ):
+            print(f"GUI-RUNDTRIP · Layout {geometry} · Zoom {scale}%", flush=True)
             _assert_canonical_layout(root, app, geometry, scale)
 
         app.main_notebook.select(1)
@@ -179,6 +195,7 @@ def main() -> int:
             raise AssertionError("Bereichszoom wurde nicht angewendet.")
         _destroy(root, app)
 
+        print("GUI-RUNDTRIP · Neustart-/Persistenzprüfung", flush=True)
         root = Tk()
         app = CanonicalVideoBatchFastUI(root)
         root.geometry("1280x720+0+0")
