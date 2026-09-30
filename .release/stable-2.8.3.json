@@ -15,7 +15,7 @@
     "literal_hygiene_fix_pr": 188,
     "policy": "Run the complete fail-closed Stable workflow on the exact source commit; do not bypass any gate."
   },
-  "source_commit": "8b4dae83c1a16de5eaa3d2e717914f652101899b",
+  "source_commit": "6b7ca92989ee23ac9139b549d7c44ae6d6597f27",
   "release_intent": "final_stable_promotion",
   "retry_after_coverage_scope_fix": {
     "status": "resolved",
@@ -53,5 +53,10 @@
     "status": "resolved",
     "reason": "The previous authorization left no stable/2.8.3 branch, v2.8.3 tag or GitHub release. Re-authorize the current fully synchronized main commit to trigger the existing fail-closed promotion workflow again.",
     "policy": "Do not bypass any verification. The promotion workflow must recreate all quality, native Wayland, desktop and deterministic double-packaging gates before publishing."
+  },
+  "retry_after_bounded_gui_event_pump_fix": {
+    "status": "resolved",
+    "reason": "Stable promotion #12 passed 602 tests, the 80/65 coverage contract, operator acceptance and native Qt Wayland proof, but the mandatory Tk GUI roundtrip timed out because root.update() could be kept alive indefinitely by recurring after-callbacks.",
+    "policy": "PR #204 replaces the unbounded Tk update with a bounded non-blocking event pump while preserving all layout assertions. Promote exactly source commit 6b7ca92989ee23ac9139b549d7c44ae6d6597f27 with every existing fail-closed gate unchanged."
   }
 }
