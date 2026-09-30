@@ -15,7 +15,7 @@
     "literal_hygiene_fix_pr": 188,
     "policy": "Run the complete fail-closed Stable workflow on the exact source commit; do not bypass any gate."
   },
-  "source_commit": "f8573facff956089bb9a1aed59855021f1004d7b",
+  "source_commit": "0cd58664fbcda231d869fc41469f30c3b57a861b",
   "release_intent": "final_stable_promotion",
   "retry_after_coverage_scope_fix": {
     "status": "resolved",
@@ -33,5 +33,10 @@
     "status": "resolved",
     "reason": "The previous Stable finalizer passed 600 tests and the 80/65 coverage contract, then exhausted the 120-minute workflow budget in a nested xvfb-run GUI roundtrip despite an already active X11 display.",
     "policy": "Keep the GUI roundtrip mandatory; reuse the existing DISPLAY when present and enforce a 180-second fail-closed timeout."
+  },
+  "retry_after_gui_session_isolation": {
+    "status": "resolved",
+    "reason": "The previous promotion reached the mandatory Tk GUI roundtrip but ran it in a mixed X11/Wayland session marker and timed out.",
+    "policy": "Keep native Qt/Wayland proof mandatory in its dedicated gate; run the subsequent Tk/X11 roundtrip with XDG_SESSION_TYPE=x11 and unchanged fail-closed timeout."
   }
 }
