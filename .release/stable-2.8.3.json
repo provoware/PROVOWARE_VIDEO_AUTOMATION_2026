@@ -15,16 +15,18 @@
     "literal_hygiene_fix_pr": 188,
     "policy": "Run the complete fail-closed Stable workflow on the exact source commit; do not bypass any gate."
   },
-  "source_commit": "745967556f1f66fc779df62e390dfc5e6741f932",
+  "source_commit": "2da4af864b86cd11e2478ab316c9187c97d0da46",
   "release_intent": "final_stable_promotion",
   "retry_after_coverage_scope_fix": {
-    "status": "requested",
+    "status": "resolved",
     "reason": "Stable finalizer exposed UI-only Qt/canonical modules inside the core coverage denominator after UI extraction.",
     "policy": "Keep 80/65 thresholds unchanged; exclude only presentation-layer modules already outside the intended core coverage contract."
   },
   "retry_after_verify_launch_fix": {
-    "status": "requested",
+    "status": "resolved",
     "reason": "Stable finalizer attempted to execute verify_release.sh directly although the tracked Git mode is 100644.",
     "policy": "Invoke the existing verification contract explicitly through bash; do not weaken or skip verification."
-  }
+  },
+  "ready_to_promote": true,
+  "ready_confirmed_on": "2026-09-30"
 }
