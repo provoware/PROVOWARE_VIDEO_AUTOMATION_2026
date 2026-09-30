@@ -64,16 +64,6 @@
       "reason": "Fachliche P0-Abnahmen abgeschlossen; enthält nur noch Stable-Promotion, Qt-Migrations- und Wartbarkeitsarbeiten"
     },
     {
-      "label": "Externe Qualitätswerkzeuge",
-      "path": "QUALITY_GATE_ATTEMPT_2.8.3-rc24.md",
-      "reason": "Technische Provenienzdatei der inzwischen bestandenen Python-Qualitätsgates; bleibt bewusst ohne _save_-Suffix und ist kein Stable-Blocker mehr"
-    },
-    {
-      "label": "Stable-Freigabeiteration",
-      "path": "STABLE_GATE_ITERATION_2.8.3-rc24_2026-09-11.md",
-      "reason": "Historischer Stable-Arbeitsstand vor den manuellen Abnahmen vom 29.09.2026"
-    },
-    {
       "label": "Langzeitrender",
       "path": "docs/LONG_RENDER_2.8.3-rc24.md",
       "reason": "Prüfvertrag bleibt als Referenz erhalten; Langzeitrender wurde am 29.09.2026 manuell als in Ordnung bestätigt"
@@ -82,11 +72,6 @@
       "label": "Stable-Abnahmenachweis",
       "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
       "reason": "Manuelle Kubuntu- und Langzeitrender-Freigaben dokumentiert; technischer Promotionspfad behält seine formalen Evidenzregeln"
-    },
-    {
-      "label": "Desktop-Sichtprüfung",
-      "path": "VISUAL_DESKTOP_APPROVAL.md",
-      "reason": "Kubuntu-Basiszustand manuell akzeptiert; keine neue physische 26.04-Ausführung behauptet"
     },
     {
       "label": "Qualitätsumgebung",
