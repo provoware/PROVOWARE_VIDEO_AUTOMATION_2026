@@ -10,8 +10,11 @@
   ],
   "policy": "Promote only after canonical stable_ready, complete CI gates, native Qt Wayland proof, stable desktop validation and deterministic double packaging.",
   "retry_after_quality_refactor": {
-    "pr": 187,
-    "reason": "Restore existing architecture-debt ceilings by extracting Qt responsibilities before Stable promotion.",
-    "policy": "Re-run the complete fail-closed Stable workflow after merge; do not bypass any gate."
-  }
+    "status": "resolved",
+    "architecture_fix_pr": 187,
+    "literal_hygiene_fix_pr": 188,
+    "policy": "Run the complete fail-closed Stable workflow on the exact source commit; do not bypass any gate."
+  },
+  "source_commit": "745967556f1f66fc779df62e390dfc5e6741f932",
+  "release_intent": "final_stable_promotion"
 }
