@@ -446,14 +446,7 @@ class VideoBatchQtWindow(QMainWindow):
                 self.progress.setRange(0, 100)
                 self.job_progress.setRange(0, 100)
                 if kind == "error":
-                    self._status("FEHLER")
-                    self._write_log(str(data))
-                    self.job_progress.setValue(0)
-                    self.job_progress.setFormat("Vorbereitung fehlgeschlagen · %p %")
-                    self.activity_detail.setText("Fehler · Vorbereitung beendet; technische Meldungen prüfen")
-                    self.kpi_values["active"].setText("Nein")
-                    self.cancel.setEnabled(False)
-                    self._refresh()
+                    self._show_start_error(str(data), "Vorbereitung")
                 else:
                     self.jobs = list(data)
                     options = rest[0]
@@ -461,15 +454,22 @@ class VideoBatchQtWindow(QMainWindow):
                     try:
                         self.runner.start(self.jobs, options)
                     except Exception as exc:
-                        self._status("FEHLER")
-                        self._write_log(f"{type(exc).__name__}: {exc}")
-                        self.cancel.setEnabled(False)
-                        self._refresh()
+                        self._show_start_error(f"{type(exc).__name__}: {exc}", "Start")
         self._drain_events()
         prepare_alive = bool(self.prepare_thread and self.prepare_thread.is_alive())
         if self.close_after_stop and not self.runner.running and not prepare_alive:
             self.close_after_stop = False
             self.close()
+
+    def _show_start_error(self, message: str, phase: str) -> None:
+        self._status("FEHLER")
+        self._write_log(message)
+        self.job_progress.setValue(0)
+        self.job_progress.setFormat(f"{phase} fehlgeschlagen · %p %")
+        self.activity_detail.setText(f"Fehler · {phase} beendet; technische Meldungen prüfen")
+        self.kpi_values["active"].setText("Nein")
+        self.cancel.setEnabled(False)
+        self._refresh()
 
     def _drain_events(self) -> None:
         for _ in range(200):
@@ -548,8 +548,6 @@ class VideoBatchQtWindow(QMainWindow):
         self.show_result_log.setEnabled(bool(self.log.toPlainText().strip()))
         self.activity_detail.setText(f"Beendet · {ok} erfolgreich · {failed} Fehler · {open_} offen")
         self._write_log(f"Abschluss: {ok} erfolgreich · {failed} Fehler · {open_} offen.")
-        # Abschlussstatus der einzelnen Aufträge sichtbar lassen; nur die
-        # Bedienbereitschaft neu berechnen.
         self._refresh(preserve_results=True)
 
     def _load_jobs(self) -> None:
