@@ -295,8 +295,8 @@ def _patch_phase2_class() -> None:
 
     original_refresh = VideoBatchQtPhase2Window._refresh
 
-    def refresh(self) -> None:
-        original_refresh(self)
+    def refresh(self, *, preserve_results: bool = False) -> None:
+        original_refresh(self, preserve_results=preserve_results)
         if not self.runner.running and not self.preparing:
             self.start.setEnabled(True)
             self.start.setText("▶ 3 · Prüfen & Videos erstellen")
