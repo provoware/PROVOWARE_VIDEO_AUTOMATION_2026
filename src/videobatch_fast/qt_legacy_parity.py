@@ -158,7 +158,6 @@ def _parity_runtime_state(self) -> None:
 def _parity_start(self) -> None:
     if self.runner.running or self.preparing:
         return
-
     missing = []
     if not ffmpeg_path():
         missing.append("FFmpeg")
@@ -174,7 +173,6 @@ def _parity_start(self) -> None:
               "die Diagnose zeigt den tatsächlich erkannten Zustand.",
         )
         return
-
     audios = self.audio.paths()
     media = self.media.paths()
     slideshow = getattr(self, "slideshow", None)
@@ -182,7 +180,6 @@ def _parity_start(self) -> None:
         slideshow is not None
         and slideshow.assignment_mode == SLIDESHOW_MODE_ALL_IMAGES
     )
-
     if all_images:
         images = slideshow.image_paths()
         if not audios:
@@ -213,21 +210,25 @@ def _parity_start(self) -> None:
             "Alternative: Im Bereich „Diashow“ die Zuordnung „Alle Bilder je Audio“ wählen.",
         )
         return
-
     try:
         options = self._options()
     except ValueError as exc:
         QMessageBox.warning(self, "Einstellung fehlt", str(exc))
         return
-
     analyses = slideshow.scene_analyses() if all_images else None
     self.preparing = True
     self.prepare_generation += 1
     generation = self.prepare_generation
     self.start.setEnabled(False)
+    self.open_output.setEnabled(False)
+    self.show_result_log.setEnabled(False)
     self.cancel.setEnabled(True)
     self.progress.setRange(0, 0)
     self.progress.setFormat("Quellen werden vollständig geprüft …")
+    self.job_progress.setRange(0, 0)
+    self.job_progress.setFormat("Aufträge werden vorbereitet …")
+    self.activity_detail.setText(f"Aktiv · prüfe {len(audios)} Auftrag/Aufträge mit FFprobe")
+    self.kpi_values["active"].setText("Prüfung")
     self._status("PRÜFT")
     self.step_start.setText("3 · Start …")
     self.next_step.setText(
@@ -237,7 +238,6 @@ def _parity_start(self) -> None:
         f"Vollständige Startprüfung: {len(audios)} Audio(s) · "
         f"{len(media)} Medien · Modus {options.quick_mode}."
     )
-
     from .jobs import build_jobs
 
     def prepare() -> None:
