@@ -202,3 +202,13 @@ def test_header_dashboard_exposes_graphical_cpu_ram_swap_load() -> None:
         "border: 2px solid #7f98b8;",
     ):
         assert token in theme
+
+
+def test_result_preserving_refresh_propagates_through_qt_layers() -> None:
+    phase2 = (ROOT / "src" / "videobatch_fast" / "qt_phase2.py").read_text(encoding="utf-8")
+    parity = (ROOT / "src" / "videobatch_fast" / "qt_legacy_parity.py").read_text(encoding="utf-8")
+    assert "def _refresh(self, *, preserve_results: bool = False)" in phase2
+    assert "super()._refresh(preserve_results=preserve_results)" in phase2
+    assert "if not preserve_results:" in phase2
+    assert "def refresh(self, *, preserve_results: bool = False)" in parity
+    assert "original_refresh(self, preserve_results=preserve_results)" in parity
