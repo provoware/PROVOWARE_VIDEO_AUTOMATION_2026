@@ -30,7 +30,7 @@ def test_phase3_qt_modules_are_tk_free_and_parseable() -> None:
 
 def test_phase3_reuses_verified_project_and_assurance_services() -> None:
     app = _text(SRC / "qt_phase3.py")
-    components = _text(SRC / "qt_phase3_components.py")
+    components = _text(SRC / "qt_phase3_components.py") + _text(SRC / "qt_main_layout.py")
 
     for symbol in (
         "load_project_state",
@@ -296,7 +296,7 @@ def test_phase3_secondary_docks_do_not_squeeze_beginner_dashboard() -> None:
 
 
 def test_phase3_help_is_beginner_oriented_and_safely_routed() -> None:
-    components = _text(SRC / "qt_phase3_components.py")
+    components = _text(SRC / "qt_phase3_components.py") + _text(SRC / "qt_main_layout.py")
     app = _text(SRC / "qt_phase3.py")
     for token in (
         "Schnellhilfe · ohne Fachbegriffe",
