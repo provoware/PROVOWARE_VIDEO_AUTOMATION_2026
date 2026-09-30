@@ -15,7 +15,7 @@
     "literal_hygiene_fix_pr": 188,
     "policy": "Run the complete fail-closed Stable workflow on the exact source commit; do not bypass any gate."
   },
-  "source_commit": "2da4af864b86cd11e2478ab316c9187c97d0da46",
+  "source_commit": "f8573facff956089bb9a1aed59855021f1004d7b",
   "release_intent": "final_stable_promotion",
   "retry_after_coverage_scope_fix": {
     "status": "resolved",
@@ -28,5 +28,10 @@
     "policy": "Invoke the existing verification contract explicitly through bash; do not weaken or skip verification."
   },
   "ready_to_promote": true,
-  "ready_confirmed_on": "2026-09-30"
+  "ready_confirmed_on": "2026-09-30",
+  "retry_after_gui_roundtrip_timeout": {
+    "status": "resolved",
+    "reason": "The previous Stable finalizer passed 600 tests and the 80/65 coverage contract, then exhausted the 120-minute workflow budget in a nested xvfb-run GUI roundtrip despite an already active X11 display.",
+    "policy": "Keep the GUI roundtrip mandatory; reuse the existing DISPLAY when present and enforce a 180-second fail-closed timeout."
+  }
 }
