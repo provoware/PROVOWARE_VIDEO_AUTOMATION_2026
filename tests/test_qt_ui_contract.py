@@ -212,3 +212,6 @@ def test_result_preserving_refresh_propagates_through_qt_layers() -> None:
     assert "if not preserve_results:" in phase2
     assert "def refresh(self, *, preserve_results: bool = False)" in parity
     assert "original_refresh(self, preserve_results=preserve_results)" in parity
+    assert 'self.job_progress.setFormat("Aufträge werden vorbereitet …")' in parity
+    assert 'self.kpi_values["active"].setText("Prüfung")' in parity
+    assert 'self.activity_detail.setText(f"Aktiv · prüfe {len(audios)} Auftrag/Aufträge mit FFprobe")' in parity
