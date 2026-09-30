@@ -31,7 +31,8 @@ WORKSPACE_ROUTES: tuple[tuple[str, str, str], ...] = (
     ("effects", "2 · Ausgabe", "Zielordner, Verarbeitung und Kontrolle festlegen"),
     ("queue", "3 · Produktion", "Automatische Aufträge und Fortschritt prüfen"),
     ("project", "Projekt", "Projekt öffnen, speichern und Notiz verwalten"),
-    ("diagnostics", "Hilfe & Diagnose", "System prüfen und technische Diagnose öffnen"),
+    ("help", "Hilfe", "Drei-Schritt-Schnellhilfe und sichere Fehlerregeln"),
+    ("diagnostics", "Diagnose", "System prüfen und technische Diagnose öffnen"),
 )
 
 
@@ -72,6 +73,67 @@ class WorkspaceNavigationPanel(QFrame):
             button.setProperty("active", key == route)
             button.style().unpolish(button)
             button.style().polish(button)
+
+
+class HelpPanel(QFrame):
+    """Beginner-oriented help that stays inside the verified Qt workspace."""
+
+    routeRequested = Signal(str)
+
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.setObjectName("panel")
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(10)
+
+        title = QLabel("Schnellhilfe · ohne Fachbegriffe")
+        title.setObjectName("section")
+        layout.addWidget(title)
+
+        intro = QLabel(
+            "Für ein normales Video brauchst du nur drei Schritte. "
+            "Die Zusatzbereiche kannst du zunächst ignorieren."
+        )
+        intro.setObjectName("subtitle")
+        intro.setWordWrap(True)
+        layout.addWidget(intro)
+
+        steps = (
+            ("1 · Dateien auswählen", "Audio und passende Bilder oder Videos hinzufügen.", "media"),
+            ("2 · Ausgabe festlegen", "Zielordner und einen Schnellmodus prüfen.", "effects"),
+            ("3 · Produktion öffnen", "Aufträge prüfen, starten und Fortschritt beobachten.", "queue"),
+        )
+        for label, description, route in steps:
+            button = QPushButton(label)
+            button.setObjectName("workspaceNav")
+            button.setToolTip(description)
+            button.setAccessibleName(label)
+            button.setAccessibleDescription(description)
+            button.clicked.connect(lambda _checked=False, key=route: self.routeRequested.emit(key))
+            layout.addWidget(button)
+            hint = QLabel(description)
+            hint.setObjectName("subtitle")
+            hint.setWordWrap(True)
+            layout.addWidget(hint)
+
+        safety = QLabel(
+            "Ampel: GRÜN = bereit · GELB = prüfen · ROT = Vorgang gestoppt.\n"
+            "Bei ROT zuerst die Meldung lesen. Nicht mit sudo, chmod -R 777 oder "
+            "rekursiven Besitzänderungen improvisieren. Originalmedien werden als Quellen gelesen."
+        )
+        safety.setObjectName("safeHint")
+        safety.setWordWrap(True)
+        layout.addWidget(safety)
+
+        diagnose = QPushButton("Technische Diagnose öffnen")
+        diagnose.setToolTip("Systemzustand lesen und vorhandene Schutzprüfungen anzeigen.")
+        diagnose.setAccessibleDescription(
+            "Öffnet die technische Diagnose. Es wird dadurch kein Render gestartet."
+        )
+        diagnose.clicked.connect(lambda _checked=False: self.routeRequested.emit("diagnostics"))
+        layout.addWidget(diagnose)
+        layout.addStretch()
 
 
 class ProjectPanel(QFrame):
