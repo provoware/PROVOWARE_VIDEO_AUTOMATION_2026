@@ -228,3 +228,11 @@ def test_tk_x11_env_isolates_only_legacy_gui_regression() -> None:
     assert isolated["XDG_SESSION_TYPE"] == "x11"
     assert isolated["XDG_CURRENT_DESKTOP"] == "KDE"
     assert isolated["KEEP"] == "unchanged"
+
+
+def test_gui_roundtrip_uses_bounded_tk_event_loop() -> None:
+    source = (ROOT / "scripts/test_workspace_layout_profiles_gui.py").read_text(encoding="utf-8")
+    assert "root.update()" not in source
+    assert "root.mainloop()" in source
+    assert "root.after(" in source
+    assert "shutdown(timeout=1.0)" in source
