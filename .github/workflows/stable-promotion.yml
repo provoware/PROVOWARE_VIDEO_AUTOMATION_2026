@@ -127,6 +127,8 @@ jobs:
           PY
 
       - name: Finalize Stable 2.8.3
+        # Keep the finalizer itself in the proven Wayland session. It isolates
+        # only the legacy Tk/X11 subprocesses that actually require X11.
         run: |
           set -Eeuo pipefail
           python scripts/finalize_release.py \
