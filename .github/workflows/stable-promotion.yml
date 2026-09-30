@@ -127,14 +127,8 @@ jobs:
           PY
 
       - name: Finalize Stable 2.8.3
-        env:
-          # The finalizer uses Tk/X11 for the mandatory GUI roundtrip and a
-          # separately proven Qt/Wayland gate above. Keep the Tk phase in one
-          # coherent session instead of advertising Wayland and X11 at once.
-          XDG_SESSION_TYPE: x11
-          # WAYLAND_DISPLAY was exported through GITHUB_ENV by the native Qt gate.
-          # Clear it explicitly: platform detection treats any non-empty value as Wayland.
-          WAYLAND_DISPLAY: ""
+        # Keep the finalizer itself in the proven Wayland session. It isolates
+        # only the legacy Tk/X11 subprocesses that actually require X11.
         run: |
           set -Eeuo pipefail
           python scripts/finalize_release.py \

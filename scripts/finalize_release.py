@@ -11,11 +11,24 @@ import subprocess
 import sys
 import tempfile
 
-from promote_stable_workspace import validate_promotion_source
-from validate_operator_stable_acceptance import validate_operator_acceptance
-from validate_stable_acceptance import manifest_sha256, validate_evidence
+try:
+    from .promote_stable_workspace import validate_promotion_source
+    from .validate_operator_stable_acceptance import validate_operator_acceptance
+    from .validate_stable_acceptance import manifest_sha256, validate_evidence
+except ImportError:
+    from promote_stable_workspace import validate_promotion_source
+    from validate_operator_stable_acceptance import validate_operator_acceptance
+    from validate_stable_acceptance import manifest_sha256, validate_evidence
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def tk_x11_env(env: dict[str, str]) -> dict[str, str]:
+    """Return an isolated X11 environment for the legacy Tk GUI regression only."""
+    isolated = {**env}
+    isolated["XDG_SESSION_TYPE"] = "x11"
+    isolated["WAYLAND_DISPLAY"] = ""
+    return isolated
 
 
 def run(command: list[str], *, cwd: Path, env: dict[str, str], label: str, timeout: int = 7200) -> None:
@@ -59,7 +72,12 @@ def main() -> int:
 
     run([str(ROOT / "quality.sh")], cwd=ROOT, env=base_env, label="Externe Qualität und Kernprüfung")
     verified_env = {**base_env, "VIDEOBATCH_QUALITY_ALREADY_VERIFIED": "1"}
-    run(["bash", str(ROOT / "verify_release.sh")], cwd=ROOT, env=verified_env, label="Releasekandidat vollständig verifizieren")
+    run(
+        ["bash", str(ROOT / "verify_release.sh")],
+        cwd=ROOT,
+        env=tk_x11_env(verified_env),
+        label="Releasekandidat vollständig verifizieren",
+    )
     run([str(env_python), str(ROOT / "scripts/live_desktop_gate.py")], cwd=ROOT, env=base_env, label="Reale Desktopprüfung des Releasekandidaten")
 
     args.output.mkdir(parents=True, exist_ok=True)
@@ -116,7 +134,12 @@ def main() -> int:
         run([str(env_python), str(stable / "scripts/build_visual_inspection.py")], cwd=stable, env=stable_env, label="Stable-Visualmanifest erzeugen")
         run([str(env_python), str(stable / "scripts/live_desktop_gate.py")], cwd=stable, env=stable_env, label="Stable-Desktopfreigabe erzeugen")
         run([str(env_python), str(stable / "scripts/build_release_manifest.py")], cwd=stable, env=stable_env, label="Stable-Manifest erzeugen")
-        run([str(stable / "test.sh")], cwd=stable, env=stable_env, label="Stable vollständig aus Arbeitskopie prüfen")
+        run(
+            [str(stable / "test.sh")],
+            cwd=stable,
+            env=tk_x11_env(stable_env),
+            label="Stable vollständig aus Arbeitskopie prüfen",
+        )
         run([str(stable / "stable_release.sh"), str(args.output.resolve())], cwd=stable, env=stable_env, label="Deterministisches Stable-ZIP erzeugen")
 
     final = args.output / f"VideoBatch_Fast_{stable_build}.zip"
