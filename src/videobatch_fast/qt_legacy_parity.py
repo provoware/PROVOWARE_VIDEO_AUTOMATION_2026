@@ -32,6 +32,7 @@ from .qt_legacy_appearance import apply_theme
 from .qt_legacy_calendar import build_calendar_tab, load_calendar_selection
 from .qt_legacy_playlist import build_playlist_tab, poll_playlist, refresh_playlist_list
 from .qt_legacy_settings import build_settings_tab
+from .qt_desktop_actions import open_output_folder
 from .job_journal import (
     acknowledge_recovery,
     recoverable_batches,
@@ -157,7 +158,6 @@ def _parity_runtime_state(self) -> None:
 def _parity_start(self) -> None:
     if self.runner.running or self.preparing:
         return
-
     missing = []
     if not ffmpeg_path():
         missing.append("FFmpeg")
@@ -173,7 +173,6 @@ def _parity_start(self) -> None:
               "die Diagnose zeigt den tatsächlich erkannten Zustand.",
         )
         return
-
     audios = self.audio.paths()
     media = self.media.paths()
     slideshow = getattr(self, "slideshow", None)
@@ -181,7 +180,6 @@ def _parity_start(self) -> None:
         slideshow is not None
         and slideshow.assignment_mode == SLIDESHOW_MODE_ALL_IMAGES
     )
-
     if all_images:
         images = slideshow.image_paths()
         if not audios:
@@ -212,21 +210,25 @@ def _parity_start(self) -> None:
             "Alternative: Im Bereich „Diashow“ die Zuordnung „Alle Bilder je Audio“ wählen.",
         )
         return
-
     try:
         options = self._options()
     except ValueError as exc:
         QMessageBox.warning(self, "Einstellung fehlt", str(exc))
         return
-
     analyses = slideshow.scene_analyses() if all_images else None
     self.preparing = True
     self.prepare_generation += 1
     generation = self.prepare_generation
     self.start.setEnabled(False)
+    self.open_output.setEnabled(False)
+    self.show_result_log.setEnabled(False)
     self.cancel.setEnabled(True)
     self.progress.setRange(0, 0)
     self.progress.setFormat("Quellen werden vollständig geprüft …")
+    self.job_progress.setRange(0, 0)
+    self.job_progress.setFormat("Aufträge werden vorbereitet …")
+    self.activity_detail.setText(f"Aktiv · prüfe {len(audios)} Auftrag/Aufträge mit FFprobe")
+    self.kpi_values["active"].setText("Prüfung")
     self._status("PRÜFT")
     self.step_start.setText("3 · Start …")
     self.next_step.setText(
@@ -236,7 +238,6 @@ def _parity_start(self) -> None:
         f"Vollständige Startprüfung: {len(audios)} Audio(s) · "
         f"{len(media)} Medien · Modus {options.quick_mode}."
     )
-
     from .jobs import build_jobs
 
     def prepare() -> None:
@@ -294,8 +295,8 @@ def _patch_phase2_class() -> None:
 
     original_refresh = VideoBatchQtPhase2Window._refresh
 
-    def refresh(self) -> None:
-        original_refresh(self)
+    def refresh(self, *, preserve_results: bool = False) -> None:
+        original_refresh(self, preserve_results=preserve_results)
         if not self.runner.running and not self.preparing:
             self.start.setEnabled(True)
             self.start.setText("▶ 3 · Prüfen & Videos erstellen")
@@ -657,13 +658,7 @@ def _open_path(path: Path) -> None:
 
 
 def _open_output(window: object) -> None:
-    path = Path(window.output.text().strip()).expanduser()
-    try:
-        path.mkdir(parents=True, exist_ok=True)
-    except OSError as exc:
-        QMessageBox.warning(window, "Ausgabeordner nicht verfügbar", str(exc))
-        return
-    _open_path(path)
+    open_output_folder(window)
 
 
 def _open_logs(window: object) -> None:

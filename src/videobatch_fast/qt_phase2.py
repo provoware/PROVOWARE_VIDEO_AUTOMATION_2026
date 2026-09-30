@@ -140,8 +140,8 @@ class VideoBatchQtPhase2Window(SelectionPreviewMixin, VideoBatchQtWindow):
             slideshow_scene_sync=self.slideshow.scene_sync_enabled,
         )
 
-    def _refresh(self) -> None:
-        super()._refresh()
+    def _refresh(self, *, preserve_results: bool = False) -> None:
+        super()._refresh(preserve_results=preserve_results)
         if not hasattr(self, "slideshow"):
             return
 
@@ -151,18 +151,18 @@ class VideoBatchQtPhase2Window(SelectionPreviewMixin, VideoBatchQtWindow):
 
         if self.slideshow.assignment_mode != SLIDESHOW_MODE_ALL_IMAGES:
             return
-
         images = self.slideshow.image_paths()
-        self.table.setRowCount(len(audios))
-        for row, audio in enumerate(audios):
-            values = (
-                str(row + 1),
-                audio.name,
-                f"Diashow · {len(images)} Bilder",
-                "Bereit" if images else "Bilder fehlen",
-            )
-            for column, text in enumerate(values):
-                self.table.setItem(row, column, QTableWidgetItem(text))
+        if not preserve_results:
+            self.table.setRowCount(len(audios))
+            for row, audio in enumerate(audios):
+                values = (
+                    str(row + 1),
+                    audio.name,
+                    f"Diashow · {len(images)} Bilder",
+                    "Bereit" if images else "Bilder fehlen",
+                )
+                for column, text in enumerate(values):
+                    self.table.setItem(row, column, QTableWidgetItem(text))
 
         jobs = len(audios) if audios and images else 0
         self.kpi_values["jobs"].setText(str(jobs))

@@ -7,16 +7,8 @@ from pathlib import Path
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
-    QFrame,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QPlainTextEdit,
-    QPushButton,
-    QTableWidget,
-    QTableWidgetItem,
-    QVBoxLayout,
-    QWidget,
+    QFrame, QHBoxLayout, QLabel, QLineEdit, QPlainTextEdit, QPushButton,
+    QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget,
 )
 
 from .assurance import ScenarioResult, run_scenarios
@@ -31,7 +23,8 @@ WORKSPACE_ROUTES: tuple[tuple[str, str, str], ...] = (
     ("effects", "2 · Ausgabe", "Zielordner, Verarbeitung und Kontrolle festlegen"),
     ("queue", "3 · Produktion", "Automatische Aufträge und Fortschritt prüfen"),
     ("project", "Projekt", "Projekt öffnen, speichern und Notiz verwalten"),
-    ("diagnostics", "Hilfe & Diagnose", "System prüfen und technische Diagnose öffnen"),
+    ("help", "Hilfe", "Drei-Schritt-Schnellhilfe und sichere Fehlerregeln"),
+    ("diagnostics", "Diagnose", "System prüfen und technische Diagnose öffnen"),
 )
 
 

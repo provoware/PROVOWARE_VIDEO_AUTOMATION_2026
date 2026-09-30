@@ -8,6 +8,8 @@ QT_UI = ROOT / "src" / "videobatch_fast" / "qt_ui.py"
 QT_THEME = ROOT / "src" / "videobatch_fast" / "qt_theme.py"
 QT_MEDIA_LIST = ROOT / "src" / "videobatch_fast" / "qt_media_list.py"
 QT_LOAD_DASHBOARD = ROOT / "src" / "videobatch_fast" / "qt_system_load_dashboard.py"
+QT_MAIN_LAYOUT = ROOT / "src" / "videobatch_fast" / "qt_main_layout.py"
+DISPLAY_FORMATTING = ROOT / "src" / "videobatch_fast" / "display_formatting.py"
 
 
 def _imports(source: str) -> set[str]:
@@ -64,8 +66,71 @@ def test_qt_theme_exposes_high_visibility_accessibility_contract() -> None:
         "QLabel#subtitle { color: #e2eaf5; }",
         "border: 2px solid #7f98b8;",
         "selection-color: #ffffff;",
+        "background: #007f99;",
+        "QPushButton:pressed, QPushButton:checked {",
+        "background: #ffbf3f;",
+        "QProgressBar#jobProgress::chunk { background: #ffbf3f; }",
     ):
         assert token in theme
+
+
+def test_qt_dashboard_exposes_total_job_and_activity_feedback() -> None:
+    source = "".join(
+        path.read_text(encoding="utf-8") for path in (QT_UI, QT_MAIN_LAYOUT, DISPLAY_FORMATTING)
+    )
+    for token in (
+        '("active", "Aktiv")',
+        'QLabel("Gesamt")',
+        'QLabel("Auftrag")',
+        'window.job_progress.setObjectName("jobProgress")',
+        '"Einzel-Fortschritt"',
+        'getattr(snap, "job_percent"',
+        'getattr(snap, "elapsed_seconds"',
+        'getattr(snap, "eta_seconds"',
+        'getattr(snap, "last_activity_seconds"',
+        'f"Qualität: {spec.resolution}',
+        'f"Ziel: {quality_target(spec.key)}',
+        '"wird berechnet" if elapsed < 15 else "nicht verfügbar"',
+        '"erste Schätzung"',
+        '"aktuelle Schätzung"',
+        '"⚠ Fehler · Protokoll prüfen"',
+        'item.setToolTip("Auftrag fehlgeschlagen.',
+        'open_output_folder(window)',
+        'QPushButton("Ergebnisprotokoll anzeigen")',
+        'self.kpi_values["done"].setText(str(ok))',
+        'self._refresh(preserve_results=True)',
+        'def _show_start_error(self, message: str, phase: str) -> None:',
+        'self._show_start_error(str(data), "Vorbereitung")',
+        'self._show_start_error(f"{type(exc).__name__}: {exc}", "Start")',
+    ):
+        assert token in source
+    assert "qt_legacy_parity" not in QT_UI.read_text(encoding="utf-8")
+
+
+def test_display_formatting_values_and_quality_targets_are_complete() -> None:
+    import sys
+
+    sys.path.insert(0, str(ROOT / "src"))
+    from videobatch_fast.display_formatting import (
+        QUALITY_TARGETS,
+        format_clock,
+        format_eta,
+        format_size,
+        quality_target,
+    )
+    from videobatch_fast.quick_modes import QUICK_MODES
+
+    assert set(QUALITY_TARGETS) == set(QUICK_MODES)
+    assert quality_target("unknown") == "Zielprofil nicht verfügbar"
+    assert format_clock(-1) == "00:00:00"
+    assert format_clock(3661.9) == "01:01:01"
+    assert format_size(-1) == "0.0 B"
+    assert format_size(1024) == "1.0 KiB"
+    assert format_size(1024**2) == "1.0 MiB"
+    assert format_eta(None, 5, 0) == "wird berechnet"
+    assert format_eta(None, 15, 0) == "nicht verfügbar"
+    assert format_eta(30, 10, 5) == "erste Schätzung · ca. 00:00:30"
+    assert format_eta(30, 20, 10) == "aktuelle Schätzung · ca. 00:00:30"
 
 
 def test_media_selection_lists_support_bounded_ctrl_wheel_zoom() -> None:
@@ -137,3 +202,22 @@ def test_header_dashboard_exposes_graphical_cpu_ram_swap_load() -> None:
         "border: 2px solid #7f98b8;",
     ):
         assert token in theme
+
+
+def test_result_preserving_refresh_propagates_through_qt_layers() -> None:
+    phase2 = (ROOT / "src" / "videobatch_fast" / "qt_phase2.py").read_text(encoding="utf-8")
+    parity = (ROOT / "src" / "videobatch_fast" / "qt_legacy_parity.py").read_text(encoding="utf-8")
+    assert "def _refresh(self, *, preserve_results: bool = False)" in phase2
+    assert "super()._refresh(preserve_results=preserve_results)" in phase2
+    assert "if not preserve_results:" in phase2
+    assert "def refresh(self, *, preserve_results: bool = False)" in parity
+    assert "original_refresh(self, preserve_results=preserve_results)" in parity
+    assert 'self.job_progress.setFormat("Aufträge werden vorbereitet …")' in parity
+    assert 'self.kpi_values["active"].setText("Prüfung")' in parity
+    assert 'self.activity_detail.setText(f"Aktiv · prüfe {len(audios)} Auftrag/Aufträge mit FFprobe")' in parity
+    qt_ui = QT_UI.read_text(encoding="utf-8")
+    assert 'self.table.rowCount() - open_' in qt_ui
+    assert 'self._row_status(row, "Nicht gestartet", "–")' in qt_ui
+    assert 'output_dir = Path(self.output.text().strip()).expanduser()' in qt_ui
+    assert 'self.open_output.setEnabled(output_dir.is_dir())' in qt_ui
+    assert 'Path(self.output.text().strip()).expanduser().is_dir()' in qt_ui

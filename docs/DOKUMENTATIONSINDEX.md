@@ -65,9 +65,9 @@ Die folgenden Dateien sind Belege eines bestimmten Entwicklungs- oder Prüfstand
 
 **Kann man sie löschen?** Nein, nicht ohne gesonderte Archiventscheidung. Sie dienen der Nachvollziehbarkeit und Releasebeweiskette.
 
-## Aktueller Stable-Arbeitsstand
+## Archivierte Stable-Arbeitsstände
 
-- `STABLE_GATE_ITERATION_2.8.3-rc24_2026-09-11.md`
+Überholte Zwischenstände liegen unter `docs/archive/release-history/` und sind **keine aktuellen Freigabestatus**.
 
 ## 5. Interne Kalender- und Arbeitsnotizen
 
@@ -79,8 +79,8 @@ Diese Dateien sind interne Planungshilfen und keine Nutzeranleitungen.
 ## 6. Visuelle Freigaben und Normalisierung
 
 - `docs/reference/VISUAL_APPROVAL_NORMALIZATION.md`
-- `VISUAL_DESKTOP_APPROVAL.md`
 - `docs/VISUAL_DESKTOP_APPROVAL.md`
+- `docs/archive/release-history/VISUAL_DESKTOP_APPROVAL.md` – historische 2.8.1-rc1-Abnahme, nicht aktuell
 
 Diese Dateien dokumentieren Prüfverträge. Eine Freigabe darf nur als bestanden bezeichnet werden, wenn der zugehörige aktuelle Nachweis vorhanden und gültig ist.
 
@@ -105,3 +105,12 @@ Bei einer unklaren oder falschen Anleitung:
 5. Korrektur als eigene Dokumentationsänderung einreichen.
 
 Der verbindliche Schreib- und Prüfstandard steht in `docs/DOKUMENTATIONSSTANDARD.md`.
+
+
+## Neu archivierte überholte Root-Nachweise
+
+- `docs/archive/release-history/QUALITY_GATE_ATTEMPT_2.8.3-rc24.md`
+- `docs/archive/release-history/STABLE_GATE_ITERATION_2.8.3-rc24_2026-09-11.md`
+- `docs/archive/release-history/VISUAL_DESKTOP_APPROVAL.md`
+
+Diese Dateien dienen nur noch der Historie. Für den aktuellen Status gelten `diagnostics/release_readiness/RELEASE_EVIDENCE.json`, `STATUS.md` und `README.md`.

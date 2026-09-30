@@ -7,32 +7,18 @@ import threading
 from pathlib import Path
 
 from PySide6.QtCore import QTimer, Qt
-from PySide6.QtGui import QCloseEvent
+from PySide6.QtGui import QCloseEvent, QColor
 from PySide6.QtWidgets import (
-    QAbstractItemView,
-    QApplication,
-    QComboBox,
-    QFileDialog,
-    QFrame,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QMainWindow,
-    QMessageBox,
-    QPlainTextEdit,
-    QProgressBar,
-    QPushButton,
-    QSplitter,
-    QTableWidget,
-    QTableWidgetItem,
-    QToolButton,
-    QVBoxLayout,
-    QWidget,
+    QAbstractItemView, QApplication, QComboBox, QFileDialog, QFrame, QHBoxLayout,
+    QLabel, QLineEdit, QMainWindow, QMessageBox, QPlainTextEdit, QPushButton,
+    QTableWidget, QTableWidgetItem, QToolButton, QVBoxLayout, QWidget,
 )
 
 from .event_buffer import EventBuffer
+from .display_formatting import format_clock, format_eta, format_size, quality_target
 from .jobs import build_jobs
 from .models import BatchOptions, PairJob
+from .qt_main_layout import build_main_ui
 from .qt_theme import APP_STYLE
 from .quick_modes import QUICK_MODES, apply_quick_mode
 from .runner import BatchRunner
@@ -93,90 +79,7 @@ class VideoBatchQtWindow(QMainWindow):
         return box, value
 
     def _build_ui(self) -> None:
-        root = QWidget()
-        self.setCentralWidget(root)
-        outer = QVBoxLayout(root)
-        outer.setContentsMargins(18, 16, 18, 16)
-
-        header = QHBoxLayout()
-        brand = QVBoxLayout()
-        title = QLabel("VideoBatch 2026")
-        title.setObjectName("title")
-        subtitle = QLabel("Kubuntu 26.04 · KDE Plasma · Wayland · Qt 6")
-        subtitle.setObjectName("subtitle")
-        brand.addWidget(title)
-        brand.addWidget(subtitle)
-        header.addLayout(brand)
-        header.addStretch()
-
-        header.addWidget(self.load_dashboard.frame, alignment=Qt.AlignmentFlag.AlignTop)
-
-        self.status = QLabel("BEREIT")
-        self.status.setObjectName("statusChip")
-        header.addWidget(self.status, alignment=Qt.AlignmentFlag.AlignTop)
-        outer.addLayout(header)
-
-        guide = QFrame()
-        guide.setObjectName("workflowGuide")
-        guide_row = QHBoxLayout(guide)
-        guide_row.setContentsMargins(12, 8, 12, 8)
-        guide_row.setSpacing(8)
-        guide_title = QLabel("Einfacher Ablauf")
-        guide_title.setObjectName("guideTitle")
-        guide_row.addWidget(guide_title)
-        self.step_files = QLabel("1 · Dateien")
-        self.step_output = QLabel("2 · Ausgabe")
-        self.step_start = QLabel("3 · Start")
-        for step in (self.step_files, self.step_output, self.step_start):
-            step.setObjectName("stepChip")
-            guide_row.addWidget(step)
-        guide_row.addStretch()
-        outer.addWidget(guide)
-
-        kpis = QHBoxLayout()
-        kpis.setSpacing(8)
-        self.kpi_values: dict[str, QLabel] = {}
-        for key, label in (("audio", "Audios"), ("media", "Medien"), ("jobs", "Aufträge"), ("done", "Fertig")):
-            card, value = self._kpi(label)
-            self.kpi_values[key] = value
-            kpis.addWidget(card, 1)
-        outer.addLayout(kpis)
-
-        splitter = QSplitter(Qt.Orientation.Horizontal)
-        splitter.setChildrenCollapsible(False)
-        splitter.addWidget(self._sources_panel())
-        splitter.addWidget(self._queue_panel())
-        splitter.addWidget(self._settings_panel())
-        splitter.setSizes([320, 700, 420])
-        for index, stretch in enumerate((22, 48, 30)):
-            splitter.setStretchFactor(index, stretch)
-        outer.addWidget(splitter, 1)
-
-        footer = QFrame()
-        footer.setObjectName("actionFooter")
-        footer_layout = QVBoxLayout(footer)
-        footer_layout.setContentsMargins(12, 9, 12, 9)
-        footer_layout.setSpacing(7)
-        self.next_step = QLabel("Nächster Schritt: 1 · Dateien auswählen")
-        self.next_step.setObjectName("nextStep")
-        self.next_step.setWordWrap(True)
-        footer_layout.addWidget(self.next_step)
-
-        row = QHBoxLayout()
-        self.progress = QProgressBar()
-        self.progress.setRange(0, 100)
-        self.progress.setFormat("Bereit · %p %")
-        self.cancel = QPushButton("Abbrechen")
-        self.cancel.setObjectName("danger")
-        self.cancel.setEnabled(False)
-        self.start = QPushButton("▶ 3 · Videos erstellen")
-        self.start.setObjectName("primary")
-        self.start.setMinimumWidth(220)
-        row.addWidget(self.progress, 1)
-        row.addWidget(self.cancel)
-        row.addWidget(self.start)
-        footer_layout.addLayout(row)
-        outer.addWidget(footer)
+        build_main_ui(self)
 
     def _sources_panel(self) -> QWidget:
         panel, layout = self._panel(
@@ -228,13 +131,15 @@ class VideoBatchQtWindow(QMainWindow):
             "Kontrolle · automatische Paarung",
             "Hier nur prüfen: 1. Audio + 1. Medium = 1 Video. Du musst hier nichts einstellen.",
         )
-        self.table = QTableWidget(0, 4)
-        self.table.setHorizontalHeaderLabels(["#", "Audio", "Medium", "Status"])
+        self.table = QTableWidget(0, 5)
+        self.table.setHorizontalHeaderLabels(["#", "Audio", "Medium", "Status", "Einzel-Fortschritt"])
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.verticalHeader().setVisible(False)
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setColumnWidth(0, 42)
+        self.table.setColumnWidth(3, 105)
+        self.table.setColumnWidth(4, 145)
         layout.addWidget(self.table, 1)
         self.log_toggle = QToolButton()
         self.log_toggle.setText("▸ Technische Meldungen anzeigen")
@@ -281,6 +186,7 @@ class VideoBatchQtWindow(QMainWindow):
         layout.addWidget(QLabel("Kontrolle nach der Erstellung"))
         self.verification = QComboBox()
         self.verification.addItems(["Vollständig", "Schnell"])
+        self.verification.currentIndexChanged.connect(self._mode_changed)
         layout.addWidget(self.verification)
         verification_hint = QLabel("Empfehlung: Vollständig. Schnell spart Zeit, prüft aber weniger.")
         verification_hint.setObjectName("subtitle")
@@ -365,24 +271,31 @@ class VideoBatchQtWindow(QMainWindow):
         self.audio.changed.emit()
         self.kpi_values["done"].setText("0")
         self.progress.setValue(0)
+        self.job_progress.setValue(0)
+        self.job_progress.setFormat("Kein Auftrag aktiv · %p %")
+        self.activity_detail.setText("Keine Verarbeitung aktiv · bereit für neue Aufträge")
 
-    def _refresh(self) -> None:
+    def _refresh(self, *, preserve_results: bool = False) -> None:
         audios, media = self.audio.paths(), self.media.paths()
         self.kpi_values["audio"].setText(str(len(audios)))
         self.kpi_values["media"].setText(str(len(media)))
-        self.table.setRowCount(max(len(audios), len(media)))
-        for row in range(self.table.rowCount()):
-            complete = row < len(audios) and row < len(media)
-            values = (
-                str(row + 1),
-                audios[row].name if row < len(audios) else "— fehlt —",
-                media[row].name if row < len(media) else "— fehlt —",
-                "Bereit" if complete else "Unvollständig",
-            )
-            for col, text in enumerate(values):
-                self.table.setItem(row, col, QTableWidgetItem(text))
+        if not preserve_results:
+            self.table.setRowCount(max(len(audios), len(media)))
+            for row in range(self.table.rowCount()):
+                complete = row < len(audios) and row < len(media)
+                values = (
+                    str(row + 1),
+                    audios[row].name if row < len(audios) else "— fehlt —",
+                    media[row].name if row < len(media) else "— fehlt —",
+                    "Bereit" if complete else "Unvollständig",
+                    "0 %" if complete else "–",
+                )
+                for col, text in enumerate(values):
+                    self.table.setItem(row, col, QTableWidgetItem(text))
         jobs = len(audios) if audios and len(audios) == len(media) else 0
+        output_dir = Path(self.output.text().strip()).expanduser()
         output_ready = bool(self.output.text().strip())
+        self.open_output.setEnabled(output_dir.is_dir())
         files_ready = bool(jobs)
         self.kpi_values["jobs"].setText(str(jobs))
         ready = files_ready and output_ready and not self.runner.running and not self.preparing
@@ -414,7 +327,11 @@ class VideoBatchQtWindow(QMainWindow):
 
     def _mode_changed(self) -> None:
         spec = QUICK_MODES.get(str(self.mode.currentData()), QUICK_MODES["smart_auto"])
-        self.mode_hint.setText(f"{spec.description}\nGeschwindigkeit: {spec.speed_class}")
+        self.mode_hint.setText(
+            f"Ziel: {quality_target(spec.key)}\n{spec.description}\n"
+            f"Qualität: {spec.resolution} · {spec.codec} / {spec.profile} · "
+            f"Prüfung: {self.verification.currentText()} · Tempo: {spec.speed_class}"
+        )
 
     def _runtime_state(self) -> None:
         missing = [name for name in ("ffmpeg", "ffprobe") if shutil.which(name) is None]
@@ -460,9 +377,15 @@ class VideoBatchQtWindow(QMainWindow):
         self.prepare_generation += 1
         generation = self.prepare_generation
         self.start.setEnabled(False)
+        self.open_output.setEnabled(False)
+        self.show_result_log.setEnabled(False)
         self.cancel.setEnabled(True)
         self.progress.setRange(0, 0)
         self.progress.setFormat("Quellen werden geprüft …")
+        self.job_progress.setRange(0, 0)
+        self.job_progress.setFormat("Aufträge werden vorbereitet …")
+        self.activity_detail.setText(f"Aktiv · prüfe {len(audios)} Auftrag/Aufträge mit FFprobe")
+        self.kpi_values["active"].setText("Prüfung")
         self._status("PRÜFT")
         self.step_start.setText("3 · Start …")
         self.next_step.setText("Dateien werden geprüft. Danach startet die Verarbeitung automatisch.")
@@ -484,6 +407,11 @@ class VideoBatchQtWindow(QMainWindow):
             self.preparing = False
             self.progress.setRange(0, 100)
             self.progress.setValue(0)
+            self.job_progress.setRange(0, 100)
+            self.job_progress.setValue(0)
+            self.job_progress.setFormat("Abgebrochen · %p %")
+            self.activity_detail.setText("Abgebrochen · Vorbereitung sicher beendet")
+            self.kpi_values["active"].setText("Nein")
             self.cancel.setEnabled(False)
             self._status("ABGEBROCHEN")
             self._write_log("Vorbereitung verworfen; kein Stapel wird gestartet.")
@@ -504,11 +432,9 @@ class VideoBatchQtWindow(QMainWindow):
             if generation == self.prepare_generation and self.preparing:
                 self.preparing = False
                 self.progress.setRange(0, 100)
+                self.job_progress.setRange(0, 100)
                 if kind == "error":
-                    self._status("FEHLER")
-                    self._write_log(str(data))
-                    self.cancel.setEnabled(False)
-                    self._refresh()
+                    self._show_start_error(str(data), "Vorbereitung")
                 else:
                     self.jobs = list(data)
                     options = rest[0]
@@ -516,15 +442,22 @@ class VideoBatchQtWindow(QMainWindow):
                     try:
                         self.runner.start(self.jobs, options)
                     except Exception as exc:
-                        self._status("FEHLER")
-                        self._write_log(f"{type(exc).__name__}: {exc}")
-                        self.cancel.setEnabled(False)
-                        self._refresh()
+                        self._show_start_error(f"{type(exc).__name__}: {exc}", "Start")
         self._drain_events()
         prepare_alive = bool(self.prepare_thread and self.prepare_thread.is_alive())
         if self.close_after_stop and not self.runner.running and not prepare_alive:
             self.close_after_stop = False
             self.close()
+
+    def _show_start_error(self, message: str, phase: str) -> None:
+        self._status("FEHLER")
+        self._write_log(message)
+        self.job_progress.setValue(0)
+        self.job_progress.setFormat(f"{phase} fehlgeschlagen · %p %")
+        self.activity_detail.setText(f"Fehler · {phase} beendet; technische Meldungen prüfen")
+        self.kpi_values["active"].setText("Nein")
+        self.cancel.setEnabled(False)
+        self._refresh()
 
     def _drain_events(self) -> None:
         for _ in range(200):
@@ -536,22 +469,47 @@ class VideoBatchQtWindow(QMainWindow):
             if name == "batch_started":
                 self.progress.setValue(0)
                 self.progress.setFormat("Verarbeitung · %p %")
+                self.job_progress.setValue(0)
+                self.job_progress.setFormat("Auftrag startet · %p %")
                 self.kpi_values["done"].setText("0")
+                self.kpi_values["active"].setText("Ja")
                 self._status("LÄUFT")
                 self.step_start.setText("3 · Läuft …")
                 self.next_step.setText("Produktion läuft. Fortschritt und Abbrechen bleiben hier immer sichtbar.")
             elif name == "job_started":
-                self._row_status(int(p.get("position", 1)) - 1, "Läuft …")
+                position, total = int(p.get("position", 1)), int(p.get("total", len(self.jobs)))
+                self._row_status(position - 1, "Läuft …", "0 %")
+                self.activity_detail.setText(f"Aktiv · Auftrag {position}/{total} wird gestartet")
             elif name == "progress":
                 snap = p.get("snapshot")
                 value = float(getattr(snap, "total_percent", 0.0) or 0.0)
                 value = value * 100.0 if 0 <= value <= 1 else value
                 self.progress.setValue(max(0, min(100, round(value))))
                 self.progress.setFormat(f"{getattr(snap, 'phase', 'Verarbeitung')} · %p %")
+                job_value = max(0, min(100, round(float(getattr(snap, "job_percent", 0.0) or 0.0))))
+                position = int(getattr(snap, "job_index", 0) or 0)
+                total = int(getattr(snap, "job_total", len(self.jobs)) or len(self.jobs))
+                self.job_progress.setValue(job_value)
+                self.job_progress.setFormat(f"Auftrag {position}/{total} · %p %")
+                self._row_status(position - 1, "Läuft …", f"{job_value} %")
+                elapsed_seconds = float(getattr(snap, "elapsed_seconds", 0.0) or 0.0)
+                elapsed = format_clock(elapsed_seconds)
+                eta = format_eta(getattr(snap, "eta_seconds", None), elapsed_seconds, job_value)
+                speed = getattr(snap, "speed", "") or "aktiv"
+                size = format_size(int(getattr(snap, "output_size", 0) or 0))
+                idle = float(getattr(snap, "last_activity_seconds", 0.0) or 0.0)
+                self.activity_detail.setText(
+                    f"Aktiv · Auftrag {position}/{total} · Phase: {getattr(snap, 'phase', 'Verarbeitung')} · "
+                    f"Zeit {elapsed} · ETA {eta} · {speed} · Ausgabe {size} · Signal vor {idle:.0f} s"
+                )
             elif name == "job_finished":
                 result, pos = p.get("result"), int(p.get("position", 1))
-                self._row_status(pos - 1, "Fertig ✓" if getattr(result, "success", False) else "Fehler")
-                self.kpi_values["done"].setText(str(pos))
+                success = bool(getattr(result, "success", False))
+                status = "Fertig ✓" if success else "⚠ Fehler · Protokoll prüfen"
+                self._row_status(pos - 1, status, "100 %" if success else "Fehler", failed=not success)
+                self.job_progress.setValue(100 if success else self.job_progress.value())
+                completed = int(self.kpi_values["done"].text() or "0") + int(success)
+                self.kpi_values["done"].setText(str(completed))
                 if getattr(result, "message", ""):
                     self._write_log(f"Auftrag {pos}: {result.message}")
             elif name in {"job_failed_internal", "batch_failed_internal"}:
@@ -560,27 +518,53 @@ class VideoBatchQtWindow(QMainWindow):
             elif name == "log":
                 self._write_log(str(p.get("message", "")))
             elif name == "batch_finished":
-                ok, failed, open_ = int(p.get("successes", 0)), int(p.get("failures", 0)), int(p.get("unprocessed", 0))
-                self._status("ABGEBROCHEN" if p.get("cancelled") else ("FERTIG" if not failed and not open_ else "FERTIG MIT HINWEIS"))
-                if not failed and not open_ and not p.get("cancelled"):
-                    self.progress.setValue(100)
-                self.progress.setFormat("Abgeschlossen · %p %")
-                self.cancel.setEnabled(False)
-                self._write_log(f"Abschluss: {ok} erfolgreich · {failed} Fehler · {open_} offen.")
-                self._refresh()
+                self._finish_batch(p)
+
+    def _finish_batch(self, payload) -> None:
+        ok = int(payload.get("successes", 0))
+        failed = int(payload.get("failures", 0))
+        open_ = int(payload.get("unprocessed", 0))
+        cancelled = bool(payload.get("cancelled"))
+        self._status("ABGEBROCHEN" if cancelled else ("FERTIG" if not failed and not open_ else "FERTIG MIT HINWEIS"))
+        if not failed and not open_ and not cancelled:
+            self.progress.setValue(100)
+        self.progress.setFormat("Abgeschlossen · %p %")
+        self.cancel.setEnabled(False)
+        self.kpi_values["active"].setText("Nein")
+        self.kpi_values["done"].setText(str(ok))
+        self.open_output.setEnabled(Path(self.output.text().strip()).expanduser().is_dir())
+        self.show_result_log.setEnabled(bool(self.log.toPlainText().strip()))
+        self.activity_detail.setText(f"Beendet · {ok} erfolgreich · {failed} Fehler · {open_} offen")
+        self._write_log(f"Abschluss: {ok} erfolgreich · {failed} Fehler · {open_} offen.")
+        for row in range(max(0, self.table.rowCount() - open_), self.table.rowCount()):
+            self._row_status(row, "Nicht gestartet", "–")
+        self._refresh(preserve_results=True)
 
     def _load_jobs(self) -> None:
         self.table.setRowCount(len(self.jobs))
         for row, job in enumerate(self.jobs):
-            for col, text in enumerate((str(job.index), job.audio.name, job.media.name, "Geprüft")):
+            for col, text in enumerate((str(job.index), job.audio.name, job.media.name, "Geprüft", "0 %")):
                 self.table.setItem(row, col, QTableWidgetItem(text))
             self.table.item(row, 2).setToolTip(f"Ausgabe: {job.output}")
 
-    def _row_status(self, row: int, text: str) -> None:
+    def _row_status(
+        self, row: int, text: str, progress: str | None = None, *, failed: bool = False
+    ) -> None:
         if 0 <= row < self.table.rowCount():
             if self.table.item(row, 3) is None:
                 self.table.setItem(row, 3, QTableWidgetItem())
             self.table.item(row, 3).setText(text)
+            if progress is not None:
+                if self.table.item(row, 4) is None:
+                    self.table.setItem(row, 4, QTableWidgetItem())
+                self.table.item(row, 4).setText(progress)
+            if failed:
+                for column in range(self.table.columnCount()):
+                    item = self.table.item(row, column)
+                    if item is not None:
+                        item.setBackground(QColor("#4a1722"))
+                        item.setForeground(QColor("#ffffff"))
+                        item.setToolTip("Auftrag fehlgeschlagen. Ergebnisprotokoll öffnen und Ursache prüfen.")
 
     def _write_log(self, message: str) -> None:
         if message.strip():

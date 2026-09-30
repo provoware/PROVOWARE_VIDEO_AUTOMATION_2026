@@ -8,13 +8,7 @@ from pathlib import Path
 os.environ.setdefault("QT_QPA_PLATFORM", "wayland")
 
 from PySide6.QtCore import QTimer, Qt
-from PySide6.QtWidgets import (
-    QApplication,
-    QDockWidget,
-    QFileDialog,
-    QMessageBox,
-    QTabWidget,
-)
+from PySide6.QtWidgets import QApplication, QDockWidget, QFileDialog, QMessageBox, QTabWidget
 
 from .debug_runtime import RUNTIME
 from .diagnostics_service import build_diagnostic_payload
@@ -26,13 +20,9 @@ from .instance_lock import (
 )
 from .paths import state_dir
 from .platform_integration import PlatformCompatibilityError, prepare_gui_environment
-from .project_state import (
-    default_project_file,
-    load_project_state,
-    projects_dir,
-    save_project_state,
-)
+from .project_state import default_project_file, load_project_state, projects_dir, save_project_state
 from .qt_phase2 import VideoBatchQtPhase2Window
+from .qt_main_layout import HelpPanel
 from .qt_phase3_components import DiagnosticsPanel, ProjectPanel, WorkspaceNavigationPanel
 from .qt_theme import APP_STYLE
 from .startup_handshake import signal_ui_ready
@@ -62,7 +52,7 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         else:
             self.project_panel.set_project(self._project_file, {"project_name": "Neues Projekt"})
         self._write_log(
-            "Qt Phase 3 aktiv: Projektverwaltung · Workspace-Navigation · Diagnose · Assurance · Fehlerlabor."
+            "Qt Phase 3 aktiv: Projektverwaltung · Schnellhilfe · Workspace-Navigation · Diagnose · Assurance · Fehlerlabor."
         )
 
     def _build_phase3_workspace(self) -> None:
@@ -85,6 +75,9 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         self.project_panel = ProjectPanel()
         self.phase3_tabs.addTab(self.project_panel, "Projekt")
 
+        self.help_panel = HelpPanel()
+        self.phase3_tabs.addTab(self.help_panel, "Hilfe")
+
         self.diagnostics_panel = DiagnosticsPanel(self._diagnostic_payload)
         self.phase3_tabs.addTab(self.diagnostics_panel, "Diagnose & Assurance")
 
@@ -99,6 +92,7 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
 
     def _connect_phase3(self) -> None:
         self.workspace_navigation.routeRequested.connect(self._route_workspace)
+        self.help_panel.routeRequested.connect(self._route_workspace)
         self.project_panel.newRequested.connect(self._new_project)
         self.project_panel.openRequested.connect(self._open_project)
         self.project_panel.saveRequested.connect(self._save_current_project)
@@ -149,6 +143,12 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
             self.phase3_dock.raise_()
             self.phase3_tabs.setCurrentWidget(self.project_panel)
             self.project_panel.name.setFocus()
+        elif route == "help":
+            self.phase2_dock.hide()
+            self.phase3_dock.show()
+            self.phase3_dock.raise_()
+            self.phase3_tabs.setCurrentWidget(self.help_panel)
+            self.help_panel.setFocus()
         elif route == "diagnostics":
             self.phase2_dock.hide()
             self.phase3_dock.show()
