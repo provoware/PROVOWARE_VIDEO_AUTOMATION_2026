@@ -127,6 +127,11 @@ jobs:
           PY
 
       - name: Finalize Stable 2.8.3
+        env:
+          # The finalizer uses Tk/X11 for the mandatory GUI roundtrip and a
+          # separately proven Qt/Wayland gate above. Keep the Tk phase in one
+          # coherent session instead of advertising Wayland and X11 at once.
+          XDG_SESSION_TYPE: x11
         run: |
           set -Eeuo pipefail
           python scripts/finalize_release.py \
