@@ -1,0 +1,28 @@
+from __future__ import annotations
+
+from scripts.test_workspace_layout_profiles_gui import _settle
+
+
+class _EndlessTk:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def dooneevent(self, _flags: int) -> int:
+        self.calls += 1
+        return 1
+
+
+class _FakeRoot:
+    def __init__(self) -> None:
+        self.tk = _EndlessTk()
+        self.idle_calls = 0
+
+    def update_idletasks(self) -> None:
+        self.idle_calls += 1
+
+
+def test_gui_settle_is_bounded_even_for_endless_event_source() -> None:
+    root = _FakeRoot()
+    _settle(root, max_events=7)
+    assert root.tk.calls == 7
+    assert root.idle_calls == 2
