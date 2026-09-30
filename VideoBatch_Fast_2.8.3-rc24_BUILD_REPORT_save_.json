@@ -41,15 +41,15 @@
     "max_complexity": 29
   },
   "release_cleanup": {
-    "historical_reports_archived": 66,
+    "historical_reports_archived": 69,
     "obsolete_kubuntu_matrix_files_removed": 10,
     "obsolete_visual_baselines_removed": 16,
     "ready_deliverables": 10,
     "release_archive_excluded": true,
     "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe",
-    "unfinished_gate_files": 8
+    "unfinished_gate_files": 5
   },
-  "release_manifest_files": 497,
+  "release_manifest_files": 494,
   "matrix": {
     "status": "passed",
     "passed_targets": 1,
