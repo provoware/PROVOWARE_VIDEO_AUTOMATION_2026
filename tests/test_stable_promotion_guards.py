@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.promote_stable_workspace import validate_promotion_source
+from scripts.promote_stable_workspace import copy_canonical_release_evidence, validate_promotion_source
 
 
 def _write_candidate(root: Path, *, ready: bool) -> None:
@@ -34,3 +34,15 @@ def test_promotion_derives_stable_build_from_version_contract(tmp_path: Path) ->
     version, stable_build = validate_promotion_source(tmp_path)
     assert version["build"] == "2.8.3-rc24"
     assert stable_build == "2.8.3"
+
+
+def test_promotion_copies_only_canonical_release_evidence(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    destination = tmp_path / "destination"
+    (source / "diagnostics" / "release_readiness").mkdir(parents=True)
+    destination.mkdir()
+    payload = {"schema_version": 1, "stable_ready": True}
+    path = source / "diagnostics" / "release_readiness" / "RELEASE_EVIDENCE.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    target = copy_canonical_release_evidence(source, destination)
+    assert json.loads(target.read_text(encoding="utf-8")) == payload

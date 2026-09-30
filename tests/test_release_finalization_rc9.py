@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 from scripts import export_stable_acceptance_evidence as evidence_exporter
+from scripts import finalize_release
 from scripts.validate_stable_acceptance import AcceptanceBlocked, REQUIRED_CHECKS, validate_evidence
 from scripts.validate_version_contract import validate
 from videobatch_fast.automated_desktop_approval import verify_automated_desktop_approval
@@ -209,3 +210,46 @@ def test_finalization_entrypoints_are_bound() -> None:
     assert "stable-evidence" in stable
     assert "--acceptance-evidence" in (ROOT / "scripts/finalize_release.py").read_text(encoding="utf-8")
     assert "videobatch.sh\" finalize" in wrapper
+
+
+def test_tk_x11_env_isolates_only_legacy_gui_regression() -> None:
+    base = {
+        "DISPLAY": ":99",
+        "WAYLAND_DISPLAY": "wayland-stable",
+        "XDG_SESSION_TYPE": "wayland",
+        "XDG_CURRENT_DESKTOP": "KDE",
+        "KEEP": "unchanged",
+    }
+    isolated = finalize_release.tk_x11_env(base)
+    assert base["WAYLAND_DISPLAY"] == "wayland-stable"
+    assert base["XDG_SESSION_TYPE"] == "wayland"
+    assert isolated["DISPLAY"] == ":99"
+    assert isolated["WAYLAND_DISPLAY"] == ""
+    assert isolated["XDG_SESSION_TYPE"] == "x11"
+    assert isolated["XDG_CURRENT_DESKTOP"] == "KDE"
+    assert isolated["KEEP"] == "unchanged"
+
+
+def test_gui_settle_event_pump_is_bounded_when_callbacks_keep_arriving() -> None:
+    from scripts.test_workspace_layout_profiles_gui import _settle
+
+    class NeverIdleTk:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def dooneevent(self, _flags: int) -> int:
+            self.calls += 1
+            return 1
+
+    class FakeRoot:
+        def __init__(self) -> None:
+            self.tk = NeverIdleTk()
+            self.idle_calls = 0
+
+        def update_idletasks(self) -> None:
+            self.idle_calls += 1
+
+    root = FakeRoot()
+    _settle(root, max_events=7, max_seconds=10.0)
+    assert root.tk.calls == 7
+    assert root.idle_calls == 2

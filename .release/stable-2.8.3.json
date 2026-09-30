@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "candidate": "2.8.3-rc24",
+  "stable_version": "2.8.3",
+  "requested_on": "2026-09-30",
+  "acceptance_mode": "explicit_operator_signoff",
+  "operator_acceptances": [
+    "diagnostics/release_readiness/KUBUNTU_OPERATOR_ACCEPTANCE_2026-09-29.json",
+    "diagnostics/release_readiness/LONG_RENDER_OPERATOR_ACCEPTANCE_2026-09-29.json"
+  ],
+  "policy": "Promote only after canonical stable_ready, complete CI gates, native Qt Wayland proof, stable desktop validation and deterministic double packaging.",
+  "retry_after_quality_refactor": {
+    "status": "resolved",
+    "architecture_fix_pr": 187,
+    "literal_hygiene_fix_pr": 188,
+    "policy": "Run the complete fail-closed Stable workflow on the exact source commit; do not bypass any gate."
+  },
+  "source_commit": "6b7ca92989ee23ac9139b549d7c44ae6d6597f27",
+  "release_intent": "final_stable_promotion",
+  "retry_after_coverage_scope_fix": {
+    "status": "resolved",
+    "reason": "Stable finalizer exposed UI-only Qt/canonical modules inside the core coverage denominator after UI extraction.",
+    "policy": "Keep 80/65 thresholds unchanged; exclude only presentation-layer modules already outside the intended core coverage contract."
+  },
+  "retry_after_verify_launch_fix": {
+    "status": "resolved",
+    "reason": "Stable finalizer attempted to execute verify_release.sh directly although the tracked Git mode is 100644.",
+    "policy": "Invoke the existing verification contract explicitly through bash; do not weaken or skip verification."
+  },
+  "ready_to_promote": true,
+  "ready_confirmed_on": "2026-09-30",
+  "retry_after_gui_roundtrip_timeout": {
+    "status": "resolved",
+    "reason": "The previous Stable finalizer passed 600 tests and the 80/65 coverage contract, then exhausted the 120-minute workflow budget in a nested xvfb-run GUI roundtrip despite an already active X11 display.",
+    "policy": "Keep the GUI roundtrip mandatory; reuse the existing DISPLAY when present and enforce a 180-second fail-closed timeout."
+  },
+  "retry_after_gui_session_isolation": {
+    "status": "resolved",
+    "reason": "The previous promotion reached the mandatory Tk GUI roundtrip but ran it in a mixed X11/Wayland session marker and timed out.",
+    "policy": "Keep native Qt/Wayland proof mandatory in its dedicated gate; run the subsequent Tk/X11 roundtrip with XDG_SESSION_TYPE=x11 and unchanged fail-closed timeout."
+  },
+  "retry_after_full_tk_session_isolation": {
+    "status": "resolved",
+    "reason": "Two Stable promotion attempts reproduced the mandatory Tk GUI roundtrip timeout because WAYLAND_DISPLAY remained exported after the native Qt/Wayland proof, so platform detection still classified the finalizer session as Wayland despite XDG_SESSION_TYPE=x11.",
+    "policy": "Keep all existing gates and the 180-second fail-closed timeout; clear WAYLAND_DISPLAY only for the Tk/X11 finalizer phase. PR #197 passed release-contract, repository, long-render, core, offline-Qt and native Wayland lifecycle gates."
+  },
+  "retry_after_finalizer_process_boundary_fix": {
+    "status": "resolved",
+    "reason": "The final Stable path must keep the finalizer in the proven Wayland session and isolate only the legacy Tk/X11 subprocesses. PR #199 fixed the process boundary, import context, and synchronized release manifest; all six PR gates passed.",
+    "policy": "Promote exactly source commit 668b3ddeb0288c9d0de5843ede4706d12352bb8e with all existing fail-closed gates unchanged."
+  },
+  "retry_after_authorization_retrigger": {
+    "status": "resolved",
+    "reason": "The previous authorization left no stable/2.8.3 branch, v2.8.3 tag or GitHub release. Re-authorize the current fully synchronized main commit to trigger the existing fail-closed promotion workflow again.",
+    "policy": "Do not bypass any verification. The promotion workflow must recreate all quality, native Wayland, desktop and deterministic double-packaging gates before publishing."
+  },
+  "retry_after_bounded_gui_event_pump_fix": {
+    "status": "resolved",
+    "reason": "Stable promotion #12 passed 602 tests, the 80/65 coverage contract, operator acceptance and native Qt Wayland proof, but the mandatory Tk GUI roundtrip timed out because root.update() could be kept alive indefinitely by recurring after-callbacks.",
+    "policy": "PR #204 replaces the unbounded Tk update with a bounded non-blocking event pump while preserving all layout assertions. Promote exactly source commit 6b7ca92989ee23ac9139b549d7c44ae6d6597f27 with every existing fail-closed gate unchanged."
+  }
+}

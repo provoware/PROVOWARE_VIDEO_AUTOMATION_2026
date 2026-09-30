@@ -3,8 +3,11 @@ from __future__ import annotations
 
 import os
 import tempfile
+import time
 from itertools import combinations
 from pathlib import Path
+
+import _tkinter
 
 
 def _cancel_callbacks(root) -> None:
@@ -74,9 +77,15 @@ def _assert_inside_parent(parent, widgets, label: str, tolerance: int = 2) -> No
             )
 
 
-def _settle(root) -> None:
+def _settle(root, *, max_events: int = 256, max_seconds: float = 0.5) -> None:
+    """Process enough Tk events for layout without allowing a recurring timer to hang CI."""
     root.update_idletasks()
-    root.update()
+    deadline = time.monotonic() + max_seconds
+    processed = 0
+    while processed < max_events and time.monotonic() < deadline:
+        if not root.tk.dooneevent(_tkinter.DONT_WAIT):
+            break
+        processed += 1
     root.update_idletasks()
 
 

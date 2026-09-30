@@ -61,7 +61,7 @@
     {
       "label": "Offene Arbeitsliste",
       "path": "TODO.md",
-      "reason": "Enthält bewusst die verbleibenden Stable-Gates"
+      "reason": "Fachliche P0-Abnahmen abgeschlossen; enthält nur noch Stable-Promotion, Qt-Migrations- und Wartbarkeitsarbeiten"
     },
     {
       "label": "Externe Qualitätswerkzeuge",
@@ -71,32 +71,32 @@
     {
       "label": "Stable-Freigabeiteration",
       "path": "STABLE_GATE_ITERATION_2.8.3-rc24_2026-09-11.md",
-      "reason": "Aktueller Stable-Arbeitsstand; reale Zielsystemabnahme und Langzeitrender sind noch offen"
+      "reason": "Historischer Stable-Arbeitsstand vor den manuellen Abnahmen vom 29.09.2026"
     },
     {
       "label": "Langzeitrender",
       "path": "docs/LONG_RENDER_2.8.3-rc24.md",
-      "reason": "Realer Langzeitrender mit großer Auswahl und langsamem Ziel fehlt"
+      "reason": "Prüfvertrag bleibt als Referenz erhalten; Langzeitrender wurde am 29.09.2026 manuell als in Ordnung bestätigt"
     },
     {
       "label": "Stable-Abnahmenachweis",
       "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
-      "reason": "Physische Desktop- und Langzeitnachweise fehlen"
+      "reason": "Manuelle Kubuntu- und Langzeitrender-Freigaben dokumentiert; technischer Promotionspfad behält seine formalen Evidenzregeln"
     },
     {
       "label": "Desktop-Sichtprüfung",
       "path": "VISUAL_DESKTOP_APPROVAL.md",
-      "reason": "Physische Kubuntu-26.04-Plasma-Wayland-Abnahme bleibt offen"
+      "reason": "Kubuntu-Basiszustand manuell akzeptiert; keine neue physische 26.04-Ausführung behauptet"
     },
     {
       "label": "Qualitätsumgebung",
       "path": "QUALITY_ENVIRONMENT_STATUS.json",
-      "reason": "Maschinenlesbarer Status; automatisierte Qualitätsgates sind bestanden, Stable bleibt wegen physischer Kubuntu-26.04-Wayland-Abnahme und Langzeitrender offen"
+      "reason": "Maschinenlesbarer Status; alle fachlichen Stable-Gates sind bestanden"
     },
     {
       "label": "Visuelles Prüfmanifest",
       "path": "VISUAL_INSPECTION_MANIFEST.json",
-      "reason": "Aktueller physischer Lauf ist nicht vollständig bestätigt"
+      "reason": "Manuelle Basisfreigabe ist separat dokumentiert; das visuelle Prüfmanifest wird nicht als neuer physischer 26.04-Nachweis umgedeutet"
     }
   ]
 }

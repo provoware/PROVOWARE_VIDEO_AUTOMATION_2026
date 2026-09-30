@@ -12,6 +12,7 @@ EXCLUDED = {
     "dist", "diagnostics", "visual_actual", "actual", "diff", "__pycache__", "archive",
 }
 BINARY_SUFFIXES = {".png", ".jpg", ".jpeg", ".gif", ".zip", ".whl", ".pyc", ".pem"}
+CANONICAL_RELEASE_EVIDENCE = Path("diagnostics/release_readiness/RELEASE_EVIDENCE.json")
 
 
 def _blocked(message: str) -> RuntimeError:
@@ -48,6 +49,16 @@ def ignore(_directory: str, names: list[str]) -> set[str]:
     return {name for name in names if name in EXCLUDED or name.endswith((".pyc", ".pyo"))}
 
 
+def copy_canonical_release_evidence(source: Path, destination: Path) -> Path:
+    source_path = source / CANONICAL_RELEASE_EVIDENCE
+    if not source_path.is_file():
+        raise _blocked("Die kanonische RELEASE_EVIDENCE.json fehlt.")
+    target = destination / CANONICAL_RELEASE_EVIDENCE
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source_path, target)
+    return target
+
+
 def replace_text(root: Path, old_build: str, stable: str) -> None:
     old_pep = old_build.replace("-rc", "rc")
     for path in root.rglob("*"):
@@ -73,6 +84,7 @@ def main() -> int:
     if destination.exists():
         raise _blocked(f"Das Ausgabeziel {destination} existiert bereits.")
     shutil.copytree(source, destination, symlinks=False, ignore=ignore)
+    evidence_path = copy_canonical_release_evidence(source, destination)
     version_path = destination / "VERSION.json"
     old_build = str(version["build"])
     replace_text(destination, old_build, stable_version)
@@ -84,6 +96,16 @@ def main() -> int:
         "purpose": "Stabile VideoBatch-Freigabe nach vollständig grüner autonomer Releaseprüfung.",
     })
     version_path.write_text(json.dumps(version, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    product = evidence.get("product")
+    if not isinstance(product, dict):
+        raise _blocked("Kanonische RELEASE_EVIDENCE enthält keinen Produktvertrag.")
+    product["version"] = stable_version
+    product["channel"] = "stable"
+    progress = evidence.get("progress")
+    if isinstance(progress, dict):
+        progress["current_todo"] = f"Stable {stable_version} wird aus dem vollständig grünen RC-Kandidaten erzeugt."
+    evidence_path.write_text(json.dumps(evidence, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     for relative in ("AUTOMATED_DESKTOP_APPROVAL.json", "visual_inspection/live_desktop_approval.png", "RELEASE_MANIFEST.json"):
         (destination / relative).unlink(missing_ok=True)
     report_renames = (

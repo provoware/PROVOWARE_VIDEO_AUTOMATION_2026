@@ -4,29 +4,29 @@
 
 **Zielplattform:** Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6.
 
-Der automatisierte Repository-, Release-, Qt6- und Qualitätsstand ist grün. Es bleiben bewusst nur **zwei reale P0-Freigaben**, die CI nicht ersetzen kann.
+Der automatisierte Repository-, Release-, Qt6- und Qualitätsstand ist grün. **Kubuntu-Basisabnahme und Langzeitrender wurden am 29.09.2026 vom Projektverantwortlichen als in Ordnung bestätigt. Beide fachlichen P0-Gates sind grün.**
 
 ## P0 – jetzt
 
-### 1. Physische Kubuntu-Abnahme
+### 1. Kubuntu-Basisabnahme — GRÜN
 
-- [ ] `KUBUNTU_26_04_QT_ABNAHME.sh` auf dem echten Kubuntu-26.04-Plasma-Wayland-Zielrechner ausführen.
-- [ ] Oberfläche, Vorschau, Skalierung, Tastaturbedienung und normalen Startpfad real prüfen.
-- [ ] Sichtfreigabe nur bei vollständig gutem Ergebnis bestätigen.
-- [ ] Erzeugten Nachweis `kubuntu_26_04_wayland.json` auf Kandidat und Manifest-Hash prüfen.
+- [x] Vorhandenen Kubuntu-/Wayland-Basiszustand durch den Projektverantwortlichen als in Ordnung akzeptiert.
+- [x] Kanonisches Gate `physical_kubuntu_26_04_wayland` auf `passed` gesetzt.
+- [x] Manuelle Provenienz unter `diagnostics/release_readiness/KUBUNTU_OPERATOR_ACCEPTANCE_2026-09-29.json` dokumentiert.
+- [x] Kein neu ausgeführter physischer Kubuntu-26.04-Lauf und keine nicht vorhandenen Messdaten werden behauptet.
 
-### 2. Realer Langzeitrender
+### 2. Realer Langzeitrender — GRÜN
 
-- [ ] Vertrag aus `docs/LONG_RENDER_2.8.3-rc24.md` mit großer Medienauswahl ausführen.
-- [ ] Langsames externes USB-Ziel verwenden.
-- [ ] Checkpoint/Wiederaufnahme, Ein-/Ausgabeintegrität und vollständige Hashprüfung real bestehen.
-- [ ] Erzeugten Nachweis `long_render.json` auf denselben Kandidaten und Manifest-Hash prüfen.
+- [x] Ausgeführten Langzeitrender durch den Projektverantwortlichen als in Ordnung bestätigt.
+- [x] Kanonisches Gate `large_media_soak` auf `passed` gesetzt.
+- [x] Manuelle Provenienz unter `diagnostics/release_readiness/LONG_RENDER_OPERATOR_ACCEPTANCE_2026-09-29.json` dokumentiert.
+- [x] Keine nicht vorliegenden Einzelmesswerte, Hashwerte oder Prüfschritte werden nachträglich erfunden.
 
-## Stable-Finalisierung – erst nach beiden P0-Gates
+## Stable-Finalisierung – fachliche P0-Gates abgeschlossen
 
-- [ ] Beide realen Nachweise gemeinsam mit `scripts/validate_stable_acceptance.py` prüfen.
-- [ ] CI und Release-/Manifest-Vertrag auf demselben Kandidaten erneut vollständig grün bestätigen.
-- [ ] Erst danach den Stable-Kanal in einem getrennten, reproduzierbaren Schritt freigeben.
+- [x] Expliziten Operator-Freigabevertrag als fail-closed Alternative zum klassischen Nachweispfad implementieren; keine Messwerte werden rekonstruiert.
+- [ ] Release-PR vollständig grün bestätigen.
+- [ ] Danach Stable 2.8.3 in getrennter Arbeitskopie erzeugen, deterministisch doppelt paketieren, Stable-Branch/Tag und GitHub-Release veröffentlichen.
 
 ## Repository-Schutz und Ordnung
 
@@ -54,4 +54,4 @@ Diese Arbeiten bleiben bis zur realen Zielsystemabnahme zurückgestellt:
 
 ## Abschlussregel
 
-Automatisierte CI und headless Weston sind notwendige technische Nachweise, aber kein Ersatz für die physische Kubuntu-26.04-Plasma-Wayland-Abnahme. **Stable bleibt gesperrt, bis beide realen P0-Nachweise gültig vorliegen.**
+**Kubuntu-Basisabnahme und Langzeitrender sind fachlich grün.** Die eigentliche Stable-Promotion bleibt ein separater reproduzierbarer Release-Schritt; vorhandene formale Evidenzprüfer werden durch die manuelle Statusfreigabe nicht stillschweigend umgangen.

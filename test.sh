@@ -178,14 +178,22 @@ fi
   "$ROOT_DIR/tests"
 "$ENV_PYTHON" "$ROOT_DIR/scripts/coverage_policy.py" "$TMP_ROOT/coverage.json" 80 65
 
-if command -v xvfb-run >/dev/null 2>&1; then
-  xvfb-run -a -s '-screen 0 1920x1080x24' \
+GUI_TIMEOUT_SECONDS="${VIDEOBATCH_GUI_TIMEOUT_SECONDS:-180}"
+if ! command -v timeout >/dev/null 2>&1; then
+  printf '✕ GUI-RUNDTRIP BLOCKIERT · GNU timeout fehlt für den begrenzten GUI-Vertrag\n'
+  exit 1
+fi
+if [[ -n "${DISPLAY:-}" ]]; then
+  printf 'GUI-RUNDTRIP · vorhandenes X11-Display %s · Limit %ss\n' "$DISPLAY" "$GUI_TIMEOUT_SECONDS"
+  timeout --foreground "${GUI_TIMEOUT_SECONDS}s" \
     "$ENV_PYTHON" "$ROOT_DIR/scripts/test_workspace_layout_profiles_gui.py"
-elif [[ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]]; then
-  printf '! xvfb-run fehlt · GUI-Rundtrip läuft in der aktiven Desktop-Sitzung\n'
-  "$ENV_PYTHON" "$ROOT_DIR/scripts/test_workspace_layout_profiles_gui.py"
+elif command -v xvfb-run >/dev/null 2>&1; then
+  printf 'GUI-RUNDTRIP · isoliertes Xvfb · Limit %ss\n' "$GUI_TIMEOUT_SECONDS"
+  timeout --foreground "${GUI_TIMEOUT_SECONDS}s" \
+    xvfb-run -a -s '-screen 0 1920x1080x24' \
+    "$ENV_PYTHON" "$ROOT_DIR/scripts/test_workspace_layout_profiles_gui.py"
 else
-  printf '✕ GUI-RUNDTRIP BLOCKIERT · weder xvfb-run noch Desktop-Sitzung verfügbar\n'
+  printf '✕ GUI-RUNDTRIP BLOCKIERT · weder aktives X11-Display noch xvfb-run verfügbar\n'
   exit 1
 fi
 
