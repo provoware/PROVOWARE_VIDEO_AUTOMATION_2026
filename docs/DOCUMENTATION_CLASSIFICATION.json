@@ -57,9 +57,6 @@
     "PROJEKTORDNERSTRUKTUR_save_.md": {
       "category": "technical"
     },
-    "QUALITY_GATE_ATTEMPT_2.8.3-rc24.md": {
-      "category": "historical"
-    },
     "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md": {
       "category": "historical"
     },
@@ -105,9 +102,6 @@
         "Abschlussprüfung",
         "Nächster Schritt"
       ]
-    },
-    "VISUAL_DESKTOP_APPROVAL.md": {
-      "category": "technical"
     },
     "docs/ARCHITEKTUR.md": {
       "category": "technical"
@@ -226,9 +220,6 @@
     },
     "toolchain_wheelhouse/README.md": {
       "category": "technical"
-    },
-    "STABLE_GATE_ITERATION_2.8.3-rc24_2026-09-11.md": {
-      "category": "internal"
     },
     "docs/reference/BEST_PRACTICES.md": {
       "category": "technical"
