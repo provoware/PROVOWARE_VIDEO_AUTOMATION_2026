@@ -15,7 +15,7 @@
     "literal_hygiene_fix_pr": 188,
     "policy": "Run the complete fail-closed Stable workflow on the exact source commit; do not bypass any gate."
   },
-  "source_commit": "668b3ddeb0288c9d0de5843ede4706d12352bb8e",
+  "source_commit": "8b4dae83c1a16de5eaa3d2e717914f652101899b",
   "release_intent": "final_stable_promotion",
   "retry_after_coverage_scope_fix": {
     "status": "resolved",
@@ -48,5 +48,10 @@
     "status": "resolved",
     "reason": "The final Stable path must keep the finalizer in the proven Wayland session and isolate only the legacy Tk/X11 subprocesses. PR #199 fixed the process boundary, import context, and synchronized release manifest; all six PR gates passed.",
     "policy": "Promote exactly source commit 668b3ddeb0288c9d0de5843ede4706d12352bb8e with all existing fail-closed gates unchanged."
+  },
+  "retry_after_authorization_retrigger": {
+    "status": "resolved",
+    "reason": "The previous authorization left no stable/2.8.3 branch, v2.8.3 tag or GitHub release. Re-authorize the current fully synchronized main commit to trigger the existing fail-closed promotion workflow again.",
+    "policy": "Do not bypass any verification. The promotion workflow must recreate all quality, native Wayland, desktop and deterministic double-packaging gates before publishing."
   }
 }
