@@ -289,7 +289,7 @@ class VideoBatchQtWindow(QMainWindow):
         self.job_progress.setFormat("Kein Auftrag aktiv · %p %")
         self.activity_detail.setText("Keine Verarbeitung aktiv · bereit für neue Aufträge")
 
-    def _refresh(self, *, preserve_results: bool = false) -> None:
+    def _refresh(self, *, preserve_results: bool = False) -> None:
         audios, media = self.audio.paths(), self.media.paths()
         self.kpi_values["audio"].setText(str(len(audios)))
         self.kpi_values["media"].setText(str(len(media)))
