@@ -228,3 +228,28 @@ def test_tk_x11_env_isolates_only_legacy_gui_regression() -> None:
     assert isolated["XDG_SESSION_TYPE"] == "x11"
     assert isolated["XDG_CURRENT_DESKTOP"] == "KDE"
     assert isolated["KEEP"] == "unchanged"
+
+
+def test_gui_settle_event_pump_is_bounded_when_callbacks_keep_arriving() -> None:
+    from scripts.test_workspace_layout_profiles_gui import _settle
+
+    class NeverIdleTk:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def dooneevent(self, _flags: int) -> int:
+            self.calls += 1
+            return 1
+
+    class FakeRoot:
+        def __init__(self) -> None:
+            self.tk = NeverIdleTk()
+            self.idle_calls = 0
+
+        def update_idletasks(self) -> None:
+            self.idle_calls += 1
+
+    root = FakeRoot()
+    _settle(root, max_events=7, max_seconds=10.0)
+    assert root.tk.calls == 7
+    assert root.idle_calls == 2
