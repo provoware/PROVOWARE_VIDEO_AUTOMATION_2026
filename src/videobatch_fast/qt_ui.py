@@ -9,23 +9,9 @@ from pathlib import Path
 from PySide6.QtCore import QTimer, Qt
 from PySide6.QtGui import QCloseEvent, QColor
 from PySide6.QtWidgets import (
-    QAbstractItemView,
-    QApplication,
-    QComboBox,
-    QFileDialog,
-    QFrame,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QMainWindow,
-    QMessageBox,
-    QPlainTextEdit,
-    QPushButton,
-    QTableWidget,
-    QTableWidgetItem,
-    QToolButton,
-    QVBoxLayout,
-    QWidget,
+    QAbstractItemView, QApplication, QComboBox, QFileDialog, QFrame, QHBoxLayout,
+    QLabel, QLineEdit, QMainWindow, QMessageBox, QPlainTextEdit, QPushButton,
+    QTableWidget, QTableWidgetItem, QToolButton, QVBoxLayout, QWidget,
 )
 
 from .event_buffer import EventBuffer
@@ -548,6 +534,8 @@ class VideoBatchQtWindow(QMainWindow):
         self.show_result_log.setEnabled(bool(self.log.toPlainText().strip()))
         self.activity_detail.setText(f"Beendet · {ok} erfolgreich · {failed} Fehler · {open_} offen")
         self._write_log(f"Abschluss: {ok} erfolgreich · {failed} Fehler · {open_} offen.")
+        for row in range(max(0, self.table.rowCount() - open_), self.table.rowCount()):
+            self._row_status(row, "Nicht gestartet", "–")
         self._refresh(preserve_results=True)
 
     def _load_jobs(self) -> None:
