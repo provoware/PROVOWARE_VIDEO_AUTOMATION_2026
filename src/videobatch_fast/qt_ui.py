@@ -289,22 +289,23 @@ class VideoBatchQtWindow(QMainWindow):
         self.job_progress.setFormat("Kein Auftrag aktiv · %p %")
         self.activity_detail.setText("Keine Verarbeitung aktiv · bereit für neue Aufträge")
 
-    def _refresh(self) -> None:
+    def _refresh(self, *, preserve_results: bool = false) -> None:
         audios, media = self.audio.paths(), self.media.paths()
         self.kpi_values["audio"].setText(str(len(audios)))
         self.kpi_values["media"].setText(str(len(media)))
-        self.table.setRowCount(max(len(audios), len(media)))
-        for row in range(self.table.rowCount()):
-            complete = row < len(audios) and row < len(media)
-            values = (
-                str(row + 1),
-                audios[row].name if row < len(audios) else "— fehlt —",
-                media[row].name if row < len(media) else "— fehlt —",
-                "Bereit" if complete else "Unvollständig",
-                "0 %" if complete else "–",
-            )
-            for col, text in enumerate(values):
-                self.table.setItem(row, col, QTableWidgetItem(text))
+        if not preserve_results:
+            self.table.setRowCount(max(len(audios), len(media)))
+            for row in range(self.table.rowCount()):
+                complete = row < len(audios) and row < len(media)
+                values = (
+                    str(row + 1),
+                    audios[row].name if row < len(audios) else "— fehlt —",
+                    media[row].name if row < len(media) else "— fehlt —",
+                    "Bereit" if complete else "Unvollständig",
+                    "0 %" if complete else "–",
+                )
+                for col, text in enumerate(values):
+                    self.table.setItem(row, col, QTableWidgetItem(text))
         jobs = len(audios) if audios and len(audios) == len(media) else 0
         output_ready = bool(self.output.text().strip())
         files_ready = bool(jobs)
@@ -547,7 +548,9 @@ class VideoBatchQtWindow(QMainWindow):
         self.show_result_log.setEnabled(bool(self.log.toPlainText().strip()))
         self.activity_detail.setText(f"Beendet · {ok} erfolgreich · {failed} Fehler · {open_} offen")
         self._write_log(f"Abschluss: {ok} erfolgreich · {failed} Fehler · {open_} offen.")
-        self._refresh()
+        # Abschlussstatus der einzelnen Aufträge sichtbar lassen; nur die
+        # Bedienbereitschaft neu berechnen.
+        self._refresh(preserve_results=True)
 
     def _load_jobs(self) -> None:
         self.table.setRowCount(len(self.jobs))
