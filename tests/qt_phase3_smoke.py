@@ -45,10 +45,11 @@ def main() -> int:
         window.show()
         app.processEvents()
 
-        assert len(window.workspace_navigation.buttons) == 8
-        assert window.phase3_tabs.count() == 2
-        assert [window.phase3_tabs.tabText(index) for index in range(2)] == [
+        assert len(window.workspace_navigation.buttons) == 9
+        assert window.phase3_tabs.count() == 3
+        assert [window.phase3_tabs.tabText(index) for index in range(3)] == [
             "Projekt",
+            "Hilfe",
             "Diagnose & Assurance",
         ]
 
