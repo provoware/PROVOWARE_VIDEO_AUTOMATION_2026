@@ -21,8 +21,9 @@ def _cancel_callbacks(root) -> None:
 def _destroy(root, app) -> None:
     try:
         controller = getattr(app, "selection_previews", None)
-        if controller is not None:
-            controller.close()
+        shutdown = getattr(controller, "shutdown", None) if controller is not None else None
+        if callable(shutdown):
+            shutdown(timeout=1.0)
     except Exception:
         pass
     _cancel_callbacks(root)
@@ -74,10 +75,16 @@ def _assert_inside_parent(parent, widgets, label: str, tolerance: int = 2) -> No
             )
 
 
-def _settle(root) -> None:
-    root.update_idletasks()
-    root.update()
-    root.update_idletasks()
+def _settle(root, milliseconds: int = 250) -> None:
+    """Process Tk events for a bounded interval instead of draining forever."""
+    callback_id = root.after(max(1, int(milliseconds)), root.quit)
+    try:
+        root.mainloop()
+    finally:
+        try:
+            root.after_cancel(callback_id)
+        except Exception:
+            pass
 
 
 def _assert_canonical_layout(root, app, geometry: str, scale: int) -> None:
