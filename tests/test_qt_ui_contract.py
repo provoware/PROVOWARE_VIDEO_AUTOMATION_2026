@@ -98,6 +98,7 @@ def test_qt_dashboard_exposes_total_job_and_activity_feedback() -> None:
         'open_output_folder(window)',
         'QPushButton("Ergebnisprotokoll anzeigen")',
         'self.kpi_values["done"].setText(str(ok))',
+        'self._refresh(preserve_results=True)',
     ):
         assert token in source
     assert "qt_legacy_parity" not in QT_UI.read_text(encoding="utf-8")
