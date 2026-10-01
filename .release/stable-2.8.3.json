@@ -15,7 +15,7 @@
     "literal_hygiene_fix_pr": 188,
     "policy": "Run the complete fail-closed Stable workflow on the exact source commit; do not bypass any gate."
   },
-  "source_commit": "290e41bf73357839e73ef8c6a7d42c854ce6d38f",
+  "source_commit": "3593cfdbbd2e3cd5d87d4f6b7dd734fd2f679a7f",
   "release_intent": "final_stable_promotion",
   "retry_after_coverage_scope_fix": {
     "status": "resolved",
@@ -73,5 +73,10 @@
     "status": "resolved",
     "reason": "Stable promotion run #15 passed 607 tests, the 80/65 coverage contract and fault lab, then timed out in the mandatory Tk GUI roundtrip. PR #211 isolates the write/read GUI phases in bounded subprocesses and passed the full gate matrix.",
     "policy": "Promote exactly source commit 290e41bf73357839e73ef8c6a7d42c854ce6d38f. Keep every quality, Wayland, desktop, deterministic packaging, branch, tag and release gate fail-closed."
+  },
+  "retry_after_gui_phase_budget_fix": {
+    "status": "resolved",
+    "reason": "Stable promotion run #16 reached the isolated write subprocess but its 45-second budget expired before the mandatory layout assertions completed. PR #213 raises only the bounded phase budgets to 90 seconds for write and 60 seconds for read, under the existing 180-second outer gate, and passed the full gate matrix.",
+    "policy": "Promote exactly source commit 3593cfdbbd2e3cd5d87d4f6b7dd734fd2f679a7f. Preserve all quality, GUI, Wayland, deterministic packaging, branch, tag and release gates."
   }
 }
