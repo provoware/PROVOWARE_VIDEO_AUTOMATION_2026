@@ -15,7 +15,7 @@
     "literal_hygiene_fix_pr": 188,
     "policy": "Run the complete fail-closed Stable workflow on the exact source commit; do not bypass any gate."
   },
-  "source_commit": "6872963014bb2442d4e179405082f2b3b6b74fc0",
+  "source_commit": "290e41bf73357839e73ef8c6a7d42c854ce6d38f",
   "release_intent": "final_stable_promotion",
   "retry_after_coverage_scope_fix": {
     "status": "resolved",
@@ -68,5 +68,10 @@
     "status": "resolved",
     "reason": "Stable finalization exposed qt_ui.py at 616 lines against the registered 614-line ceiling. PR #209 restored the ceiling without behavioral changes and passed the full gate matrix.",
     "policy": "Promote exactly source commit 6872963014bb2442d4e179405082f2b3b6b74fc0; do not bypass or weaken any existing release gate."
+  },
+  "retry_after_final_gui_phase_isolation": {
+    "status": "resolved",
+    "reason": "Stable promotion run #15 passed 607 tests, the 80/65 coverage contract and fault lab, then timed out in the mandatory Tk GUI roundtrip. PR #211 isolates the write/read GUI phases in bounded subprocesses and passed the full gate matrix.",
+    "policy": "Promote exactly source commit 290e41bf73357839e73ef8c6a7d42c854ce6d38f. Keep every quality, Wayland, desktop, deterministic packaging, branch, tag and release gate fail-closed."
   }
 }
