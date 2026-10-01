@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import os
+import subprocess
+import sys
 import tempfile
 import time
 from itertools import combinations
@@ -150,19 +153,22 @@ def _assert_canonical_layout(root, app, geometry: str, scale: int) -> None:
     )
 
 
-def main() -> int:
-    """Verify tabs, area zoom and the canonical responsive shell in one GUI run."""
-    with tempfile.TemporaryDirectory(prefix="vbfast_layout_gui_") as tmp:
-        base = Path(tmp)
-        os.environ["XDG_CONFIG_HOME"] = str(base / "config")
-        os.environ["XDG_STATE_HOME"] = str(base / "state")
-        os.environ["XDG_CACHE_HOME"] = str(base / "cache")
+def _configure_state_home(base: Path) -> None:
+    os.environ["XDG_CONFIG_HOME"] = str(base / "config")
+    os.environ["XDG_STATE_HOME"] = str(base / "state")
+    os.environ["XDG_CACHE_HOME"] = str(base / "cache")
 
-        from tkinter import Tk
-        from videobatch_fast.canonical_ui import CanonicalVideoBatchFastUI
 
-        root = Tk()
-        app = CanonicalVideoBatchFastUI(root)
+def _run_gui_phase(base: Path, phase: str) -> int:
+    _configure_state_home(base)
+
+    from tkinter import Tk
+    from videobatch_fast.canonical_ui import CanonicalVideoBatchFastUI
+
+    root = Tk()
+    app = CanonicalVideoBatchFastUI(root)
+
+    if phase == "write":
         for geometry, scale in (
             ("1024x680+0+0", 125),
             ("1366x768+0+0", 105),
@@ -186,10 +192,10 @@ def main() -> int:
             raise AssertionError("Workflowraster besitzt keinen sichtbaren Scrollvertrag.")
         if app.area_zoom.get("media") != 140:
             raise AssertionError("Bereichszoom wurde nicht angewendet.")
-        _destroy(root, app)
+        print("GUI-PHASE WRITE BESTANDEN", flush=True)
+        os._exit(0)
 
-        root = Tk()
-        app = CanonicalVideoBatchFastUI(root)
+    if phase == "read":
         root.geometry("1280x720+0+0")
         _settle(root)
         if app._active_workspace_layout_profile != "tabs":
@@ -202,14 +208,63 @@ def main() -> int:
         bbox = grid.canvas.bbox("all")
         if not bbox or bbox[3] <= 0:
             raise AssertionError("Medienraster besitzt keinen erreichbaren Inhaltsbereich.")
-        _destroy(root, app)
+        print("GUI-PHASE READ BESTANDEN", flush=True)
+        os._exit(0)
+
+    raise ValueError(f"Unbekannte GUI-Testphase: {phase}")
+
+
+def _run_isolated_phase(base: Path, phase: str) -> None:
+    env = {
+        **os.environ,
+        "XDG_CONFIG_HOME": str(base / "config"),
+        "XDG_STATE_HOME": str(base / "state"),
+        "XDG_CACHE_HOME": str(base / "cache"),
+    }
+    command = [
+        sys.executable,
+        str(Path(__file__).resolve()),
+        "--phase",
+        phase,
+        "--base",
+        str(base),
+    ]
+    completed = subprocess.run(
+        command,
+        env=env,
+        text=True,
+        check=False,
+        timeout=45,
+    )
+    if completed.returncode:
+        raise RuntimeError(
+            f"GUI-Rundtrip-Teilphase {phase!r} fehlgeschlagen "
+            f"(Code {completed.returncode})."
+        )
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Verify tabs, area zoom and the canonical responsive shell in isolated GUI processes."""
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--phase", choices=("write", "read"))
+    parser.add_argument("--base", type=Path)
+    args = parser.parse_args(argv)
+
+    if args.phase:
+        if args.base is None:
+            parser.error("--base ist mit --phase erforderlich")
+        return _run_gui_phase(args.base.resolve(), args.phase)
+
+    with tempfile.TemporaryDirectory(prefix="vbfast_layout_gui_") as tmp:
+        base = Path(tmp)
+        _run_isolated_phase(base, "write")
+        _run_isolated_phase(base, "read")
 
     print(
         "GUI-TAB-GRID-ROUNDTRIP BESTANDEN · "
         "kanonische Shell + Überlagerungsschutz + Tabs + Scrollraster + Bereichszoom"
     )
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
