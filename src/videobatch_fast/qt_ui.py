@@ -547,9 +547,7 @@ class VideoBatchQtWindow(QMainWindow):
                 self.table.setItem(row, col, QTableWidgetItem(text))
             self.table.item(row, 2).setToolTip(f"Ausgabe: {job.output}")
 
-    def _row_status(
-        self, row: int, text: str, progress: str | None = None, *, failed: bool = False
-    ) -> None:
+    def _row_status(self, row: int, text: str, progress: str | None = None, *, failed: bool = False) -> None:
         if 0 <= row < self.table.rowCount():
             if self.table.item(row, 3) is None:
                 self.table.setItem(row, 3, QTableWidgetItem())
