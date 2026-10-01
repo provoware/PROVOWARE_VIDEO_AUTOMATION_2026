@@ -3,7 +3,14 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from scripts.render_release_docs import FILES_END, FILES_START, README_END, README_START, render
+from scripts.render_release_docs import (
+    FILES_END,
+    FILES_START,
+    README_END,
+    README_START,
+    release_status_block,
+    render,
+)
 
 
 def test_release_docs_use_canonical_evidence_and_keep_marker_api(tmp_path: Path) -> None:
@@ -75,3 +82,32 @@ def test_release_docs_use_canonical_evidence_and_keep_marker_api(tmp_path: Path)
     assert "Guide_save_.md" in status
     assert "TODO.md" in status
     assert documents[tmp_path / "README.md"].endswith("\n\nNutzung\n")
+
+def test_release_status_block_reports_stable_ready_without_empty_open_section() -> None:
+    evidence = {
+        "product": {"version": "1.2.3", "channel": "stable"},
+        "tests": {
+            "passed": 12,
+            "line_coverage_percent": 81.2,
+            "branch_coverage_percent": 67.3,
+            "visual_scenarios": "3/3",
+        },
+        "manifest": {"file_count": 2},
+        "matrix": {"passed_targets": 4, "total_targets": 4},
+        "stable_gates": [
+            {
+                "id": "kde",
+                "label": "KDE",
+                "status": "passed",
+                "reason": "bestanden",
+            }
+        ],
+        "approved_quality_report": "report_save_.json",
+    }
+
+    status = release_status_block(evidence)
+
+    assert "### Stable-Status" in status
+    assert "Alle Stable-Gates bestanden" in status
+    assert "### Offene Stable-Gates" not in status
+

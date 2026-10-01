@@ -259,10 +259,15 @@ def release_status_block(value: Mapping[str, Any]) -> str:
         f"- Release-Manifest: {value['manifest']['file_count']} Dateien",
         f"- Kubuntu-CI-Matrix: {matrix['passed_targets']}/{matrix['total_targets']} Kombinationen bestanden",
         "",
-        "### Offene Stable-Gates",
+        "### Offene Stable-Gates" if blockers else "### Stable-Status",
         "",
     ]
-    lines.extend(f"- {item}" for item in blockers)
+    if blockers:
+        lines.extend(f"- {item}" for item in blockers)
+    else:
+        lines.append(
+            "- Alle Stable-Gates bestanden; die formale Stable-Promotion ist der nächste separate Release-Schritt."
+        )
     lines.append(STATUS_END)
     return "\n".join(lines)
 
