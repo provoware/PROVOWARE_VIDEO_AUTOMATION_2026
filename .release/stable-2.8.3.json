@@ -15,7 +15,7 @@
     "literal_hygiene_fix_pr": 188,
     "policy": "Run the complete fail-closed Stable workflow on the exact source commit; do not bypass any gate."
   },
-  "source_commit": "17d6905e1177c99ba44f54d39984ac0e3c041299",
+  "source_commit": "6872963014bb2442d4e179405082f2b3b6b74fc0",
   "release_intent": "final_stable_promotion",
   "retry_after_coverage_scope_fix": {
     "status": "resolved",
@@ -63,5 +63,10 @@
     "status": "resolved",
     "reason": "PR #207 was squash-merged only after the full green gate matrix. The merge commit has the exact same Git tree as the fully tested PR head.",
     "policy": "Promote exactly source commit 17d6905e1177c99ba44f54d39984ac0e3c041299. Do not bypass any existing quality, Wayland, desktop, deterministic packaging, branch, tag, or release gate."
+  },
+  "retry_after_stable_qt_ui_ceiling_fix": {
+    "status": "resolved",
+    "reason": "Stable finalization exposed qt_ui.py at 616 lines against the registered 614-line ceiling. PR #209 restored the ceiling without behavioral changes and passed the full gate matrix.",
+    "policy": "Promote exactly source commit 6872963014bb2442d4e179405082f2b3b6b74fc0; do not bypass or weaken any existing release gate."
   }
 }
