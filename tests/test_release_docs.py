@@ -3,7 +3,14 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from scripts.render_release_docs import (\n    FILES_END,\n    FILES_START,\n    README_END,\n    README_START,\n    release_status_block,\n    render,\n)
+from scripts.render_release_docs import (
+    FILES_END,
+    FILES_START,
+    README_END,
+    README_START,
+    release_status_block,
+    render,
+)
 
 
 def test_release_docs_use_canonical_evidence_and_keep_marker_api(tmp_path: Path) -> None:
