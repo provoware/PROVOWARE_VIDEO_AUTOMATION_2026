@@ -12,13 +12,14 @@
 - Release-Manifest: 494 Dateien
 - Kubuntu-CI-Matrix: 1/1 Kombinationen bestanden
 
-### Offene Stable-Gates
+### Stable-Status
 
+- Alle Stable-Gates bestanden; die formale Stable-Promotion ist der nächste separate Release-Schritt.
 <!-- release-status:end -->
 
 ## Überblick
 
-VideoBatch Fast ist die lokale Video-Automation für **Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6**. Der aktuelle Stand ist **2.8.3-rc24**. Die automatisierten Qualitäts- und CI-Verträge sind grün; Stable bleibt bewusst gesperrt, bis die zwei oben genannten realen Abnahmen vorliegen.
+VideoBatch Fast ist die lokale Video-Automation für **Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6**. Der aktuelle Stand ist **2.8.3-rc24**. Die automatisierten Qualitäts- und CI-Verträge sowie beide realen Stable-Abnahmen sind grün. Der Kandidat ist laut kanonischer Evidence stable-ready; offen ist ausschließlich die formale Stable-Promotion.
 
 ## Schnellstart
 
@@ -79,7 +80,7 @@ chmod +x videobatch.sh
 - Schreibziele werden vor produktiven Vorgängen geprüft.
 - Wiederanlaufzustände werden kontrolliert geladen und nicht stillschweigend gestartet.
 - Projekt- und Qualitätsprüfungen sollen lesend beziehungsweise reproduzierbar bleiben.
-- Stable wird nicht aus CI-Ergebnissen allein abgeleitet: die physische Kubuntu-Abnahme und der reale Langzeitrender bleiben echte Freigabegrenzen.
+- Stable wird nicht aus CI-Ergebnissen allein abgeleitet: die physische Kubuntu-Abnahme und der reale Langzeitrender bleiben echte Freigabegrenzen; beide sind am 29.09.2026 dokumentiert bestanden.
 
 ## Erster Test
 
@@ -117,7 +118,7 @@ Only standalone user and release deliverables receive _save_. Source modules, CI
 
 ## Abschlussprüfung
 
-Ein erster Lauf gilt als erfolgreich, wenn die Oberfläche ohne Fehlermeldung startet, ein kurzer Testauftrag abgeschlossen wird und das erzeugte Ergebnis plausibel abgespielt wurde. **Stable bleibt gesperrt**, bis die physische Kubuntu-26.04-Plasma-Wayland-Abnahme und der reale Langzeitrender beide gültige Nachweise erzeugt haben.
+Ein erster Lauf gilt als erfolgreich, wenn die Oberfläche ohne Fehlermeldung startet, ein kurzer Testauftrag abgeschlossen wird und das erzeugte Ergebnis plausibel abgespielt wurde. **Alle fachlichen Stable-Gates sind bestanden.** Vor der Veröffentlichung bleibt nur die getrennte, reproduzierbare Stable-Promotion mit finaler Paket-, Branch-, Tag- und Release-Prüfung.
 
 ## Nächster Schritt
 

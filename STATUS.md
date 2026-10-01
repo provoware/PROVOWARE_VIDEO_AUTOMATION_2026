@@ -12,8 +12,9 @@
 - Release-Manifest: 494 Dateien
 - Kubuntu-CI-Matrix: 1/1 Kombinationen bestanden
 
-### Offene Stable-Gates
+### Stable-Status
 
+- Alle Stable-Gates bestanden; die formale Stable-Promotion ist der nächste separate Release-Schritt.
 <!-- release-status:end -->
 
 <!-- release-files:start -->
