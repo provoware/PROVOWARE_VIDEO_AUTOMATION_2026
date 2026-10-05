@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 
 from PySide6.QtCore import QSize, Qt, Signal
-from PySide6.QtGui import QDragEnterEvent, QDropEvent, QIcon, QPixmap, QWheelEvent
+from PySide6.QtGui import QDragEnterEvent, QDropEvent, QIcon, QKeyEvent, QPixmap, QWheelEvent
 from PySide6.QtWidgets import QAbstractItemView, QListWidget, QListWidgetItem
 
 AUDIO_EXTS = {".aac", ".flac", ".m4a", ".mp3", ".ogg", ".opus", ".wav", ".wma"}
@@ -74,7 +74,14 @@ class DropList(QListWidget):
         self.setDragDropMode(QAbstractItemView.DragDropMode.DropOnly)
         self.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self.setIconSize(QSize(72, 54))
-        self.setToolTip("Strg + Mausrad: Liste vergrößern oder verkleinern")
+        self.setToolTip(
+            "Strg + Mausrad oder Strg +/-: Liste vergrößern oder verkleinern · "
+            "Strg+0: Normalgröße · Entf: Auswahl entfernen"
+        )
+        self.setAccessibleDescription(
+            "Dateiliste. Mit Entf wird die Auswahl entfernt. "
+            "Mit Strg plus oder minus wird die Liste vergrößert oder verkleinert."
+        )
 
     def paths(self) -> list[Path]:
         return [Path(self.item(row).data(Qt.ItemDataRole.UserRole)) for row in range(self.count())]
@@ -143,6 +150,26 @@ class DropList(QListWidget):
             event.accept()
             return
         super().wheelEvent(event)
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        if event.key() == Qt.Key.Key_Delete:
+            self.remove_selected()
+            event.accept()
+            return
+        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            if event.key() in (Qt.Key.Key_Plus, Qt.Key.Key_Equal):
+                self._apply_zoom(self._zoom_point_size + 1.0)
+                event.accept()
+                return
+            if event.key() == Qt.Key.Key_Minus:
+                self._apply_zoom(self._zoom_point_size - 1.0)
+                event.accept()
+                return
+            if event.key() == Qt.Key.Key_0:
+                self._apply_zoom(11.0)
+                event.accept()
+                return
+        super().keyPressEvent(event)
 
     def sort_by(self, mode: str) -> None:
         selected = {str(item.data(Qt.ItemDataRole.UserRole)) for item in self.selectedItems()}

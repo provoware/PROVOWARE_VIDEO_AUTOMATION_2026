@@ -69,6 +69,12 @@ def test_qt_theme_exposes_high_visibility_accessibility_contract() -> None:
         "background: #007f99;",
         "QPushButton:pressed, QPushButton:checked {",
         "background: #ffbf3f;",
+        "QPushButton:focus, QToolButton:focus, QLineEdit:focus, QComboBox:focus,",
+        "border: 3px solid #ffffff;",
+        "min-height: 34px;",
+        "QScrollBar:vertical {",
+        "width: 16px;",
+        "QToolTip {",
         "QProgressBar#jobProgress::chunk { background: #ffbf3f; }",
     ):
         assert token in theme
@@ -95,6 +101,10 @@ def test_qt_dashboard_exposes_total_job_and_activity_feedback() -> None:
         '"aktuelle Schätzung"',
         '"⚠ Fehler · Protokoll prüfen"',
         'item.setToolTip("Auftrag fehlgeschlagen.',
+        'window.status.setAccessibleName("Programmstatus")',
+        'window.next_step.setAccessibleName("Nächster Arbeitsschritt")',
+        'window.progress.setAccessibleName("Gesamtfortschritt")',
+        'window.job_progress.setAccessibleName("Fortschritt des aktuellen Auftrags")',
         'open_output_folder(window)',
         'QPushButton("Ergebnisprotokoll anzeigen")',
         'self.kpi_values["done"].setText(str(ok))',
@@ -141,9 +151,15 @@ def test_media_selection_lists_support_bounded_ctrl_wheel_zoom() -> None:
         "MIN_ZOOM_POINT_SIZE = 10.0",
         "MAX_ZOOM_POINT_SIZE = 22.0",
         "def wheelEvent(self, event: QWheelEvent)",
+        "def keyPressEvent(self, event: QKeyEvent)",
         "Qt.KeyboardModifier.ControlModifier",
         "event.angleDelta().y() or event.pixelDelta().y()",
+        "Qt.Key.Key_Delete",
+        "Qt.Key.Key_Plus",
+        "Qt.Key.Key_Minus",
+        "Qt.Key.Key_0",
         "Strg + Mausrad",
+        "Strg + Mausrad oder Strg +/-",
     ):
         assert token in source
 
@@ -189,6 +205,7 @@ def test_header_dashboard_exposes_graphical_cpu_ram_swap_load() -> None:
         "self.timer.setInterval(1000)",
         'for key, label in (("cpu", "CPU"), ("ram", "RAM"), ("swap", "SWAP"))',
         'bar.setAccessibleName(f"{label}-Auslastung")',
+        "bar.setAccessibleDescription(tooltip)",
         "def refresh(self)",
         "sample.cpu_percent",
         "sample.ram_percent",
