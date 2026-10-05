@@ -156,6 +156,9 @@ def job_table_item(text: str, column: int) -> QTableWidgetItem:
 
 def install_workflow_shortcuts(window) -> None:
     configure_secondary_buttons(window.open_output, window.show_result_log)
+    window.audio.setToolTip(window.audio.toolTip() + " · Alt+1: Dateiauswahl")
+    window.output.setToolTip("Alt+2: Ausgabeordner")
+    window.start.setToolTip("Alt+3: Videos erstellen")
     window._workflow_shortcuts = []
     for sequence, target in (("Alt+1", window.audio), ("Alt+2", window.output), ("Alt+3", window.start)):
         shortcut = QShortcut(QKeySequence(sequence), window)
