@@ -1,8 +1,10 @@
 # Testbericht · VideoBatch Fast 2.8.3-rc24
 
-## Vollständige Abschlussprüfung
+## Vollständige dokumentierte Regressionsbasis
 
-- **325/325 automatisierte Tests bestanden** unter realem Xvfb
+Die folgenden Zahlen sind die kanonisch dokumentierte vollständige RC24-Regressionsbasis. Der aktuelle Qt-/Wayland-Stand wird zusätzlich über die verpflichtenden PR-Gates geprüft.
+
+- **325/325 automatisierte Tests bestanden** in der dokumentierten vollständigen Regression
 - 0 übersprungene Tests im finalen Lauf
 - 82,43 % Statement-/Zeilenabdeckung
 - 67,21 % Branch-Abdeckung
@@ -24,4 +26,4 @@
 
 ## Bewusst nicht behauptet
 
-Stable ist weiterhin blockiert. Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4 und pip-audit 2.10.1 sind für den aktuellen Kandidaten in der exakt gesperrten Offline-Qualitätsumgebung provenienzgebunden bestanden. Nicht abschließend belegt sind nur noch die physische KDE-X11-/Wayland-Abnahme und der Langzeitrender mit großer Medienauswahl auf langsamem externem Ziel.
+Stable ist weiterhin blockiert. Die automatisierten Qualitäts- und Qt-/Wayland-Verträge sind grün und der Langzeitrender ist dokumentiert bestätigt. **Nicht abschließend belegt ist nach den UI-/Skalierungsänderungen nur noch die erneute reale Kubuntu-26.04/KDE/Wayland-Sichtabnahme bei 100 %, 150 % und 200 %.**
