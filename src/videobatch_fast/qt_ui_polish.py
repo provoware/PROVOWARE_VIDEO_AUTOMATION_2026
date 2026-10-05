@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeySequence, QShortcut
-from PySide6.QtWidgets import QLabel, QPushButton, QTableWidget, QTableWidgetItem
+from PySide6.QtWidgets import (
+    QAbstractItemView, QLabel, QPushButton, QTableWidget, QTableWidgetItem,
+)
 
 
 VISUAL_HIERARCHY_STYLE = """
@@ -98,10 +101,15 @@ QTableWidget::item:selected {
 """
 
 
-def field_label(text: str) -> QLabel:
+def text_label(text: str, object_name: str, *, wrap: bool = False) -> QLabel:
     label = QLabel(text)
-    label.setObjectName("fieldLabel")
+    label.setObjectName(object_name)
+    label.setWordWrap(wrap)
     return label
+
+
+def field_label(text: str) -> QLabel:
+    return text_label(text, "fieldLabel")
 
 
 def configure_file_buttons(add: QPushButton, remove: QPushButton, label: str) -> None:
@@ -120,13 +128,23 @@ def configure_output_button(button: QPushButton) -> None:
     button.setAccessibleDescription("Wählt den Ordner für die fertigen Videos.")
 
 
-def configure_job_table(table: QTableWidget) -> None:
-    table.setWordWrap(False)
-    from PySide6.QtCore import Qt
+def configure_secondary_buttons(*buttons: QPushButton) -> None:
+    for button in buttons:
+        button.setObjectName("secondary")
 
+
+def configure_job_table(table: QTableWidget) -> None:
+    table.setHorizontalHeaderLabels(["#", "Audio", "Medium", "Status", "Einzel-Fortschritt"])
+    table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+    table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+    table.setWordWrap(False)
     table.setTextElideMode(Qt.TextElideMode.ElideMiddle)
     table.verticalHeader().setVisible(False)
     table.verticalHeader().setDefaultSectionSize(38)
+    table.horizontalHeader().setStretchLastSection(True)
+    table.setColumnWidth(0, 42)
+    table.setColumnWidth(3, 105)
+    table.setColumnWidth(4, 145)
 
 
 def job_table_item(text: str, column: int) -> QTableWidgetItem:
