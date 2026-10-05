@@ -29,7 +29,7 @@
     "architecture_findings": 0,
     "internal_quality_findings": 0,
     "maximum_complexity": 29,
-    "release_manifest_files": 495,
+    "release_manifest_files": 494,
     "kubuntu_matrix": {
       "status": "passed",
       "passed_targets": 1,
@@ -44,9 +44,9 @@
     "mypy_2_3_0": "passed",
     "bandit_1_9_4": "passed",
     "pip_audit_2_10_1": "passed",
-    "physical_kubuntu_26_04_wayland": "passed",
+    "physical_kubuntu_26_04_wayland": "Die manuelle Kubuntu-/Wayland-Basisabnahme vom 29.09.2026 liegt vor, deckt jedoch die nachfolgenden UI-/Skalierungsänderungen aus PR #228 nicht ab. Vor Stable ist eine erneute reale Sichtabnahme auf Kubuntu 26.04 / KDE Plasma / Wayland bei 100 %, 150 % und 200 % erforderlich.",
     "large_media_soak": "passed"
   },
-  "stable_ready": true,
-  "stable_block_reason": ""
+  "stable_ready": false,
+  "stable_block_reason": "Physische Kubuntu-26.04-Plasma-Wayland-Abnahme: Die manuelle Kubuntu-/Wayland-Basisabnahme vom 29.09.2026 liegt vor, deckt jedoch die nachfolgenden UI-/Skalierungsänderungen aus PR #228 nicht ab. Vor Stable ist eine erneute reale Sichtabnahme auf Kubuntu 26.04 / KDE Plasma / Wayland bei 100 %, 150 % und 200 % erforderlich."
 }
