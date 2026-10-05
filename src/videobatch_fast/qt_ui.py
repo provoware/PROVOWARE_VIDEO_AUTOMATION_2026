@@ -7,7 +7,7 @@ import threading
 from pathlib import Path
 
 from PySide6.QtCore import QTimer, Qt
-from PySide6.QtGui import QCloseEvent, QColor
+from PySide6.QtGui import QCloseEvent, QColor, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QAbstractItemView, QApplication, QComboBox, QFileDialog, QFrame, QHBoxLayout,
     QLabel, QLineEdit, QMainWindow, QMessageBox, QPlainTextEdit, QPushButton,
@@ -59,7 +59,7 @@ class VideoBatchQtWindow(QMainWindow):
         heading = QLabel(title)
         heading.setObjectName("section")
         note = QLabel(hint)
-        note.setObjectName("subtitle")
+        note.setObjectName("panelHint")
         note.setWordWrap(True)
         layout.addWidget(heading)
         layout.addWidget(note)
@@ -80,6 +80,8 @@ class VideoBatchQtWindow(QMainWindow):
 
     def _build_ui(self) -> None:
         build_main_ui(self)
+        self.open_output.setObjectName("secondary")
+        self.show_result_log.setObjectName("secondary")
 
     def _sources_panel(self) -> QWidget:
         panel, layout = self._panel(
@@ -89,11 +91,11 @@ class VideoBatchQtWindow(QMainWindow):
         self.audio = DropList(AUDIO_EXTS)
         self.media = DropList(MEDIA_EXTS)
         zoom_hint = QLabel("Tipp: Strg + Mausrad vergrößert oder verkleinert die Auswahl-Listen.")
-        zoom_hint.setObjectName("subtitle")
+        zoom_hint.setObjectName("helperText")
         zoom_hint.setWordWrap(True)
         layout.addWidget(zoom_hint)
         sort_hint = QLabel("Sortieren ordnet die jeweilige Liste neu und verändert damit die Positions-Paarung.")
-        sort_hint.setObjectName("subtitle")
+        sort_hint.setObjectName("helperText")
         sort_hint.setWordWrap(True)
         layout.addWidget(sort_hint)
         for label, widget, add_text in (
@@ -101,7 +103,9 @@ class VideoBatchQtWindow(QMainWindow):
             ("Bilder / Videos", self.media, "Bilder/Videos auswählen …"),
         ):
             heading = QHBoxLayout()
-            heading.addWidget(QLabel(label))
+            field_label = QLabel(label)
+            field_label.setObjectName("fieldLabel")
+            heading.addWidget(field_label)
             heading.addStretch()
             sorter = QComboBox()
             sorter.setAccessibleName(f"{label} sortieren")
@@ -116,13 +120,18 @@ class VideoBatchQtWindow(QMainWindow):
             layout.addWidget(widget, 1)
             row = QHBoxLayout()
             add = QPushButton(add_text)
+            add.setObjectName("secondary")
             remove = QPushButton("Entfernen")
+            remove.setObjectName("quietDanger")
+            remove.setAccessibleDescription(f"Entfernt markierte Einträge aus {label}.")
             add.clicked.connect(self._choose_audio if widget is self.audio else self._choose_media)
             remove.clicked.connect(widget.remove_selected)
             row.addWidget(add)
             row.addWidget(remove)
             layout.addLayout(row)
         self.clear = QPushButton("Alle ausgewählten Dateien entfernen")
+        self.clear.setObjectName("quietDanger")
+        self.clear.setAccessibleDescription("Leert beide Dateilisten. Originaldateien bleiben unverändert.")
         layout.addWidget(self.clear)
         return panel
 
@@ -135,7 +144,10 @@ class VideoBatchQtWindow(QMainWindow):
         self.table.setHorizontalHeaderLabels(["#", "Audio", "Medium", "Status", "Einzel-Fortschritt"])
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.setWordWrap(False)
+        self.table.setTextElideMode(Qt.TextElideMode.ElideMiddle)
         self.table.verticalHeader().setVisible(False)
+        self.table.verticalHeader().setDefaultSectionSize(38)
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setColumnWidth(0, 42)
         self.table.setColumnWidth(3, 105)
@@ -165,6 +177,8 @@ class VideoBatchQtWindow(QMainWindow):
         target = QHBoxLayout()
         self.output = QLineEdit(str(Path.home() / "Videos" / "VideoBatch"))
         self.output_button = QPushButton("Ordner wählen …")
+        self.output_button.setObjectName("secondary")
+        self.output_button.setAccessibleDescription("Wählt den Ordner für die fertigen Videos.")
         self.output_button.setMinimumWidth(125)
         target.addWidget(self.output, 1)
         target.addWidget(self.output_button)
@@ -231,6 +245,11 @@ class VideoBatchQtWindow(QMainWindow):
         self.mode.currentIndexChanged.connect(self._mode_changed)
         self.start.clicked.connect(self._start)
         self.cancel.clicked.connect(self._cancel)
+        self._workflow_shortcuts = []
+        for sequence, target in (("Alt+1", self.audio), ("Alt+2", self.output), ("Alt+3", self.start)):
+            shortcut = QShortcut(QKeySequence(sequence), self)
+            shortcut.activated.connect(target.setFocus)
+            self._workflow_shortcuts.append(shortcut)
 
     def _toggle_log(self, visible: bool) -> None:
         self.log.setVisible(visible)
@@ -291,7 +310,10 @@ class VideoBatchQtWindow(QMainWindow):
                     "0 %" if complete else "–",
                 )
                 for col, text in enumerate(values):
-                    self.table.setItem(row, col, QTableWidgetItem(text))
+                    item = QTableWidgetItem(text)
+                    if col in (1, 2):
+                        item.setToolTip(text)
+                    self.table.setItem(row, col, item)
         jobs = len(audios) if audios and len(audios) == len(media) else 0
         output_dir = Path(self.output.text().strip()).expanduser()
         output_ready = bool(self.output.text().strip())
@@ -544,7 +566,10 @@ class VideoBatchQtWindow(QMainWindow):
         self.table.setRowCount(len(self.jobs))
         for row, job in enumerate(self.jobs):
             for col, text in enumerate((str(job.index), job.audio.name, job.media.name, "Geprüft", "0 %")):
-                self.table.setItem(row, col, QTableWidgetItem(text))
+                item = QTableWidgetItem(text)
+                if col in (1, 2):
+                    item.setToolTip(text)
+                self.table.setItem(row, col, item)
             self.table.item(row, 2).setToolTip(f"Ausgabe: {job.output}")
 
     def _row_status(self, row: int, text: str, progress: str | None = None, *, failed: bool = False) -> None:
@@ -569,7 +594,21 @@ class VideoBatchQtWindow(QMainWindow):
             self.log.appendPlainText(message.strip())
 
     def _status(self, text: str) -> None:
+        normalized = text.upper()
+        if any(token in normalized for token in ("FEHLER", "SCHUTZSTOPP", "ABGEBROCHEN")):
+            state = "error"
+        elif any(token in normalized for token in ("PRÜFT", "STARTET", "LÄUFT", "STOPPT")):
+            state = "busy"
+        elif "HINWEIS" in normalized or normalized == "PRÜFEN":
+            state = "warning"
+        elif normalized in {"FERTIG", "BEREIT"}:
+            state = "success" if normalized == "FERTIG" else "ready"
+        else:
+            state = "ready"
+        self.status.setProperty("state", state)
         self.status.setText(text)
+        self.status.style().unpolish(self.status)
+        self.status.style().polish(self.status)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         prepare_alive = bool(self.prepare_thread and self.prepare_thread.is_alive())
