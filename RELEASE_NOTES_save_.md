@@ -29,13 +29,26 @@ Bei einem Vorschaufehler stehen jetzt funktionsfähige Aktionen bereit:
 - Datei extern öffnen
 - Protokoll öffnen
 
+## Finale UI-, Bedien- und Barrierefreiheitskorrekturen
+
+Vor der Stable-Promotion wurden weitere reproduzierbare Restbefunde im Qt-Hauptpfad korrigiert:
+
+- dynamische Status- und Schritttexte bleiben für Vorlesesoftware als aktueller sichtbarer Text erhalten
+- der Zustand „ANALYSE“ wird nicht mehr fälschlich als Bereitschaft dargestellt
+- Tabellenzeilen skalieren mit der 100–200-%-Ansicht
+- globaler Ansichts-Zoom und Listen-Zoom besitzen getrennte Tastenkürzel
+- Farbschema und globale Ansichtsvergrößerung überschreiben sich nicht mehr gegenseitig
+- Sortieren ändert zunächst nur die Ansicht; die Produktionsreihenfolge wird erst nach ausdrücklicher Übernahme verändert
+
+Wegen dieser UI-/Skalierungsänderungen ist die physische Sichtabnahme des aktuellen Kandidaten erneut erforderlich.
+
 ## Ausgabeform
 
 RC24 wird als vollständiges Projekt-ZIP bereitgestellt. Teil- und Onlineupdates bleiben bis nach
 der Stable-Veröffentlichung ein Nachrelease-System.
 
 Ein als verifiziert gekennzeichnetes Projektartefakt wird ausschließlich nach erfolgreichem
-Read-only-Preflight, vollständig grüner Kubuntu-Vierfachmatrix und erneut bestandenen
+Read-only-Preflight, dem aktuellen Ubuntu-26.04/KDE-/Wayland-Zielvertrag und erneut bestandenen
 Abschlussverträgen erzeugt. Es wird nicht automatisch als Release veröffentlicht.
 
 ## Verifizierbares Gesamtprojekt-Artefakt
@@ -76,7 +89,7 @@ Exitcodes: `0 = vollständig bestätigt`, `1 = reproduzierbare Drift`,
 
 - releasefertige eigenständige Unterlagen tragen `_save_`
 - README zeigt fertige und unfertige Dateien direkt nebeneinander
-- historische RC-Berichte sind archiviert und aus Auslieferungen ausgeschlossen
+- historische RC-Berichte sind archiviert und aus Auslieferungen ausgeschlossen; nicht deklarierte `_save_`-Dateien im Stamm werden blockiert
 - Changelog-Dubletten und alte visuelle Baseline-Dubletten sind entfernt
 - Tooltips erscheinen verzögert, funktionieren per Tastatur und bleiben im sichtbaren Bildschirm
 - Cache- und Hilfeaktionen erklären vorab Wirkung, Schutz und nächsten Schritt
