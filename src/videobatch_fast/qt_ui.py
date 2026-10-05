@@ -25,9 +25,8 @@ from .runner import BatchRunner
 from .qt_media_list import AUDIO_EXTS, MEDIA_EXTS, SORT_MODES, DropList
 from .qt_system_load_dashboard import SystemLoadDashboard
 from .qt_ui_polish import (
-    configure_clear_button, configure_file_buttons, configure_job_table,
-    configure_output_button, configure_secondary_buttons, field_label,
-    install_workflow_shortcuts, job_table_item, text_label, update_status_chip,
+    configure_clear_button, configure_file_buttons, configure_job_table, configure_output_button,
+    field_label, install_workflow_shortcuts, job_table_item, text_label, update_status_chip,
 )
 
 class VideoBatchQtWindow(QMainWindow):
@@ -83,7 +82,6 @@ class VideoBatchQtWindow(QMainWindow):
 
     def _build_ui(self) -> None:
         build_main_ui(self)
-        configure_secondary_buttons(self.open_output, self.show_result_log)
 
     def _sources_panel(self) -> QWidget:
         panel, layout = self._panel(
@@ -172,7 +170,6 @@ class VideoBatchQtWindow(QMainWindow):
 
         layout.addWidget(field_label("Verarbeitung"))
         self.mode = QComboBox()
-        self.mode.setAccessibleDescription("Wählt ein vorbereitetes Qualitäts- und Geschwindigkeitsprofil.")
         for key, spec in QUICK_MODES.items():
             if key != "custom":
                 self.mode.addItem(spec.label + (" · empfohlen" if spec.recommended else ""), key)
@@ -186,7 +183,6 @@ class VideoBatchQtWindow(QMainWindow):
 
         layout.addWidget(field_label("Kontrolle nach der Erstellung"))
         self.verification = QComboBox()
-        self.verification.setAccessibleDescription("Legt fest, wie gründlich fertige Videos geprüft werden.")
         self.verification.addItems(["Vollständig", "Schnell"])
         self.verification.currentIndexChanged.connect(self._mode_changed)
         layout.addWidget(self.verification)
