@@ -15,7 +15,7 @@
     "literal_hygiene_fix_pr": 188,
     "policy": "Run the complete fail-closed Stable workflow on the exact source commit; do not bypass any gate."
   },
-  "source_commit": "dd9dd8883017906e2f5b4ba58b2147daa3ed5992",
+  "source_commit": "5205a14379a0e3c203ce708e99fc4aadd4ee0f8b",
   "release_intent": "final_stable_promotion",
   "retry_after_coverage_scope_fix": {
     "status": "resolved",
@@ -93,5 +93,10 @@
     "status": "resolved",
     "reason": "Stable promotion run #19 passed toolchain, external quality, version/document contracts, operator acceptance and native Qt Wayland proof, but two static UI contract assertions still searched for frozen UI strings at outdated source locations. PR #224 aligned only those tests with the existing qt_ui_polish structure, synchronized the deterministic release manifest, and passed the full required gate matrix without changing product behavior.",
     "policy": "Promote exactly source commit dd9dd8883017906e2f5b4ba58b2147daa3ed5992. Keep the usability/appearance/accessibility scope frozen and preserve every existing quality, Wayland, desktop, deterministic packaging, branch, tag and release gate."
+  },
+  "retry_after_legacy_gui_write_budget_fix": {
+    "status": "resolved",
+    "reason": "Stable promotion passed operator acceptance, quality, coverage and native Qt Wayland proof, then the isolated legacy Tk/X11 write phase hit its 90-second subprocess ceiling. PR #226 raises only that bounded write-phase budget to 105 seconds while keeping the read budget at 60 seconds and the outer fail-closed GUI budget unchanged.",
+    "policy": "Promote exactly source commit 5205a14379a0e3c203ce708e99fc4aadd4ee0f8b. Keep the usability/appearance/accessibility scope frozen and preserve every existing quality, Wayland, desktop, deterministic packaging, branch, tag and release gate."
   }
 }
