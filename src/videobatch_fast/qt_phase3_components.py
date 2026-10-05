@@ -111,9 +111,7 @@ class ProjectPanel(QFrame):
 
         first = QHBoxLayout()
         new_button = QPushButton("＋ Neues Projekt")
-        new_button.setObjectName("secondary")
         open_button = QPushButton("Öffnen …")
-        open_button.setObjectName("secondary")
         new_button.clicked.connect(self.newRequested.emit)
         open_button.clicked.connect(self.openRequested.emit)
         first.addWidget(new_button)
@@ -124,7 +122,6 @@ class ProjectPanel(QFrame):
         save_button = QPushButton("Speichern")
         save_button.setObjectName("primary")
         save_as_button = QPushButton("Speichern unter …")
-        save_as_button.setObjectName("secondary")
         save_button.clicked.connect(self.saveRequested.emit)
         save_as_button.clicked.connect(self.saveAsRequested.emit)
         second.addWidget(save_button)
@@ -184,7 +181,6 @@ class DiagnosticsPanel(QFrame):
             ("Fehlerlabor starten", lambda: self._run_async("fault_lab")),
         ):
             button = QPushButton(text)
-            button.setObjectName("secondary")
             button.clicked.connect(callback)
             self._buttons.append(button)
             actions.addWidget(button)
