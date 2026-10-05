@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from scripts.validate_release_file_status import validate
+from scripts.validate_release_contract_sync import validate as validate_release_contract
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -53,3 +54,10 @@ def test_all_root_save_files_are_declared_release_deliverables() -> None:
         if path.is_file() and "_save_" in path.stem
     }
     assert actual <= declared
+
+def test_release_metadata_contract_is_synchronized() -> None:
+    result = validate_release_contract()
+    package_manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+    assert result["version"] == package_manifest["version"]
+    assert result["channel"] == package_manifest["channel"]
+    assert (ROOT / package_manifest["entrypoint"]).is_file()
