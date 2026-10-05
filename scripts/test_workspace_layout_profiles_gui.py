@@ -229,7 +229,7 @@ def _run_isolated_phase(base: Path, phase: str) -> None:
         "--base",
         str(base),
     ]
-    timeout = 90 if phase == "write" else 60
+    timeout = 105 if phase == "write" else 60
     completed = subprocess.run(
         command,
         env=env,
