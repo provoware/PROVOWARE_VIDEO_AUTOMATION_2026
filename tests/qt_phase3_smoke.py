@@ -163,7 +163,7 @@ def main() -> int:
         window.diagnostics_panel.run_diagnostic()
         app.processEvents()
         assert window.diagnostics_panel.table.rowCount() == 1
-        assert window.diagnostics_panel.status.text() in {"GRÜN", "ROT · 1 Fehler"}
+        assert window.diagnostics_panel.status.text() in {"✓ BESTANDEN", "✕ FEHLER · 1"}
 
         geometry_before_close = f"{window.width()}x{window.height()}"
         window.close()
