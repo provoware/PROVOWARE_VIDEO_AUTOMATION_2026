@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .qt_ui_polish import VISUAL_HIERARCHY_STYLE
+
 APP_STYLE = """
 QWidget {
     background: #0b1016;
@@ -219,6 +221,8 @@ QToolTip {
     padding: 6px;
 }
 """
+
+APP_STYLE += VISUAL_HIERARCHY_STYLE
 
 SCALE_LEVELS = (100, 125, 150, 175, 200)
 

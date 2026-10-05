@@ -9,6 +9,7 @@ QT_THEME = ROOT / "src" / "videobatch_fast" / "qt_theme.py"
 QT_MEDIA_LIST = ROOT / "src" / "videobatch_fast" / "qt_media_list.py"
 QT_LOAD_DASHBOARD = ROOT / "src" / "videobatch_fast" / "qt_system_load_dashboard.py"
 QT_MAIN_LAYOUT = ROOT / "src" / "videobatch_fast" / "qt_main_layout.py"
+QT_UI_POLISH = ROOT / "src" / "videobatch_fast" / "qt_ui_polish.py"
 DISPLAY_FORMATTING = ROOT / "src" / "videobatch_fast" / "display_formatting.py"
 
 
@@ -49,7 +50,7 @@ def test_qt_theme_and_dependency_contract_exist() -> None:
 
 
 def test_qt_theme_exposes_high_visibility_accessibility_contract() -> None:
-    theme = QT_THEME.read_text(encoding="utf-8")
+    theme = QT_THEME.read_text(encoding="utf-8") + QT_UI_POLISH.read_text(encoding="utf-8")
 
     for token in (
         "background: #0b1016;",
@@ -77,6 +78,11 @@ def test_qt_theme_exposes_high_visibility_accessibility_contract() -> None:
         "QToolTip {",
         "SCALE_LEVELS = (100, 125, 150, 175, 200)",
         "def scaled_style(percent: int) -> str:",
+        "QPushButton#secondary {",
+        "QPushButton#quietDanger {",
+        'QLabel#statusChip[state="warning"]',
+        'QLabel#statusChip[state="error"]',
+        "QTableWidget::item {",
         "QProgressBar#jobProgress::chunk { background: #ffbf3f; }",
     ):
         assert token in theme
@@ -239,6 +245,31 @@ def test_main_workspace_supports_global_100_to_200_percent_scaling() -> None:
         'window.audio.setAccessibleName("Audiodateien")',
         'window.table.setAccessibleName("Automatische Auftragsliste")',
         "window.table.setAlternatingRowColors(True)",
+    ):
+        assert token in source
+
+
+def test_visual_hierarchy_and_beginner_keyboard_workflow_are_explicit() -> None:
+    source = QT_UI.read_text(encoding="utf-8") + QT_UI_POLISH.read_text(encoding="utf-8")
+    for token in (
+        'text_label(hint, "panelHint", wrap=True)',
+        '"helperText", wrap=True',
+        'add.setObjectName("secondary")',
+        'remove.setObjectName("quietDanger")',
+        'button.setAccessibleDescription("Leert beide Dateilisten.',
+        'button.setAccessibleDescription("Wählt den Ordner',
+        'configure_secondary_buttons(window.open_output, window.show_result_log)',
+        'table.setTextElideMode(Qt.TextElideMode.ElideMiddle)',
+        'table.verticalHeader().setDefaultSectionSize(38)',
+        '("Alt+1", window.audio)',
+        '("Alt+2", window.output)',
+        '("Alt+3", window.start)',
+        '"Alt+1: Dateiauswahl"',
+        '"Alt+2: Ausgabeordner"',
+        '"Alt+3: Videos erstellen"',
+        'label.setProperty("state", state)',
+        'label.style().unpolish(label)',
+        'label.style().polish(label)',
     ):
         assert token in source
 
