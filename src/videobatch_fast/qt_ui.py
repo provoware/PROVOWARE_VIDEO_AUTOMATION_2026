@@ -7,9 +7,9 @@ import threading
 from pathlib import Path
 
 from PySide6.QtCore import QTimer, Qt
-from PySide6.QtGui import QCloseEvent, QColor, QKeySequence, QShortcut
+from PySide6.QtGui import QCloseEvent, QColor
 from PySide6.QtWidgets import (
-    QAbstractItemView, QApplication, QComboBox, QFileDialog, QFrame, QHBoxLayout,
+    QApplication, QComboBox, QFileDialog, QFrame, QHBoxLayout,
     QLabel, QLineEdit, QMainWindow, QMessageBox, QPlainTextEdit, QPushButton,
     QTableWidget, QTableWidgetItem, QToolButton, QVBoxLayout, QWidget,
 )
@@ -24,6 +24,11 @@ from .quick_modes import QUICK_MODES, apply_quick_mode
 from .runner import BatchRunner
 from .qt_media_list import AUDIO_EXTS, MEDIA_EXTS, SORT_MODES, DropList
 from .qt_system_load_dashboard import SystemLoadDashboard
+from .qt_ui_polish import (
+    configure_clear_button, configure_file_buttons, configure_job_table,
+    configure_output_button, configure_secondary_buttons, field_label,
+    install_workflow_shortcuts, job_table_item, text_label, update_status_chip,
+)
 
 class VideoBatchQtWindow(QMainWindow):
     """Tk-free Qt 6 frontend that reuses the verified processing core."""
@@ -58,9 +63,7 @@ class VideoBatchQtWindow(QMainWindow):
         layout.setContentsMargins(13, 13, 13, 13)
         heading = QLabel(title)
         heading.setObjectName("section")
-        note = QLabel(hint)
-        note.setObjectName("panelHint")
-        note.setWordWrap(True)
+        note = text_label(hint, "panelHint", wrap=True)
         layout.addWidget(heading)
         layout.addWidget(note)
         return box, layout
@@ -80,8 +83,7 @@ class VideoBatchQtWindow(QMainWindow):
 
     def _build_ui(self) -> None:
         build_main_ui(self)
-        self.open_output.setObjectName("secondary")
-        self.show_result_log.setObjectName("secondary")
+        configure_secondary_buttons(self.open_output, self.show_result_log)
 
     def _sources_panel(self) -> QWidget:
         panel, layout = self._panel(
@@ -90,22 +92,20 @@ class VideoBatchQtWindow(QMainWindow):
         )
         self.audio = DropList(AUDIO_EXTS)
         self.media = DropList(MEDIA_EXTS)
-        zoom_hint = QLabel("Tipp: Strg + Mausrad vergrößert oder verkleinert die Auswahl-Listen.")
-        zoom_hint.setObjectName("helperText")
-        zoom_hint.setWordWrap(True)
-        layout.addWidget(zoom_hint)
-        sort_hint = QLabel("Sortieren ordnet die jeweilige Liste neu und verändert damit die Positions-Paarung.")
-        sort_hint.setObjectName("helperText")
-        sort_hint.setWordWrap(True)
-        layout.addWidget(sort_hint)
+        layout.addWidget(text_label(
+            "Tipp: Strg + Mausrad vergrößert oder verkleinert die Auswahl-Listen.",
+            "helperText", wrap=True,
+        ))
+        layout.addWidget(text_label(
+            "Sortieren ordnet die jeweilige Liste neu und verändert damit die Positions-Paarung.",
+            "helperText", wrap=True,
+        ))
         for label, widget, add_text in (
             ("Audiodateien", self.audio, "Audio auswählen …"),
             ("Bilder / Videos", self.media, "Bilder/Videos auswählen …"),
         ):
             heading = QHBoxLayout()
-            field_label = QLabel(label)
-            field_label.setObjectName("fieldLabel")
-            heading.addWidget(field_label)
+            heading.addWidget(field_label(label))
             heading.addStretch()
             sorter = QComboBox()
             sorter.setAccessibleName(f"{label} sortieren")
@@ -120,18 +120,15 @@ class VideoBatchQtWindow(QMainWindow):
             layout.addWidget(widget, 1)
             row = QHBoxLayout()
             add = QPushButton(add_text)
-            add.setObjectName("secondary")
             remove = QPushButton("Entfernen")
-            remove.setObjectName("quietDanger")
-            remove.setAccessibleDescription(f"Entfernt markierte Einträge aus {label}.")
+            configure_file_buttons(add, remove, label)
             add.clicked.connect(self._choose_audio if widget is self.audio else self._choose_media)
             remove.clicked.connect(widget.remove_selected)
             row.addWidget(add)
             row.addWidget(remove)
             layout.addLayout(row)
         self.clear = QPushButton("Alle ausgewählten Dateien entfernen")
-        self.clear.setObjectName("quietDanger")
-        self.clear.setAccessibleDescription("Leert beide Dateilisten. Originaldateien bleiben unverändert.")
+        configure_clear_button(self.clear)
         layout.addWidget(self.clear)
         return panel
 
@@ -141,17 +138,7 @@ class VideoBatchQtWindow(QMainWindow):
             "Hier nur prüfen: 1. Audio + 1. Medium = 1 Video. Du musst hier nichts einstellen.",
         )
         self.table = QTableWidget(0, 5)
-        self.table.setHorizontalHeaderLabels(["#", "Audio", "Medium", "Status", "Einzel-Fortschritt"])
-        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.table.setWordWrap(False)
-        self.table.setTextElideMode(Qt.TextElideMode.ElideMiddle)
-        self.table.verticalHeader().setVisible(False)
-        self.table.verticalHeader().setDefaultSectionSize(38)
-        self.table.horizontalHeader().setStretchLastSection(True)
-        self.table.setColumnWidth(0, 42)
-        self.table.setColumnWidth(3, 105)
-        self.table.setColumnWidth(4, 145)
+        configure_job_table(self.table)
         layout.addWidget(self.table, 1)
         self.log_toggle = QToolButton()
         self.log_toggle.setText("▸ Technische Meldungen anzeigen")
@@ -173,22 +160,17 @@ class VideoBatchQtWindow(QMainWindow):
             "2 · Ausgabe festlegen",
             "Für den ersten Durchlauf reichen die empfohlenen Einstellungen.",
         )
-        output_label = QLabel("Wo sollen die fertigen Videos gespeichert werden?")
-        output_label.setObjectName("fieldLabel")
-        layout.addWidget(output_label)
+        layout.addWidget(field_label("Wo sollen die fertigen Videos gespeichert werden?"))
         target = QHBoxLayout()
         self.output = QLineEdit(str(Path.home() / "Videos" / "VideoBatch"))
         self.output_button = QPushButton("Ordner wählen …")
-        self.output_button.setObjectName("secondary")
-        self.output_button.setAccessibleDescription("Wählt den Ordner für die fertigen Videos.")
+        configure_output_button(self.output_button)
         self.output_button.setMinimumWidth(125)
         target.addWidget(self.output, 1)
         target.addWidget(self.output_button)
         layout.addLayout(target)
 
-        mode_label = QLabel("Verarbeitung")
-        mode_label.setObjectName("fieldLabel")
-        layout.addWidget(mode_label)
+        layout.addWidget(field_label("Verarbeitung"))
         self.mode = QComboBox()
         self.mode.setAccessibleDescription("Wählt ein vorbereitetes Qualitäts- und Geschwindigkeitsprofil.")
         for key, spec in QUICK_MODES.items():
@@ -202,9 +184,7 @@ class VideoBatchQtWindow(QMainWindow):
         self.mode_hint.setWordWrap(True)
         layout.addWidget(self.mode_hint)
 
-        verification_label = QLabel("Kontrolle nach der Erstellung")
-        verification_label.setObjectName("fieldLabel")
-        layout.addWidget(verification_label)
+        layout.addWidget(field_label("Kontrolle nach der Erstellung"))
         self.verification = QComboBox()
         self.verification.setAccessibleDescription("Legt fest, wie gründlich fertige Videos geprüft werden.")
         self.verification.addItems(["Vollständig", "Schnell"])
@@ -253,11 +233,7 @@ class VideoBatchQtWindow(QMainWindow):
         self.mode.currentIndexChanged.connect(self._mode_changed)
         self.start.clicked.connect(self._start)
         self.cancel.clicked.connect(self._cancel)
-        self._workflow_shortcuts = []
-        for sequence, target in (("Alt+1", self.audio), ("Alt+2", self.output), ("Alt+3", self.start)):
-            shortcut = QShortcut(QKeySequence(sequence), self)
-            shortcut.activated.connect(target.setFocus)
-            self._workflow_shortcuts.append(shortcut)
+        install_workflow_shortcuts(self)
 
     def _toggle_log(self, visible: bool) -> None:
         self.log.setVisible(visible)
@@ -318,10 +294,7 @@ class VideoBatchQtWindow(QMainWindow):
                     "0 %" if complete else "–",
                 )
                 for col, text in enumerate(values):
-                    item = QTableWidgetItem(text)
-                    if col in (1, 2):
-                        item.setToolTip(text)
-                    self.table.setItem(row, col, item)
+                    self.table.setItem(row, col, job_table_item(text, col))
         jobs = len(audios) if audios and len(audios) == len(media) else 0
         output_dir = Path(self.output.text().strip()).expanduser()
         output_ready = bool(self.output.text().strip())
@@ -574,10 +547,7 @@ class VideoBatchQtWindow(QMainWindow):
         self.table.setRowCount(len(self.jobs))
         for row, job in enumerate(self.jobs):
             for col, text in enumerate((str(job.index), job.audio.name, job.media.name, "Geprüft", "0 %")):
-                item = QTableWidgetItem(text)
-                if col in (1, 2):
-                    item.setToolTip(text)
-                self.table.setItem(row, col, item)
+                self.table.setItem(row, col, job_table_item(text, col))
             self.table.item(row, 2).setToolTip(f"Ausgabe: {job.output}")
 
     def _row_status(self, row: int, text: str, progress: str | None = None, *, failed: bool = False) -> None:
@@ -602,21 +572,7 @@ class VideoBatchQtWindow(QMainWindow):
             self.log.appendPlainText(message.strip())
 
     def _status(self, text: str) -> None:
-        normalized = text.upper()
-        if any(token in normalized for token in ("FEHLER", "SCHUTZSTOPP", "ABGEBROCHEN")):
-            state = "error"
-        elif any(token in normalized for token in ("PRÜFT", "STARTET", "LÄUFT", "STOPPT")):
-            state = "busy"
-        elif "HINWEIS" in normalized or normalized == "PRÜFEN":
-            state = "warning"
-        elif normalized in {"FERTIG", "BEREIT"}:
-            state = "success" if normalized == "FERTIG" else "ready"
-        else:
-            state = "ready"
-        self.status.setProperty("state", state)
-        self.status.setText(text)
-        self.status.style().unpolish(self.status)
-        self.status.style().polish(self.status)
+        update_status_chip(self.status, text)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         prepare_alive = bool(self.prepare_thread and self.prepare_thread.is_alive())
