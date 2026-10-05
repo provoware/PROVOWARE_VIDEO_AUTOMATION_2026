@@ -282,7 +282,7 @@ class DiagnosticsPanel(QFrame):
             )
             for column, value in enumerate(values):
                 self.table.setItem(row_index, column, QTableWidgetItem(value))
-        self.status.setText("GRÜN" if not failed else f"ROT · {failed} Fehler")
+        self.status.setText("✓ BESTANDEN" if not failed else f"✕ FEHLER · {failed}")
         self.detail.setPlainText(f"{kind}: {len(rows)} Prüfungen · {failed} Fehler")
 
     def _show_failure(self, kind: str, message: str) -> None:
