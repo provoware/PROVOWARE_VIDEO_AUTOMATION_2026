@@ -89,7 +89,7 @@ Beide Varianten verwenden denselben zentralen Starter und umgehen keine Vorprüf
 
 ### Schritt 5: Audiodatei hinzufügen
 
-1. `Audiodateien hinzufügen` wählen.
+1. `Audio auswählen …` wählen.
 2. Eine Datei markieren.
 3. Auswahl bestätigen.
 
@@ -97,7 +97,7 @@ Beide Varianten verwenden denselben zentralen Starter und umgehen keine Vorprüf
 
 ### Schritt 6: Bild oder Video hinzufügen
 
-1. `Bilder hinzufügen` oder `Videos hinzufügen` wählen.
+1. `Bilder/Videos auswählen …` wählen.
 2. Eine Datei markieren.
 3. Auswahl bestätigen.
 
@@ -117,7 +117,7 @@ Beide Varianten verwenden denselben zentralen Starter und umgehen keine Vorprüf
 
 ### Schritt 8: Testproduktion starten
 
-1. `Automatisch prüfen und Videos erstellen` wählen.
+1. `▶ 3 · Videos erstellen` wählen.
 2. Vorprüfung abwarten.
 3. Queue-Status beobachten.
 4. Abschlussmeldung abwarten.
