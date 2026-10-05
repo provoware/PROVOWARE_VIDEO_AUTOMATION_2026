@@ -15,7 +15,7 @@
     "literal_hygiene_fix_pr": 188,
     "policy": "Run the complete fail-closed Stable workflow on the exact source commit; do not bypass any gate."
   },
-  "source_commit": "fd6f3e1ffdf129524a20f5c20cab8856fbf16905",
+  "source_commit": "11e2e46b76a193f355d8f2fac894d17ad590fdb3",
   "release_intent": "final_stable_promotion",
   "retry_after_coverage_scope_fix": {
     "status": "resolved",
@@ -83,5 +83,10 @@
     "status": "resolved",
     "reason": "PR #219 improved usability, visual hierarchy and accessibility, passed the complete gate matrix, and was merged to main. This UI/accessibility scope is frozen for Stable 2.8.3.",
     "policy": "Promote exactly source commit fd6f3e1ffdf129524a20f5c20cab8856fbf16905. Do not add further cosmetic UI changes before Stable 2.8.3 and do not bypass any existing quality, Wayland, desktop, deterministic packaging, branch, tag or release gate."
+  },
+  "retry_after_qt_ui_debt_baseline_sync": {
+    "status": "resolved",
+    "reason": "Stable promotion detected qt_ui.py at 613 lines while the legacy debt ceiling still allowed 614. PR #221 lowered the ceiling to 613 and passed the full validation matrix.",
+    "policy": "Promote exactly source commit 11e2e46b76a193f355d8f2fac894d17ad590fdb3. Preserve every existing Stable gate and keep the frozen UI/accessibility scope unchanged."
   }
 }
