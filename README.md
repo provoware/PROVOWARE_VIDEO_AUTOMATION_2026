@@ -19,7 +19,7 @@
 
 ## Überblick
 
-VideoBatch Fast ist die lokale Video-Automation für **Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6**. Der aktuelle Stand ist **2.8.3-rc24**. Die automatisierten Qualitäts- und CI-Verträge sowie beide realen Stable-Abnahmen sind grün. Der Kandidat ist laut kanonischer Evidence stable-ready; offen ist ausschließlich die formale Stable-Promotion.
+VideoBatch Fast ist die lokale Video-Automation für **Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6**. Der aktuelle Stand ist **2.8.3-rc24**. Die automatisierten Qualitäts-, Repository- und Qt-/Wayland-Verträge sind grün. Die manuelle Basisabnahme vom 29.09.2026 liegt vor, gilt aber nicht als erneute Sichtfreigabe für die danach geänderte UI-/Skalierungslogik. Vor Stable ist deshalb noch die reale Sichtprüfung bei 100 %, 150 % und 200 % erforderlich.
 
 ## Schnellstart
 
@@ -80,7 +80,7 @@ chmod +x videobatch.sh
 - Schreibziele werden vor produktiven Vorgängen geprüft.
 - Wiederanlaufzustände werden kontrolliert geladen und nicht stillschweigend gestartet.
 - Projekt- und Qualitätsprüfungen sollen lesend beziehungsweise reproduzierbar bleiben.
-- Stable wird nicht aus CI-Ergebnissen allein abgeleitet: die physische Kubuntu-Abnahme und der reale Langzeitrender bleiben echte Freigabegrenzen; beide sind am 29.09.2026 dokumentiert bestanden.
+- Stable wird nicht aus CI-Ergebnissen allein abgeleitet. Der Langzeitrender vom 29.09.2026 bleibt gültig; die damalige Kubuntu-Basisabnahme muss wegen der danach geänderten UI-/Skalierungslogik durch eine neue reale 100/150/200-%-Sichtabnahme ergänzt werden.
 
 ## Erster Test
 
@@ -118,7 +118,7 @@ Only standalone user and release deliverables receive _save_. Source modules, CI
 
 ## Abschlussprüfung
 
-Ein erster Lauf gilt als erfolgreich, wenn die Oberfläche ohne Fehlermeldung startet, ein kurzer Testauftrag abgeschlossen wird und das erzeugte Ergebnis plausibel abgespielt wurde. **Alle fachlichen Stable-Gates sind bestanden.** Vor der Veröffentlichung bleibt nur die getrennte, reproduzierbare Stable-Promotion mit finaler Paket-, Branch-, Tag- und Release-Prüfung.
+Ein erster Lauf gilt als erfolgreich, wenn die Oberfläche ohne Fehlermeldung startet, ein kurzer Testauftrag abgeschlossen wird und das erzeugte Ergebnis plausibel abgespielt wurde. **Stable ist noch nicht freigegeben.** Zuerst muss der geänderte UI-Stand auf Kubuntu 26.04 / KDE / Wayland real bei 100 %, 150 % und 200 % geprüft werden; erst danach folgt die getrennte reproduzierbare Stable-Promotion mit finaler Paket-, Branch-, Tag- und Release-Prüfung.
 
 ## Nächster Schritt
 
