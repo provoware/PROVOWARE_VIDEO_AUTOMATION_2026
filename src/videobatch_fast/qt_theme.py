@@ -133,7 +133,7 @@ QPushButton#workspaceNav[active="true"] {
     border-color: #ffe29a;
     color: #161006;
 }
-QScrollArea#secondaryScroll {
+QScrollArea#secondaryScroll, QScrollArea#mainWorkspaceScroll {
     background: transparent;
     border: 0;
 }
