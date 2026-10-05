@@ -87,11 +87,15 @@ def validate() -> dict[str, Any]:
 
     if package_manifest.get("schema_version") != 1:
         raise ContractSyncError("manifest.json besitzt eine unbekannte Schema-Version")
-    for field in ("version", "channel", "build_date"):
+    for field in ("name", "version", "channel", "build_date"):
         if package_manifest.get(field) != product.get(field):
             raise ContractSyncError(
                 f"manifest.json Feld {field!r} ist nicht mit RELEASE_EVIDENCE.product synchron"
             )
+    if package_manifest.get("artifact_policy") != evidence.get("artifact_policy"):
+        raise ContractSyncError(
+            "manifest.json artifact_policy ist nicht mit RELEASE_EVIDENCE synchron"
+        )
     entrypoint = str(package_manifest.get("entrypoint") or "")
     if not entrypoint or not (ROOT / entrypoint).is_file():
         raise ContractSyncError("manifest.json verweist auf keinen gültigen Einstieg")
