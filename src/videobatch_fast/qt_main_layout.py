@@ -1,18 +1,14 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Signal, Qt
+from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (
-    QFrame,
-    QHBoxLayout,
-    QLabel,
-    QProgressBar,
-    QPushButton,
-    QSplitter,
-    QVBoxLayout,
-    QWidget,
+    QApplication, QComboBox, QFrame, QHBoxLayout, QLabel, QProgressBar, QPushButton,
+    QScrollArea, QSplitter, QVBoxLayout, QWidget,
 )
 
 from .qt_desktop_actions import open_output_folder
+from .qt_theme import SCALE_LEVELS, scaled_style
 
 
 class HelpPanel(QFrame):
@@ -58,7 +54,7 @@ class HelpPanel(QFrame):
             layout.addWidget(hint)
 
         safety = QLabel(
-            "Ampel: GRÜN = bereit · GELB = prüfen · ROT = Vorgang gestoppt.\n"
+            "Status: ✓ BEREIT (grün) · ⚠ PRÜFEN (gelb) · ✕ GESTOPPT (rot).\n"
             "Bei ROT zuerst die Meldung lesen. Nicht mit sudo, chmod -R 777 oder "
             "rekursiven Besitzänderungen improvisieren. Originalmedien werden als Quellen gelesen."
         )
@@ -98,6 +94,15 @@ def build_main_ui(window) -> None:
     window.status.setAccessibleName("Programmstatus")
     window.status.setAccessibleDescription("Zeigt, ob VideoBatch bereit ist, prüft oder angehalten wurde.")
     header.addWidget(window.status, alignment=Qt.AlignmentFlag.AlignTop)
+    view_label = QLabel("Ansicht")
+    window.view_scale = QComboBox()
+    window.view_scale.setAccessibleName("Ansichtsgröße")
+    window.view_scale.setAccessibleDescription("Vergrößert die gesamte Oberfläche von 100 bis 200 Prozent.")
+    window.view_scale.setToolTip("Ansichtsgröße · Strg+Plus/Minus · Strg+0 setzt auf 100 % zurück")
+    for value in SCALE_LEVELS:
+        window.view_scale.addItem(f"{value} %", value)
+    header.addWidget(view_label, alignment=Qt.AlignmentFlag.AlignTop)
+    header.addWidget(window.view_scale, alignment=Qt.AlignmentFlag.AlignTop)
     outer.addLayout(header)
 
     guide = QFrame()
@@ -139,7 +144,42 @@ def build_main_ui(window) -> None:
     splitter.setSizes([320, 700, 420])
     for index, stretch in enumerate((22, 48, 30)):
         splitter.setStretchFactor(index, stretch)
-    outer.addWidget(splitter, 1)
+    workspace_scroll = QScrollArea()
+    workspace_scroll.setObjectName("mainWorkspaceScroll")
+    workspace_scroll.setWidgetResizable(True)
+    workspace_scroll.setFrameShape(QFrame.Shape.NoFrame)
+    workspace_scroll.setWidget(splitter)
+    outer.addWidget(workspace_scroll, 1)
+
+    window.audio.setAccessibleName("Audiodateien")
+    window.media.setAccessibleName("Bilder und Videos")
+    window.table.setAccessibleName("Automatische Auftragsliste")
+    window.table.setAlternatingRowColors(True)
+    window.output.setAccessibleName("Ausgabeordner")
+    window.mode.setAccessibleName("Verarbeitungsmodus")
+    window.verification.setAccessibleName("Kontrolle nach der Erstellung")
+
+    def apply_scale() -> None:
+        value = int(window.view_scale.currentData() or 100)
+        app = QApplication.instance()
+        if app is not None:
+            app.setStyleSheet(scaled_style(value))
+        splitter.setMinimumSize(round(930 * value / 100), round(360 * value / 100))
+
+    window.view_scale.currentIndexChanged.connect(apply_scale)
+    window._scale_shortcuts = []
+    for key, step in ((QKeySequence.StandardKey.ZoomIn, 1), (QKeySequence.StandardKey.ZoomOut, -1)):
+        shortcut = QShortcut(QKeySequence(key), window)
+        shortcut.activated.connect(
+            lambda delta=step: window.view_scale.setCurrentIndex(
+                max(0, min(window.view_scale.count() - 1, window.view_scale.currentIndex() + delta))
+            )
+        )
+        window._scale_shortcuts.append(shortcut)
+    reset = QShortcut(QKeySequence("Ctrl+0"), window)
+    reset.activated.connect(lambda: window.view_scale.setCurrentIndex(0))
+    window._scale_shortcuts.append(reset)
+    apply_scale()
 
     _build_footer(window, outer)
 

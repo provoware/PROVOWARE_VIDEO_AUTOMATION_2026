@@ -75,6 +75,8 @@ def test_qt_theme_exposes_high_visibility_accessibility_contract() -> None:
         "QScrollBar:vertical {",
         "width: 16px;",
         "QToolTip {",
+        "SCALE_LEVELS = (100, 125, 150, 175, 200)",
+        "def scaled_style(percent: int) -> str:",
         "QProgressBar#jobProgress::chunk { background: #ffbf3f; }",
     ):
         assert token in theme
@@ -219,6 +221,26 @@ def test_header_dashboard_exposes_graphical_cpu_ram_swap_load() -> None:
         "border: 2px solid #7f98b8;",
     ):
         assert token in theme
+
+
+def test_main_workspace_supports_global_100_to_200_percent_scaling() -> None:
+    source = QT_MAIN_LAYOUT.read_text(encoding="utf-8")
+    for token in (
+        'window.view_scale.setAccessibleName("Ansichtsgröße")',
+        "for value in SCALE_LEVELS:",
+        'workspace_scroll.setObjectName("mainWorkspaceScroll")',
+        "workspace_scroll.setWidgetResizable(True)",
+        "workspace_scroll.setWidget(splitter)",
+        "app.setStyleSheet(scaled_style(value))",
+        "splitter.setMinimumSize(round(930 * value / 100), round(360 * value / 100))",
+        "QKeySequence.StandardKey.ZoomIn",
+        "QKeySequence.StandardKey.ZoomOut",
+        'QKeySequence("Ctrl+0")',
+        'window.audio.setAccessibleName("Audiodateien")',
+        'window.table.setAccessibleName("Automatische Auftragsliste")',
+        "window.table.setAlternatingRowColors(True)",
+    ):
+        assert token in source
 
 
 def test_result_preserving_refresh_propagates_through_qt_layers() -> None:
