@@ -91,14 +91,18 @@ def build_main_ui(window) -> None:
     header.addWidget(window.load_dashboard.frame, alignment=Qt.AlignmentFlag.AlignTop)
     window.status = QLabel("BEREIT")
     window.status.setObjectName("statusChip")
-    window.status.setAccessibleName("Programmstatus")
-    window.status.setAccessibleDescription("Zeigt, ob VideoBatch bereit ist, prüft oder angehalten wurde.")
+    window.status.setAccessibleDescription(
+        "Aktueller Programmstatus. Der sichtbare Text nennt den momentanen Zustand."
+    )
     header.addWidget(window.status, alignment=Qt.AlignmentFlag.AlignTop)
     view_label = QLabel("Ansicht")
     window.view_scale = QComboBox()
+    view_label.setBuddy(window.view_scale)
     window.view_scale.setAccessibleName("Ansichtsgröße")
     window.view_scale.setAccessibleDescription("Vergrößert die gesamte Oberfläche von 100 bis 200 Prozent.")
-    window.view_scale.setToolTip("Ansichtsgröße · Strg+Plus/Minus · Strg+0 setzt auf 100 % zurück")
+    window.view_scale.setToolTip(
+        "Ansichtsgröße · Strg+Alt+Pfeil hoch/runter · Strg+Alt+0 setzt auf 100 % zurück"
+    )
     for value in SCALE_LEVELS:
         window.view_scale.addItem(f"{value} %", value)
     header.addWidget(view_label, alignment=Qt.AlignmentFlag.AlignTop)
@@ -165,10 +169,11 @@ def build_main_ui(window) -> None:
         if app is not None:
             app.setStyleSheet(scaled_style(value))
         splitter.setMinimumSize(round(930 * value / 100), round(360 * value / 100))
+        window.table.verticalHeader().setDefaultSectionSize(round(38 * value / 100))
 
     window.view_scale.currentIndexChanged.connect(apply_scale)
     window._scale_shortcuts = []
-    for key, step in ((QKeySequence.StandardKey.ZoomIn, 1), (QKeySequence.StandardKey.ZoomOut, -1)):
+    for key, step in (("Ctrl+Alt+Up", 1), ("Ctrl+Alt+Down", -1)):
         shortcut = QShortcut(QKeySequence(key), window)
         shortcut.activated.connect(
             lambda delta=step: window.view_scale.setCurrentIndex(
@@ -176,7 +181,7 @@ def build_main_ui(window) -> None:
             )
         )
         window._scale_shortcuts.append(shortcut)
-    reset = QShortcut(QKeySequence("Ctrl+0"), window)
+    reset = QShortcut(QKeySequence("Ctrl+Alt+0"), window)
     reset.activated.connect(lambda: window.view_scale.setCurrentIndex(0))
     window._scale_shortcuts.append(reset)
     apply_scale()
@@ -192,13 +197,17 @@ def _build_footer(window, outer: QVBoxLayout) -> None:
     footer_layout.setSpacing(7)
     window.next_step = QLabel("Nächster Schritt: 1 · Dateien auswählen")
     window.next_step.setObjectName("nextStep")
-    window.next_step.setAccessibleName("Nächster Arbeitsschritt")
+    window.next_step.setAccessibleDescription(
+        "Der sichtbare Text nennt den aktuell empfohlenen nächsten Arbeitsschritt."
+    )
     window.next_step.setWordWrap(True)
     footer_layout.addWidget(window.next_step)
 
     window.activity_detail = QLabel("Keine Verarbeitung aktiv · bereit für neue Aufträge")
     window.activity_detail.setObjectName("subtitle")
-    window.activity_detail.setAccessibleName("Aktueller Arbeitszustand")
+    window.activity_detail.setAccessibleDescription(
+        "Der sichtbare Text beschreibt den aktuellen Arbeitszustand."
+    )
     window.activity_detail.setWordWrap(True)
     footer_layout.addWidget(window.activity_detail)
     progress_row = QHBoxLayout()
