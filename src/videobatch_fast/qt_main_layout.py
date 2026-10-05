@@ -3,17 +3,8 @@ from __future__ import annotations
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (
-    QApplication,
-    QComboBox,
-    QFrame,
-    QHBoxLayout,
-    QLabel,
-    QProgressBar,
-    QPushButton,
-    QScrollArea,
-    QSplitter,
-    QVBoxLayout,
-    QWidget,
+    QApplication, QComboBox, QFrame, QHBoxLayout, QLabel, QProgressBar, QPushButton,
+    QScrollArea, QSplitter, QVBoxLayout, QWidget,
 )
 
 from .qt_desktop_actions import open_output_folder
@@ -107,6 +98,7 @@ def build_main_ui(window) -> None:
     window.view_scale = QComboBox()
     window.view_scale.setAccessibleName("Ansichtsgröße")
     window.view_scale.setAccessibleDescription("Vergrößert die gesamte Oberfläche von 100 bis 200 Prozent.")
+    window.view_scale.setToolTip("Ansichtsgröße · Strg+Plus/Minus · Strg+0 setzt auf 100 % zurück")
     for value in SCALE_LEVELS:
         window.view_scale.addItem(f"{value} %", value)
     header.addWidget(view_label, alignment=Qt.AlignmentFlag.AlignTop)
