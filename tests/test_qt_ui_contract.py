@@ -90,7 +90,8 @@ def test_qt_theme_exposes_high_visibility_accessibility_contract() -> None:
 
 def test_qt_dashboard_exposes_total_job_and_activity_feedback() -> None:
     source = "".join(
-        path.read_text(encoding="utf-8") for path in (QT_UI, QT_MAIN_LAYOUT, DISPLAY_FORMATTING)
+        path.read_text(encoding="utf-8")
+        for path in (QT_UI, QT_UI_POLISH, QT_MAIN_LAYOUT, DISPLAY_FORMATTING)
     )
     for token in (
         '("active", "Aktiv")',
@@ -264,9 +265,9 @@ def test_visual_hierarchy_and_beginner_keyboard_workflow_are_explicit() -> None:
         '("Alt+1", window.audio)',
         '("Alt+2", window.output)',
         '("Alt+3", window.start)',
-        '"Alt+1: Dateiauswahl"',
-        '"Alt+2: Ausgabeordner"',
-        '"Alt+3: Videos erstellen"',
+        "Alt+1: Dateiauswahl",
+        "Alt+2: Ausgabeordner",
+        "Alt+3: Videos erstellen",
         'label.setProperty("state", state)',
         'label.style().unpolish(label)',
         'label.style().polish(label)',
