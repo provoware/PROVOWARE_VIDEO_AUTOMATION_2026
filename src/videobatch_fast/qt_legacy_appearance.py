@@ -5,7 +5,6 @@ from typing import Any
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication
 
-from .qt_theme import APP_STYLE
 
 _THEME_OVERRIDES = {
     "neon_gravity": """
@@ -34,7 +33,7 @@ def apply_theme(window: Any) -> None:
         return
     theme = str(window.parity_theme.currentData() or "neon_gravity")
     scale = int(window.parity_font_scale.value())
-    app.setStyleSheet(APP_STYLE + "\n" + _THEME_OVERRIDES.get(theme, ""))
+    window.setStyleSheet(_THEME_OVERRIDES.get(theme, ""))
     font = QFont(app.font())
     base = float(getattr(window, "_parity_base_font_size", 10.0) or 10.0)
     font.setPointSizeF(max(7.0, base * scale / 100.0))
