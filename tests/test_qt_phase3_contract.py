@@ -265,10 +265,11 @@ def test_beginner_main_flow_is_three_real_decisions_with_persistent_action_foote
     ):
         assert text in source
 
-    splitter_end = source.index("outer.addWidget(splitter, 1)")
+    workspace = source.index("workspace_scroll.setWidget(splitter)")
     footer = source.index('footer.setObjectName("actionFooter")')
-    assert splitter_end < footer
-    assert "QScrollArea" not in source
+    assert workspace < footer
+    assert "workspace_scroll.setWidgetResizable(True)" in source
+    assert 'workspace_scroll.setObjectName("mainWorkspaceScroll")' in source
     assert 'self.log.setVisible(False)' in source
     assert 'self.output.textChanged.connect(self._refresh)' in source
     assert 'ready = files_ready and output_ready' in source
