@@ -54,7 +54,7 @@ class HelpPanel(QFrame):
             layout.addWidget(hint)
 
         safety = QLabel(
-            "Ampel: GRÜN = bereit · GELB = prüfen · ROT = Vorgang gestoppt.\n"
+            "Status: ✓ BEREIT (grün) · ⚠ PRÜFEN (gelb) · ✕ GESTOPPT (rot).\n"
             "Bei ROT zuerst die Meldung lesen. Nicht mit sudo, chmod -R 777 oder "
             "rekursiven Besitzänderungen improvisieren. Originalmedien werden als Quellen gelesen."
         )
