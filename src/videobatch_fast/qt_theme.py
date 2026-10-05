@@ -57,6 +57,13 @@ QPushButton:pressed, QPushButton:checked {
     color: #161006;
 }
 QPushButton:disabled { color: #b6c2d2; background: #171f2a; }
+QPushButton, QToolButton, QLineEdit, QComboBox {
+    min-height: 34px;
+}
+QPushButton:focus, QToolButton:focus, QLineEdit:focus, QComboBox:focus,
+QListWidget:focus, QTableWidget:focus, QPlainTextEdit:focus, QCheckBox:focus {
+    border: 3px solid #ffffff;
+}
 QPushButton#primary {
     background: #ffbf3f;
     border-color: #ffe29a;
@@ -160,6 +167,15 @@ QListWidget, QTableWidget, QPlainTextEdit, QLineEdit, QComboBox {
     selection-background-color: #2f6fd2;
     selection-color: #ffffff;
 }
+QListWidget::item {
+    padding: 6px;
+    border-radius: 5px;
+}
+QListWidget::item:selected {
+    background: #2f6fd2;
+    color: #ffffff;
+}
+QTableWidget { gridline-color: #526985; }
 QHeaderView::section {
     background: #202b3a;
     color: #f3f7ff;
@@ -178,4 +194,28 @@ QProgressBar {
 QProgressBar::chunk { background: #00c8e8; border-radius: 6px; }
 QProgressBar#jobProgress::chunk { background: #ffbf3f; }
 QSplitter::handle { background: #0b1017; width: 7px; }
+QScrollBar:vertical {
+    width: 16px;
+    background: #101822;
+}
+QScrollBar::handle:vertical {
+    min-height: 32px;
+    background: #7f98b8;
+    border-radius: 7px;
+}
+QScrollBar:horizontal {
+    height: 16px;
+    background: #101822;
+}
+QScrollBar::handle:horizontal {
+    min-width: 32px;
+    background: #7f98b8;
+    border-radius: 7px;
+}
+QToolTip {
+    background: #f3f7ff;
+    color: #070b10;
+    border: 2px solid #2f6fd2;
+    padding: 6px;
+}
 """
