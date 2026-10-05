@@ -15,7 +15,7 @@
     "literal_hygiene_fix_pr": 188,
     "policy": "Run the complete fail-closed Stable workflow on the exact source commit; do not bypass any gate."
   },
-  "source_commit": "11e2e46b76a193f355d8f2fac894d17ad590fdb3",
+  "source_commit": "dd9dd8883017906e2f5b4ba58b2147daa3ed5992",
   "release_intent": "final_stable_promotion",
   "retry_after_coverage_scope_fix": {
     "status": "resolved",
@@ -88,5 +88,10 @@
     "status": "resolved",
     "reason": "Stable promotion detected qt_ui.py at 613 lines while the legacy debt ceiling still allowed 614. PR #221 lowered the ceiling to 613 and passed the full validation matrix.",
     "policy": "Promote exactly source commit 11e2e46b76a193f355d8f2fac894d17ad590fdb3. Preserve every existing Stable gate and keep the frozen UI/accessibility scope unchanged."
+  },
+  "retry_after_stable_ui_contract_test_fix": {
+    "status": "resolved",
+    "reason": "Stable promotion run #19 passed toolchain, external quality, version/document contracts, operator acceptance and native Qt Wayland proof, but two static UI contract assertions still searched for frozen UI strings at outdated source locations. PR #224 aligned only those tests with the existing qt_ui_polish structure, synchronized the deterministic release manifest, and passed the full required gate matrix without changing product behavior.",
+    "policy": "Promote exactly source commit dd9dd8883017906e2f5b4ba58b2147daa3ed5992. Keep the usability/appearance/accessibility scope frozen and preserve every existing quality, Wayland, desktop, deterministic packaging, branch, tag and release gate."
   }
 }
