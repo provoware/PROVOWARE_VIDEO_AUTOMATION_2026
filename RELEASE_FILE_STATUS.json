@@ -71,7 +71,7 @@
     {
       "label": "Stable-Abnahmenachweis",
       "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
-      "reason": "Manuelle Kubuntu- und Langzeitrender-Freigaben dokumentiert; technischer Promotionspfad behält seine formalen Evidenzregeln"
+      "reason": "Basisfreigaben vom 29.09.2026 sind dokumentiert; nach den UI-/Skalierungsänderungen aus PR #228 ist vor Stable eine erneute reale 100/150/200-%-Sichtabnahme erforderlich."
     },
     {
       "label": "Qualitätsumgebung",
@@ -81,7 +81,7 @@
     {
       "label": "Visuelles Prüfmanifest",
       "path": "VISUAL_INSPECTION_MANIFEST.json",
-      "reason": "Manuelle Basisfreigabe ist separat dokumentiert; das visuelle Prüfmanifest wird nicht als neuer physischer 26.04-Nachweis umgedeutet"
+      "reason": "Automatisierte visuelle Verträge bleiben Referenz; die neue reale 100/150/200-%-Sichtabnahme für den geänderten UI-Stand steht noch aus."
     }
   ]
 }
