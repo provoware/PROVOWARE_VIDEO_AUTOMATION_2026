@@ -304,9 +304,9 @@ def test_phase3_help_is_beginner_oriented_and_safely_routed() -> None:
         "1 · Dateien auswählen",
         "2 · Ausgabe festlegen",
         "3 · Produktion öffnen",
-        "GRÜN = bereit",
-        "GELB = prüfen",
-        "ROT = Vorgang gestoppt",
+        "✓ BEREIT (grün)",
+        "⚠ PRÜFEN (gelb)",
+        "✕ GESTOPPT (rot)",
         "sudo, chmod -R 777",
         "Technische Diagnose öffnen",
     ):
