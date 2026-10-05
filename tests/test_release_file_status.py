@@ -37,4 +37,19 @@ def test_historical_reports_are_archived_and_duplicate_visual_tree_is_removed() 
     archive = ROOT / "docs/archive/release-history"
     assert archive.is_dir()
     assert any(archive.glob("CODE_QUALITY_REPORT_*.md"))
+    assert (archive / "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md").is_file()
+    assert not (ROOT / "QUALITY_GATE_REPORT_2.8.3-rc24_save_.md").exists()
     assert not (ROOT / "tests/baselines/visual").exists()
+
+
+def test_all_root_save_files_are_declared_release_deliverables() -> None:
+    contract = json.loads((ROOT / "RELEASE_FILE_STATUS.json").read_text(encoding="utf-8"))
+    declared = {item["path"] for item in contract["ready"]} | {
+        item["path"] for item in contract["unfinished"]
+    }
+    actual = {
+        path.name
+        for path in ROOT.iterdir()
+        if path.is_file() and "_save_" in path.stem
+    }
+    assert actual <= declared
