@@ -46,11 +46,13 @@ Komplexitäts- und Coverage-Gates sind grün.
 
 ## Finalbereinigung
 
-- 56 historische RC-Berichte verlustfrei nach `docs/archive/release-history/` verschoben
+- 70 historische RC-Berichte und Nachweise verlustfrei unter `docs/archive/release-history/` gebündelt
 - 16 veraltete doppelte visuelle Baselines entfernt
 - zehn eigenständige Releaseunterlagen mit `_save_` gekennzeichnet
-- acht offene Gate-Dateien ausdrücklich als unfertig dokumentiert
+- fünf nicht releasefertige Status-/Gate-Dateien ausdrücklich als unfertig dokumentiert
 - README und STATUS werden aus `RELEASE_FILE_STATUS.json` zweispaltig erzeugt
 - Portable-, Manifest- und Stable-Kopien schließen das historische Archiv aus
 - Hilfezentrum, Cache-Dialog und Medienauswahl mit präziseren Texten und Tooltips versehen
-- Stable-Promotion benennt künftig alle freigegebenen Berichte konsistent um und aktualisiert den freigegebenen Berichtspfad
+- Release-Dateivertrag blockiert nicht deklarierte `_save_`-Dateien im Projektstamm
+- `manifest.json` wird gegen die kanonische Release-Evidenz auf Version, Kanal, Build-Datum und Einstieg geprüft
+- Stable bleibt bis zur erneuten realen 100/150/200-%-Sichtabnahme des geänderten Qt-UI-Stands gesperrt
