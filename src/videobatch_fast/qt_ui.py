@@ -173,7 +173,9 @@ class VideoBatchQtWindow(QMainWindow):
             "2 · Ausgabe festlegen",
             "Für den ersten Durchlauf reichen die empfohlenen Einstellungen.",
         )
-        layout.addWidget(QLabel("Wo sollen die fertigen Videos gespeichert werden?"))
+        output_label = QLabel("Wo sollen die fertigen Videos gespeichert werden?")
+        output_label.setObjectName("fieldLabel")
+        layout.addWidget(output_label)
         target = QHBoxLayout()
         self.output = QLineEdit(str(Path.home() / "Videos" / "VideoBatch"))
         self.output_button = QPushButton("Ordner wählen …")
@@ -184,8 +186,11 @@ class VideoBatchQtWindow(QMainWindow):
         target.addWidget(self.output_button)
         layout.addLayout(target)
 
-        layout.addWidget(QLabel("Verarbeitung"))
+        mode_label = QLabel("Verarbeitung")
+        mode_label.setObjectName("fieldLabel")
+        layout.addWidget(mode_label)
         self.mode = QComboBox()
+        self.mode.setAccessibleDescription("Wählt ein vorbereitetes Qualitäts- und Geschwindigkeitsprofil.")
         for key, spec in QUICK_MODES.items():
             if key != "custom":
                 self.mode.addItem(spec.label + (" · empfohlen" if spec.recommended else ""), key)
@@ -197,8 +202,11 @@ class VideoBatchQtWindow(QMainWindow):
         self.mode_hint.setWordWrap(True)
         layout.addWidget(self.mode_hint)
 
-        layout.addWidget(QLabel("Kontrolle nach der Erstellung"))
+        verification_label = QLabel("Kontrolle nach der Erstellung")
+        verification_label.setObjectName("fieldLabel")
+        layout.addWidget(verification_label)
         self.verification = QComboBox()
+        self.verification.setAccessibleDescription("Legt fest, wie gründlich fertige Videos geprüft werden.")
         self.verification.addItems(["Vollständig", "Schnell"])
         self.verification.currentIndexChanged.connect(self._mode_changed)
         layout.addWidget(self.verification)
