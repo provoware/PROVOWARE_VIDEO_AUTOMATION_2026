@@ -65,6 +65,13 @@ _PHASE2_PATCHED = False
 
 _DROP_PATHS = DropList.paths
 _DROP_CLEAR = DropList.clear
+_DROP_SORT_BY = DropList.sort_by
+
+_QUICK_SORT_KEYS = {
+    "name": "name_asc",
+    "modified": "modified_new",
+    "size": "size_desc",
+}
 
 
 def _config(window: object | None = None) -> dict[str, object]:
@@ -166,10 +173,40 @@ def _patch_drop_list() -> None:
         self._parity_production_paths = []
         _DROP_CLEAR(self)
 
+    def sort_by(self: DropList, mode: str) -> None:
+        key = _QUICK_SORT_KEYS.get(mode, mode)
+        if key not in SORT_KEYS:
+            _DROP_SORT_BY(self, mode)
+            return
+        self._parity_view_sort = key
+        _render_drop_view(self)
+        window = self.window()
+        audio = self is getattr(window, "audio", None)
+        combo = getattr(
+            window,
+            "parity_audio_sort" if audio else "parity_media_sort",
+            None,
+        )
+        if combo is not None:
+            combo.blockSignals(True)
+            try:
+                _select_combo_data(combo, key)
+            finally:
+                combo.blockSignals(False)
+        _save_config(window, **{("audio_sort" if audio else "media_sort"): key})
+        if hasattr(window, "_project_dirty"):
+            window._project_dirty = True
+        if hasattr(window, "next_step"):
+            window.next_step.setText(
+                "Sortierung geändert: nur die Ansicht. "
+                "Die Produktionsreihenfolge bleibt unverändert."
+            )
+
     DropList.paths = paths
     DropList.add_paths = add_paths
     DropList.remove_selected = remove_selected
     DropList.clear = clear
+    DropList.sort_by = sort_by
     _DROP_PATCHED = True
 
 
@@ -733,6 +770,11 @@ def _finish_completion(window: object) -> None:
 
     window.audio._parity_view_sort = str(cfg.get("audio_sort", "import"))
     window.media._parity_view_sort = str(cfg.get("media_sort", "import"))
+    if hasattr(window, "sort_hint"):
+        window.sort_hint.setText(
+            "Sortieren ändert nur die Ansicht. "
+            "Die Produktionsreihenfolge wird erst nach ausdrücklicher Übernahme geändert."
+        )
     _render_drop_view(window.audio)
     _render_drop_view(window.media)
 
