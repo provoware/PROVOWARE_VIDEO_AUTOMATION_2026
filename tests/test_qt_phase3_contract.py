@@ -294,6 +294,9 @@ def test_phase3_secondary_docks_do_not_squeeze_beginner_dashboard() -> None:
     assert '("queue", "3 · Produktion"' in navigation
     assert 'button = QPushButton(label)' in navigation
     assert 'QPushButton(f"{label}\n{description}")' not in navigation
+    assert 'new_button.setObjectName("secondary")' in navigation
+    assert 'open_button.setObjectName("secondary")' in navigation
+    assert 'save_as_button.setObjectName("secondary")' in navigation
 
 
 def test_phase3_help_is_beginner_oriented_and_safely_routed() -> None:
