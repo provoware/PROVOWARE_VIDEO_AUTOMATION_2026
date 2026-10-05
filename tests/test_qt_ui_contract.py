@@ -77,6 +77,11 @@ def test_qt_theme_exposes_high_visibility_accessibility_contract() -> None:
         "QToolTip {",
         "SCALE_LEVELS = (100, 125, 150, 175, 200)",
         "def scaled_style(percent: int) -> str:",
+        "QPushButton#secondary {",
+        "QPushButton#quietDanger {",
+        'QLabel#statusChip[state="warning"]',
+        'QLabel#statusChip[state="error"]',
+        "QTableWidget::item {",
         "QProgressBar#jobProgress::chunk { background: #ffbf3f; }",
     ):
         assert token in theme
@@ -239,6 +244,29 @@ def test_main_workspace_supports_global_100_to_200_percent_scaling() -> None:
         'window.audio.setAccessibleName("Audiodateien")',
         'window.table.setAccessibleName("Automatische Auftragsliste")',
         "window.table.setAlternatingRowColors(True)",
+    ):
+        assert token in source
+
+
+def test_visual_hierarchy_and_beginner_keyboard_workflow_are_explicit() -> None:
+    source = QT_UI.read_text(encoding="utf-8")
+    for token in (
+        'note.setObjectName("panelHint")',
+        'zoom_hint.setObjectName("helperText")',
+        'add.setObjectName("secondary")',
+        'remove.setObjectName("quietDanger")',
+        'self.clear.setObjectName("quietDanger")',
+        'self.output_button.setObjectName("secondary")',
+        'self.open_output.setObjectName("secondary")',
+        'self.show_result_log.setObjectName("secondary")',
+        'self.table.setTextElideMode(Qt.TextElideMode.ElideMiddle)',
+        'self.table.verticalHeader().setDefaultSectionSize(38)',
+        '("Alt+1", self.audio)',
+        '("Alt+2", self.output)',
+        '("Alt+3", self.start)',
+        'self.status.setProperty("state", state)',
+        'self.status.style().unpolish(self.status)',
+        'self.status.style().polish(self.status)',
     ):
         assert token in source
 
