@@ -13,7 +13,12 @@ QFrame#panel, QFrame#card, QFrame#workflowGuide, QFrame#actionFooter {
     border: 2px solid #6f87a3;
     border-radius: 12px;
 }
-QFrame#card { min-height: 56px; }
+QFrame#panel { border-color: #526985; }
+QFrame#card {
+    min-height: 56px;
+    background: #101a26;
+    border-color: #425b78;
+}
 QFrame#loadDashboard {
     background: #101822;
     border: 2px solid #7f98b8;
@@ -32,15 +37,47 @@ QProgressBar#loadMeter {
 }
 QLabel#title { font-size: 22pt; font-weight: 800; }
 QLabel#subtitle { color: #e2eaf5; }
-QLabel#section { font-size: 13pt; font-weight: 700; }
+QLabel#panelHint {
+    color: #c6d4e6;
+    padding-bottom: 4px;
+}
+QLabel#helperText {
+    color: #aebfd3;
+    font-size: 9.5pt;
+}
+QLabel#fieldLabel {
+    color: #f3f7ff;
+    font-weight: 700;
+}
+QLabel#section { font-size: 13pt; font-weight: 800; }
 QLabel#kpiValue { font-size: 16pt; font-weight: 800; }
 QLabel#kpiLabel { color: #e2eaf5; font-size: 9.5pt; }
 QLabel#statusChip {
     background: #202c3b;
-    border: 1px solid #5b7392;
+    border: 2px solid #5b7392;
     border-radius: 10px;
-    padding: 5px 10px;
-    font-weight: 700;
+    padding: 6px 11px;
+    font-weight: 800;
+}
+QLabel#statusChip[state="ready"], QLabel#statusChip[state="success"] {
+    background: #123427;
+    border-color: #55d99a;
+    color: #ddffef;
+}
+QLabel#statusChip[state="warning"] {
+    background: #3b2e12;
+    border-color: #f0c45d;
+    color: #fff1c2;
+}
+QLabel#statusChip[state="busy"] {
+    background: #102f3d;
+    border-color: #5dd7f5;
+    color: #e1f9ff;
+}
+QLabel#statusChip[state="error"] {
+    background: #421722;
+    border-color: #ff7890;
+    color: #fff0f3;
 }
 QPushButton {
     background: #007f99;
@@ -51,6 +88,21 @@ QPushButton {
     font-weight: 650;
 }
 QPushButton:hover { background: #009fbd; }
+QPushButton#secondary {
+    background: #18293a;
+    border-color: #7fa5ca;
+    color: #eef6ff;
+}
+QPushButton#secondary:hover { background: #22384e; }
+QPushButton#quietDanger {
+    background: #21171b;
+    border-color: #9a5262;
+    color: #ffdce3;
+}
+QPushButton#quietDanger:hover {
+    background: #3a1d25;
+    border-color: #ff7890;
+}
 QPushButton:pressed, QPushButton:checked {
     background: #ffbf3f;
     border-color: #ffe29a;
@@ -81,8 +133,8 @@ QFrame#workflowGuide {
     border-color: #48627f;
 }
 QFrame#actionFooter {
-    background: #131d29;
-    border: 1px solid #355078;
+    background: #111c28;
+    border: 2px solid #58789d;
     border-radius: 12px;
 }
 QLabel#guideTitle {
@@ -98,9 +150,13 @@ QLabel#stepChip {
     font-weight: 700;
 }
 QLabel#nextStep {
+    background: #0d2632;
+    border: 1px solid #356f84;
+    border-radius: 8px;
+    padding: 7px 9px;
     font-size: 11.5pt;
     font-weight: 800;
-    color: #f2f6ff;
+    color: #f2fbff;
 }
 QLabel#safeHint {
     background: #14251f;
@@ -110,15 +166,15 @@ QLabel#safeHint {
     color: #cdebdc;
 }
 QToolButton {
-    background: #007f99;
-    border: 1px solid #2ee6ff;
+    background: #142333;
+    border: 1px solid #6685a8;
     border-radius: 7px;
     color: #ffffff;
     padding: 5px 2px;
     text-align: left;
     font-weight: 650;
 }
-QToolButton:hover { background: #009fbd; }
+QToolButton:hover { background: #1e344a; border-color: #8fb9e2; }
 QToolButton:checked {
     background: #ffbf3f;
     border-color: #ffe29a;
@@ -175,7 +231,18 @@ QListWidget::item:selected {
     background: #2f6fd2;
     color: #ffffff;
 }
-QTableWidget { gridline-color: #526985; }
+QTableWidget {
+    gridline-color: #34495f;
+    alternate-background-color: #0d1620;
+}
+QTableWidget::item {
+    padding: 7px 6px;
+    border-bottom: 1px solid #25394e;
+}
+QTableWidget::item:selected {
+    background: #2f6fd2;
+    color: #ffffff;
+}
 QHeaderView::section {
     background: #202b3a;
     color: #f3f7ff;
