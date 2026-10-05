@@ -41,7 +41,7 @@ Alle Punkte wurden korrigiert und mit Regressionen abgesichert.
 
 ## Freigabegrenze
 
-RC24 ist ein Releasekandidat. Die exakt gepinnten Python-Qualitätswerkzeuge sind vollständig grün. Stable bleibt nur noch blockiert, bis die physische KDE-X11-/Wayland-Abnahme und der reale Langzeitrender auf demselben finalen Kandidaten vollständig grün sind.
+RC24 ist ein Releasekandidat. Die automatisierten Qualitäts-, Repository- und Qt-/Wayland-Prüfpfade sind grün; der Langzeitrender ist dokumentiert bestätigt. Nach den späteren UI-/Skalierungsänderungen ist die frühere physische Basisabnahme jedoch nicht mehr ausreichend. **Stable bleibt blockiert, bis der unveränderte aktuelle Kandidat real auf Kubuntu 26.04 / KDE Plasma / Wayland bei 100 %, 150 % und 200 % sichtbar geprüft wurde.**
 
 ## Frischpaketprüfung
 
@@ -50,4 +50,4 @@ Ein neu entpacktes Vorab-ZIP bestand Manifest, Version, isolierte Kompilierung, 
 
 ## Repository-Abschluss
 
-Der aktive Projektstamm enthält nur die aktuellen RC24-Nachweise. Frühere Berichte bleiben im historischen Archiv nachvollziehbar, werden jedoch nicht ausgeliefert. Der Release-Dateivertrag, die zweispaltige README-Tabelle und die `_save_`-Kennzeichnung sind maschinell geprüft. Stable bleibt wegen der zwei ausdrücklich verbleibenden realen Gates gesperrt: physische KDE-X11-/Wayland-Abnahme und Langzeitrender.
+Der aktive Projektstamm enthält nur aktuelle Nutzer-, Release- und Vertragsdateien. Ein veralteter, nicht deklarierter RC24-Qualitätsbericht wurde in das historische Archiv verschoben; der Validator blockiert künftig nicht deklarierte `_save_`-Dateien im Stamm. Der Release-Dateivertrag und die README-/STATUS-Ableitung sind maschinell geprüft. **Offen bleibt ein reales Gate: die erneute 100/150/200-%-UI-Sichtabnahme auf Kubuntu 26.04 / KDE / Wayland.**
