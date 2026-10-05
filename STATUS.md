@@ -24,10 +24,10 @@ Only standalone user and release deliverables receive _save_. Source modules, CI
 
 | Releasefertig (`_save_`) | Noch nicht releasefertig |
 |---|---|
-| `START_HIER_save_.md`<br>Schnellstart: Geprüfter Nutzerstart und sichere erste Schritte | `TODO.md`<br>Offene Arbeitsliste: Fachliche P0-Abnahmen abgeschlossen; enthält nur noch Stable-Promotion, Qt-Migrations- und Wartbarkeitsarbeiten |
+| `START_HIER_save_.md`<br>Schnellstart: Geprüfter Nutzerstart und sichere erste Schritte | `TODO.md`<br>Offene Arbeitsliste: Automatisierte Release- und Qt-Gates sind grün; offen sind die erneute reale 100/150/200-%-Sichtabnahme des geänderten UI-Stands und danach die formale Stable-Promotion. |
 | `AUTOINSTALLATION_save_.md`<br>Installationsanleitung: Benutzerpfade, A/B-Slots und Berechtigungsschutz dokumentiert | `docs/LONG_RENDER_2.8.3-rc24.md`<br>Langzeitrender: Prüfvertrag bleibt als Referenz erhalten; Langzeitrender wurde am 29.09.2026 manuell als in Ordnung bestätigt |
 | `PROJEKTORDNERSTRUKTUR_save_.md`<br>Projektübersicht: Ordner, Start, Sicherheit und Funktionen beschrieben | `docs/STABLE_ACCEPTANCE_EVIDENCE.md`<br>Stable-Abnahmenachweis: Basisfreigaben vom 29.09.2026 sind dokumentiert; nach den UI-/Skalierungsänderungen aus PR #228 ist vor Stable eine erneute reale 100/150/200-%-Sichtabnahme erforderlich. |
-| `RELEASE_NOTES_save_.md`<br>Releasehinweise: Aktueller RC24-Funktionsstand dokumentiert | `QUALITY_ENVIRONMENT_STATUS.json`<br>Qualitätsumgebung: Maschinenlesbarer Status; alle fachlichen Stable-Gates sind bestanden |
+| `RELEASE_NOTES_save_.md`<br>Releasehinweise: Aktueller RC24-Funktionsstand dokumentiert | `QUALITY_ENVIRONMENT_STATUS.json`<br>Qualitätsumgebung: Maschinenlesbarer Qualitätsstatus; automatisierte Gates sind grün, die erneute physische UI-Sichtabnahme nach PR #228 ist noch offen. |
 | `TEST_REPORT_save_.md`<br>Testbericht: Automatisierte und offene Prüfungen getrennt ausgewiesen | `VISUAL_INSPECTION_MANIFEST.json`<br>Visuelles Prüfmanifest: Automatisierte visuelle Verträge bleiben Referenz; die neue reale 100/150/200-%-Sichtabnahme für den geänderten UI-Stand steht noch aus. |
 | `FRESH_PACKAGE_REPORT_save_.md`<br>Paketbericht: Saubere Paketprüfung für RC24 dokumentiert | — |
 | `CODE_QUALITY_REPORT_2.8.3-rc24_save_.md`<br>Codequalitätsbericht: Interne Qualitätsprüfung ohne Befund | — |
