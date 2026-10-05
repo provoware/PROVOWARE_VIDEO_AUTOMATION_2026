@@ -205,7 +205,7 @@
       {
         "label": "Offene Arbeitsliste",
         "path": "TODO.md",
-        "reason": "Fachliche P0-Abnahmen abgeschlossen; enthält nur noch Stable-Promotion, Qt-Migrations- und Wartbarkeitsarbeiten"
+        "reason": "Automatisierte Release- und Qt-Gates sind grün; offen sind die erneute reale 100/150/200-%-Sichtabnahme des geänderten UI-Stands und danach die formale Stable-Promotion."
       },
       {
         "label": "Langzeitrender",
@@ -220,7 +220,7 @@
       {
         "label": "Qualitätsumgebung",
         "path": "QUALITY_ENVIRONMENT_STATUS.json",
-        "reason": "Maschinenlesbarer Status; alle fachlichen Stable-Gates sind bestanden"
+        "reason": "Maschinenlesbarer Qualitätsstatus; automatisierte Gates sind grün, die erneute physische UI-Sichtabnahme nach PR #228 ist noch offen."
       },
       {
         "label": "Visuelles Prüfmanifest",
