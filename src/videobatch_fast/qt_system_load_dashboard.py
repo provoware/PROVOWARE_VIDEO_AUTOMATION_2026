@@ -58,6 +58,7 @@ class SystemLoadDashboard:
             bar.setValue(value)
             bar.setFormat(f"{value}%")
         bar.setToolTip(tooltip)
+        bar.setAccessibleDescription(tooltip)
 
     def refresh(self) -> None:
         sample = self.sampler.sample()
