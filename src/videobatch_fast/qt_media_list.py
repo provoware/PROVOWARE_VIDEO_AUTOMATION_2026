@@ -88,10 +88,20 @@ class DropList(QListWidget):
         return [Path(self.item(row).data(Qt.ItemDataRole.UserRole)) for row in range(self.count())]
 
     def production_paths(self) -> list[Path]:
+        parity_paths = getattr(self, "_parity_production_paths", None)
+        if parity_paths is not None:
+            return [Path(value) for value in parity_paths]
         return [Path(value) for value in self._production_paths]
 
     def apply_view_as_production_order(self) -> None:
-        self._production_paths = [str(path) for path in self.paths()]
+        displayed = [
+            Path(str(self.item(row).data(Qt.ItemDataRole.UserRole)))
+            for row in range(self.count())
+            if self.item(row).data(Qt.ItemDataRole.UserRole)
+        ]
+        self._production_paths = [str(path) for path in displayed]
+        if hasattr(self, "_parity_production_paths"):
+            self._parity_production_paths = list(displayed)
         self.changed.emit()
 
     def clear(self) -> None:
