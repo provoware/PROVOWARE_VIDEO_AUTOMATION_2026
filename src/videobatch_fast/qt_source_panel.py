@@ -62,7 +62,18 @@ def build_sources_panel(window) -> QFrame:
     lists.addWidget(_source_card(window, "Bilder / Videos", window.media, "Bilder/Videos auswählen …"), 1)
     layout.addLayout(lists, 1)
 
+    order_row = QHBoxLayout()
+    adopt = QPushButton("Ansicht als Produktionsreihenfolge übernehmen")
+    adopt.setObjectName("secondary")
+    adopt.setAccessibleDescription(
+        "Übernimmt die aktuell sichtbare Sortierung beider Listen bewusst für die Produktion."
+    )
+    adopt.clicked.connect(window.audio.apply_view_as_production_order)
+    adopt.clicked.connect(window.media.apply_view_as_production_order)
+    order_row.addWidget(adopt, 1)
+
     window.clear = QPushButton("Alle ausgewählten Dateien entfernen")
     configure_clear_button(window.clear)
-    layout.addWidget(window.clear)
+    order_row.addWidget(window.clear)
+    layout.addLayout(order_row)
     return panel
