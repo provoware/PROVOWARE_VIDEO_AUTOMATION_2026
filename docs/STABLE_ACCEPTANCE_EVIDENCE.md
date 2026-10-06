@@ -2,22 +2,25 @@
 
 ## Zweck
 
-Die Kubuntu-Basisabnahme und der Langzeitrender vom **29.09.2026** bleiben als historische, ausdrücklich bestätigte Operator-Nachweise erhalten. Nach den späteren UI-/Skalierungsänderungen aus PR #228 reicht die damalige Basisabnahme für den aktuellen Releasekandidaten jedoch nicht mehr aus. Der kanonische Status führt deshalb die physische UI-Abnahme wieder als offen, bis der geänderte Stand real bei 100 %, 150 % und 200 % geprüft wurde.
+Die Kubuntu-Basisabnahme und der Langzeitrender vom **29.09.2026** bleiben als historische, ausdrücklich bestätigte Operator-Nachweise erhalten. Der reale Sichttest vom **06.10.2026 bei 125 %** hat zusätzlich einen strukturellen Layoutfehler belegt: Dateien, Paarung und Ausgabe wurden zusammen mit dem Projekt-Dock in dieselbe Fläche gepresst. Der korrigierte seitengetrennte Stand muss deshalb vor Stable neu bei 100 %, 125 %, 150 % und 200 % geprüft werden.
 
 ## Manuelle Kubuntu-Basisfreigabe 2026-09-29
 
 Die Provenienz liegt unter `diagnostics/release_readiness/KUBUNTU_OPERATOR_ACCEPTANCE_2026-09-29.json`. Sie belegt den damaligen Basiszustand unverändert. Sie wird **nicht** auf den später geänderten UI-/Skalierungsstand übertragen und setzt das aktuelle Gate daher nicht mehr automatisch auf grün.
 
-## Erneute UI-Sichtabnahme nach PR #228
+## Erneute UI-Sichtabnahme nach realem 125-%-Befund
 
 Vor Stable muss der aktuelle Stand auf **Kubuntu 26.04 LTS · KDE Plasma · natives Wayland** real geprüft werden. Pflichtumfang:
 
-- 100 %, 150 % und 200 % Ansichtsgröße,
-- keine abgeschnittenen Tabellenzeilen oder Bedienelemente,
-- sichtbarer Tastaturfokus,
-- lesbare Status- und Hilfetexte,
+- 100 %, 125 %, 150 % und 200 % Ansichtsgröße,
+- Dateien, Ausgabe und Produktion jeweils als eigene vollständig nutzbare Arbeitsseite,
+- keine abgeschnittenen Texte, Tabellenzeilen, Listen oder Bedienelemente,
+- keine Hauptseiten-Scrollleiste als Ersatz für ein zu großes Layout,
+- Audio- und Medienliste gleichzeitig mit ihren Auswahl-/Entfernen-Schaltern sichtbar,
+- Projekt-, Hilfe- und Diagnose-Dock dürfen die aktive Hauptseite nicht zusammendrücken,
+- sichtbarer Tastaturfokus und korrekte Alt+1/Alt+2/Alt+3-Navigation,
 - korrekte Trennung von globaler Ansichtsgröße und Listen-Zoom,
-- kein unbeabsichtigtes Ändern der Produktionsreihenfolge beim Sortieren.
+- Ansichtssortierung darf die Produktionsreihenfolge nicht verändern; Übernahme nur ausdrücklich.
 
 Erst nach dokumentierter Abnahme dieses unveränderten Kandidaten darf das Gate `physical_kubuntu_26_04_wayland` wieder `passed` sein.
 
