@@ -51,7 +51,8 @@ class HelpPanel(QFrame):
 
         safety = QLabel(
             "Status: ✓ BEREIT (grün) · ⚠ PRÜFEN (gelb) · ✕ GESTOPPT (rot).\n"
-            "Bei ROT zuerst die Meldung lesen. Originalmedien werden als Quellen gelesen."
+            "Bei ROT zuerst die Meldung lesen. Nicht mit sudo, chmod -R 777 oder "
+            "rekursiven Besitzänderungen improvisieren. Originalmedien werden als Quellen gelesen."
         )
         safety.setObjectName("safeHint")
         safety.setWordWrap(True)
