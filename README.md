@@ -9,17 +9,17 @@
 - 82.43 % Zeilenabdeckung
 - 67.21 % Zweigabdeckung
 - 18/18 visuelle Szenarien bestanden
-- Release-Manifest: 494 Dateien
+- Release-Manifest: 496 Dateien
 - Kubuntu-CI-Matrix: 1/1 Kombinationen bestanden
 
 ### Offene Stable-Gates
 
-- Physische Kubuntu-26.04-Plasma-Wayland-Abnahme: Die manuelle Kubuntu-/Wayland-Basisabnahme vom 29.09.2026 liegt vor, deckt jedoch die nachfolgenden UI-/Skalierungsänderungen aus PR #228 nicht ab. Vor Stable ist eine erneute reale Sichtabnahme auf Kubuntu 26.04 / KDE Plasma / Wayland bei 100 %, 150 % und 200 % erforderlich.
+- Physische Kubuntu-26.04-Plasma-Wayland-Abnahme: Der reale 125-%-Screenshot vom 06.10.2026 zeigte abgeschnittene und überladene Arbeitsbereiche. Der daraus abgeleitete seitengetrennte Qt-Stand muss vor Stable erneut real auf Kubuntu 26.04 / KDE Plasma / Wayland bei 100 %, 125 %, 150 % und 200 % geprüft werden.
 <!-- release-status:end -->
 
 ## Überblick
 
-VideoBatch Fast ist die lokale Video-Automation für **Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6**. Der aktuelle Stand ist **2.8.3-rc24**. Die automatisierten Qualitäts-, Repository- und Qt-/Wayland-Verträge sind grün. Die manuelle Basisabnahme vom 29.09.2026 liegt vor, gilt aber nicht als erneute Sichtfreigabe für die danach geänderte UI-/Skalierungslogik. Vor Stable ist deshalb noch die reale Sichtprüfung bei 100 %, 150 % und 200 % erforderlich.
+VideoBatch Fast ist die lokale Video-Automation für **Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6**. Der aktuelle Stand ist **2.8.3-rc24**. Der aktuelle Releasekandidat enthält jetzt einen seitengetrennten Qt-Arbeitsbereich als Reaktion auf den realen 125-%-Sichtbefund vom 06.10.2026. Dateien, Ausgabe und Produktion besitzen eigene Arbeitsseiten; Projekt, Hilfe und Diagnose verdrängen den Hauptablauf nicht mehr. Vor Stable ist eine erneute reale Sichtprüfung bei 100 %, 125 %, 150 % und 200 % erforderlich.
 
 ## Schnellstart
 
@@ -80,7 +80,7 @@ chmod +x videobatch.sh
 - Schreibziele werden vor produktiven Vorgängen geprüft.
 - Wiederanlaufzustände werden kontrolliert geladen und nicht stillschweigend gestartet.
 - Projekt- und Qualitätsprüfungen sollen lesend beziehungsweise reproduzierbar bleiben.
-- Stable wird nicht aus CI-Ergebnissen allein abgeleitet. Der Langzeitrender vom 29.09.2026 bleibt gültig; die damalige Kubuntu-Basisabnahme muss wegen der danach geänderten UI-/Skalierungslogik durch eine neue reale 100/150/200-%-Sichtabnahme ergänzt werden.
+- Stable wird nicht aus CI-Ergebnissen allein abgeleitet. Der Langzeitrender vom 29.09.2026 bleibt gültig; nach dem realen 125-%-Layoutbefund muss der korrigierte Qt-Stand bei 100 %, 125 %, 150 % und 200 % erneut sichtbar geprüft werden.
 
 ## Erster Test
 
@@ -102,11 +102,11 @@ Only standalone user and release deliverables receive _save_. Source modules, CI
 
 | Releasefertig (`_save_`) | Noch nicht releasefertig |
 |---|---|
-| `START_HIER_save_.md`<br>Schnellstart: Geprüfter Nutzerstart und sichere erste Schritte | `TODO.md`<br>Offene Arbeitsliste: Automatisierte Release- und Qt-Gates sind grün; offen sind die erneute reale 100/150/200-%-Sichtabnahme des geänderten UI-Stands und danach die formale Stable-Promotion. |
+| `START_HIER_save_.md`<br>Schnellstart: Geprüfter Nutzerstart und sichere erste Schritte | `TODO.md`<br>Offene Arbeitsliste: Automatisierte Gates werden für den seitengetrennten Qt-Stand neu geprüft; danach ist die reale 100/125/150/200-%-Sichtabnahme und anschließend die Stable-Promotion offen. |
 | `AUTOINSTALLATION_save_.md`<br>Installationsanleitung: Benutzerpfade, A/B-Slots und Berechtigungsschutz dokumentiert | `docs/LONG_RENDER_2.8.3-rc24.md`<br>Langzeitrender: Prüfvertrag bleibt als Referenz erhalten; Langzeitrender wurde am 29.09.2026 manuell als in Ordnung bestätigt |
-| `PROJEKTORDNERSTRUKTUR_save_.md`<br>Projektübersicht: Ordner, Start, Sicherheit und Funktionen beschrieben | `docs/STABLE_ACCEPTANCE_EVIDENCE.md`<br>Stable-Abnahmenachweis: Basisfreigaben vom 29.09.2026 sind dokumentiert; nach den UI-/Skalierungsänderungen aus PR #228 ist vor Stable eine erneute reale 100/150/200-%-Sichtabnahme erforderlich. |
-| `RELEASE_NOTES_save_.md`<br>Releasehinweise: Aktueller RC24-Funktionsstand dokumentiert | `QUALITY_ENVIRONMENT_STATUS.json`<br>Qualitätsumgebung: Maschinenlesbarer Qualitätsstatus; automatisierte Gates sind grün, die erneute physische UI-Sichtabnahme nach PR #228 ist noch offen. |
-| `TEST_REPORT_save_.md`<br>Testbericht: Automatisierte und offene Prüfungen getrennt ausgewiesen | `VISUAL_INSPECTION_MANIFEST.json`<br>Visuelles Prüfmanifest: Automatisierte visuelle Verträge bleiben Referenz; die neue reale 100/150/200-%-Sichtabnahme für den geänderten UI-Stand steht noch aus. |
+| `PROJEKTORDNERSTRUKTUR_save_.md`<br>Projektübersicht: Ordner, Start, Sicherheit und Funktionen beschrieben | `docs/STABLE_ACCEPTANCE_EVIDENCE.md`<br>Stable-Abnahmenachweis: Basisfreigaben bleiben dokumentiert; der reale 125-%-Befund vom 06.10.2026 verlangt eine neue 100/125/150/200-%-Sichtabnahme des korrigierten Qt-Stands. |
+| `RELEASE_NOTES_save_.md`<br>Releasehinweise: Aktueller RC24-Funktionsstand dokumentiert | `QUALITY_ENVIRONMENT_STATUS.json`<br>Qualitätsumgebung: Maschinenlesbarer Qualitätsstatus; nach der Layoutkorrektur müssen die automatisierten Gates erneut grün sein und die physische 100/125/150/200-%-UI-Abnahme bleibt offen. |
+| `TEST_REPORT_save_.md`<br>Testbericht: Automatisierte und offene Prüfungen getrennt ausgewiesen | `VISUAL_INSPECTION_MANIFEST.json`<br>Visuelles Prüfmanifest: Automatisierte visuelle Verträge bleiben Referenz; die reale 100/125/150/200-%-Sichtabnahme des seitengetrennten Qt-Stands steht noch aus. |
 | `FRESH_PACKAGE_REPORT_save_.md`<br>Paketbericht: Saubere Paketprüfung für RC24 dokumentiert | — |
 | `CODE_QUALITY_REPORT_2.8.3-rc24_save_.md`<br>Codequalitätsbericht: Interne Qualitätsprüfung ohne Befund | — |
 | `IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md`<br>Implementierungsbericht: Umgesetzte Funktions- und Sicherheitsverträge dokumentiert | — |
@@ -118,7 +118,7 @@ Only standalone user and release deliverables receive _save_. Source modules, CI
 
 ## Abschlussprüfung
 
-Ein erster Lauf gilt als erfolgreich, wenn die Oberfläche ohne Fehlermeldung startet, ein kurzer Testauftrag abgeschlossen wird und das erzeugte Ergebnis plausibel abgespielt wurde. **Stable ist noch nicht freigegeben.** Zuerst muss der geänderte UI-Stand auf Kubuntu 26.04 / KDE / Wayland real bei 100 %, 150 % und 200 % geprüft werden; erst danach folgt die getrennte reproduzierbare Stable-Promotion mit finaler Paket-, Branch-, Tag- und Release-Prüfung.
+Ein erster Lauf gilt als erfolgreich, wenn die Oberfläche ohne Fehlermeldung startet, ein kurzer Testauftrag abgeschlossen wird und das erzeugte Ergebnis plausibel abgespielt wurde. **Stable ist noch nicht freigegeben.** Zuerst muss der seitengetrennte UI-Stand auf Kubuntu 26.04 / KDE / Wayland real bei 100 %, 125 %, 150 % und 200 % geprüft werden; erst danach folgt die getrennte reproduzierbare Stable-Promotion mit finaler Paket-, Branch-, Tag- und Release-Prüfung.
 
 ## Nächster Schritt
 
