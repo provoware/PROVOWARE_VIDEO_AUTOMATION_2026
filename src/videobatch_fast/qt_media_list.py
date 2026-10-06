@@ -66,6 +66,7 @@ class DropList(QListWidget):
     def __init__(self, extensions: set[str]) -> None:
         super().__init__()
         self.extensions = {value.lower() for value in extensions}
+        self._production_paths: list[str] = []
         self._zoom_point_size = max(
             self.MIN_ZOOM_POINT_SIZE,
             min(self.MAX_ZOOM_POINT_SIZE, float(self.font().pointSizeF() or 11.0)),
@@ -86,6 +87,13 @@ class DropList(QListWidget):
     def paths(self) -> list[Path]:
         return [Path(self.item(row).data(Qt.ItemDataRole.UserRole)) for row in range(self.count())]
 
+    def production_paths(self) -> list[Path]:
+        return [Path(value) for value in self._production_paths]
+
+    def clear(self) -> None:
+        super().clear()
+        self._production_paths.clear()
+
     def add_paths(self, paths: list[Path]) -> None:
         known = {str(path) for path in self.paths()}
         added = False
@@ -105,15 +113,21 @@ class DropList(QListWidget):
                     item.setIcon(QIcon(pixmap))
             self.addItem(item)
             known.add(resolved)
+            self._production_paths.append(resolved)
             added = True
         if added:
             self.changed.emit()
 
     def remove_selected(self) -> None:
+        selected = {
+            str(item.data(Qt.ItemDataRole.UserRole))
+            for item in self.selectedItems()
+        }
         rows = sorted((self.row(item) for item in self.selectedItems()), reverse=True)
         for row in rows:
             self.takeItem(row)
         if rows:
+            self._production_paths = [value for value in self._production_paths if value not in selected]
             self.changed.emit()
 
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
@@ -178,10 +192,12 @@ class DropList(QListWidget):
         ordered = sorted(self.paths(), key=lambda path: media_path_sort_key(path, mode))
         if ordered == self.paths():
             return
+        production_order = list(self._production_paths)
         self.blockSignals(True)
         try:
             self.clear()
             self.add_paths(ordered)
+            self._production_paths = production_order
             for row in range(self.count()):
                 item = self.item(row)
                 raw = str(item.data(Qt.ItemDataRole.UserRole))
