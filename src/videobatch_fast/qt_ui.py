@@ -112,9 +112,15 @@ class VideoBatchQtWindow(QMainWindow):
     def _settings_panel(self) -> QWidget:
         panel, layout = self._panel(
             "2 · Ausgabe festlegen",
-            "Für den ersten Durchlauf reichen die empfohlenen Einstellungen.",
+            "Ziel und Verarbeitung stehen links, Kontrolle und Sicherheit rechts. "
+            "So bleiben die Einstellungen auch bei großer Schrift ohne Seiten-Scrollen sichtbar.",
         )
-        layout.addWidget(field_label("Wo sollen die fertigen Videos gespeichert werden?"))
+        columns = QHBoxLayout()
+        columns.setSpacing(14)
+        left = QVBoxLayout()
+        right = QVBoxLayout()
+
+        left.addWidget(field_label("Wo sollen die fertigen Videos gespeichert werden?"))
         target = QHBoxLayout()
         self.output = QLineEdit(str(Path.home() / "Videos" / "VideoBatch"))
         self.output_button = QPushButton("Ordner wählen …")
@@ -122,41 +128,42 @@ class VideoBatchQtWindow(QMainWindow):
         self.output_button.setMinimumWidth(125)
         target.addWidget(self.output, 1)
         target.addWidget(self.output_button)
-        layout.addLayout(target)
+        left.addLayout(target)
 
-        layout.addWidget(field_label("Verarbeitung"))
+        left.addWidget(field_label("Verarbeitung"))
         self.mode = QComboBox()
         for key, spec in QUICK_MODES.items():
             if key != "custom":
                 self.mode.addItem(spec.label + (" · empfohlen" if spec.recommended else ""), key)
         index = self.mode.findData("smart_auto")
         self.mode.setCurrentIndex(max(0, index))
-        layout.addWidget(self.mode)
+        left.addWidget(self.mode)
         self.mode_hint = QLabel()
         self.mode_hint.setObjectName("subtitle")
         self.mode_hint.setWordWrap(True)
-        layout.addWidget(self.mode_hint)
+        left.addWidget(self.mode_hint)
+        left.addStretch()
 
-        layout.addWidget(field_label("Kontrolle nach der Erstellung"))
+        right.addWidget(field_label("Kontrolle nach der Erstellung"))
         self.verification = QComboBox()
         self.verification.addItems(["Vollständig", "Schnell"])
         self.verification.currentIndexChanged.connect(self._mode_changed)
-        layout.addWidget(self.verification)
+        right.addWidget(self.verification)
         verification_hint = QLabel("Empfehlung: Vollständig. Schnell spart Zeit, prüft aber weniger.")
         verification_hint.setObjectName("subtitle")
         verification_hint.setWordWrap(True)
-        layout.addWidget(verification_hint)
+        right.addWidget(verification_hint)
 
         safety = QLabel("🛡 Originaldateien bleiben unverändert.")
         safety.setObjectName("safeHint")
         safety.setWordWrap(True)
-        layout.addWidget(safety)
+        right.addWidget(safety)
 
         self.details_toggle = QToolButton()
         self.details_toggle.setText("▸ Technische Details & Sicherheit")
         self.details_toggle.setCheckable(True)
         self.details_toggle.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
-        layout.addWidget(self.details_toggle)
+        right.addWidget(self.details_toggle)
         self.safety_details = QLabel(
             "• eindeutige Ausgabedateien\n"
             "• Fehlerprotokoll\n"
@@ -165,13 +172,17 @@ class VideoBatchQtWindow(QMainWindow):
         self.safety_details.setObjectName("subtitle")
         self.safety_details.setWordWrap(True)
         self.safety_details.setVisible(False)
-        layout.addWidget(self.safety_details)
+        right.addWidget(self.safety_details)
         self.details_toggle.toggled.connect(self._toggle_details)
 
-        layout.addStretch()
+        right.addStretch()
         self.runtime = QLabel()
         self.runtime.setObjectName("subtitle")
-        layout.addWidget(self.runtime)
+        right.addWidget(self.runtime)
+
+        columns.addLayout(left, 3)
+        columns.addLayout(right, 2)
+        layout.addLayout(columns, 1)
         self._mode_changed()
         self._runtime_state()
         return panel
