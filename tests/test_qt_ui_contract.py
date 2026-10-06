@@ -9,6 +9,8 @@ QT_THEME = ROOT / "src" / "videobatch_fast" / "qt_theme.py"
 QT_MEDIA_LIST = ROOT / "src" / "videobatch_fast" / "qt_media_list.py"
 QT_LOAD_DASHBOARD = ROOT / "src" / "videobatch_fast" / "qt_system_load_dashboard.py"
 QT_MAIN_LAYOUT = ROOT / "src" / "videobatch_fast" / "qt_main_layout.py"
+QT_WORKSPACE_LAYOUT = ROOT / "src" / "videobatch_fast" / "qt_workspace_layout.py"
+QT_SOURCE_PANEL = ROOT / "src" / "videobatch_fast" / "qt_source_panel.py"
 QT_UI_POLISH = ROOT / "src" / "videobatch_fast" / "qt_ui_polish.py"
 QT_LEGACY_APPEARANCE = ROOT / "src" / "videobatch_fast" / "qt_legacy_appearance.py"
 DISPLAY_FORMATTING = ROOT / "src" / "videobatch_fast" / "display_formatting.py"
@@ -92,7 +94,7 @@ def test_qt_theme_exposes_high_visibility_accessibility_contract() -> None:
 def test_qt_dashboard_exposes_total_job_and_activity_feedback() -> None:
     source = "".join(
         path.read_text(encoding="utf-8")
-        for path in (QT_UI, QT_MAIN_LAYOUT, QT_UI_POLISH, DISPLAY_FORMATTING)
+        for path in (QT_UI, QT_MAIN_LAYOUT, QT_WORKSPACE_LAYOUT, QT_UI_POLISH, DISPLAY_FORMATTING)
     )
     for token in (
         '("active", "Aktiv")',
@@ -176,8 +178,12 @@ def test_media_selection_lists_support_bounded_ctrl_wheel_zoom() -> None:
 
 
 
-def test_media_selection_lists_offer_deterministic_sort_modes() -> None:
-    source = QT_MEDIA_LIST.read_text(encoding="utf-8") + QT_UI.read_text(encoding="utf-8")
+def test_media_selection_lists_offer_deterministic_view_sort_without_pairing_drift() -> None:
+    source = (
+        QT_MEDIA_LIST.read_text(encoding="utf-8")
+        + QT_UI.read_text(encoding="utf-8")
+        + QT_SOURCE_PANEL.read_text(encoding="utf-8")
+    )
     for token in (
         '("Name A–Z", "name")',
         '("Änderung neu → alt", "modified")',
@@ -186,8 +192,11 @@ def test_media_selection_lists_offer_deterministic_sort_modes() -> None:
         'if mode == "modified":',
         'if mode == "size":',
         "def sort_by(self, mode: str)",
-        "selected = {str(item.data(Qt.ItemDataRole.UserRole))",
-        "Sortieren ordnet die jeweilige Liste neu",
+        "def production_paths(self) -> list[Path]:",
+        "production_order = list(self._production_paths)",
+        "def apply_view_as_production_order(self) -> None:",
+        "Ansicht als Produktionsreihenfolge übernehmen",
+        "self.audio.production_paths(), self.media.production_paths()",
     ):
         assert token in source
 
@@ -232,16 +241,22 @@ def test_header_dashboard_exposes_graphical_cpu_ram_swap_load() -> None:
         assert token in theme
 
 
-def test_main_workspace_supports_global_100_to_200_percent_scaling() -> None:
-    source = QT_MAIN_LAYOUT.read_text(encoding="utf-8")
+def test_main_workspace_supports_global_scaling_without_page_scroll_or_three_column_squeeze() -> None:
+    layout = QT_MAIN_LAYOUT.read_text(encoding="utf-8")
+    workspace = QT_WORKSPACE_LAYOUT.read_text(encoding="utf-8")
+    source = layout + workspace
     for token in (
         'window.view_scale.setAccessibleName("Ansichtsgröße")',
         "for value in SCALE_LEVELS:",
-        'workspace_scroll.setObjectName("mainWorkspaceScroll")',
-        "workspace_scroll.setWidgetResizable(True)",
-        "workspace_scroll.setWidget(splitter)",
+        "build_workflow_stack(window)",
+        'stack.setObjectName("workflowPages")',
+        '"media": window._sources_panel()',
+        '"effects": window._settings_panel()',
+        '"queue": window._queue_panel()',
+        "set_workflow_route(window, route)",
+        "guide.setVisible(route == \"dashboard\")",
+        'footer.setVisible(route in {"dashboard", "media", "effects", "queue"})',
         "app.setStyleSheet(scaled_style(value))",
-        "splitter.setMinimumSize(round(930 * value / 100), round(360 * value / 100))",
         'view_label.setBuddy(window.view_scale)',
         '("Ctrl+Alt+Up", 1)',
         '("Ctrl+Alt+Down", -1)',
@@ -249,13 +264,14 @@ def test_main_workspace_supports_global_100_to_200_percent_scaling() -> None:
         'window.table.verticalHeader().setDefaultSectionSize(round(38 * value / 100))',
         'window.audio.setAccessibleName("Audiodateien")',
         'window.table.setAccessibleName("Automatische Auftragsliste")',
-        "window.table.setAlternatingRowColors(True)",
     ):
         assert token in source
+    assert "mainWorkspaceScroll" not in layout
+    assert "QSplitter" not in layout
 
 
 def test_visual_hierarchy_and_beginner_keyboard_workflow_are_explicit() -> None:
-    source = QT_UI.read_text(encoding="utf-8") + QT_UI_POLISH.read_text(encoding="utf-8")
+    source = QT_UI.read_text(encoding="utf-8") + QT_UI_POLISH.read_text(encoding="utf-8") + QT_SOURCE_PANEL.read_text(encoding="utf-8")
     for token in (
         'text_label(hint, "panelHint", wrap=True)',
         '"ANALYSE"',
@@ -267,9 +283,9 @@ def test_visual_hierarchy_and_beginner_keyboard_workflow_are_explicit() -> None:
         'configure_secondary_buttons(window.open_output, window.show_result_log)',
         'table.setTextElideMode(Qt.TextElideMode.ElideMiddle)',
         'table.verticalHeader().setDefaultSectionSize(38)',
-        '("Alt+1", window.audio)',
-        '("Alt+2", window.output)',
-        '("Alt+3", window.start)',
+        '("Alt+1", "media", window.audio)',
+        '("Alt+2", "effects", window.output)',
+        '("Alt+3", "queue", window.start)',
         'window.audio.setToolTip(window.audio.toolTip() + " · Alt+1: Dateiauswahl")',
         '"Alt+2: Ausgabeordner"',
         '"Alt+3: Videos erstellen"',
