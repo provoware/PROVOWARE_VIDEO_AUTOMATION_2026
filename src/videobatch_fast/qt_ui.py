@@ -22,11 +22,11 @@ from .qt_main_layout import build_main_ui
 from .qt_theme import APP_STYLE
 from .quick_modes import QUICK_MODES, apply_quick_mode
 from .runner import BatchRunner
-from .qt_media_list import AUDIO_EXTS, MEDIA_EXTS, SORT_MODES, DropList
+from .qt_source_panel import build_sources_panel
 from .qt_system_load_dashboard import SystemLoadDashboard
 from .qt_ui_polish import (
-    configure_clear_button, configure_file_buttons, configure_job_table, configure_output_button,
-    field_label, install_workflow_shortcuts, job_table_item, text_label, update_status_chip,
+    configure_job_table, configure_output_button, field_label, install_workflow_shortcuts,
+    job_table_item, text_label, update_status_chip,
 )
 
 class VideoBatchQtWindow(QMainWindow):
@@ -84,52 +84,7 @@ class VideoBatchQtWindow(QMainWindow):
         build_main_ui(self)
 
     def _sources_panel(self) -> QWidget:
-        panel, layout = self._panel(
-            "1 · Dateien auswählen",
-            "Zuerst Audio, dann passende Bilder/Videos wählen. Position 1 wird mit Position 1 kombiniert.",
-        )
-        self.audio = DropList(AUDIO_EXTS)
-        self.media = DropList(MEDIA_EXTS)
-        layout.addWidget(text_label(
-            "Tipp: Strg + Mausrad vergrößert oder verkleinert die Auswahl-Listen.",
-            "helperText", wrap=True,
-        ))
-        self.sort_hint = text_label(
-            "Sortieren ordnet die jeweilige Liste neu und verändert damit die Positions-Paarung.",
-            "helperText", wrap=True,
-        )
-        layout.addWidget(self.sort_hint)
-        for label, widget, add_text in (
-            ("Audiodateien", self.audio, "Audio auswählen …"),
-            ("Bilder / Videos", self.media, "Bilder/Videos auswählen …"),
-        ):
-            heading = QHBoxLayout()
-            heading.addWidget(field_label(label))
-            heading.addStretch()
-            sorter = QComboBox()
-            sorter.setAccessibleName(f"{label} sortieren")
-            sorter.setMinimumWidth(155)
-            for sort_label, sort_mode in SORT_MODES:
-                sorter.addItem(sort_label, sort_mode)
-            sorter.currentIndexChanged.connect(
-                lambda _index, target=widget, control=sorter: target.sort_by(str(control.currentData()))
-            )
-            heading.addWidget(sorter)
-            layout.addLayout(heading)
-            layout.addWidget(widget, 1)
-            row = QHBoxLayout()
-            add = QPushButton(add_text)
-            remove = QPushButton("Entfernen")
-            configure_file_buttons(add, remove, label)
-            add.clicked.connect(self._choose_audio if widget is self.audio else self._choose_media)
-            remove.clicked.connect(widget.remove_selected)
-            row.addWidget(add)
-            row.addWidget(remove)
-            layout.addLayout(row)
-        self.clear = QPushButton("Alle ausgewählten Dateien entfernen")
-        configure_clear_button(self.clear)
-        layout.addWidget(self.clear)
-        return panel
+        return build_sources_panel(self)
 
     def _queue_panel(self) -> QWidget:
         panel, layout = self._panel(
@@ -276,7 +231,7 @@ class VideoBatchQtWindow(QMainWindow):
         self.activity_detail.setText("Keine Verarbeitung aktiv · bereit für neue Aufträge")
 
     def _refresh(self, *, preserve_results: bool = False) -> None:
-        audios, media = self.audio.paths(), self.media.paths()
+        audios, media = self.audio.production_paths(), self.media.production_paths()
         self.kpi_values["audio"].setText(str(len(audios)))
         self.kpi_values["media"].setText(str(len(media)))
         if not preserve_results:
@@ -363,7 +318,7 @@ class VideoBatchQtWindow(QMainWindow):
         if missing:
             QMessageBox.critical(self, "FFmpeg fehlt", "Nicht gefunden: " + ", ".join(missing))
             return
-        audios, media = self.audio.paths(), self.media.paths()
+        audios, media = self.audio.production_paths(), self.media.production_paths()
         if not audios or len(audios) != len(media):
             QMessageBox.warning(self, "Paarung unvollständig", "Zu jedem Audio muss genau ein Bild oder Video gehören.")
             return
