@@ -108,10 +108,11 @@ def test_beginner_slideshow_keeps_primary_options_fixed_above_secondary_scroll()
     assert "Die drei Grundoptionen bleiben immer sichtbar" in source
 
 
-def test_selecting_audio_or_media_opens_the_live_preview_dock() -> None:
+def test_selecting_audio_or_media_routes_preview_without_squeezing_file_page() -> None:
     source = _text(SRC / "qt_phase2_selection_preview.py")
     app = _text(SRC / "qt_phase2.py")
     assert "class SelectionPreviewMixin" in source
+    assert 'route("preview")' in source
     assert "self.phase2_dock.show()" in source
     assert "self.phase2_dock.raise_()" in source
     assert "self.phase2_tabs.setCurrentWidget(self.preview_panel)" in source
