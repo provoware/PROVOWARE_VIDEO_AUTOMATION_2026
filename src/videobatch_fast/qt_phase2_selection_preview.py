@@ -9,6 +9,10 @@ class SelectionPreviewMixin:
     """Selection-driven preview behavior shared by the Phase-2 window."""
 
     def _show_selection_preview(self) -> None:
+        route = getattr(self, "_route_workspace", None)
+        if callable(route):
+            route("preview")
+            return
         if hasattr(self, "phase3_dock"):
             self.phase3_dock.hide()
         self.phase2_dock.show()
