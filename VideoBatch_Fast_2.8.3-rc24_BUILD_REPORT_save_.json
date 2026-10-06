@@ -49,7 +49,7 @@
     "tooltip_contract": "delayed, keyboard-accessible, screen-bound and Tcl-safe",
     "unfinished_gate_files": 5
   },
-  "release_manifest_files": 494,
+  "release_manifest_files": 496,
   "matrix": {
     "status": "passed",
     "passed_targets": 1,
@@ -59,7 +59,7 @@
     "scope_note": "Aktuelle Ziel-CI auf Ubuntu-26.04-Basis mit KDE-/Wayland-Laufzeitteilmenge, headless Weston und nativem Qt-Wayland-QPA; kein Ersatz für die physische Kubuntu-26.04-Abnahme."
   },
   "stable_blockers": [
-    "Physische Kubuntu-26.04-Plasma-Wayland-Abnahme: Die manuelle Kubuntu-/Wayland-Basisabnahme vom 29.09.2026 liegt vor, deckt jedoch die nachfolgenden UI-/Skalierungsänderungen aus PR #228 nicht ab. Vor Stable ist eine erneute reale Sichtabnahme auf Kubuntu 26.04 / KDE Plasma / Wayland bei 100 %, 150 % und 200 % erforderlich."
+    "Physische Kubuntu-26.04-Plasma-Wayland-Abnahme: Der reale 125-%-Screenshot vom 06.10.2026 zeigte abgeschnittene und überladene Arbeitsbereiche. Der daraus abgeleitete seitengetrennte Qt-Stand muss vor Stable erneut real auf Kubuntu 26.04 / KDE Plasma / Wayland bei 100 %, 125 %, 150 % und 200 % geprüft werden."
   ],
   "stable_ready": false,
   "status": "passed",
