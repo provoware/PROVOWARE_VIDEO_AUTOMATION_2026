@@ -76,7 +76,7 @@
     "maximum_complexity": 29
   },
   "manifest": {
-    "file_count": 495,
+    "file_count": 494,
     "path": "RELEASE_MANIFEST.json",
     "status": "passed"
   },
@@ -104,10 +104,10 @@
     "version": "2.8.3-rc24"
   },
   "progress": {
-    "completed": 30,
-    "current_todo": "Kubuntu-Basisabnahme und Langzeitrender wurden am 29.09.2026 durch den Projektverantwortlichen als in Ordnung bestätigt. Beide fachlichen P0-Abnahmen sind grün; die formale Stable-Promotion bleibt ein separater reproduzierbarer Freigabeschritt.",
-    "open": 0,
-    "percent": 100,
+    "completed": 29,
+    "current_todo": "PR #228 und die Release-Bereinigung vollständig grün halten; danach reale Kubuntu-26.04/KDE/Wayland-Sichtabnahme bei 100 %, 150 % und 200 % durchführen. Erst nach dieser erneuten UI-Abnahme Stable 2.8.3 promoten.",
+    "open": 1,
+    "percent": 97,
     "total": 30
   },
   "provenance": {
@@ -125,10 +125,20 @@
       "legacy_ceiling_before": 1215,
       "legacy_ceiling_after": 1115,
       "extracted_module": "src/videobatch_fast/qt_legacy_settings.py"
+    },
+    "latest_ui_reacceptance_required": {
+      "source_pr": 228,
+      "target": "Kubuntu 26.04 LTS · KDE Plasma · natives Wayland",
+      "required_scales": [
+        100,
+        150,
+        200
+      ],
+      "reason": "UI-, Skalierungs- und Barrierefreiheitsänderungen nach der letzten manuellen Basisabnahme."
     }
   },
   "release_cleanup": {
-    "historical_reports_archived": 69,
+    "historical_reports_archived": 70,
     "obsolete_kubuntu_matrix_files_removed": 10,
     "obsolete_visual_baselines_removed": 16,
     "ready_deliverables": 10,
@@ -195,7 +205,7 @@
       {
         "label": "Offene Arbeitsliste",
         "path": "TODO.md",
-        "reason": "Fachliche P0-Abnahmen abgeschlossen; enthält nur noch Stable-Promotion, Qt-Migrations- und Wartbarkeitsarbeiten"
+        "reason": "Automatisierte Release- und Qt-Gates sind grün; offen sind die erneute reale 100/150/200-%-Sichtabnahme des geänderten UI-Stands und danach die formale Stable-Promotion."
       },
       {
         "label": "Langzeitrender",
@@ -205,17 +215,17 @@
       {
         "label": "Stable-Abnahmenachweis",
         "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
-        "reason": "Manuelle Kubuntu- und Langzeitrender-Freigaben dokumentiert; technischer Promotionspfad behält seine formalen Evidenzregeln"
+        "reason": "Basisfreigaben vom 29.09.2026 sind dokumentiert; nach den UI-/Skalierungsänderungen aus PR #228 ist vor Stable eine erneute reale 100/150/200-%-Sichtabnahme erforderlich."
       },
       {
         "label": "Qualitätsumgebung",
         "path": "QUALITY_ENVIRONMENT_STATUS.json",
-        "reason": "Maschinenlesbarer Status; alle fachlichen Stable-Gates sind bestanden"
+        "reason": "Maschinenlesbarer Qualitätsstatus; automatisierte Gates sind grün, die erneute physische UI-Sichtabnahme nach PR #228 ist noch offen."
       },
       {
         "label": "Visuelles Prüfmanifest",
         "path": "VISUAL_INSPECTION_MANIFEST.json",
-        "reason": "Manuelle Basisfreigabe ist separat dokumentiert; das visuelle Prüfmanifest wird nicht als neuer physischer 26.04-Nachweis umgedeutet"
+        "reason": "Automatisierte visuelle Verträge bleiben Referenz; die neue reale 100/150/200-%-Sichtabnahme für den geänderten UI-Stand steht noch aus."
       }
     ]
   },
@@ -259,8 +269,8 @@
     {
       "id": "physical_kubuntu_26_04_wayland",
       "label": "Physische Kubuntu-26.04-Plasma-Wayland-Abnahme",
-      "reason": "Manuelle Basis-Abnahme am 29.09.2026 durch den Projektverantwortlichen bestätigt; der vorhandene Kubuntu-/Wayland-Basiszustand wurde als in Ordnung akzeptiert. Es wird kein neu ausgeführter physischer Kubuntu-26.04-Test behauptet. Provenienz: diagnostics/release_readiness/KUBUNTU_OPERATOR_ACCEPTANCE_2026-09-29.json",
-      "status": "passed"
+      "reason": "Die manuelle Kubuntu-/Wayland-Basisabnahme vom 29.09.2026 liegt vor, deckt jedoch die nachfolgenden UI-/Skalierungsänderungen aus PR #228 nicht ab. Vor Stable ist eine erneute reale Sichtabnahme auf Kubuntu 26.04 / KDE Plasma / Wayland bei 100 %, 150 % und 200 % erforderlich.",
+      "status": "open"
     },
     {
       "id": "large_media_soak",
@@ -269,7 +279,7 @@
       "status": "passed"
     }
   ],
-  "stable_ready": true,
+  "stable_ready": false,
   "tests": {
     "assurance_scenarios": "12/12",
     "branch_coverage_percent": 67.21,

@@ -74,7 +74,7 @@ chmod +x videobatch.sh
 
 ### Schritt 1: Audiodateien hinzufügen
 
-**Aktion:** `Audiodateien hinzufügen` auswählen und mindestens eine unterstützte Audiodatei übernehmen.
+**Aktion:** `Audio auswählen …` wählen und mindestens eine unterstützte Audiodatei übernehmen.
 
 **Warum notwendig?** Die meisten Produktionsmodi benötigen eine Tonquelle.
 
@@ -84,7 +84,7 @@ chmod +x videobatch.sh
 
 ### Schritt 2: Bilder oder Videos hinzufügen
 
-**Aktion:** `Bilder hinzufügen` oder `Videos hinzufügen` auswählen.
+**Aktion:** `Bilder/Videos auswählen …` wählen.
 
 **Warum notwendig?** Ohne visuelle Quelle kann kein normales Video erzeugt werden.
 
@@ -122,7 +122,7 @@ chmod +x videobatch.sh
 
 ### Schritt 6: Produktion starten
 
-**Aktion:** `Automatisch prüfen und Videos erstellen` oder den entsprechenden Startschalter verwenden.
+**Aktion:** `▶ 3 · Videos erstellen` wählen.
 
 **Warum notwendig?** Vor dem Rendern werden Quellen, Pfade, Modus und benötigte Werkzeuge geprüft.
 
@@ -146,7 +146,36 @@ chmod +x videobatch.sh
 
 **Kann entfallen?** Für unwichtige Tests ja. Vor Veröffentlichung oder Archivierung nein.
 
-## 5. Mehrere Auswahlrunden
+## 5. Ansicht, Zoom und Sortierreihenfolge
+
+### Oberfläche vergrößern
+
+Oben im Bereich **Ansicht** kann die gesamte Oberfläche auf **100 %, 125 %, 150 %, 175 % oder 200 %** gestellt werden.
+
+Tastatur:
+
+- `Strg+Alt+Pfeil hoch`: gesamte Oberfläche größer
+- `Strg+Alt+Pfeil runter`: gesamte Oberfläche kleiner
+- `Strg+Alt+0`: gesamte Oberfläche auf 100 % zurücksetzen
+
+### Nur eine Medienliste vergrößern
+
+Wenn der Fokus in der Audio- oder Medienliste liegt:
+
+- `Strg + Mausrad` oder `Strg + Plus/Minus`: nur diese Liste vergrößern oder verkleinern
+- `Strg+0`: nur diese Liste auf Normalgröße zurücksetzen
+
+Die Listen-Vergrößerung und die globale Ansichtsgröße sind bewusst getrennt.
+
+### Sortieren ohne versehentliche neue Paarung
+
+Eine Sortierung nach Name, Änderungsdatum oder Größe verändert zunächst **nur die sichtbare Ansicht**. Die Produktionsreihenfolge der Audio-/Medienpaare bleibt unverändert.
+
+Erst die ausdrückliche Aktion **„Ansicht als Produktionsreihenfolge übernehmen“** ändert die Reihenfolge, aus der später die Aufträge gebaut werden.
+
+**Warum wichtig?** Dadurch kann eine reine Ansichtssortierung nicht unbemerkt andere Audio-/Bild-Paare erzeugen.
+
+## 6. Mehrere Auswahlrunden
 
 1. Im Medienbrowser Dateien markieren.
 2. `Auswahl übernehmen + im Ordner bleiben` wählen.
@@ -157,7 +186,7 @@ chmod +x videobatch.sh
 
 **Kann entfallen?** Ja. Bei Quellen aus nur einem Ordner genügt eine Auswahlrunde.
 
-## 6. Vorschau-Cache
+## 7. Vorschau-Cache
 
 Der Vorschau-Cache speichert nur von VideoBatch erzeugte Vorschaubilder im Benutzer-Cache.
 
@@ -179,7 +208,7 @@ Der Vorschau-Cache speichert nur von VideoBatch erzeugte Vorschaubilder im Benut
 
 **Nicht betroffen:** Originalmedien, Projektdateien und fremde Dateien.
 
-## 7. Fehler sicher beheben
+## 8. Fehler sicher beheben
 
 ### Gelbe Meldung
 
@@ -209,7 +238,7 @@ chown -R …
 
 Diese Eingriffe können fremde Dateien, Rechte und Sicherheitsgrenzen verändern. Sie sind für den normalen VideoBatch-Betrieb nicht erforderlich.
 
-## 8. Fehlende Quelldateien
+## 9. Fehlende Quelldateien
 
 Wenn eine zuvor verwendete Datei verschoben oder gelöscht wurde:
 
@@ -221,7 +250,7 @@ Wenn eine zuvor verwendete Datei verschoben oder gelöscht wurde:
 
 **Kann der fehlende Verweis ignoriert werden?** Nein. Ein Auftrag mit nicht erreichbaren Quellen ist nicht reproduzierbar.
 
-## 9. Queuefehler und Wiederanlauf
+## 10. Queuefehler und Wiederanlauf
 
 1. Queue öffnen.
 2. Fehlgeschlagenen Auftrag auswählen.
@@ -232,7 +261,7 @@ Wenn eine zuvor verwendete Datei verschoben oder gelöscht wurde:
 
 **Wichtig:** Das Laden der Wiederanlaufquellen startet keinen Render automatisch. Dadurch bleibt die Kontrolle beim Nutzer und Wiederholungsschleifen werden vermieden.
 
-## 10. Effekte zurücksetzen
+## 11. Effekte zurücksetzen
 
 Bei einem ungültigen oder nicht mehr verfügbaren Effekt:
 
@@ -244,7 +273,7 @@ Bei einem ungültigen oder nicht mehr verfügbaren Effekt:
 
 **Kann dieser Schritt entfallen?** Nur wenn stattdessen ein anderer gültiger Effekt manuell gewählt wird.
 
-## 11. Projekt speichern und beenden
+## 12. Projekt speichern und beenden
 
 1. Laufende Produktion abschließen oder kontrolliert stoppen.
 2. Projekt speichern.

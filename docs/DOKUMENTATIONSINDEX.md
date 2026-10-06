@@ -56,7 +56,7 @@ Die folgenden Dateien sind Belege eines bestimmten Entwicklungs- oder Prüfstand
 - `FINAL_AUDIT_2.8.3-rc24_save_.md`
 - `FRESH_PACKAGE_REPORT_save_.md`
 - `IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md`
-- `QUALITY_GATE_REPORT_2.8.3-rc24_save_.md`
+- `docs/archive/release-history/QUALITY_GATE_REPORT_2.8.3-rc24_save_.md`
 - `docs/LONG_RENDER_2.8.3-rc24.md`
 - `docs/STABLE_ACCEPTANCE_EVIDENCE.md`
 - `docs/archive/release-history/` – frühere Release-, Qualitäts-, Design- und Prüfstände (unverändert archiviert)

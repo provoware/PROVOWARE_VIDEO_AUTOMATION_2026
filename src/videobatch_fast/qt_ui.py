@@ -94,10 +94,11 @@ class VideoBatchQtWindow(QMainWindow):
             "Tipp: Strg + Mausrad vergrößert oder verkleinert die Auswahl-Listen.",
             "helperText", wrap=True,
         ))
-        layout.addWidget(text_label(
+        self.sort_hint = text_label(
             "Sortieren ordnet die jeweilige Liste neu und verändert damit die Positions-Paarung.",
             "helperText", wrap=True,
-        ))
+        )
+        layout.addWidget(self.sort_hint)
         for label, widget, add_text in (
             ("Audiodateien", self.audio, "Audio auswählen …"),
             ("Bilder / Videos", self.media, "Bilder/Videos auswählen …"),

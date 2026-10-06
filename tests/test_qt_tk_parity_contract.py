@@ -136,7 +136,19 @@ def test_qt_phase3_restores_legacy_options_and_uses_configured_media_tools(
     window.audio.add_paths([audio_z, audio_a])
     window.media.add_paths([image_z, image_a])
 
-    # Sorting is view-only until the explicit production-order action is used.
+    # Both the beginner quick-sort and the detailed sort stay view-only until
+    # the explicit production-order action is used.
+    window.audio.sort_by("name")
+    app.processEvents()
+    quick_displayed = [
+        Path(str(window.audio.item(row).data(Qt.ItemDataRole.UserRole)))
+        for row in range(window.audio.count())
+    ]
+    assert quick_displayed == [audio_a.resolve(), audio_z.resolve()]
+    assert window.audio.paths() == [audio_z.resolve(), audio_a.resolve()]
+    assert "nur die Ansicht" in window.sort_hint.text()
+    assert window.parity_audio_sort.currentData() == "name_asc"
+
     window.parity_audio_sort.setCurrentIndex(window.parity_audio_sort.findData("name_asc"))
     app.processEvents()
     displayed = [

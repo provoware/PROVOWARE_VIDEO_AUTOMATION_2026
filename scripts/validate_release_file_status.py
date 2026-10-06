@@ -52,6 +52,15 @@ def validate(root: Path = ROOT) -> dict[str, Any]:
     ]
     if old_root_reports:
         raise ValueError("Historische Berichte liegen noch im Projektstamm: " + ", ".join(sorted(old_root_reports)))
+    undeclared_ready = [
+        path.name for path in root.iterdir()
+        if path.is_file() and READY_MARKER in path.stem and path.name not in seen
+    ]
+    if undeclared_ready:
+        raise ValueError(
+            "Nicht deklarierte _save_-Dateien liegen im Projektstamm: "
+            + ", ".join(sorted(undeclared_ready))
+        )
     if (root / "tests/baselines/visual").exists():
         raise ValueError("Veraltete doppelte visuelle Baselines existieren noch")
     if not ARCHIVE.is_dir():

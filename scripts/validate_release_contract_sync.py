@@ -11,6 +11,7 @@ from videobatch_fast.versioning import build_label
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "RELEASE_MANIFEST.json"
+PACKAGE_MANIFEST_PATH = ROOT / "manifest.json"
 EVIDENCE_PATH = ROOT / "diagnostics/release_readiness/RELEASE_EVIDENCE.json"
 QUALITY_PATH = ROOT / "QUALITY_ENVIRONMENT_STATUS.json"
 BUILD_REPORT_PATH = ROOT / f"VideoBatch_Fast_{build_label()}_BUILD_REPORT_save_.json"
@@ -58,6 +59,7 @@ def _sha256_text(value: object) -> bool:
 
 def validate() -> dict[str, Any]:
     manifest = _load(MANIFEST_PATH)
+    package_manifest = _load(PACKAGE_MANIFEST_PATH)
     evidence = _load(EVIDENCE_PATH)
     quality = _load(QUALITY_PATH)
     build = _load(BUILD_REPORT_PATH)
@@ -82,6 +84,21 @@ def validate() -> dict[str, Any]:
         raise ContractSyncError("Produktversion und Manifest version/build sind nicht synchron")
     if product.get("channel") != manifest.get("channel"):
         raise ContractSyncError("Release-Kanal in Evidence und Manifest ist nicht synchron")
+
+    if package_manifest.get("schema_version") != 1:
+        raise ContractSyncError("manifest.json besitzt eine unbekannte Schema-Version")
+    for field in ("name", "version", "channel", "build_date"):
+        if package_manifest.get(field) != product.get(field):
+            raise ContractSyncError(
+                f"manifest.json Feld {field!r} ist nicht mit RELEASE_EVIDENCE.product synchron"
+            )
+    if package_manifest.get("artifact_policy") != evidence.get("artifact_policy"):
+        raise ContractSyncError(
+            "manifest.json artifact_policy ist nicht mit RELEASE_EVIDENCE synchron"
+        )
+    entrypoint = str(package_manifest.get("entrypoint") or "")
+    if not entrypoint or not (ROOT / entrypoint).is_file():
+        raise ContractSyncError("manifest.json verweist auf keinen gültigen Einstieg")
 
     internal = _mapping(quality.get("internal_gates"), "QUALITY_ENVIRONMENT_STATUS.internal_gates")
     if internal.get("release_manifest_files") != count:

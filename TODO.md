@@ -4,16 +4,17 @@
 
 **Zielplattform:** Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6.
 
-Der automatisierte Repository-, Release-, Qt6- und Qualitätsstand ist grün. **Kubuntu-Basisabnahme und Langzeitrender wurden am 29.09.2026 vom Projektverantwortlichen als in Ordnung bestätigt. Beide fachlichen P0-Gates sind grün.**
+Der automatisierte Repository-, Release-, Qt6- und Qualitätsstand ist grün. **Langzeitrender und die Kubuntu-Basisabnahme vom 29.09.2026 sind dokumentiert. Nach den späteren UI-/Skalierungsänderungen ist die physische UI-Freigabe jedoch erneut offen.**
 
 ## P0 – jetzt
 
-### 1. Kubuntu-Basisabnahme — GRÜN
+### 1. Kubuntu-/Wayland-Sichtabnahme — OFFEN
 
-- [x] Vorhandenen Kubuntu-/Wayland-Basiszustand durch den Projektverantwortlichen als in Ordnung akzeptiert.
-- [x] Kanonisches Gate `physical_kubuntu_26_04_wayland` auf `passed` gesetzt.
-- [x] Manuelle Provenienz unter `diagnostics/release_readiness/KUBUNTU_OPERATOR_ACCEPTANCE_2026-09-29.json` dokumentiert.
-- [x] Kein neu ausgeführter physischer Kubuntu-26.04-Lauf und keine nicht vorhandenen Messdaten werden behauptet.
+- [x] Basisabnahme vom 29.09.2026 unter `diagnostics/release_readiness/KUBUNTU_OPERATOR_ACCEPTANCE_2026-09-29.json` erhalten.
+- [x] Automatisierte Qt-/Wayland- und Repository-Gates für den neuen UI-Stand grün.
+- [ ] Geänderten UI-/Skalierungsstand aus PR #228 real auf Kubuntu 26.04 · KDE Plasma · Wayland prüfen.
+- [ ] Dabei 100 %, 150 % und 200 % kontrollieren: Clipping, Fokus, Lesbarkeit, Tabellenzeilen, Statusanzeigen und Listen-Zoom.
+- [ ] Erst nach dieser Sichtabnahme `physical_kubuntu_26_04_wayland` wieder auf `passed` setzen.
 
 ### 2. Realer Langzeitrender — GRÜN
 
@@ -22,10 +23,11 @@ Der automatisierte Repository-, Release-, Qt6- und Qualitätsstand ist grün. **
 - [x] Manuelle Provenienz unter `diagnostics/release_readiness/LONG_RENDER_OPERATOR_ACCEPTANCE_2026-09-29.json` dokumentiert.
 - [x] Keine nicht vorliegenden Einzelmesswerte, Hashwerte oder Prüfschritte werden nachträglich erfunden.
 
-## Stable-Finalisierung – fachliche P0-Gates abgeschlossen
+## Stable-Finalisierung – ein reales UI-Gate offen
 
 - [x] Expliziten Operator-Freigabevertrag als fail-closed Alternative zum klassischen Nachweispfad implementieren; keine Messwerte werden rekonstruiert.
-- [ ] Release-PR vollständig grün bestätigen.
+- [ ] PR #228 und den darauf aufgebauten Release-Bereinigungs-PR vollständig grün halten.
+- [ ] Reale 100/150/200-%-Sichtabnahme dokumentieren und Release-Evidence erneut ableiten.
 - [ ] Danach Stable 2.8.3 in getrennter Arbeitskopie erzeugen, deterministisch doppelt paketieren, Stable-Branch/Tag und GitHub-Release veröffentlichen.
 
 ## Repository-Schutz und Ordnung
@@ -54,4 +56,4 @@ Diese Arbeiten bleiben bis zur realen Zielsystemabnahme zurückgestellt:
 
 ## Abschlussregel
 
-**Kubuntu-Basisabnahme und Langzeitrender sind fachlich grün.** Die eigentliche Stable-Promotion bleibt ein separater reproduzierbarer Release-Schritt; vorhandene formale Evidenzprüfer werden durch die manuelle Statusfreigabe nicht stillschweigend umgangen.
+**Der Langzeitrender bleibt fachlich grün; die physische UI-Sichtabnahme ist wegen der späteren UI-/Skalierungsänderungen erneut offen.** Stable darf erst nach dieser erneuten Abnahme promotet werden. Vorhandene Evidenz wird nicht rückwirkend umgedeutet oder künstlich aktualisiert.

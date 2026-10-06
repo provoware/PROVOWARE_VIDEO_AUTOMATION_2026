@@ -170,7 +170,7 @@ def update_status_chip(label: QLabel, text: str) -> None:
     normalized = text.upper()
     if any(token in normalized for token in ("FEHLER", "SCHUTZSTOPP", "ABGEBROCHEN")):
         state = "error"
-    elif any(token in normalized for token in ("PRÜFT", "STARTET", "LÄUFT", "STOPPT")):
+    elif any(token in normalized for token in ("PRÜFT", "ANALYSE", "STARTET", "LÄUFT", "STOPPT")):
         state = "busy"
     elif "HINWEIS" in normalized or normalized == "PRÜFEN":
         state = "warning"

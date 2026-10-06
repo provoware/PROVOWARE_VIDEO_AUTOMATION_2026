@@ -11,6 +11,8 @@
 
 ## Tests und Coverage
 
+Die folgenden Zahlen sind die kanonisch dokumentierte vollständige RC24-Regressionsbasis:
+
 - 325/325 Tests bestanden
 - 82,43 % Statement-/Zeilenabdeckung
 - 67,21 % Branch-Abdeckung
@@ -30,4 +32,4 @@
 
 ## Externe Qualitätsgates
 
-Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4 und pip-audit 2.10.1 sind für den aktuellen Kandidaten im provenienzgebundenen Offline-Lauf `34421827176` vollständig bestanden. Ein einzelner Bandit-B112-Befund niedriger Schwere wurde durch enges Abfangen von `tkinter.TclError` fachlich behoben und im vollständigen Wiederholungslauf verifiziert. Offen bleiben nur die physische KDE-X11-/Wayland-Abnahme und der reale Langzeitrender.
+Ruff 0.16.1, MyPy 2.3.0, Bandit 1.9.4 und pip-audit 2.10.1 besitzen einen provenienzgebundenen vollständigen Offline-Nachweis. Die aktuelle Qt-/Wayland-Änderung wird zusätzlich durch die verpflichtenden Repository- und Qt-Gates geprüft. Der Langzeitrender ist manuell bestätigt. **Vor Stable bleibt ausschließlich die erneute reale Kubuntu-26.04/KDE/Wayland-Sichtabnahme des geänderten UI-Stands bei 100 %, 150 % und 200 % offen.**

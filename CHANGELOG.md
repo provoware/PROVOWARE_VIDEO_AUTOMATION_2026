@@ -4,6 +4,13 @@ Alle wichtigen Änderungen dieses Projekts werden hier in zusammengefasster, chr
 
 ## Unveröffentlicht · RC24-Finalbereinigung
 
+- Qt-Statusausgaben, 100–200-%-Skalierung und Tastatur-Zoom für Barrierefreiheit korrigiert
+- Sortierung der Medienlisten von der Produktionsreihenfolge entkoppelt; Übernahme nur noch ausdrücklich
+- veralteten, nicht deklarierten RC24-Qualitätsbericht aus dem Release-Stamm archiviert
+- Release-Dateivertrag gegen nicht deklarierte `_save_`-Dateien im Projektstamm gehärtet
+- `manifest.json` gegen kanonische Release-Evidenz auf Name, Version, Kanal, Build-Datum, Artefaktpolitik und Einstieg abgesichert
+- aktuelle Release-Unterlagen auf Kubuntu 26.04 / KDE Plasma / natives Wayland bereinigt; alte X11-/Vierfachmatrix-Aussagen entfernt
+- physische UI-Freigabe nach den letzten UI-/Skalierungsänderungen wieder fail-closed auf offen gesetzt; neue 100/150/200-%-Sichtabnahme erforderlich
 - Nutzerfeedback im Footer klar in **Status** und **Nächster Schritt** getrennt, semantisch eingefärbt und für schmale Fenster responsiv gestapelt
 - Hilfevertrag auf die tatsächlich zuständige Hilfeseite ausgerichtet
 - Zustandsberechnung für Medien, Aufträge und Effekte getrennt, ohne sichtbare Ausgabe zu ändern

@@ -10,6 +10,7 @@ QT_MEDIA_LIST = ROOT / "src" / "videobatch_fast" / "qt_media_list.py"
 QT_LOAD_DASHBOARD = ROOT / "src" / "videobatch_fast" / "qt_system_load_dashboard.py"
 QT_MAIN_LAYOUT = ROOT / "src" / "videobatch_fast" / "qt_main_layout.py"
 QT_UI_POLISH = ROOT / "src" / "videobatch_fast" / "qt_ui_polish.py"
+QT_LEGACY_APPEARANCE = ROOT / "src" / "videobatch_fast" / "qt_legacy_appearance.py"
 DISPLAY_FORMATTING = ROOT / "src" / "videobatch_fast" / "display_formatting.py"
 
 
@@ -110,8 +111,9 @@ def test_qt_dashboard_exposes_total_job_and_activity_feedback() -> None:
         '"aktuelle Schätzung"',
         '"⚠ Fehler · Protokoll prüfen"',
         'item.setToolTip("Auftrag fehlgeschlagen.',
-        'window.status.setAccessibleName("Programmstatus")',
-        'window.next_step.setAccessibleName("Nächster Arbeitsschritt")',
+        '"Aktueller Programmstatus. Der sichtbare Text nennt den momentanen Zustand."',
+        '"Der sichtbare Text nennt den aktuell empfohlenen nächsten Arbeitsschritt."',
+        '"Der sichtbare Text beschreibt den aktuellen Arbeitszustand."',
         'window.progress.setAccessibleName("Gesamtfortschritt")',
         'window.job_progress.setAccessibleName("Fortschritt des aktuellen Auftrags")',
         'open_output_folder(window)',
@@ -240,9 +242,11 @@ def test_main_workspace_supports_global_100_to_200_percent_scaling() -> None:
         "workspace_scroll.setWidget(splitter)",
         "app.setStyleSheet(scaled_style(value))",
         "splitter.setMinimumSize(round(930 * value / 100), round(360 * value / 100))",
-        "QKeySequence.StandardKey.ZoomIn",
-        "QKeySequence.StandardKey.ZoomOut",
-        'QKeySequence("Ctrl+0")',
+        'view_label.setBuddy(window.view_scale)',
+        '("Ctrl+Alt+Up", 1)',
+        '("Ctrl+Alt+Down", -1)',
+        'QKeySequence("Ctrl+Alt+0")',
+        'window.table.verticalHeader().setDefaultSectionSize(round(38 * value / 100))',
         'window.audio.setAccessibleName("Audiodateien")',
         'window.table.setAccessibleName("Automatische Auftragsliste")',
         "window.table.setAlternatingRowColors(True)",
@@ -254,6 +258,7 @@ def test_visual_hierarchy_and_beginner_keyboard_workflow_are_explicit() -> None:
     source = QT_UI.read_text(encoding="utf-8") + QT_UI_POLISH.read_text(encoding="utf-8")
     for token in (
         'text_label(hint, "panelHint", wrap=True)',
+        '"ANALYSE"',
         '"helperText", wrap=True',
         'add.setObjectName("secondary")',
         'remove.setObjectName("quietDanger")',
@@ -273,6 +278,20 @@ def test_visual_hierarchy_and_beginner_keyboard_workflow_are_explicit() -> None:
         'label.style().polish(label)',
     ):
         assert token in source
+
+
+def test_accessibility_scaling_composes_with_the_selected_theme() -> None:
+    layout = QT_MAIN_LAYOUT.read_text(encoding="utf-8")
+    appearance = QT_LEGACY_APPEARANCE.read_text(encoding="utf-8")
+
+    assert 'window.setStyleSheet(_THEME_OVERRIDES.get(theme, ""))' in appearance
+    assert "app.setStyleSheet(APP_STYLE" not in appearance
+    assert "QKeySequence.StandardKey.ZoomIn" not in layout
+    assert "QKeySequence.StandardKey.ZoomOut" not in layout
+    assert 'QKeySequence("Ctrl+0")' not in layout
+    assert 'window.status.setAccessibleName(' not in layout
+    assert 'window.next_step.setAccessibleName(' not in layout
+    assert 'window.activity_detail.setAccessibleName(' not in layout
 
 
 def test_result_preserving_refresh_propagates_through_qt_layers() -> None:

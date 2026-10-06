@@ -3,13 +3,15 @@
   "generated_from": "diagnostics/release_readiness/RELEASE_EVIDENCE.json",
   "iteration": 24,
   "version": "2.8.3-rc24",
-  "progress_percent": 100,
-  "completed": 30,
-  "open": 0,
-  "current_todo": "Kubuntu-Basisabnahme und Langzeitrender wurden am 29.09.2026 durch den Projektverantwortlichen als in Ordnung bestätigt. Beide fachlichen P0-Abnahmen sind grün; die formale Stable-Promotion bleibt ein separater reproduzierbarer Freigabeschritt.",
-  "status": "green",
-  "stable_ready": true,
+  "progress_percent": 97,
+  "completed": 29,
+  "open": 1,
+  "current_todo": "PR #228 und die Release-Bereinigung vollständig grün halten; danach reale Kubuntu-26.04/KDE/Wayland-Sichtabnahme bei 100 %, 150 % und 200 % durchführen. Erst nach dieser erneuten UI-Abnahme Stable 2.8.3 promoten.",
+  "status": "yellow",
+  "stable_ready": false,
   "approved_quality_report": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
-  "stable_blockers": [],
+  "stable_blockers": [
+    "Physische Kubuntu-26.04-Plasma-Wayland-Abnahme: Die manuelle Kubuntu-/Wayland-Basisabnahme vom 29.09.2026 liegt vor, deckt jedoch die nachfolgenden UI-/Skalierungsänderungen aus PR #228 nicht ab. Vor Stable ist eine erneute reale Sichtabnahme auf Kubuntu 26.04 / KDE Plasma / Wayland bei 100 %, 150 % und 200 % erforderlich."
+  ],
   "total": 30
 }

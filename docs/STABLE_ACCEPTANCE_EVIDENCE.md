@@ -2,11 +2,24 @@
 
 ## Zweck
 
-Der kanonische Projektstatus führt seit **29.09.2026** sowohl die Kubuntu-Basisabnahme als auch den Langzeitrender als manuell freigegeben. Diese Freigaben dokumentieren ausdrückliche Projektentscheidungen und erfinden keine fehlenden Einzelmessungen. Der technische Stable-Promotionspfad bleibt davon unabhängig ein separater reproduzierbarer Schritt und behält seine formalen Nachweisregeln.
+Die Kubuntu-Basisabnahme und der Langzeitrender vom **29.09.2026** bleiben als historische, ausdrücklich bestätigte Operator-Nachweise erhalten. Nach den späteren UI-/Skalierungsänderungen aus PR #228 reicht die damalige Basisabnahme für den aktuellen Releasekandidaten jedoch nicht mehr aus. Der kanonische Status führt deshalb die physische UI-Abnahme wieder als offen, bis der geänderte Stand real bei 100 %, 150 % und 200 % geprüft wurde.
 
 ## Manuelle Kubuntu-Basisfreigabe 2026-09-29
 
-Die Provenienz liegt unter `diagnostics/release_readiness/KUBUNTU_OPERATOR_ACCEPTANCE_2026-09-29.json`. Sie setzt das kanonische Gate `physical_kubuntu_26_04_wayland` für die Projektfortschrittsanzeige auf grün, ohne nicht vorhandene Messwerte oder eine erneute physische Ausführung zu erfinden.
+Die Provenienz liegt unter `diagnostics/release_readiness/KUBUNTU_OPERATOR_ACCEPTANCE_2026-09-29.json`. Sie belegt den damaligen Basiszustand unverändert. Sie wird **nicht** auf den später geänderten UI-/Skalierungsstand übertragen und setzt das aktuelle Gate daher nicht mehr automatisch auf grün.
+
+## Erneute UI-Sichtabnahme nach PR #228
+
+Vor Stable muss der aktuelle Stand auf **Kubuntu 26.04 LTS · KDE Plasma · natives Wayland** real geprüft werden. Pflichtumfang:
+
+- 100 %, 150 % und 200 % Ansichtsgröße,
+- keine abgeschnittenen Tabellenzeilen oder Bedienelemente,
+- sichtbarer Tastaturfokus,
+- lesbare Status- und Hilfetexte,
+- korrekte Trennung von globaler Ansichtsgröße und Listen-Zoom,
+- kein unbeabsichtigtes Ändern der Produktionsreihenfolge beim Sortieren.
+
+Erst nach dokumentierter Abnahme dieses unveränderten Kandidaten darf das Gate `physical_kubuntu_26_04_wayland` wieder `passed` sein.
 
 ## Manuelle Langzeitrender-Freigabe 2026-09-29
 
