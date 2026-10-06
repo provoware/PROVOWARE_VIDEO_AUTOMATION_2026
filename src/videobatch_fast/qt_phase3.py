@@ -85,8 +85,7 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.phase3_dock)
         self.tabifyDockWidget(self.phase2_dock, self.phase3_dock)
 
-        # Zusatzwerkzeuge bleiben beim Start geschlossen. So behält der einfache
-        # Drei-Schritt-Ablauf die volle Breite und keine Kernoption wird verdrängt.
+        # Zusatzwerkzeuge starten geschlossen; der Drei-Schritt-Ablauf behält die volle Breite.
         self.phase2_dock.hide()
         self.phase3_dock.hide()
 
