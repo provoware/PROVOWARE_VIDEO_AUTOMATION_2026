@@ -89,15 +89,16 @@ Beide Varianten verwenden denselben zentralen Starter und umgehen keine Vorprüf
 
 ### Schritt 5: Audiodatei hinzufügen
 
-1. `Audio auswählen …` wählen.
-2. Eine Datei markieren.
-3. Auswahl bestätigen.
+1. Links `1 · Dateien` öffnen.
+2. `Audio auswählen …` wählen.
+3. Eine Datei markieren.
+4. Auswahl bestätigen.
 
 **Erwartetes Ergebnis:** Die Audioanzahl im Header oder in der Medien-KPI steigt.
 
 ### Schritt 6: Bild oder Video hinzufügen
 
-1. `Bilder/Videos auswählen …` wählen.
+1. Auf derselben Seite rechts `Bilder/Videos auswählen …` wählen.
 2. Eine Datei markieren.
 3. Auswahl bestätigen.
 
@@ -105,9 +106,10 @@ Beide Varianten verwenden denselben zentralen Starter und umgehen keine Vorprüf
 
 ### Schritt 7: Automatik und Ausgabeordner prüfen
 
-1. Beim ersten Test den automatischen Modus verwenden.
-2. Einen eigenen beschreibbaren Ausgabeordner auswählen.
-3. Die angezeigten Quellenzahlen kontrollieren.
+1. Links `2 · Ausgabe` öffnen.
+2. Beim ersten Test den automatischen Modus verwenden.
+3. Einen eigenen beschreibbaren Ausgabeordner auswählen.
+4. Die angezeigten Quellenzahlen kontrollieren.
 
 **Warum notwendig?** Ein falscher oder nicht beschreibbarer Zielordner verhindert eine sichere Ausgabe.
 
@@ -117,10 +119,11 @@ Beide Varianten verwenden denselben zentralen Starter und umgehen keine Vorprüf
 
 ### Schritt 8: Testproduktion starten
 
-1. `▶ 3 · Videos erstellen` wählen.
-2. Vorprüfung abwarten.
-3. Queue-Status beobachten.
-4. Abschlussmeldung abwarten.
+1. Links `3 · Produktion` öffnen.
+2. Paarung kurz kontrollieren.
+3. `▶ 3 · Videos erstellen` wählen.
+4. Vorprüfung und Queue-Status beobachten.
+5. Abschlussmeldung abwarten.
 
 **Erwartetes Ergebnis:** Der Auftrag endet ohne roten Fehler und die Ausgabedatei ist im gewählten Zielordner vorhanden.
 
