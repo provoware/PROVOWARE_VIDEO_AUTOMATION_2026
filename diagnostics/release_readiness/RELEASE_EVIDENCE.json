@@ -76,7 +76,7 @@
     "maximum_complexity": 29
   },
   "manifest": {
-    "file_count": 494,
+    "file_count": 496,
     "path": "RELEASE_MANIFEST.json",
     "status": "passed"
   },
@@ -105,7 +105,7 @@
   },
   "progress": {
     "completed": 29,
-    "current_todo": "PR #228 und die Release-Bereinigung vollständig grün halten; danach reale Kubuntu-26.04/KDE/Wayland-Sichtabnahme bei 100 %, 150 % und 200 % durchführen. Erst nach dieser erneuten UI-Abnahme Stable 2.8.3 promoten.",
+    "current_todo": "Sichtbefund vom 06.10.2026 beheben und den neuen seitengetrennten Qt-Arbeitsbereich vollständig grün prüfen; danach reale Kubuntu-26.04/KDE/Wayland-Sichtabnahme bei 100 %, 125 %, 150 % und 200 % durchführen. Erst danach Stable 2.8.3 promoten.",
     "open": 1,
     "percent": 97,
     "total": 30
@@ -127,14 +127,17 @@
       "extracted_module": "src/videobatch_fast/qt_legacy_settings.py"
     },
     "latest_ui_reacceptance_required": {
-      "source_pr": 228,
+      "source_main_commit": "e3e8e05e11e56faacb42a520c22a000d629eff7b",
+      "visual_feedback_date": "2026-10-06",
+      "observed_scale_percent": 125,
       "target": "Kubuntu 26.04 LTS · KDE Plasma · natives Wayland",
       "required_scales": [
         100,
+        125,
         150,
         200
       ],
-      "reason": "UI-, Skalierungs- und Barrierefreiheitsänderungen nach der letzten manuellen Basisabnahme."
+      "reason": "Realer 125-%-Befund: drei Arbeitsbereiche plus Projekt-Dock führten zu abgeschnittenen Texten, zu kleinen Listen und unnötigem Hauptbereich-Scrollen."
     }
   },
   "release_cleanup": {
@@ -205,7 +208,7 @@
       {
         "label": "Offene Arbeitsliste",
         "path": "TODO.md",
-        "reason": "Automatisierte Release- und Qt-Gates sind grün; offen sind die erneute reale 100/150/200-%-Sichtabnahme des geänderten UI-Stands und danach die formale Stable-Promotion."
+        "reason": "Automatisierte Gates werden für den seitengetrennten Qt-Stand neu geprüft; danach ist die reale 100/125/150/200-%-Sichtabnahme und anschließend die Stable-Promotion offen."
       },
       {
         "label": "Langzeitrender",
@@ -215,17 +218,17 @@
       {
         "label": "Stable-Abnahmenachweis",
         "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
-        "reason": "Basisfreigaben vom 29.09.2026 sind dokumentiert; nach den UI-/Skalierungsänderungen aus PR #228 ist vor Stable eine erneute reale 100/150/200-%-Sichtabnahme erforderlich."
+        "reason": "Basisfreigaben bleiben dokumentiert; der reale 125-%-Befund vom 06.10.2026 verlangt eine neue 100/125/150/200-%-Sichtabnahme des korrigierten Qt-Stands."
       },
       {
         "label": "Qualitätsumgebung",
         "path": "QUALITY_ENVIRONMENT_STATUS.json",
-        "reason": "Maschinenlesbarer Qualitätsstatus; automatisierte Gates sind grün, die erneute physische UI-Sichtabnahme nach PR #228 ist noch offen."
+        "reason": "Maschinenlesbarer Qualitätsstatus; nach der Layoutkorrektur müssen die automatisierten Gates erneut grün sein und die physische 100/125/150/200-%-UI-Abnahme bleibt offen."
       },
       {
         "label": "Visuelles Prüfmanifest",
         "path": "VISUAL_INSPECTION_MANIFEST.json",
-        "reason": "Automatisierte visuelle Verträge bleiben Referenz; die neue reale 100/150/200-%-Sichtabnahme für den geänderten UI-Stand steht noch aus."
+        "reason": "Automatisierte visuelle Verträge bleiben Referenz; die reale 100/125/150/200-%-Sichtabnahme des seitengetrennten Qt-Stands steht noch aus."
       }
     ]
   },
@@ -269,7 +272,7 @@
     {
       "id": "physical_kubuntu_26_04_wayland",
       "label": "Physische Kubuntu-26.04-Plasma-Wayland-Abnahme",
-      "reason": "Die manuelle Kubuntu-/Wayland-Basisabnahme vom 29.09.2026 liegt vor, deckt jedoch die nachfolgenden UI-/Skalierungsänderungen aus PR #228 nicht ab. Vor Stable ist eine erneute reale Sichtabnahme auf Kubuntu 26.04 / KDE Plasma / Wayland bei 100 %, 150 % und 200 % erforderlich.",
+      "reason": "Der reale 125-%-Screenshot vom 06.10.2026 zeigte abgeschnittene und überladene Arbeitsbereiche. Der daraus abgeleitete seitengetrennte Qt-Stand muss vor Stable erneut real auf Kubuntu 26.04 / KDE Plasma / Wayland bei 100 %, 125 %, 150 % und 200 % geprüft werden.",
       "status": "open"
     },
     {
