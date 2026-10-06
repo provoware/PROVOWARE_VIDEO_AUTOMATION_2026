@@ -270,6 +270,19 @@ def test_main_workspace_supports_global_scaling_without_page_scroll_or_three_col
     assert "QSplitter" not in layout
 
 
+
+def test_output_page_uses_width_instead_of_vertical_scroll_pressure() -> None:
+    source = QT_UI.read_text(encoding="utf-8")
+    for token in (
+        "columns = QHBoxLayout()",
+        "columns.addLayout(left, 3)",
+        "columns.addLayout(right, 2)",
+        "Ziel und Verarbeitung stehen links",
+        "Kontrolle und Sicherheit rechts",
+    ):
+        assert token in source
+
+
 def test_visual_hierarchy_and_beginner_keyboard_workflow_are_explicit() -> None:
     source = QT_UI.read_text(encoding="utf-8") + QT_UI_POLISH.read_text(encoding="utf-8") + QT_SOURCE_PANEL.read_text(encoding="utf-8")
     for token in (
