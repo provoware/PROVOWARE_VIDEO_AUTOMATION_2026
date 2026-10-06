@@ -22,7 +22,7 @@ from .paths import state_dir
 from .platform_integration import PlatformCompatibilityError, prepare_gui_environment
 from .project_state import default_project_file, load_project_state, projects_dir, save_project_state
 from .qt_phase2 import VideoBatchQtPhase2Window
-from .qt_main_layout import HelpPanel
+from .qt_workspace_layout import HelpPanel, set_workflow_route
 from .qt_phase3_components import DiagnosticsPanel, ProjectPanel, WorkspaceNavigationPanel
 from .qt_theme import APP_STYLE
 from .startup_handshake import signal_ui_ready
@@ -110,6 +110,7 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
 
     def _route_workspace(self, route: str) -> None:
         self.workspace_navigation.set_active(route)
+        set_workflow_route(self, route)
 
         # Nur der gerade benötigte Zusatzbereich darf Platz beanspruchen.
         # Dashboard, Dateien, Ausgabe und Produktion bleiben dadurch übersichtlich.
@@ -163,8 +164,8 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
             {
                 "project_name": self.project_panel.name.text().strip() or "Neues Projekt",
                 "quick_note": self.project_panel.note.toPlainText()[:2000],
-                "audio_paths": [str(path) for path in self.audio.paths()],
-                "media_paths": [str(path) for path in self.media.paths()],
+                "audio_paths": [str(path) for path in self.audio.production_paths()],
+                "media_paths": [str(path) for path in self.media.production_paths()],
                 "playlist_paths": list(state.get("playlist_paths", [])),
                 "output_dir": self.output.text().strip(),
                 "quick_mode": str(self.mode.currentData() or "smart_auto"),
