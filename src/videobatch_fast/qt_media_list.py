@@ -90,6 +90,10 @@ class DropList(QListWidget):
     def production_paths(self) -> list[Path]:
         return [Path(value) for value in self._production_paths]
 
+    def apply_view_as_production_order(self) -> None:
+        self._production_paths = [str(path) for path in self.paths()]
+        self.changed.emit()
+
     def clear(self) -> None:
         super().clear()
         self._production_paths.clear()
@@ -206,4 +210,3 @@ class DropList(QListWidget):
                     self.setCurrentItem(item)
         finally:
             self.blockSignals(False)
-        self.changed.emit()
