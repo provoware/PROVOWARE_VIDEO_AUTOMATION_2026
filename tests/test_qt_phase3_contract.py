@@ -30,7 +30,7 @@ def test_phase3_qt_modules_are_tk_free_and_parseable() -> None:
 
 def test_phase3_reuses_verified_project_and_assurance_services() -> None:
     app = _text(SRC / "qt_phase3.py")
-    components = _text(SRC / "qt_phase3_components.py") + _text(SRC / "qt_main_layout.py")
+    components = _text(SRC / "qt_phase3_components.py") + _text(SRC / "qt_workspace_layout.py")
 
     for symbol in (
         "load_project_state",
@@ -252,8 +252,13 @@ def test_remote_safe_mode_reuses_verified_runtime_without_leaving_its_test_home(
         assert token in workflow
 
 
-def test_beginner_main_flow_is_three_real_decisions_with_persistent_action_footer() -> None:
-    source = _text(SRC / "qt_ui.py") + _text(SRC / "qt_main_layout.py")
+def test_beginner_main_flow_is_three_separate_pages_without_main_page_scroll() -> None:
+    source = (
+        _text(SRC / "qt_ui.py")
+        + _text(SRC / "qt_main_layout.py")
+        + _text(SRC / "qt_workspace_layout.py")
+        + _text(SRC / "qt_source_panel.py")
+    )
     for text in (
         "Einfacher Ablauf",
         "1 · Dateien auswählen",
@@ -262,14 +267,16 @@ def test_beginner_main_flow_is_three_real_decisions_with_persistent_action_foote
         "Nächster Schritt:",
         "Hier nur prüfen",
         "Ordner wählen …",
+        'stack.setObjectName("workflowPages")',
+        '"media": window._sources_panel()',
+        '"effects": window._settings_panel()',
+        '"queue": window._queue_panel()',
+        "Audio und Bilder/Videos stehen nebeneinander",
     ):
         assert text in source
 
-    workspace = source.index("workspace_scroll.setWidget(splitter)")
-    footer = source.index('footer.setObjectName("actionFooter")')
-    assert workspace < footer
-    assert "workspace_scroll.setWidgetResizable(True)" in source
-    assert 'workspace_scroll.setObjectName("mainWorkspaceScroll")' in source
+    assert "mainWorkspaceScroll" not in _text(SRC / "qt_main_layout.py")
+    assert "QSplitter" not in _text(SRC / "qt_main_layout.py")
     assert 'self.log.setVisible(False)' in source
     assert 'self.output.textChanged.connect(self._refresh)' in source
     assert 'ready = files_ready and output_ready' in source
@@ -284,6 +291,7 @@ def test_phase3_secondary_docks_do_not_squeeze_beginner_dashboard() -> None:
     assert "self.phase3_dock.hide()" in build_source
 
     route = source[source.index("def _route_workspace"):source.index("def _collect_project_state")]
+    assert "set_workflow_route(self, route)" in route
     assert 'route in {"dashboard", "media", "effects", "queue"}' in route
     assert route.count("self.phase2_dock.hide()") >= 3
     assert route.count("self.phase3_dock.hide()") >= 3
@@ -297,7 +305,7 @@ def test_phase3_secondary_docks_do_not_squeeze_beginner_dashboard() -> None:
 
 
 def test_phase3_help_is_beginner_oriented_and_safely_routed() -> None:
-    components = _text(SRC / "qt_phase3_components.py") + _text(SRC / "qt_main_layout.py")
+    components = _text(SRC / "qt_phase3_components.py") + _text(SRC / "qt_workspace_layout.py")
     app = _text(SRC / "qt_phase3.py")
     for token in (
         "Schnellhilfe · ohne Fachbegriffe",

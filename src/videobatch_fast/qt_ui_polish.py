@@ -160,9 +160,26 @@ def install_workflow_shortcuts(window) -> None:
     window.output.setToolTip("Alt+2: Ausgabeordner")
     window.start.setToolTip("Alt+3: Videos erstellen")
     window._workflow_shortcuts = []
-    for sequence, target in (("Alt+1", window.audio), ("Alt+2", window.output), ("Alt+3", window.start)):
+
+    def activate(route: str, target) -> None:
+        handler = getattr(window, "_route_workspace", None)
+        if callable(handler):
+            handler(route)
+        else:
+            pages = getattr(window, "_workflow_pages", {})
+            if route in pages:
+                window.workflow_stack.setCurrentWidget(pages[route])
+        target.setFocus()
+
+    for sequence, route, target in (
+        ("Alt+1", "media", window.audio),
+        ("Alt+2", "effects", window.output),
+        ("Alt+3", "queue", window.start),
+    ):
         shortcut = QShortcut(QKeySequence(sequence), window)
-        shortcut.activated.connect(target.setFocus)
+        shortcut.activated.connect(
+            lambda key=route, widget=target: activate(key, widget)
+        )
         window._workflow_shortcuts.append(shortcut)
 
 

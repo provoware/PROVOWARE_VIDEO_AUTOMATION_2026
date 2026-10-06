@@ -31,6 +31,16 @@ Bei einem Vorschaufehler stehen jetzt funktionsfähige Aktionen bereit:
 
 ## Finale UI-, Bedien- und Barrierefreiheitskorrekturen
 
+Ein realer Sichttest bei **125 %** zeigte anschließend, dass die gleichzeitige Drei-Spalten-Darstellung trotz korrekter Schrift-Skalierung zu eng blieb. Deshalb wurde der Hauptablauf strukturell getrennt:
+
+- **1 · Dateien**, **2 · Ausgabe** und **3 · Produktion** besitzen eigene Arbeitsseiten
+- der Hauptarbeitsbereich benötigt keine übergeordnete Scrollfläche mehr
+- Audio und Bilder/Videos stehen auf der Dateiseite in zwei ausreichend hohen Listen nebeneinander
+- Projekt, Hilfe, Diagnose und Vorschau dürfen die aktive Hauptseite nicht dauerhaft zusammendrücken
+- Alt+1, Alt+2 und Alt+3 öffnen zuerst die passende Arbeitsseite und setzen dann den Fokus
+- Sortieren bleibt eine reine Ansichtsfunktion; die Produktionsreihenfolge wird nur ausdrücklich übernommen
+- die reale Abschlussabnahme umfasst nun 100 %, 125 %, 150 % und 200 %
+
 Vor der Stable-Promotion wurden weitere reproduzierbare Restbefunde im Qt-Hauptpfad korrigiert:
 
 - dynamische Status- und Schritttexte bleiben für Vorlesesoftware als aktueller sichtbarer Text erhalten

@@ -4,13 +4,19 @@ Alle wichtigen Änderungen dieses Projekts werden hier in zusammengefasster, chr
 
 ## Unveröffentlicht · RC24-Finalbereinigung
 
+- realen 125-%-Sichtbefund behoben: Dateien, Ausgabe und Produktion liegen nicht mehr gleichzeitig in drei gequetschten Spalten, sondern auf getrennten Arbeitsseiten
+- Hauptarbeitsbereich benötigt keine eigene Scrollfläche mehr; nur echte Datenlisten scrollen bei umfangreichen Inhalten intern
+- Dateiauswahl zeigt Audio und Bilder/Videos nebeneinander mit ausreichend hohen Listen und dauerhaft sichtbaren Aktionsschaltern
+- Projekt, Hilfe und Diagnose öffnen als Zusatzbereiche, ohne den aktiven Drei-Schritt-Arbeitsbereich dauerhaft zu verkleinern
+- Alt+1, Alt+2 und Alt+3 öffnen jetzt zuerst die passende sichtbare Arbeitsseite und setzen danach den Fokus
+- reale Release-Sichtabnahme auf 100 %, 125 %, 150 % und 200 % erweitert
 - Qt-Statusausgaben, 100–200-%-Skalierung und Tastatur-Zoom für Barrierefreiheit korrigiert
 - Sortierung der Medienlisten von der Produktionsreihenfolge entkoppelt; Übernahme nur noch ausdrücklich
 - veralteten, nicht deklarierten RC24-Qualitätsbericht aus dem Release-Stamm archiviert
 - Release-Dateivertrag gegen nicht deklarierte `_save_`-Dateien im Projektstamm gehärtet
 - `manifest.json` gegen kanonische Release-Evidenz auf Name, Version, Kanal, Build-Datum, Artefaktpolitik und Einstieg abgesichert
 - aktuelle Release-Unterlagen auf Kubuntu 26.04 / KDE Plasma / natives Wayland bereinigt; alte X11-/Vierfachmatrix-Aussagen entfernt
-- physische UI-Freigabe nach den letzten UI-/Skalierungsänderungen wieder fail-closed auf offen gesetzt; neue 100/150/200-%-Sichtabnahme erforderlich
+- physische UI-Freigabe bleibt fail-closed offen; nach dem realen 125-%-Befund ist eine neue 100/125/150/200-%-Sichtabnahme erforderlich
 - Nutzerfeedback im Footer klar in **Status** und **Nächster Schritt** getrennt, semantisch eingefärbt und für schmale Fenster responsiv gestapelt
 - Hilfevertrag auf die tatsächlich zuständige Hilfeseite ausgerichtet
 - Zustandsberechnung für Medien, Aufträge und Effekte getrennt, ohne sichtbare Ausgabe zu ändern

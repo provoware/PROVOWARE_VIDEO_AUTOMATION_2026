@@ -26,9 +26,9 @@ from PySide6.QtWidgets import (
 from .config import DEFAULT_CONFIG, load_config, save_config
 from .media_library import SORT_KEYS, sort_paths
 from .qt_media_import_dialog import MediaImportDialog
+from .qt_media_list import DropList
 from .qt_phase2_components import PreviewPanel
-from .qt_ui import DropList, VideoBatchQtWindow
-
+from .qt_ui import VideoBatchQtWindow
 AREA_KEYS = ("start", "media", "preview", "modes", "production", "help")
 AREA_LABELS = {
     "start": "Übersicht",

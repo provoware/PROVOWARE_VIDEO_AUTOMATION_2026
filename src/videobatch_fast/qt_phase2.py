@@ -121,7 +121,7 @@ class VideoBatchQtPhase2Window(SelectionPreviewMixin, VideoBatchQtWindow):
         if self.runner.running or self.preparing:
             return
         ordered = [Path(value) for value in list(ordered_object)]
-        videos = [path for path in self.media.paths() if path not in ordered]
+        videos = [path for path in self.media.production_paths() if path not in ordered]
         combined = ordered + videos
         self.media.blockSignals(True)
         self.media.clear()
@@ -145,8 +145,8 @@ class VideoBatchQtPhase2Window(SelectionPreviewMixin, VideoBatchQtWindow):
         if not hasattr(self, "slideshow"):
             return
 
-        audios = self.audio.paths()
-        media = self.media.paths()
+        audios = self.audio.production_paths()
+        media = self.media.production_paths()
         self.slideshow.set_sources(audios, media)
 
         if self.slideshow.assignment_mode != SLIDESHOW_MODE_ALL_IMAGES:
@@ -200,8 +200,8 @@ class VideoBatchQtPhase2Window(SelectionPreviewMixin, VideoBatchQtWindow):
             QMessageBox.critical(self, "FFmpeg fehlt", "Nicht gefunden: " + ", ".join(missing))
             return
 
-        audios = self.audio.paths()
-        media = self.media.paths()
+        audios = self.audio.production_paths()
+        media = self.media.production_paths()
         images = self.slideshow.image_paths()
         if not audios:
             QMessageBox.warning(self, "Audio fehlt", "Für eine Diashow wird mindestens eine Audiodatei benötigt.")

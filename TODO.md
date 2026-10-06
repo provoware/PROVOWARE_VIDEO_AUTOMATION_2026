@@ -4,16 +4,18 @@
 
 **Zielplattform:** Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6.
 
-Der automatisierte Repository-, Release-, Qt6- und Qualitätsstand ist grün. **Langzeitrender und die Kubuntu-Basisabnahme vom 29.09.2026 sind dokumentiert. Nach den späteren UI-/Skalierungsänderungen ist die physische UI-Freigabe jedoch erneut offen.**
+Der Langzeitrender und die frühere Kubuntu-Basisabnahme sind dokumentiert. **Die reale Prüfung bei 125 % am 06.10.2026 hat jedoch einen echten Layoutfehler sichtbar gemacht: zu viele Hauptbereiche waren gleichzeitig eingeblendet. Dieser Befund wird mit getrennten Arbeitsseiten behoben und muss danach neu abgenommen werden.**
 
 ## P0 – jetzt
 
 ### 1. Kubuntu-/Wayland-Sichtabnahme — OFFEN
 
 - [x] Basisabnahme vom 29.09.2026 unter `diagnostics/release_readiness/KUBUNTU_OPERATOR_ACCEPTANCE_2026-09-29.json` erhalten.
-- [x] Automatisierte Qt-/Wayland- und Repository-Gates für den neuen UI-Stand grün.
-- [ ] Geänderten UI-/Skalierungsstand aus PR #228 real auf Kubuntu 26.04 · KDE Plasma · Wayland prüfen.
-- [ ] Dabei 100 %, 150 % und 200 % kontrollieren: Clipping, Fokus, Lesbarkeit, Tabellenzeilen, Statusanzeigen und Listen-Zoom.
+- [x] Realen 125-%-Befund vom 06.10.2026 dokumentiert: abgeschnittene Texte, zu flache Listen und unnötiges Hauptbereich-Scrollen.
+- [x] Hauptablauf in eigene Seiten für Dateien, Ausgabe und Produktion getrennt; Projekt/Hilfe/Diagnose verdrängen den Arbeitsbereich nicht mehr.
+- [ ] PR #230 vollständig durch Repository-, Release-, Qt- und Wayland-Gates bringen.
+- [ ] Korrigierten Stand real bei 100 %, 125 %, 150 % und 200 % prüfen: kein Clipping, keine Überlagerung, alle Hauptschalter sichtbar, Fokus sichtbar, Listen ausreichend hoch, keine Hauptseiten-Scrollleiste.
+- [ ] Sortierung prüfen: reine Ansichtssortierung darf die Produktionspaarung nicht ändern; Übernahme nur nach ausdrücklichem Klick.
 - [ ] Erst nach dieser Sichtabnahme `physical_kubuntu_26_04_wayland` wieder auf `passed` setzen.
 
 ### 2. Realer Langzeitrender — GRÜN
@@ -26,8 +28,8 @@ Der automatisierte Repository-, Release-, Qt6- und Qualitätsstand ist grün. **
 ## Stable-Finalisierung – ein reales UI-Gate offen
 
 - [x] Expliziten Operator-Freigabevertrag als fail-closed Alternative zum klassischen Nachweispfad implementieren; keine Messwerte werden rekonstruiert.
-- [ ] PR #228 und den darauf aufgebauten Release-Bereinigungs-PR vollständig grün halten.
-- [ ] Reale 100/150/200-%-Sichtabnahme dokumentieren und Release-Evidence erneut ableiten.
+- [ ] PR #230 auf dem finalen unveränderten Head vollständig grün bestätigen.
+- [ ] Reale 100/125/150/200-%-Sichtabnahme dokumentieren und Release-Evidence erneut ableiten.
 - [ ] Danach Stable 2.8.3 in getrennter Arbeitskopie erzeugen, deterministisch doppelt paketieren, Stable-Branch/Tag und GitHub-Release veröffentlichen.
 
 ## Repository-Schutz und Ordnung
@@ -56,4 +58,4 @@ Diese Arbeiten bleiben bis zur realen Zielsystemabnahme zurückgestellt:
 
 ## Abschlussregel
 
-**Der Langzeitrender bleibt fachlich grün; die physische UI-Sichtabnahme ist wegen der späteren UI-/Skalierungsänderungen erneut offen.** Stable darf erst nach dieser erneuten Abnahme promotet werden. Vorhandene Evidenz wird nicht rückwirkend umgedeutet oder künstlich aktualisiert.
+**Der Langzeitrender bleibt fachlich grün; die physische UI-Sichtabnahme ist nach dem realen 125-%-Befund und der daraus folgenden Layoutkorrektur offen.** Stable darf erst nach der neuen 100/125/150/200-%-Abnahme promotet werden. Vorhandene Evidenz wird nicht rückwirkend umgedeutet oder künstlich aktualisiert.

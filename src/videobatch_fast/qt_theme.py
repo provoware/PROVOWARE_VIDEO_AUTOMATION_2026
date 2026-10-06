@@ -82,6 +82,15 @@ QFrame#workflowGuide {
     background: #131d29;
     border-color: #48627f;
 }
+QFrame#sourceCard, QFrame#overviewStep {
+    background: #101923;
+    border: 1px solid #425b78;
+    border-radius: 10px;
+}
+QStackedWidget#workflowPages {
+    background: transparent;
+    border: 0;
+}
 QFrame#actionFooter {
     background: #131d29;
     border: 1px solid #355078;
@@ -98,6 +107,11 @@ QLabel#stepChip {
     border-radius: 8px;
     padding: 5px 9px;
     font-weight: 700;
+}
+QLabel#stepChip[active="true"] {
+    background: #ffbf3f;
+    border-color: #ffe29a;
+    color: #161006;
 }
 QLabel#nextStep {
     font-size: 11.5pt;

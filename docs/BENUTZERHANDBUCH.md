@@ -72,9 +72,17 @@ chmod +x videobatch.sh
 
 ## 4. Erstes Video erstellen
 
+Nach dem Start zeigt **Übersicht** nur Status und den einfachen Drei-Schritt-Ablauf. Die eigentliche Arbeit ist getrennt:
+
+1. **1 · Dateien** – Audio und Bilder/Videos auswählen.
+2. **2 · Ausgabe** – Zielordner und Verarbeitung festlegen.
+3. **3 · Produktion** – Paarung kontrollieren, starten und Fortschritt beobachten.
+
+Dadurch müssen nicht alle Bedienfelder gleichzeitig in eine einzige Fläche passen. Bei großer Schrift bleiben die Hauptschalter auf ihrer jeweiligen Seite sichtbar. Lange Dateilisten dürfen innerhalb ihrer Liste scrollen; die Hauptarbeitsseite soll dafür nicht gescrollt werden müssen.
+
 ### Schritt 1: Audiodateien hinzufügen
 
-**Aktion:** `Audio auswählen …` wählen und mindestens eine unterstützte Audiodatei übernehmen.
+**Aktion:** Links `1 · Dateien` öffnen. Dort `Audio auswählen …` wählen und mindestens eine unterstützte Audiodatei übernehmen.
 
 **Warum notwendig?** Die meisten Produktionsmodi benötigen eine Tonquelle.
 
@@ -84,7 +92,7 @@ chmod +x videobatch.sh
 
 ### Schritt 2: Bilder oder Videos hinzufügen
 
-**Aktion:** `Bilder/Videos auswählen …` wählen.
+**Aktion:** Auf derselben Dateiseite rechts `Bilder/Videos auswählen …` wählen.
 
 **Warum notwendig?** Ohne visuelle Quelle kann kein normales Video erzeugt werden.
 
@@ -102,7 +110,7 @@ chmod +x videobatch.sh
 
 ### Schritt 4: Modus wählen
 
-**Aktion:** Einen Schnellmodus wählen oder die Automatik verwenden.
+**Aktion:** `2 · Ausgabe` öffnen und einen Schnellmodus wählen oder die Automatik verwenden.
 
 **Empfehlung:** Beim ersten Test die Automatik verwenden.
 
@@ -122,7 +130,7 @@ chmod +x videobatch.sh
 
 ### Schritt 6: Produktion starten
 
-**Aktion:** `▶ 3 · Videos erstellen` wählen.
+**Aktion:** `3 · Produktion` öffnen, die Paarung kontrollieren und `▶ 3 · Videos erstellen` wählen.
 
 **Warum notwendig?** Vor dem Rendern werden Quellen, Pfade, Modus und benötigte Werkzeuge geprüft.
 
