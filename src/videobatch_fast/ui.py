@@ -292,7 +292,6 @@ class VideoBatchFastUI(UiResolutionMixin, UiAccessMediaMixin, UiSelectionPreview
         self._refresh_file_trees()
         self._refresh_slideshow_editors()
         self._rebuild_pairs()
-        self._autosave_project()
         self._event("PRODUCTION_ORDER_CHANGED", "Produktionsreihenfolge übernommen", "Die sichtbare Reihenfolge wurde ausdrücklich übernommen.", level="success", solution="Zuordnungstabelle prüfen und danach Videos erstellen.")
         self._autosave_project()
 
@@ -347,7 +346,6 @@ class VideoBatchFastUI(UiResolutionMixin, UiAccessMediaMixin, UiSelectionPreview
                 added += 1
         self._refresh_file_trees()
         self._rebuild_pairs()
-        self._autosave_project()
         self.guidance_text.set(f"{added} Datei(en) hinzugefügt. Klicke eine Datei für Vorschau oder Vorhören an.")
         self._event("FILES_ADDED", "Dateien hinzugefügt", f"{added} gültige Datei(en) wurden übernommen.", level="success", solution="Vorschau prüfen oder weitere Dateien hinzufügen.")
         self._autosave_project()
