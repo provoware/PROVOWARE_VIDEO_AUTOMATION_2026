@@ -294,7 +294,6 @@ class VideoBatchFastUI(UiResolutionMixin, UiAccessMediaMixin, UiSelectionPreview
         self._rebuild_pairs()
         self._autosave_project()
         self._event("PRODUCTION_ORDER_CHANGED", "Produktionsreihenfolge übernommen", "Die sichtbare Reihenfolge wurde ausdrücklich übernommen.", level="success", solution="Zuordnungstabelle prüfen und danach Videos erstellen.")
-        self._autosave_project()
 
 
 
@@ -350,7 +349,6 @@ class VideoBatchFastUI(UiResolutionMixin, UiAccessMediaMixin, UiSelectionPreview
         self._autosave_project()
         self.guidance_text.set(f"{added} Datei(en) hinzugefügt. Klicke eine Datei für Vorschau oder Vorhören an.")
         self._event("FILES_ADDED", "Dateien hinzugefügt", f"{added} gültige Datei(en) wurden übernommen.", level="success", solution="Vorschau prüfen oder weitere Dateien hinzufügen.")
-        self._autosave_project()
 
     def _refresh_file_trees(self) -> None:
         self.tree_path_map.clear()
