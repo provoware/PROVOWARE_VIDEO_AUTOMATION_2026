@@ -73,7 +73,14 @@ def load_thumbnail(source: Path) -> QImage:
 
     image = _read_small(source)
     if image.isNull():
-        return image
+        # AVIF/HEIC support depends on installed Qt image plugins.
+        # Use the already existing FFmpeg preview implementation as fallback.
+        try:
+            image = _read_small(build_preview(source, width=320))
+        except Exception:
+            return image
+        if image.isNull():
+            return image
     temp_name: str | None = None
     try:
         with tempfile.NamedTemporaryFile(
