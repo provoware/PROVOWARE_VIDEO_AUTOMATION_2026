@@ -18,6 +18,7 @@ from .event_buffer import EventBuffer
 from .display_formatting import format_clock, format_eta, format_size
 from .jobs import build_jobs
 from .models import BatchOptions, PairJob
+from .media_index import MediaIndex
 from .qt_main_layout import build_main_ui
 from .qt_theme import APP_STYLE
 from .dashboard_settings import DashboardSettings, load_settings, save_settings
@@ -63,6 +64,29 @@ class VideoBatchQtWindow(QMainWindow):
         self.timer.setInterval(80)
         self.timer.timeout.connect(self._poll)
         self.timer.start()
+        # A previous index can be read immediately in the file dialog.
+        # Refresh only in a worker, after the first frame has been displayed.
+        self._media_index_stop = threading.Event()
+        self._media_index = MediaIndex()
+        self._media_index_worker: threading.Thread | None = None
+        QTimer.singleShot(300, self._refresh_media_index_async)
+
+    def _refresh_media_index_async(self) -> None:
+        if self._media_index_stop.is_set() or (
+            self._media_index_worker is not None and self._media_index_worker.is_alive()
+        ):
+            return
+        def worker() -> None:
+            try:
+                self._media_index.refresh(cancel=self._media_index_stop)
+            except Exception:
+                # Cache loss must never prevent the editor from opening.
+                # Original files are never modified by this index.
+                pass
+        self._media_index_worker = threading.Thread(
+            target=worker, name="VideoBatch-MediaIndex", daemon=True
+        )
+        self._media_index_worker.start()
 
     @staticmethod
     def _panel(title: str, hint: str) -> tuple[QFrame, QVBoxLayout]:
@@ -554,6 +578,7 @@ class VideoBatchQtWindow(QMainWindow):
             self._write_log("Sicheres Beenden angefordert; laufender Vorgang wird zuerst abgeschlossen.")
             event.ignore()
             return
+        self._media_index_stop.set()
         self._save_dashboard_settings()
         event.accept()
 
