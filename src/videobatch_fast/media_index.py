@@ -62,10 +62,15 @@ def media_roots() -> dict[str, Path]:
     pictures = home / "Bilder" if (home / "Bilder").is_dir() else home / "Pictures"
     defaults = {"videos": home / "Videos", "downloads": home / "Downloads",
                 "pictures": pictures}
-    return {
-        name: configured.get(XDG_KEYS[name], default).expanduser().absolute()
-        for name, default in defaults.items()
-    }
+    roots: dict[str, Path] = {}
+    for name, default in defaults.items():
+        candidate = configured.get(XDG_KEYS[name], default).expanduser().absolute()
+        # XDG can intentionally map an unset user folder to $HOME.
+        # Never interpret that as permission to scan the entire home or /.
+        if candidate in (home.absolute(), Path("/")):
+            candidate = default
+        roots[name] = candidate
+    return roots
 
 
 @dataclass(frozen=True)
