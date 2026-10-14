@@ -103,3 +103,29 @@ def test_xdg_user_directories_are_resolved_without_executing_shell(
     assert result["downloads"] == tmp_path / "Eingang"
     assert result["videos"] == tmp_path / "Filme"
     assert result["pictures"] == tmp_path / "Bilder"
+
+
+def test_corrupt_database_rebuilds_without_touching_original_media(tmp_path: Path) -> None:
+    index, roots = _index(tmp_path)
+    source = roots["pictures"] / "family.jpg"
+    source.write_bytes(b"precious-data")
+    index.database.parent.mkdir(parents=True, exist_ok=True)
+    index.database.write_bytes(b"not a SQLite database")
+    result = index.refresh_root("pictures")
+    assert result.complete and result.added == 1
+    assert source.read_bytes() == b"precious-data"
+    backups = list(index.database.parent.glob("media.sqlite3.corrupt-*"))
+    assert len(backups) == 1
+    assert backups[0].read_bytes() == b"not a SQLite database"
+    assert index.cached_directory(roots["pictures"])[0].path == source
+
+
+def test_explicit_exclusion_directory(tmp_path: Path) -> None:
+    _, roots = _index(tmp_path)
+    project = roots["downloads"] / "Coden"
+    project.mkdir()
+    (project / "ignored.png").write_bytes(b"image")
+    index = MediaIndex(database=tmp_path / "new.sqlite3",
+                       roots=roots, excluded_paths=frozenset({project}))
+    assert index.refresh_root("downloads").added == 0
+    assert index.cached_directory(project) == []
