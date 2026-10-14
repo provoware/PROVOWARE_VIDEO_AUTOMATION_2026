@@ -11,6 +11,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication
 
 from videobatch_fast.config import load_config
+from videobatch_fast.dashboard_settings import load_settings
 from videobatch_fast.qt_legacy_parity import (
     _archive_last_results,
     _plugin_scan,
@@ -66,6 +67,24 @@ def main() -> int:
             "Medien & Ansicht",
         ]
         assert window.start.isEnabled(), "Start must stay clickable and explain missing preparation."
+
+        # Real Qt widgets -> single settings model -> BatchOptions -> saved JSON.
+        assert window.main_tabs.count() == 4
+        window.resolution.setCurrentIndex(window.resolution.findData("1920×1080"))
+        window.quality.setCurrentIndex(window.quality.findData("maximum"))
+        window.effect.setCurrentIndex(window.effect.findData("vivid"))
+        expected_output = temporary_path / "export"
+        window.output.setText(str(expected_output))
+        actual = window._options()
+        assert actual.resolution == "1920×1080"
+        assert actual.profile == "maximum"
+        assert actual.visual_effect == "vivid"
+        assert actual.output_dir == expected_output
+        stored = load_settings()
+        assert stored.resolution == actual.resolution
+        assert stored.quality == actual.profile
+        assert stored.effect == actual.visual_effect
+        assert stored.output_dir == actual.output_dir
         menu_titles = [action.text().replace("&", "") for action in window.menuBar().actions()]
         assert menu_titles == ["Datei", "Medien", "Ansicht", "Produktion", "Werkzeuge", "Hilfe"]
 
