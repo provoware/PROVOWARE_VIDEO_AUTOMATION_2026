@@ -60,8 +60,8 @@ def media_path_sort_key(path: Path, mode: str) -> tuple[object, ...]:
 class DropList(QListWidget):
     changed = Signal()
     zoomChanged = Signal(int)
-    MIN_ZOOM_POINT_SIZE = 10.0
-    MAX_ZOOM_POINT_SIZE = 22.0
+    MIN_ZOOM_POINT_SIZE = 12.0
+    MAX_ZOOM_POINT_SIZE = 24.0
 
     def __init__(self, extensions: set[str]) -> None:
         super().__init__()
@@ -69,12 +69,12 @@ class DropList(QListWidget):
         self._production_paths: list[str] = []
         self._zoom_point_size = max(
             self.MIN_ZOOM_POINT_SIZE,
-            min(self.MAX_ZOOM_POINT_SIZE, float(self.font().pointSizeF() or 11.0)),
+            min(self.MAX_ZOOM_POINT_SIZE, float(self.font().pointSizeF() or 12.0)),
         )
         self.setAcceptDrops(True)
         self.setDragDropMode(QAbstractItemView.DragDropMode.DropOnly)
         self.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
-        self.setIconSize(QSize(72, 54))
+        self.setIconSize(QSize(48, 36))
         self.setToolTip(
             "Strg + Mausrad oder Strg +/-: Liste vergrößern oder verkleinern · "
             "Strg+0: Normalgröße · Entf: Auswahl entfernen"
@@ -118,9 +118,9 @@ class DropList(QListWidget):
             resolved = str(path.resolve())
             if resolved in known:
                 continue
-            item = QListWidgetItem(media_path_display_text(path))
+            item = QListWidgetItem(path.name)
             item.setData(Qt.ItemDataRole.UserRole, resolved)
-            item.setToolTip(resolved)
+            item.setToolTip(f"{resolved}\\n{media_path_display_text(path)}")
             if path.suffix.lower() in IMAGE_THUMBNAIL_EXTS:
                 pixmap = QPixmap(resolved)
                 if not pixmap.isNull():
@@ -155,7 +155,7 @@ class DropList(QListWidget):
         event.acceptProposedAction()
 
     def zoom_percent(self) -> int:
-        return int(round(self._zoom_point_size / 11.0 * 100))
+        return int(round(self._zoom_point_size / 12.0 * 100))
 
     def _apply_zoom(self, point_size: float) -> None:
         bounded = max(self.MIN_ZOOM_POINT_SIZE, min(self.MAX_ZOOM_POINT_SIZE, point_size))
@@ -165,8 +165,8 @@ class DropList(QListWidget):
         font = self.font()
         font.setPointSizeF(bounded)
         self.setFont(font)
-        scale = bounded / 11.0
-        self.setIconSize(QSize(max(48, round(72 * scale)), max(36, round(54 * scale))))
+        scale = bounded / 12.0
+        self.setIconSize(QSize(max(48, round(48 * scale)), max(36, round(36 * scale))))
         self.setSpacing(max(2, int(round((bounded - self.MIN_ZOOM_POINT_SIZE) / 2.0)) + 2))
         self.zoomChanged.emit(self.zoom_percent())
 
@@ -194,7 +194,7 @@ class DropList(QListWidget):
                 event.accept()
                 return
             if event.key() == Qt.Key.Key_0:
-                self._apply_zoom(11.0)
+                self._apply_zoom(12.0)
                 event.accept()
                 return
         super().keyPressEvent(event)
