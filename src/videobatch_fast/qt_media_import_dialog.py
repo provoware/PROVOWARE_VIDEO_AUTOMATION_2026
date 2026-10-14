@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import threading
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
 
-from PySide6.QtCore import QSize, Qt, Signal
+from PySide6.QtCore import QPoint, QSize, Qt, Signal, QTimer
+from PySide6.QtGui import QIcon, QImage, QImageReader, QPixmap
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QComboBox,
@@ -35,6 +37,7 @@ class MediaImportDialog(QDialog):
 
     _scanBatch = Signal(int, object)
     _scanDone = Signal(int, str)
+    _thumbReady = Signal(int, object, object)
 
     def __init__(
         self,
@@ -56,6 +59,13 @@ class MediaImportDialog(QDialog):
         self._scan_complete = False
         self.sort_key = "name"
         self.sort_reverse = False
+        self._thumb_pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix="VB-Thumbnail")
+        self._thumb_generation = 0
+        self._thumb_pending: set[tuple[str, int, int]] = set()
+        self._thumb_images: dict[tuple[str, int, int], QImage] = {}
+        self._thumb_items: dict[str, QListWidgetItem] = {}
+        self._thumb_keys: dict[str, tuple[str, int, int]] = {}
+        self._thumb_closing = False
 
         self.setWindowTitle("Audio auswählen" if self.audio else "Bilder und Videos auswählen")
         self.resize(1220, 760)
@@ -64,6 +74,9 @@ class MediaImportDialog(QDialog):
         self._build()
         self._scanBatch.connect(self._apply_scan_batch)
         self._scanDone.connect(self._finish_scan)
+        self._thumbReady.connect(self._apply_thumbnail)
+        self.files.verticalScrollBar().valueChanged.connect(self._show_visible_thumbnails)
+        self.files.horizontalScrollBar().valueChanged.connect(self._show_visible_thumbnails)
         self._load_directory()
 
     def _build(self) -> None:
@@ -263,6 +276,9 @@ class MediaImportDialog(QDialog):
         if query:
             records = [record for record in records if query in record.path.name.casefold()]
 
+        self._thumb_generation += 1
+        self._thumb_items.clear()
+        self._thumb_keys.clear()
         self.files.blockSignals(True)
         self.files.clear()
         for record in records:
@@ -276,10 +292,18 @@ class MediaImportDialog(QDialog):
             item.setData(Qt.ItemDataRole.UserRole + 1, record.is_dir)
             item.setToolTip(str(record.path))
             self.files.addItem(item)
+            if not record.is_dir:
+                filename = str(record.path)
+                self._thumb_items[filename] = item
+                self._thumb_keys[filename] = (filename, record.size, int(record.modified * 1_000_000_000))
+                cached = self._thumb_images.get(self._thumb_keys[filename])
+                if cached is not None and not cached.isNull():
+                    item.setIcon(QIcon(QPixmap.fromImage(cached)))
             if record.path in selected:
                 item.setSelected(True)
         self.files.blockSignals(False)
         self._selection_changed()
+        QTimer.singleShot(0, self._show_visible_thumbnails)
 
     def _set_view_mode(self, mode: str) -> None:
         if mode == "icons":
@@ -298,6 +322,67 @@ class MediaImportDialog(QDialog):
         self.list_mode.style().polish(self.list_mode)
         self.icon_mode.style().unpolish(self.icon_mode)
         self.icon_mode.style().polish(self.icon_mode)
+        QTimer.singleShot(0, self._show_visible_thumbnails)
+
+    @staticmethod
+    def _decode_thumbnail(path: str) -> QImage:
+        """Decode a downscaled image off the GUI thread."""
+        reader = QImageReader(path)
+        reader.setAutoTransform(True)
+        dimensions = reader.size()
+        if dimensions.isValid():
+            reader.setScaledSize(dimensions.scaled(QSize(144, 96), Qt.AspectRatioMode.KeepAspectRatio))
+        return reader.read()
+
+    def _show_visible_thumbnails(self, *_args: object) -> None:
+        if self._thumb_closing or self.audio or self.files.viewMode() != QListWidget.ViewMode.IconMode:
+            return
+        current = self.files.indexAt(QPoint(20, 20))
+        start = max(0, current.row() - 10) if current.isValid() else max(0, self.files.currentRow())
+        viewport = self.files.viewport().rect()
+        scheduled = 0
+        for row in range(start, min(self.files.count(), start + 120)):
+            item = self.files.item(row)
+            if not self.files.visualItemRect(item).intersects(viewport):
+                continue
+            filename = str(item.data(Qt.ItemDataRole.UserRole) or "")
+            if Path(filename).suffix.lower() not in IMAGE_EXTENSIONS:
+                continue
+            key = self._thumb_keys.get(filename)
+            if key is None or key in self._thumb_pending or key in self._thumb_images:
+                continue
+            self._thumb_pending.add(key)
+            generation = self._thumb_generation
+            future = self._thumb_pool.submit(self._decode_thumbnail, filename)
+
+            def on_done(fut, image_key=key, token=generation):
+                try:
+                    picture = fut.result()
+                except Exception:
+                    picture = QImage()
+                if not self._thumb_closing:
+                    try:
+                        self._thumbReady.emit(token, image_key, picture)
+                    except RuntimeError:
+                        pass
+
+            future.add_done_callback(on_done)
+            scheduled += 1
+            if scheduled >= 32:
+                break
+
+    def _apply_thumbnail(self, generation: int, key: object, picture: object) -> None:
+        self._thumb_pending.discard(key)
+        if not isinstance(picture, QImage) or picture.isNull():
+            return
+        self._thumb_images[key] = picture
+        if len(self._thumb_images) > 256:
+            self._thumb_images.pop(next(iter(self._thumb_images)))
+        if generation != self._thumb_generation:
+            return
+        item = self._thumb_items.get(key[0])
+        if item is not None and self._thumb_keys.get(key[0]) == key:
+            item.setIcon(QIcon(QPixmap.fromImage(picture)))
 
     def _selected_file_paths(self) -> list[Path]:
         paths: list[Path] = []
@@ -363,5 +448,7 @@ class MediaImportDialog(QDialog):
 
     def closeEvent(self, event) -> None:
         self._scan_cancel.set()
+        self._thumb_closing = True
+        self._thumb_pool.shutdown(wait=False, cancel_futures=True)
         self.preview.shutdown()
         super().closeEvent(event)
