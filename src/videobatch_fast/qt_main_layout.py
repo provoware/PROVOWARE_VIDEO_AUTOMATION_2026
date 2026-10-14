@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeySequence, QShortcut
-from PySide6.QtWidgets import QApplication, QComboBox, QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QApplication, QComboBox, QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget, QLineEdit, QPushButton
 
 from .qt_theme import SCALE_LEVELS, scaled_style
 from .qt_workspace_layout import build_footer, build_workflow_stack, set_workflow_route
@@ -47,6 +47,30 @@ def build_main_ui(window) -> None:
     header.addWidget(view_label, alignment=Qt.AlignmentFlag.AlignTop)
     header.addWidget(window.view_scale, alignment=Qt.AlignmentFlag.AlignTop)
     outer.addLayout(header)
+
+    # Four everyday controls are global and remain visible on every workflow page.
+    controls = QFrame()
+    controls.setObjectName("panel")
+    controls_row = QHBoxLayout(controls)
+    controls_row.setContentsMargins(10, 6, 10, 6)
+    window.resolution = QComboBox()
+    for label, key in (("Original", "Original"), ("HD · 720p", "1280×720"), ("Full HD · 1080p", "1920×1080"), ("QHD · 1440p", "2560×1440"), ("UHD · 2160p", "3840×2160")):
+        window.resolution.addItem(label, key)
+    window.quality = QComboBox()
+    for label, key in (("Schnell", "turbo"), ("Ausgewogen", "balanced"), ("Hoch", "quality"), ("Maximum", "quality")):
+        window.quality.addItem(label, key)
+    window.quality.setCurrentIndex(1)
+    window.effect = QComboBox()
+    window.effect.addItem("Kein Effekt", "none")
+    for key, spec in window._dashboard_effects():
+        window.effect.addItem(spec.label, key)
+    window.output = QLineEdit(str(__import__('pathlib').Path.home() / "Videos" / "VideoBatch"))
+    window.output_button = QPushButton("Ordner …")
+    for label, widget in (("Auflösung", window.resolution), ("Qualität", window.quality), ("Effekt", window.effect), ("Ausgabeort", window.output)):
+        controls_row.addWidget(QLabel(label))
+        controls_row.addWidget(widget, 1)
+    controls_row.addWidget(window.output_button)
+    outer.addWidget(controls)
 
     guide = QFrame()
     guide.setObjectName("workflowGuide")
