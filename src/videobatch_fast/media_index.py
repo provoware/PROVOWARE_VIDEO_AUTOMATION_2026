@@ -183,20 +183,24 @@ class MediaIndex:
                         "SELECT path,size,mtime_ns FROM media WHERE root=?", (name,)
                     )
                 }
+                # Stage modifications in one transaction; partial scans roll back.
+                db.execute("BEGIN IMMEDIATE")
                 seen: set[str] = set()
                 added = changed = unchanged = 0
                 folders = [root]
                 errors = []
                 while folders:
                     if cancel is not None and cancel.is_set():
-                        return ScanResult(name, added, changed, 0, unchanged,
+                        db.rollback()
+                        return ScanResult(name, 0, 0, 0, unchanged,
                                           error="Prüfung abgebrochen")
                     folder = folders.pop()
                     try:
                         with os.scandir(folder) as listing:
                             for entry in listing:
                                 if cancel is not None and cancel.is_set():
-                                    return ScanResult(name, added, changed, 0, unchanged,
+                                    db.rollback()
+                                    return ScanResult(name, 0, 0, 0, unchanged,
                                                       error="Prüfung abgebrochen")
                                 try:
                                     if entry.is_symlink():
@@ -235,14 +239,15 @@ class MediaIndex:
                                     added += 1
                     except OSError:
                         errors.append("Ein Unterordner war nicht lesbar")
-                removed = 0
-                if not errors:
-                    stale = set(old) - seen
-                    if stale:
-                        db.executemany("DELETE FROM media WHERE path=? AND root=?",
-                                       ((path, name) for path in stale))
-                        removed = len(stale)
-                # A failed/incomplete scan leaves all old entries untouched.
-                return ScanResult(name, added, changed, removed, unchanged,
-                                  complete=not errors,
-                                  error="; ".join(sorted(set(errors))))
+                if errors:
+                    # Never publish only a fraction of a directory tree.
+                    db.rollback()
+                    return ScanResult(name, 0, 0, 0, unchanged,
+                                      error="; ".join(sorted(set(errors))))
+                stale = set(old) - seen
+                if stale:
+                    db.executemany("DELETE FROM media WHERE path=? AND root=?",
+                                   ((path, name) for path in stale))
+                db.commit()
+                return ScanResult(name, added, changed, len(stale), unchanged,
+                                  complete=True)
