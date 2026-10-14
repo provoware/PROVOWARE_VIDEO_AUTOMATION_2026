@@ -169,6 +169,9 @@ jobs:
             tests/test_multipart_installer.py \
             tests/test_autonomous_reliability_rc25.py
 
+      - name: Benchmark media-only SQLite index with 100000 mixed files
+        run: PYTHONPATH=src python scripts/benchmark_media_index.py --count 100000
+
   offline-qt-runtime-gate:
     name: "2B · Runtime-Prüfer / offline Qt"
     needs: orchestrator-preflight
