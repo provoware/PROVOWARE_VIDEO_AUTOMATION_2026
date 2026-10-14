@@ -70,10 +70,14 @@ class MediaImportDialog(QDialog):
         self._thumb_items: dict[str, QListWidgetItem] = {}
         self._thumb_keys: dict[str, tuple[str, int, int]] = {}
         self._thumb_closing = False
+        self._redraw_timer = QTimer(self)
+        self._redraw_timer.setSingleShot(True)
+        self._redraw_timer.setInterval(100)
+        self._redraw_timer.timeout.connect(self._render_records)
 
         self.setWindowTitle("Audio auswählen" if self.audio else "Bilder und Videos auswählen")
         self.resize(1220, 760)
-        self.setMinimumSize(1000, 650)
+        self.setMinimumSize(760, 520)
         self.setModal(modal)
         self._build()
         self._scanBatch.connect(self._apply_scan_batch)
@@ -270,12 +274,14 @@ class MediaImportDialog(QDialog):
                 current[key] = len(self._records)
                 self._records.append(record)
         self.status.setText(f"{len(self._records)} Einträge · Ordner wird geprüft …")
-        self._render_records()
+        if not self._redraw_timer.isActive():
+            self._redraw_timer.start()
 
     def _finish_scan(self, generation: int, error: str) -> None:
         if generation != self._scan_generation:
             return
         self._scan_complete = True
+        self._redraw_timer.stop()
         if not error and not self._scan_cancel.is_set():
             self._records = [record for record in self._records
                              if str(record.path) in self._scan_seen]
@@ -323,11 +329,14 @@ class MediaImportDialog(QDialog):
                 text = f"📁 {record.path.name}"
             else:
                 changed = datetime.fromtimestamp(record.modified).strftime("%Y-%m-%d %H:%M")
-                text = f"{record.path.name}\n{human_size(record.size)} · {changed}"
+                text = record.path.name
             item = QListWidgetItem(text)
             item.setData(Qt.ItemDataRole.UserRole, str(record.path))
             item.setData(Qt.ItemDataRole.UserRole + 1, record.is_dir)
-            item.setToolTip(str(record.path))
+            item.setToolTip(
+                str(record.path) if record.is_dir else
+                f"{record.path}\\n{human_size(record.size)} · {changed}"
+            )
             self.files.addItem(item)
             if not record.is_dir:
                 filename = str(record.path)
