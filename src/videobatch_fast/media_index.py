@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 import re
 import sqlite3
+from contextlib import closing
 import threading
 from dataclasses import dataclass
 from pathlib import Path
@@ -125,7 +126,7 @@ class MediaIndex:
                    for root in self.roots.values()):
             return []
         with self._lock:
-            with self._connect() as db:
+            with closing(self._connect()) as db, db:
                 rows = db.execute(
                     "SELECT path,size,mtime_ns,kind FROM media WHERE parent=? "
                     "ORDER BY path COLLATE NOCASE LIMIT ?", (str(directory), max(1, limit))
