@@ -123,24 +123,11 @@ class VideoBatchQtWindow(QMainWindow):
         left = QVBoxLayout()
         right = QVBoxLayout()
 
-        left.addWidget(field_label("Verarbeitung"))
-        self.mode = QComboBox()
-        for key, spec in QUICK_MODES.items():
-            if key != "custom":
-                self.mode.addItem(spec.label + (" · empfohlen" if spec.recommended else ""), key)
-        index = self.mode.findData("smart_auto")
-        self.mode.setCurrentIndex(max(0, index))
-        left.addWidget(self.mode)
-        self.mode_hint = QLabel()
-        self.mode_hint.setObjectName("subtitle")
-        self.mode_hint.setWordWrap(True)
-        left.addWidget(self.mode_hint)
         left.addStretch()
 
         right.addWidget(field_label("Kontrolle nach der Erstellung"))
         self.verification = QComboBox()
         self.verification.addItems(["Vollständig", "Schnell"])
-        self.verification.currentIndexChanged.connect(self._mode_changed)
         right.addWidget(self.verification)
         verification_hint = QLabel("Empfehlung: Vollständig. Schnell spart Zeit, prüft aber weniger.")
         verification_hint.setObjectName("subtitle")
@@ -176,7 +163,6 @@ class VideoBatchQtWindow(QMainWindow):
         columns.addLayout(left, 3)
         columns.addLayout(right, 2)
         layout.addLayout(columns, 1)
-        self._mode_changed()
         self._runtime_state()
         return panel
 
@@ -186,7 +172,6 @@ class VideoBatchQtWindow(QMainWindow):
         self.clear.clicked.connect(self._clear_lists)
         self.output_button.clicked.connect(self._choose_output)
         self.output.textChanged.connect(self._refresh)
-        self.mode.currentIndexChanged.connect(self._mode_changed)
         self.start.clicked.connect(self._start)
         self.cancel.clicked.connect(self._cancel)
         install_workflow_shortcuts(self)
@@ -283,14 +268,6 @@ class VideoBatchQtWindow(QMainWindow):
 
         if not self.runner.running and not self.preparing:
             self._status("BEREIT" if ready or not self.table.rowCount() else "PRÜFEN")
-
-    def _mode_changed(self) -> None:
-        spec = QUICK_MODES.get(str(self.mode.currentData()), QUICK_MODES["smart_auto"])
-        self.mode_hint.setText(
-            f"Ziel: {quality_target(spec.key)}\n{spec.description}\n"
-            f"Qualität: {spec.resolution} · {spec.codec} / {spec.profile} · "
-            f"Prüfung: {self.verification.currentText()} · Tempo: {spec.speed_class}"
-        )
 
     def _runtime_state(self) -> None:
         missing = [name for name in ("ffmpeg", "ffprobe") if shutil.which(name) is None]
