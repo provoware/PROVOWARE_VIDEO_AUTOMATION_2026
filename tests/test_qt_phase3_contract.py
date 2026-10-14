@@ -252,7 +252,7 @@ def test_remote_safe_mode_reuses_verified_runtime_without_leaving_its_test_home(
         assert token in workflow
 
 
-def test_beginner_main_flow_is_three_separate_pages_without_main_page_scroll() -> None:
+def test_beginner_main_flow_has_global_controls_and_clear_navigation() -> None:
     source = (
         _text(SRC / "qt_ui.py")
         + _text(SRC / "qt_main_layout.py")
@@ -260,26 +260,20 @@ def test_beginner_main_flow_is_three_separate_pages_without_main_page_scroll() -
         + _text(SRC / "qt_source_panel.py")
     )
     for text in (
-        "Einfacher Ablauf",
-        "1 · Dateien auswählen",
-        "2 · Ausgabe festlegen",
-        "3 · Videos erstellen",
-        "Nächster Schritt:",
-        "Hier nur prüfen",
-        "Ordner wählen …",
+        "Auflösung", "Qualität", "Bildeffekt", "Ausgabeordner",
+        "1 · Dateien", "2 · Produktion", "Erweitert", "Hilfe / Werkzeuge",
+        "Nächster Schritt:", "Hier nur prüfen",
         'stack.setObjectName("workflowPages")',
         '"media": window._sources_panel()',
         '"effects": window._settings_panel()',
         '"queue": window._queue_panel()',
-        "Audio und Bilder/Videos stehen nebeneinander",
     ):
         assert text in source
-
     assert "mainWorkspaceScroll" not in _text(SRC / "qt_main_layout.py")
     assert "QSplitter" not in _text(SRC / "qt_main_layout.py")
-    assert 'self.log.setVisible(False)' in source
-    assert 'self.output.textChanged.connect(self._refresh)' in source
-    assert 'ready = files_ready and output_ready' in source
+    assert "self.log.setVisible(False)" in source
+    assert "self.output.textChanged.connect(self._refresh)" in source
+    assert "ready = files_ready and output_ready" in source
 
 
 def test_phase3_secondary_docks_do_not_squeeze_beginner_dashboard() -> None:
@@ -298,8 +292,8 @@ def test_phase3_secondary_docks_do_not_squeeze_beginner_dashboard() -> None:
 
     navigation = _text(SRC / "qt_phase3_components.py")
     assert '("media", "1 · Dateien"' in navigation
-    assert '("effects", "2 · Ausgabe"' in navigation
-    assert '("queue", "3 · Produktion"' in navigation
+    assert '("effects", "Erweitert"' in navigation
+    assert '("queue", "2 · Produktion"' in navigation
     assert 'button = QPushButton(label)' in navigation
     assert 'QPushButton(f"{label}\n{description}")' not in navigation
 
@@ -310,7 +304,7 @@ def test_phase3_help_is_beginner_oriented_and_safely_routed() -> None:
     for token in (
         "Schnellhilfe · ohne Fachbegriffe",
         "1 · Dateien auswählen",
-        "2 · Ausgabe festlegen",
+        "2 · Videoeinstellungen",
         "3 · Produktion öffnen",
         "✓ BEREIT (grün)",
         "⚠ PRÜFEN (gelb)",
