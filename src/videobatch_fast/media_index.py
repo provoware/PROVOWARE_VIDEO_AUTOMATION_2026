@@ -210,8 +210,8 @@ class MediaIndex:
                                         if entry.name.casefold() not in EXCLUDED_DIRECTORY_NAMES and path not in self.excluded_paths:
                                             folders.append(path)
                                         continue
-                                    if (not entry.is_file(follow_symlinks=False) or
-                                            path.suffix.lower() not in MEDIA_SUFFIXES):
+                                    if (path.suffix.lower() not in MEDIA_SUFFIXES or
+                                            not entry.is_file(follow_symlinks=False)):
                                         continue
                                     stat = entry.stat(follow_symlinks=False)
                                 except OSError:
