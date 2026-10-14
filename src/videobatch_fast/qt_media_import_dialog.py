@@ -56,6 +56,7 @@ class MediaImportDialog(QDialog):
         self.result: tuple[Path, ...] = ()
         self.collected: list[Path] = []
         self._records: list[DirectoryRecord] = []
+        self._record_positions: dict[str, int] = {}
         self._cached_index = MediaIndex()
         self._scan_seen: set[str] = set()
         self._scan_generation = 0
@@ -73,7 +74,7 @@ class MediaImportDialog(QDialog):
         self._thumb_closing = False
         self._redraw_timer = QTimer(self)
         self._redraw_timer.setSingleShot(True)
-        self._redraw_timer.setInterval(100)
+        self._redraw_timer.setInterval(200)
         self._redraw_timer.timeout.connect(self._render_records)
 
         self.setWindowTitle("Audio auswählen" if self.audio else "Bilder und Videos auswählen")
@@ -221,6 +222,7 @@ class MediaImportDialog(QDialog):
         cancel = self._scan_cancel
         directory = self.current_dir
         self._records = []
+        self._record_positions.clear()
         self._display_limit = 2000
         self._scan_seen.clear()
         self._scan_complete = False
@@ -235,6 +237,9 @@ class MediaImportDialog(QDialog):
         except Exception:
             self._records = []
         if self._records:
+            self._record_positions = {
+                str(record.path): index for index, record in enumerate(self._records)
+            }
             self._render_records()
         self.preview.set_source(None, include_image=False)
         self.status.setText(
@@ -270,14 +275,14 @@ class MediaImportDialog(QDialog):
         if generation != self._scan_generation:
             return
         records = list(records_object)
-        current = {str(record.path): index for index, record in enumerate(self._records)}
         for record in records:
             key = str(record.path)
             self._scan_seen.add(key)
-            if key in current:
-                self._records[current[key]] = record
+            position = self._record_positions.get(key)
+            if position is not None:
+                self._records[position] = record
             else:
-                current[key] = len(self._records)
+                self._record_positions[key] = len(self._records)
                 self._records.append(record)
         self.status.setText(f"{len(self._records)} Einträge · Ordner wird geprüft …")
         if not self._redraw_timer.isActive():
@@ -291,6 +296,9 @@ class MediaImportDialog(QDialog):
         if not error and not self._scan_cancel.is_set():
             self._records = [record for record in self._records
                              if str(record.path) in self._scan_seen]
+            self._record_positions = {
+                str(record.path): index for index, record in enumerate(self._records)
+            }
         self.scan_progress.setRange(0, 100)
         self.scan_progress.setValue(100)
         self.scan_stop.setEnabled(False)
