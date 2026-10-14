@@ -149,7 +149,7 @@ class MediaIndex:
         if root.is_symlink() or not root.is_dir() or not os.access(root, os.R_OK | os.X_OK):
             return ScanResult(name, error="Medienordner nicht erreichbar")
         with self._lock:
-            with self._connect() as db:
+            with closing(self._connect()) as db, db:
                 old = {
                     path: (size, mtime)
                     for path, size, mtime in db.execute(
