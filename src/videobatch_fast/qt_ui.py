@@ -18,7 +18,8 @@ from .event_buffer import EventBuffer
 from .display_formatting import format_clock, format_eta, format_size
 from .jobs import build_jobs
 from .models import BatchOptions, PairJob
-from .media_index import MediaIndex
+from .media_index import MediaIndex, media_roots
+from .media_index_preferences import load_exclusions, save_exclusions
 from .qt_main_layout import build_main_ui
 from .qt_theme import APP_STYLE
 from .dashboard_settings import DashboardSettings, load_settings, save_settings
@@ -67,18 +68,28 @@ class VideoBatchQtWindow(QMainWindow):
         # A previous index can be read immediately in the file dialog.
         # Refresh only in a worker, after the first frame has been displayed.
         self._media_index_stop = threading.Event()
-        self._media_index = MediaIndex()
+        try:
+            self._index_exclusions = frozenset(load_exclusions())
+        except ValueError as exc:
+            self._index_exclusions = frozenset()
+            self._write_log(f"Ordnerausschlüsse konnten nicht gelesen werden: {exc}")
+        self._media_index = MediaIndex(excluded_paths=self._index_exclusions)
         self._media_index_worker: threading.Thread | None = None
+        self._media_rescan_pending = False
         QTimer.singleShot(300, self._refresh_media_index_async)
 
     def _refresh_media_index_async(self) -> None:
-        if self._media_index_stop.is_set() or (
-            self._media_index_worker is not None and self._media_index_worker.is_alive()
-        ):
+        if self._media_index_stop.is_set():
             return
+        if self._media_index_worker is not None and self._media_index_worker.is_alive():
+            if self._media_rescan_pending:
+                QTimer.singleShot(1500, self._refresh_media_index_async)
+            return
+        self._media_rescan_pending = False
+        index = self._media_index  # capture configuration for this worker
         def worker() -> None:
             try:
-                self._media_index.refresh(cancel=self._media_index_stop)
+                index.refresh(cancel=self._media_index_stop)
             except Exception:
                 # Cache loss must never prevent the editor from opening.
                 # Original files are never modified by this index.
@@ -158,6 +169,36 @@ class VideoBatchQtWindow(QMainWindow):
         self.verification.addItems(["Vollständig", "Schnell"])
         self.verification.setToolTip("Vollständig überprüft das fertige Video genauer.")
         layout.addWidget(self.verification)
+        layout.addWidget(field_label("Ordner bei der Mediensuche auslassen"))
+        info = QLabel(
+            "Hier kannst du eigene Programmierordner in Videos, Downloads oder Bilder "
+            "ausschließen. Ein vollständiger Ordnerpfad pro Zeile. "
+            "Andere Dateien werden ohnehin ignoriert."
+        )
+        info.setWordWrap(True)
+        layout.addWidget(info)
+        self.media_exclusions = QPlainTextEdit()
+        self.media_exclusions.setAccessibleName("Ausgeschlossene Projektordner")
+        self.media_exclusions.setPlaceholderText(
+            str(Path.home() / "Downloads" / "Mein-Programmierprojekt")
+        )
+        self.media_exclusions.setMaximumHeight(94)
+        try:
+            self.media_exclusions.setPlainText(
+                "\\n".join(str(path) for path in load_exclusions())
+            )
+        except ValueError:
+            self.media_exclusions.setPlaceholderText(
+                "Gespeicherte Liste ist beschädigt. Bitte hier neue Ordner eingeben."
+            )
+        layout.addWidget(self.media_exclusions)
+        self.save_exclusions_button = QPushButton("Ausgeschlossene Ordner speichern")
+        self.save_exclusions_button.clicked.connect(self._save_media_exclusions)
+        layout.addWidget(self.save_exclusions_button)
+        self.media_exclusion_status = QLabel("")
+        self.media_exclusion_status.setObjectName("subtitle")
+        self.media_exclusion_status.setWordWrap(True)
+        layout.addWidget(self.media_exclusion_status)
         self.details_toggle = QToolButton()
         self.details_toggle.setText("▸ Technische Details und Sicherheit")
         self.details_toggle.setCheckable(True)
@@ -197,6 +238,21 @@ class VideoBatchQtWindow(QMainWindow):
         self.start.clicked.connect(self._start)
         self.cancel.clicked.connect(self._cancel)
         install_workflow_shortcuts(self)
+
+    def _save_media_exclusions(self) -> None:
+        paths = self.media_exclusions.toPlainText().splitlines()
+        try:
+            saved = save_exclusions(paths, media_roots())
+        except (ValueError, OSError) as exc:
+            self.media_exclusion_status.setText(f"Nicht gespeichert: {exc}")
+            return
+        self._index_exclusions = frozenset(saved)
+        self._media_index = MediaIndex(excluded_paths=self._index_exclusions)
+        self._media_rescan_pending = True
+        self.media_exclusion_status.setText(
+            f"{len(saved)} Ordner ausgeschlossen. Medienliste wird aktualisiert."
+        )
+        QTimer.singleShot(300, self._refresh_media_index_async)
 
     def _dashboard_changed(self, field: str) -> None:
         value = self.output.text() if field == "output_dir" else getattr(self, field).currentData()
