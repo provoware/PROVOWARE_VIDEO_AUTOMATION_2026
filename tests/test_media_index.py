@@ -145,3 +145,46 @@ def test_xdg_home_does_not_trigger_full_home_scan(tmp_path: Path, monkeypatch) -
     assert roots["downloads"] == tmp_path / "Downloads"
     assert roots["pictures"] != Path("/")
     assert tmp_path not in roots.values()
+
+
+def test_incomplete_tree_scan_rolls_back_updated_and_new_rows(tmp_path: Path, monkeypatch) -> None:
+    """An unreadable subdirectory must not publish a partial index."""
+    index, roots = _index(tmp_path)
+    root = roots["downloads"]
+    prior = root / "original.png"
+    prior.write_bytes(b"old")
+    subdir = root / "project"
+    subdir.mkdir()
+    (subdir / "also-old.jpg").write_bytes(b"old")
+    assert index.refresh_root("downloads").complete
+    before = index.cached_directory(root)
+    assert len(before) == 1
+
+    prior.write_bytes(b"changed file with bigger size")
+    (root / "new.mp3").write_bytes(b"new audio")
+    original_scandir = os.scandir
+
+    def inaccessible(path):
+        if Path(path) == subdir:
+            raise PermissionError("simulated unreadable directory")
+        return original_scandir(path)
+
+    monkeypatch.setattr("videobatch_fast.media_index.os.scandir", inaccessible)
+    result = index.refresh_root("downloads")
+    assert not result.complete and result.added == result.changed == result.removed == 0
+    after = index.cached_directory(root)
+    assert after == before
+    assert index.cached_directory(subdir)[0].path.name == "also-old.jpg"
+
+
+def test_index_large_directory_keeps_only_media(tmp_path: Path) -> None:
+    index, roots = _index(tmp_path)
+    root = roots["downloads"]
+    for number in range(1_000):
+        suffix = ".png" if number % 4 == 0 else ".py"
+        (root / f"entry-{number:04}{suffix}").write_bytes(b"x")
+    first = index.refresh_root("downloads")
+    assert first.complete and first.added == 250
+    second = index.refresh_root("downloads")
+    assert second.complete and second.unchanged == 250
+    assert (second.added, second.changed, second.removed) == (0, 0, 0)
