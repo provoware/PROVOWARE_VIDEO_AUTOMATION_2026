@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import queue
+import sqlite3
 import shutil
 import sys
 import threading
 import time
 from pathlib import Path
 
-from PySide6.QtCore import QTimer, Qt
+from PySide6.QtCore import QTimer, Qt, Signal
 from PySide6.QtGui import QCloseEvent, QColor
 from PySide6.QtWidgets import (
     QApplication, QComboBox, QFileDialog, QFrame, QHBoxLayout,
@@ -35,6 +36,8 @@ from .qt_ui_polish import (
 class VideoBatchQtWindow(QMainWindow):
     """Tk-free Qt 6 frontend that reuses the verified processing core."""
 
+    mediaIndexMessage = Signal(str)
+
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("PROVOWARE VideoBatch 2026 · Qt 6")
@@ -57,6 +60,7 @@ class VideoBatchQtWindow(QMainWindow):
         self._settings_dirty = False
         self.load_dashboard = SystemLoadDashboard(self)
         self._build_ui()
+        self.mediaIndexMessage.connect(self._media_index_notice)
         self._connect()
         self._refresh()
         if self._settings_warning:
@@ -80,6 +84,12 @@ class VideoBatchQtWindow(QMainWindow):
         self._media_rescan_pending = False
         QTimer.singleShot(300, self._refresh_media_index_async)
 
+    def _media_index_notice(self, message: str) -> None:
+        self._write_log("Mediensuche: " + message)
+        status = getattr(self, "media_exclusion_status", None)
+        if status is not None:
+            status.setText(message)
+
     def _refresh_media_index_async(self) -> None:
         if self._media_index_stop.is_set():
             return
@@ -93,7 +103,11 @@ class VideoBatchQtWindow(QMainWindow):
         def worker() -> None:
             from .media_watcher import MediaWatcher
             try:
-                index.refresh(cancel=self._media_index_stop)
+                for result in index.refresh(cancel=self._media_index_stop):
+                    if result.error and not self._media_index_stop.is_set():
+                        self.mediaIndexMessage.emit(
+                            f"{result.root}: {result.error}. Gespeicherte Medien bleiben erhalten."
+                        )
                 if self._media_index_stop.is_set() or self._media_index_reconfigure.is_set():
                     return
                 with MediaWatcher(index.roots, index.excluded_paths) as watcher:
@@ -118,8 +132,12 @@ class VideoBatchQtWindow(QMainWindow):
                             if watcher.coverage_limited:
                                 watcher.reset()
                             last_full_scan = now
-            except (OSError, ValueError, RuntimeError):
-                # Index and watcher are optional and must never stop video work.
+            except (OSError, ValueError, RuntimeError, sqlite3.DatabaseError) as exc:
+                # Optional index failure is visible but never blocks rendering.
+                if not self._media_index_stop.is_set():
+                    self.mediaIndexMessage.emit(
+                        f"Index vorübergehend nicht verfügbar: {exc}. Videos erstellen ist weiterhin möglich."
+                    )
                 return
         self._media_index_worker = threading.Thread(
             target=worker, name="VideoBatch-MediaIndex", daemon=True
