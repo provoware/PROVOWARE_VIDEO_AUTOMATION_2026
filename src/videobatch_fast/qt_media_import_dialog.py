@@ -61,6 +61,7 @@ class MediaImportDialog(QDialog):
         self._scan_generation = 0
         self._scan_cancel = threading.Event()
         self._scan_complete = False
+        self._display_limit = 2000
         self.sort_key = "name"
         self.sort_reverse = False
         self._thumb_pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix="VB-Thumbnail")
@@ -172,6 +173,10 @@ class MediaImportDialog(QDialog):
         self.files.itemSelectionChanged.connect(self._selection_changed)
         self.files.itemDoubleClicked.connect(self._activate_item)
         left_layout.addWidget(self.files, 1)
+        self.more_button = QPushButton("Weitere Dateien anzeigen")
+        self.more_button.setVisible(False)
+        self.more_button.clicked.connect(self._show_more_records)
+        left_layout.addWidget(self.more_button)
         self.status = QLabel("Ordner wird geladen …")
         self.status.setObjectName("subtitle")
         self.status.setWordWrap(True)
@@ -216,6 +221,7 @@ class MediaImportDialog(QDialog):
         cancel = self._scan_cancel
         directory = self.current_dir
         self._records = []
+        self._display_limit = 2000
         self._scan_seen.clear()
         self._scan_complete = False
         self.files.clear()
@@ -312,6 +318,10 @@ class MediaImportDialog(QDialog):
         self.sort_direction.setText("↓" if self.sort_reverse else "↑")
         self._render_records()
 
+    def _show_more_records(self) -> None:
+        self._display_limit += 2000
+        self._render_records()
+
     def _render_records(self) -> None:
         selected = {Path(str(item.data(Qt.ItemDataRole.UserRole))) for item in self.files.selectedItems()}
         query = self.filter_edit.text().strip().casefold()
@@ -319,12 +329,20 @@ class MediaImportDialog(QDialog):
         if query:
             records = [record for record in records if query in record.path.name.casefold()]
 
+        total = len(records)
+        shown = min(total, self._display_limit)
+        self.more_button.setVisible(shown < total)
+        if shown < total:
+            self.more_button.setText(
+                f"Weitere Dateien anzeigen · {shown} von {total} sichtbar"
+            )
+        scroll = self.files.verticalScrollBar().value()
         self._thumb_generation += 1
         self._thumb_items.clear()
         self._thumb_keys.clear()
         self.files.blockSignals(True)
         self.files.clear()
-        for record in records:
+        for record in records[:shown]:
             if record.is_dir:
                 text = f"📁 {record.path.name}"
             else:
@@ -348,6 +366,7 @@ class MediaImportDialog(QDialog):
             if record.path in selected:
                 item.setSelected(True)
         self.files.blockSignals(False)
+        self.files.verticalScrollBar().setValue(scroll)
         self._selection_changed()
         QTimer.singleShot(0, self._show_visible_thumbnails)
 
