@@ -292,9 +292,12 @@ def _patch_phase2_class() -> None:
 
     def refresh(self, *, preserve_results: bool = False) -> None:
         original_refresh(self, preserve_results=preserve_results)
-        # Respect the base refresh validation; no start with missing file pairs.
+        # Keep the action discoverable for beginners: clicking with missing
+        # sources opens the existing explanation, but _parity_start NEVER renders
+        # until every input pair has passed its validation.
         if not self.runner.running and not self.preparing:
-            self.start.setText("▶ Videos erstellen")
+            self.start.setEnabled(True)
+            self.start.setText("▶ Prüfen & Videos erstellen")
 
     VideoBatchQtPhase2Window._refresh = refresh
     VideoBatchQtPhase2Window._start = _parity_start
