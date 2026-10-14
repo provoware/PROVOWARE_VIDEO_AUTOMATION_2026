@@ -9,6 +9,7 @@ import hashlib
 import os
 import re
 import tempfile
+import threading
 from pathlib import Path
 
 from PySide6.QtCore import QSize, Qt
@@ -22,6 +23,8 @@ _THUMB_NAME = re.compile(r"^[a-f0-9]{32}\.png$")
 MAX_CACHE_ITEMS = 3_000
 MAX_CACHE_BYTES = 512 * 1024 * 1024
 THUMB_SIZE = QSize(144, 96)
+_SAVE_LOCK = threading.Lock()
+_SAVES_SINCE_PRUNE = 0
 
 
 def thumbnail_directory() -> Path:
@@ -80,6 +83,7 @@ def load_thumbnail(source: Path) -> QImage:
         os.chmod(temp_name, 0o600)
         if image.save(temp_name, "PNG"):
             os.replace(temp_name, target)
+            _occasionally_prune()
     except OSError:
         # A read-only cache must never block importing the original image.
         pass
@@ -125,3 +129,15 @@ def prune_thumbnails(
         removed += 1
         current_size -= size
     return removed
+
+
+def _occasionally_prune() -> None:
+    """Amortize cache maintenance; do not scan thousands of entries per image."""
+    global _SAVES_SINCE_PRUNE
+    with _SAVE_LOCK:
+        _SAVES_SINCE_PRUNE += 1
+        due = _SAVES_SINCE_PRUNE >= 32
+        if due:
+            _SAVES_SINCE_PRUNE = 0
+    if due:
+        prune_thumbnails()
