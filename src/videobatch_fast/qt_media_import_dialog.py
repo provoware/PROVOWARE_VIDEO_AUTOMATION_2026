@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 
 from PySide6.QtCore import QPoint, QSize, Qt, Signal, QTimer
-from PySide6.QtGui import QIcon, QImage, QImageReader, QPixmap
+from PySide6.QtGui import QIcon, QImage, QPixmap
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QComboBox,
@@ -26,7 +26,7 @@ from PySide6.QtWidgets import (
 
 from .incremental_directory import DirectoryRecord, scan_directory_batches
 from .media_dialog_support import human_size, safe_media_directory, sort_directory_records
-from .media_index import MediaIndex
+from .media_index import MediaIndex, media_roots
 from .qt_thumbnail_cache import load_thumbnail
 from .probe import AUDIO_EXTENSIONS, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS
 from .qt_phase2_components import PreviewPanel
@@ -105,17 +105,23 @@ class MediaImportDialog(QDialog):
         up = QPushButton("← Hoch")
         home = QPushButton("Home")
         downloads = QPushButton("Downloads")
+        videos = QPushButton("Videos")
+        pictures = QPushButton("Bilder")
         self.path_edit = QLineEdit(str(self.current_dir))
         load = QPushButton("Ordner laden")
         load.setObjectName("primary")
         up.clicked.connect(lambda: self._navigate(self.current_dir.parent))
         home.clicked.connect(lambda: self._navigate(Path.home()))
-        downloads.clicked.connect(lambda: self._navigate(Path.home() / "Downloads"))
+        downloads.clicked.connect(lambda: self._navigate(media_roots()["downloads"]))
+        videos.clicked.connect(lambda: self._navigate(media_roots()["videos"]))
+        pictures.clicked.connect(lambda: self._navigate(media_roots()["pictures"]))
         self.path_edit.returnPressed.connect(lambda: self._navigate(Path(self.path_edit.text())))
         load.clicked.connect(lambda: self._navigate(Path(self.path_edit.text())))
         nav.addWidget(up)
         nav.addWidget(home)
         nav.addWidget(downloads)
+        nav.addWidget(videos)
+        nav.addWidget(pictures)
         nav.addWidget(self.path_edit, 1)
         nav.addWidget(load)
         outer.addLayout(nav)
@@ -354,16 +360,6 @@ class MediaImportDialog(QDialog):
         self.icon_mode.style().unpolish(self.icon_mode)
         self.icon_mode.style().polish(self.icon_mode)
         QTimer.singleShot(0, self._show_visible_thumbnails)
-
-    @staticmethod
-    def _decode_thumbnail(path: str) -> QImage:
-        """Decode a downscaled image off the GUI thread."""
-        reader = QImageReader(path)
-        reader.setAutoTransform(True)
-        dimensions = reader.size()
-        if dimensions.isValid():
-            reader.setScaledSize(dimensions.scaled(QSize(144, 96), Qt.AspectRatioMode.KeepAspectRatio))
-        return reader.read()
 
     def _show_visible_thumbnails(self, *_args: object) -> None:
         if self._thumb_closing or self.audio or self.files.viewMode() != QListWidget.ViewMode.IconMode:
