@@ -237,7 +237,10 @@ jobs:
       - name: Prove offline install flags and consent contract
         run: python tests/test_qt_runtime_toolchain_contract.py
 
+      # Feature pull requests validate Qt independently of the frozen RC manifest.
+      # The separate merge preflight retains the strict release-manifest gate.
       - name: Check compact release manifest from clean HEAD
+        if: github.event_name != 'pull_request'
         run: |
           set -Eeuo pipefail
           git restore --source=HEAD --staged --worktree -- toolchain_wheelhouse
