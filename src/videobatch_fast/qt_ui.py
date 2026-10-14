@@ -4,6 +4,7 @@ import queue
 import shutil
 import sys
 import threading
+import time
 from pathlib import Path
 
 from PySide6.QtCore import QTimer, Qt
@@ -68,6 +69,7 @@ class VideoBatchQtWindow(QMainWindow):
         # A previous index can be read immediately in the file dialog.
         # Refresh only in a worker, after the first frame has been displayed.
         self._media_index_stop = threading.Event()
+        self._media_index_reconfigure = threading.Event()
         try:
             self._index_exclusions = frozenset(load_exclusions())
         except ValueError as exc:
@@ -86,14 +88,39 @@ class VideoBatchQtWindow(QMainWindow):
                 QTimer.singleShot(1500, self._refresh_media_index_async)
             return
         self._media_rescan_pending = False
+        self._media_index_reconfigure.clear()
         index = self._media_index  # capture configuration for this worker
         def worker() -> None:
+            from .media_watcher import MediaWatcher
             try:
                 index.refresh(cancel=self._media_index_stop)
-            except Exception:
-                # Cache loss must never prevent the editor from opening.
-                # Original files are never modified by this index.
-                pass
+                if self._media_index_stop.is_set() or self._media_index_reconfigure.is_set():
+                    return
+                with MediaWatcher(index.roots, index.excluded_paths) as watcher:
+                    last_full_scan = time.monotonic()
+                    while not (self._media_index_stop.is_set() or
+                               self._media_index_reconfigure.is_set()):
+                        affected = watcher.changed(timeout=1.0)
+                        if affected:
+                            # Bundle bursts (downloads often write in many chunks).
+                            time.sleep(0.3)
+                            affected.update(watcher.changed(timeout=0.0))
+                            for root in sorted(affected):
+                                if self._media_index_stop.is_set() or self._media_index_reconfigure.is_set():
+                                    return
+                                index.refresh_root(root, cancel=self._media_index_stop)
+                            if watcher.topology_changed:
+                                watcher.reset()
+                        now = time.monotonic()
+                        interval = 300 if watcher.coverage_limited else 1800
+                        if now - last_full_scan >= interval:
+                            index.refresh(cancel=self._media_index_stop)
+                            if watcher.coverage_limited:
+                                watcher.reset()
+                            last_full_scan = now
+            except (OSError, ValueError, RuntimeError):
+                # Index and watcher are optional and must never stop video work.
+                return
         self._media_index_worker = threading.Thread(
             target=worker, name="VideoBatch-MediaIndex", daemon=True
         )
@@ -247,6 +274,7 @@ class VideoBatchQtWindow(QMainWindow):
             self.media_exclusion_status.setText(f"Nicht gespeichert: {exc}")
             return
         self._index_exclusions = frozenset(saved)
+        self._media_index_reconfigure.set()
         self._media_index = MediaIndex(excluded_paths=self._index_exclusions)
         self._media_rescan_pending = True
         self.media_exclusion_status.setText(
