@@ -261,27 +261,22 @@ def _parity_start(self) -> None:
 
 
 def _parity_options(self) -> BatchOptions:
+    """Keep the authoritative dashboard choices through the legacy adapter."""
     original = getattr(type(self), "_parity_original_options", None)
-    if not hasattr(self, "parity_output_mode") or original is None:
-        return original(self) if original is not None else BatchOptions(Path(self.output.text()))
-
+    if original is None:
+        return BatchOptions(Path(self.output.text()))
     base = original(self)
-    common = replace(
+    if not hasattr(self, "parity_output_mode"):
+        return base
+    # Expert controls may change codec, transition and destination organization.
+    # Resolution, quality profile, and visual effect remain controlled ONLY
+    # by the permanent dashboard selectors.
+    return replace(
         base,
         output_mode=str(self.parity_output_mode.currentData() or "Gemeinsamer Ordner"),
         keep_lists=self.parity_keep_lists.isChecked(),
-    )
-    if str(self.mode.currentData() or "") != "custom":
-        return common
-    return replace(
-        common,
-        quick_mode="custom",
-        resolution=str(self.parity_resolution.currentData() or "Original"),
-        codec=str(self.parity_codec.currentData() or "libx264"),
-        profile=str(self.parity_profile.currentData() or "fast"),
-        verification=str(self.verification.currentText()),
-        visual_effect=str(self.parity_effect.currentData() or "none"),
-        transition=str(self.parity_transition.currentData() or "none"),
+        codec=str(self.parity_codec.currentData() or base.codec),
+        transition=str(self.parity_transition.currentData() or base.transition),
     )
 
 
@@ -297,9 +292,9 @@ def _patch_phase2_class() -> None:
 
     def refresh(self, *, preserve_results: bool = False) -> None:
         original_refresh(self, preserve_results=preserve_results)
+        # Respect the base refresh validation; no start with missing file pairs.
         if not self.runner.running and not self.preparing:
-            self.start.setEnabled(True)
-            self.start.setText("▶ 3 · Prüfen & Videos erstellen")
+            self.start.setText("▶ Videos erstellen")
 
     VideoBatchQtPhase2Window._refresh = refresh
     VideoBatchQtPhase2Window._start = _parity_start
@@ -1033,9 +1028,9 @@ def _finish_parity_init(window: object) -> None:
         window.mode.addItem(spec.label, "custom")
 
     cfg = window._parity_config
-    if not getattr(window, "_project_state", {}):
-        window.output.setText(str(cfg.get("output_dir", window.output.text())))
-        _select_combo_data(window.mode, cfg.get("quick_mode", "smart_auto"))
+    # Do not overwrite the saved dashboard destination with legacy config.
+    # The hidden compatibility selector always remains on custom.
+    _select_combo_data(window.mode, "custom")
     verification = str(cfg.get("verification", "Vollständig"))
     index = window.verification.findText(verification)
     if index >= 0:
