@@ -20,7 +20,7 @@ from .jobs import build_jobs
 from .models import BatchOptions, PairJob
 from .qt_main_layout import build_main_ui
 from .qt_theme import APP_STYLE
-from .quick_modes import QUICK_MODES, apply_quick_mode
+from .quick_modes import QUICK_MODES
 from .runner import BatchRunner
 from .qt_source_panel import build_sources_panel
 from .qt_system_load_dashboard import SystemLoadDashboard
@@ -109,6 +109,9 @@ class VideoBatchQtWindow(QMainWindow):
         self.log_toggle.toggled.connect(self._toggle_log)
         return panel
 
+    def _dashboard_effects(self):
+        return [(key, spec) for key, spec in QUICK_MODES.items() if key not in ('custom', 'smart_auto', 'maximum_speed')]
+
     def _settings_panel(self) -> QWidget:
         panel, layout = self._panel(
             "2 · Ausgabe festlegen",
@@ -119,16 +122,6 @@ class VideoBatchQtWindow(QMainWindow):
         columns.setSpacing(14)
         left = QVBoxLayout()
         right = QVBoxLayout()
-
-        left.addWidget(field_label("Wo sollen die fertigen Videos gespeichert werden?"))
-        target = QHBoxLayout()
-        self.output = QLineEdit(str(Path.home() / "Videos" / "VideoBatch"))
-        self.output_button = QPushButton("Ordner wählen …")
-        configure_output_button(self.output_button)
-        self.output_button.setMinimumWidth(125)
-        target.addWidget(self.output, 1)
-        target.addWidget(self.output_button)
-        left.addLayout(target)
 
         left.addWidget(field_label("Verarbeitung"))
         self.mode = QComboBox()
@@ -304,22 +297,23 @@ class VideoBatchQtWindow(QMainWindow):
         self.runtime.setText("🔴 Fehlt: " + ", ".join(missing) if missing else "🟢 FFmpeg + FFprobe gefunden")
 
     def _options(self) -> BatchOptions:
+        """Use exactly the visible global settings; avoid preset re-application."""
+        from .command_builder import PROFILES, RESOLUTIONS
+        resolution = str(self.resolution.currentData())
+        quality = str(self.quality.currentData())
+        effect_key = str(self.effect.currentData())
+        if resolution not in RESOLUTIONS or quality not in PROFILES:
+            raise ValueError("Ungültige Dashboard-Einstellung.")
         if not self.output.text().strip():
             raise ValueError("Bitte einen Ausgabeordner wählen.")
-        base = BatchOptions(
-            output_dir=Path(self.output.text().strip()).expanduser(),
-            verification=self.verification.currentText(),
-            quick_mode=str(self.mode.currentData() or "smart_auto"),
-            assignment_mode="pairwise",
-        )
-        selected = apply_quick_mode(base, base.quick_mode)
+        spec = QUICK_MODES.get(effect_key)
         return BatchOptions(
-            output_dir=selected.output_dir, output_mode=selected.output_mode, resolution=selected.resolution,
-            codec=selected.codec, profile=selected.profile, verification=self.verification.currentText(),
-            overwrite=selected.overwrite, keep_lists=selected.keep_lists, audio_bitrate=selected.audio_bitrate,
-            fps=selected.fps, max_threads=selected.max_threads, visual_effect=selected.visual_effect,
-            transition=selected.transition, quick_mode=selected.quick_mode, assignment_mode="pairwise",
-            slideshow_transition=selected.slideshow_transition, slideshow_scene_sync=selected.slideshow_scene_sync,
+            output_dir=Path(self.output.text().strip()).expanduser(),
+            resolution=resolution, profile=quality,
+            visual_effect=spec.visual_effect if spec else "none",
+            transition=spec.transition if spec else "none",
+            verification=self.verification.currentText(),
+            quick_mode="custom", assignment_mode="pairwise",
         )
 
     def _start(self) -> None:
