@@ -118,7 +118,9 @@ jobs:
             tests/test_tk_free_core_contract.py \
             tests/test_architecture_v1_collision_contract.py \
             tests/test_persistence_v1_contract.py \
-            tests/test_ffmpeg_v1_contract.py
+            tests/test_ffmpeg_v1_contract.py \
+            tests/test_dashboard_settings_contract.py \
+            tests/test_dashboard_ffmpeg_contract.py
 
   core-regression:
     name: "2A · Kern-Prüfer / unterstützte Regression"
