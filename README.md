@@ -21,6 +21,14 @@
 
 VideoBatch Fast ist die lokale Video-Automation für **Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6**. Der aktuelle Stand ist **2.8.3-rc24**. Der aktuelle Releasekandidat enthält jetzt einen seitengetrennten Qt-Arbeitsbereich als Reaktion auf den realen 125-%-Sichtbefund vom 06.10.2026. Dateien, Ausgabe und Produktion besitzen eigene Arbeitsseiten; Projekt, Hilfe und Diagnose verdrängen den Hauptablauf nicht mehr. Vor Stable ist eine erneute reale Sichtprüfung bei 100 %, 125 %, 150 % und 200 % erforderlich.
 
+## Entwicklungszweig #239 – noch nicht Bestandteil von RC24
+
+In [PR #239](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/239) werden unabhängig vom eingefrorenen RC24-Nachweis die nächsten Verbesserungen geprüft: global sichtbare Videoeinstellungen, ein einheitlicher Medienbrowser mit großen Vorschauen und dauerhaften Miniaturbildern sowie ein auf **Videos, Downloads und Bilder** begrenzter SQLite-Medienindex.
+
+Programmdateien und Entwicklungsordner werden nicht als Medien aufgenommen. Eigene Unterordner lassen sich unter **Erweitert** ausschließen. Auf Linux überwacht VideoBatch Änderungen über inotify, mit gelegentlichen Nachprüfungen, falls die Überwachung unvollständig ist. Originaldateien werden nicht verändert.
+
+**Status:** Entwicklungszweig, keine neue Releasefreigabe. Die oben angegebenen RC24-Zahlen gelten ausdrücklich nur für den damaligen, separat dokumentierten Stand. Ein Merge und eine neue Stable-Version setzen neue Release-Nachweise sowie eine reale Kubuntu-Sichtprüfung voraus.
+
 ## Schnellstart
 
 1. Projekt-ZIP vollständig entpacken.
