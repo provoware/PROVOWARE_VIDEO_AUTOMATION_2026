@@ -120,7 +120,8 @@ jobs:
             tests/test_persistence_v1_contract.py \
             tests/test_ffmpeg_v1_contract.py \
             tests/test_dashboard_settings_contract.py \
-            tests/test_dashboard_ffmpeg_contract.py
+            tests/test_dashboard_ffmpeg_contract.py \
+            tests/test_media_index.py
 
   core-regression:
     name: "2A · Kern-Prüfer / unterstützte Regression"
@@ -347,6 +348,12 @@ jobs:
 
       - name: Run Phase 3 project workspace smoke on Wayland
         run: python tests/qt_phase3_smoke.py
+
+      - name: Verify persistent Qt thumbnails
+        run: |
+          set -Eeuo pipefail
+          RUNTIME_PY="$(python scripts/toolchain.py path --scope runtime --quiet | tail -n 1)"
+          "$RUNTIME_PY" -m pytest -q tests/test_qt_thumbnail_cache.py
 
       - name: Prepare verified private Qt runtime for launcher
         env:
