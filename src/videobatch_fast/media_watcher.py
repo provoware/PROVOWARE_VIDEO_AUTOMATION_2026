@@ -14,10 +14,9 @@ import sys
 from pathlib import Path
 from typing import Mapping
 
-from .media_index import EXCLUDED_DIRECTORY_NAMES
+from .media_index import EXCLUDED_DIRECTORY_NAMES, MEDIA_SUFFIXES
 
 _IN_MODIFY = 0x00000002
-_IN_ATTRIB = 0x00000004
 _IN_CLOSE_WRITE = 0x00000008
 _IN_MOVED_FROM = 0x00000040
 _IN_MOVED_TO = 0x00000080
@@ -27,9 +26,10 @@ _IN_DELETE_SELF = 0x00000400
 _IN_MOVE_SELF = 0x00000800
 _IN_Q_OVERFLOW = 0x00004000
 _IN_IGNORED = 0x00008000
+_IN_ISDIR = 0x40000000
 _IN_ONLYDIR = 0x01000000
 _IN_DONT_FOLLOW = 0x02000000
-_MASK = (_IN_MODIFY | _IN_ATTRIB | _IN_CLOSE_WRITE | _IN_MOVED_FROM |
+_MASK = (_IN_MODIFY | _IN_CLOSE_WRITE | _IN_MOVED_FROM |
          _IN_MOVED_TO | _IN_CREATE | _IN_DELETE | _IN_DELETE_SELF |
          _IN_MOVE_SELF | _IN_ONLYDIR | _IN_DONT_FOLLOW)
 _HEADER = struct.Struct("iIII")
@@ -45,6 +45,7 @@ class MediaWatcher:
         self.excluded_paths = frozenset(Path(p).absolute() for p in excluded_paths)
         self.max_watches = max(1, int(max_watches))
         self.coverage_limited = False
+        self.topology_changed = False
         self._wd_to_root: dict[int, str] = {}
         self._libc = None
         self._fd = -1
@@ -68,6 +69,7 @@ class MediaWatcher:
         self.close()
         self._wd_to_root.clear()
         self.coverage_limited = False
+        self.topology_changed = False
         if self._libc is None:
             self.coverage_limited = True
             return
@@ -124,13 +126,19 @@ class MediaWatcher:
         offset = 0
         while offset + _HEADER.size <= len(data):
             wd, mask, _cookie, size = _HEADER.unpack_from(data, offset)
+            raw_name = data[offset + _HEADER.size:offset + _HEADER.size + size]
+            filename = os.fsdecode(raw_name.split(b"\\0", 1)[0])
             offset += _HEADER.size + size
             if mask & _IN_Q_OVERFLOW:
                 self.coverage_limited = True
                 return set(self.roots)
             name = self._wd_to_root.get(wd)
             if name and mask & (_MASK | _IN_IGNORED):
-                changed.add(name)
+                directory_event = bool(mask & _IN_ISDIR)
+                if directory_event or not filename or Path(filename).suffix.lower() in MEDIA_SUFFIXES:
+                    changed.add(name)
+                    if directory_event or mask & _IN_IGNORED:
+                        self.topology_changed = True
         return changed
 
     def close(self) -> None:
