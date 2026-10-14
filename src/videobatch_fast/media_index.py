@@ -130,7 +130,13 @@ class MediaIndex:
         self.database.parent.mkdir(parents=True, exist_ok=True)
         try:
             return self._open_schema()
-        except sqlite3.DatabaseError:
+        except sqlite3.DatabaseError as exc:
+            # A busy, read-only or full database is NOT corrupted. In those
+            # cases, fail without renaming any valid database files.
+            if getattr(exc, "sqlite_errorcode", None) not in (
+                sqlite3.SQLITE_NOTADB, sqlite3.SQLITE_CORRUPT
+            ):
+                raise
             # This is only regenerable metadata. Keep the broken database for
             # diagnostics; NEVER delete or modify source media or other files.
             import time
