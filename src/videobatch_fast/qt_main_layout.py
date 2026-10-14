@@ -57,7 +57,7 @@ def build_main_ui(window) -> None:
     for label, key in (("Original", "Original"), ("HD · 720p", "1280×720"), ("Full HD · 1080p", "1920×1080"), ("QHD · 1440p", "2560×1440"), ("UHD · 2160p", "3840×2160")):
         window.resolution.addItem(label, key)
     window.quality = QComboBox()
-    for label, key in (("Schnell", "turbo"), ("Ausgewogen", "balanced"), ("Hoch", "quality"), ("Maximum", "quality")):
+    for label, key in (("Schnell", "turbo"), ("Ausgewogen", "balanced"), ("Hoch", "quality"), ("Maximum", "maximum")):
         window.quality.addItem(label, key)
     window.quality.setCurrentIndex(1)
     window.effect = QComboBox()
@@ -114,7 +114,6 @@ def build_main_ui(window) -> None:
     window.table.setAccessibleName("Automatische Auftragsliste")
     window.table.setAlternatingRowColors(True)
     window.output.setAccessibleName("Ausgabeordner")
-    window.mode.setAccessibleName("Verarbeitungsmodus")
     window.verification.setAccessibleName("Kontrolle nach der Erstellung")
 
     build_footer(window, outer)
