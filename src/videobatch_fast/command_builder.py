@@ -12,6 +12,7 @@ PROFILES: dict[str, EncodeProfile] = {
     "fast": EncodeProfile("fast", "Schnell", "veryfast", 21, "Sehr schnell bei guter Qualität."),
     "balanced": EncodeProfile("balanced", "Ausgewogen", "faster", 20, "Etwas kleiner, moderat langsamer."),
     "quality": EncodeProfile("quality", "Qualität", "medium", 18, "Hohe Qualität, deutlich langsamer."),
+    "maximum": EncodeProfile("maximum", "Maximum", "slow", 16, "Höchste voreingestellte Qualitätsstufe, langsam."),
 }
 
 RESOLUTIONS = {
