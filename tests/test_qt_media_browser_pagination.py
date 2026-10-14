@@ -22,7 +22,7 @@ def test_browser_paginates_large_directory_without_losing_search(tmp_path: Path)
         ]
         dialog._render_records()
         assert dialog.files.count() == 2000
-        assert dialog.more_button.isVisible() is False or dialog.more_button.isHidden() is False
+        assert not dialog.more_button.isHidden()
         dialog._show_more_records()
         assert dialog.files.count() == 2700
         dialog.filter_edit.setText("image-02699")
