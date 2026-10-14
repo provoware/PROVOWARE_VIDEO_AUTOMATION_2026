@@ -34,7 +34,7 @@ class HelpPanel(QFrame):
 
         for label, description, route in (
             ("1 · Dateien auswählen", "Audio und passende Bilder oder Videos hinzufügen.", "media"),
-            ("2 · Ausgabe festlegen", "Zielordner und einen Schnellmodus prüfen.", "effects"),
+            ("2 · Videoeinstellungen", "Auflösung, Qualität, Bildeffekt und Zielordner oben ändern.", "effects"),
             ("3 · Produktion öffnen", "Aufträge prüfen, starten und Fortschritt beobachten.", "queue"),
         ):
             button = QPushButton(label)
@@ -80,12 +80,12 @@ def _overview_page(window) -> QFrame:
     layout = QVBoxLayout(panel)
     layout.setContentsMargins(18, 16, 18, 16)
     layout.setSpacing(10)
-    title = QLabel("Übersicht · drei klare Arbeitsschritte")
+    title = QLabel("Hilfe und Werkzeuge")
     title.setObjectName("section")
     layout.addWidget(title)
     intro = QLabel(
-        "Jeder Hauptschritt besitzt eine eigene Seite. Dadurch bleiben Bedienelemente "
-        "auch bei großer Schrift vollständig sichtbar."
+        "Musik und Bilder auf der Seite Dateien wählen. Auflösung, Qualität, Effekt "
+        "und Zielordner sind immer oben erreichbar. Zum Starten Produktion öffnen."
     )
     intro.setObjectName("panelHint")
     intro.setWordWrap(True)
@@ -93,8 +93,8 @@ def _overview_page(window) -> QFrame:
 
     for label, description, route in (
         ("1 · Dateien", "Audio und Bilder/Videos auswählen und die Paarung prüfen.", "media"),
-        ("2 · Ausgabe", "Zielordner, Verarbeitung und Kontrolle festlegen.", "effects"),
-        ("3 · Produktion", "Aufträge kontrollieren, starten und Fortschritt sehen.", "queue"),
+        ("Erweiterte Einstellungen", "Selten benötigte Prüf- und Sicherheitsoptionen.", "effects"),
+        ("2 · Produktion", "Aufträge kontrollieren, starten und Fortschritt sehen.", "queue"),
     ):
         row = QFrame()
         row.setObjectName("overviewStep")
@@ -136,12 +136,20 @@ def set_workflow_route(window, route: str) -> None:
     if page_key in pages:
         window.workflow_stack.setCurrentWidget(pages[page_key])
     window._active_workflow_route = route
+    tabs = getattr(window, "main_tabs", None)
+    positions = {"media": 0, "queue": 1, "effects": 2, "dashboard": 3}
+    if tabs is not None and page_key in positions and tabs.currentIndex() != positions[page_key]:
+        tabs.blockSignals(True)
+        try:
+            tabs.setCurrentIndex(positions[page_key])
+        finally:
+            tabs.blockSignals(False)
 
     guide = getattr(window, "workflow_guide", None)
     if guide is not None:
-        guide.setVisible(route == "dashboard")
+        guide.setVisible(False)
     for card in getattr(window, "_kpi_cards", []):
-        card.setVisible(route == "dashboard")
+        card.setVisible(False)
 
     footer = getattr(window, "action_footer", None)
     if footer is not None:
@@ -205,7 +213,7 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     window.cancel.setObjectName("danger")
     window.cancel.setAccessibleDescription("Bricht die laufende Verarbeitung kontrolliert ab.")
     window.cancel.setEnabled(False)
-    window.start = QPushButton("▶ 3 · Videos erstellen")
+    window.start = QPushButton("▶ Videos erstellen")
     window.start.setObjectName("primary")
     window.start.setAccessibleDescription("Startet die geprüften Video-Aufträge.")
     window.start.setMinimumWidth(220)
