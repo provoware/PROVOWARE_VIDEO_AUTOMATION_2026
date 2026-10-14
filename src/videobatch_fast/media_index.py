@@ -158,7 +158,7 @@ class MediaIndex:
         # initialize/migrate the schema while showing cached entries.
         try:
             uri = self.database.absolute().as_uri() + "?mode=ro"
-            with sqlite3.connect(uri, uri=True, timeout=0.05) as db:
+            with closing(sqlite3.connect(uri, uri=True, timeout=0.05)) as db:
                 db.execute("PRAGMA busy_timeout=50")
                 rows = db.execute(
                     "SELECT path,size,mtime_ns,kind FROM media WHERE parent=? "
