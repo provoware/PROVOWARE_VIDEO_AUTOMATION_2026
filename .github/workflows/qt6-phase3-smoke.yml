@@ -121,7 +121,9 @@ jobs:
             tests/test_ffmpeg_v1_contract.py \
             tests/test_dashboard_settings_contract.py \
             tests/test_dashboard_ffmpeg_contract.py \
-            tests/test_media_index.py
+            tests/test_media_index.py \
+            tests/test_media_index_preferences.py \
+            tests/test_media_watcher.py
 
   core-regression:
     name: "2A · Kern-Prüfer / unterstützte Regression"
