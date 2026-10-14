@@ -126,6 +126,10 @@ class VideoBatchQtWindow(QMainWindow):
             "Auflösung, Qualität, Effekt und Ausgabeordner sind immer oben sichtbar.",
         )
         layout.addWidget(field_label("Kontrolle nach der Erstellung"))
+        # Compatibility-only adapter for older project/playlist services.
+        # Not displayed; the authoritative values live in dashboard_settings.
+        self.mode = QComboBox()
+        self.mode.addItem("Dashboard-Vorgaben", "custom")
         self.verification = QComboBox()
         self.verification.addItems(["Vollständig", "Schnell"])
         self.verification.setToolTip("Vollständig überprüft das fertige Video genauer.")
