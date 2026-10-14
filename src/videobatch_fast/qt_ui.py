@@ -15,12 +15,12 @@ from PySide6.QtWidgets import (
 )
 
 from .event_buffer import EventBuffer
-from .display_formatting import format_clock, format_eta, format_size, quality_target
+from .display_formatting import format_clock, format_eta, format_size
 from .jobs import build_jobs
 from .models import BatchOptions, PairJob
 from .qt_main_layout import build_main_ui
 from .qt_theme import APP_STYLE
-from .quick_modes import QUICK_MODES
+from .dashboard_settings import DashboardSettings, load_settings, save_settings
 from .runner import BatchRunner
 from .qt_source_panel import build_sources_panel
 from .qt_system_load_dashboard import SystemLoadDashboard
@@ -45,10 +45,20 @@ class VideoBatchQtWindow(QMainWindow):
         self.prepare_thread: threading.Thread | None = None
         self.close_after_stop = False
         self.jobs: list[PairJob] = []
+        self._settings_warning = ""
+        try:
+            self.dashboard_settings = load_settings()
+        except (OSError, ValueError, TypeError) as exc:
+            self.dashboard_settings = DashboardSettings()
+            self._settings_warning = f"Gespeicherte Videoeinstellungen konnten nicht gelesen werden: {exc}. Standardwerte aktiv."
+        self._settings_dirty = False
         self.load_dashboard = SystemLoadDashboard(self)
         self._build_ui()
         self._connect()
         self._refresh()
+        if self._settings_warning:
+            self._write_log(self._settings_warning)
+            self.next_step.setText("Einstellungen nicht lesbar – Standardwerte aktiv. Technische Meldungen beachten.")
         self.timer = QTimer(self)
         self.timer.setInterval(80)
         self.timer.timeout.connect(self._poll)
@@ -109,60 +119,35 @@ class VideoBatchQtWindow(QMainWindow):
         self.log_toggle.toggled.connect(self._toggle_log)
         return panel
 
-    def _dashboard_effects(self):
-        return [(key, spec) for key, spec in QUICK_MODES.items() if key not in ('custom', 'smart_auto', 'maximum_speed')]
-
     def _settings_panel(self) -> QWidget:
         panel, layout = self._panel(
-            "2 · Ausgabe festlegen",
-            "Ziel und Verarbeitung stehen links, Kontrolle und Sicherheit rechts. "
-            "So bleiben die Einstellungen auch bei großer Schrift ohne Seiten-Scrollen sichtbar.",
+            "Erweiterte Einstellungen",
+            "Hier stehen selten benötigte Prüf- und Sicherheitsoptionen. "
+            "Auflösung, Qualität, Effekt und Ausgabeordner sind immer oben sichtbar.",
         )
-        columns = QHBoxLayout()
-        columns.setSpacing(14)
-        left = QVBoxLayout()
-        right = QVBoxLayout()
-
-        left.addStretch()
-
-        right.addWidget(field_label("Kontrolle nach der Erstellung"))
+        layout.addWidget(field_label("Kontrolle nach der Erstellung"))
         self.verification = QComboBox()
         self.verification.addItems(["Vollständig", "Schnell"])
-        right.addWidget(self.verification)
-        verification_hint = QLabel("Empfehlung: Vollständig. Schnell spart Zeit, prüft aber weniger.")
-        verification_hint.setObjectName("subtitle")
-        verification_hint.setWordWrap(True)
-        right.addWidget(verification_hint)
-
-        safety = QLabel("🛡 Originaldateien bleiben unverändert.")
-        safety.setObjectName("safeHint")
-        safety.setWordWrap(True)
-        right.addWidget(safety)
-
+        self.verification.setToolTip("Vollständig überprüft das fertige Video genauer.")
+        layout.addWidget(self.verification)
         self.details_toggle = QToolButton()
-        self.details_toggle.setText("▸ Technische Details & Sicherheit")
+        self.details_toggle.setText("▸ Technische Details und Sicherheit")
         self.details_toggle.setCheckable(True)
-        self.details_toggle.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
-        right.addWidget(self.details_toggle)
+        layout.addWidget(self.details_toggle)
         self.safety_details = QLabel(
-            "• eindeutige Ausgabedateien\n"
-            "• Fehlerprotokoll\n"
-            "• kontrollierter FFmpeg-Abbruch"
+            "Originaldateien bleiben unverändert.\\n"
+            "Ausgaben erhalten eindeutige Dateinamen.\\n"
+            "VideoBatch kann die Verarbeitung kontrolliert abbrechen."
         )
         self.safety_details.setObjectName("subtitle")
         self.safety_details.setWordWrap(True)
         self.safety_details.setVisible(False)
-        right.addWidget(self.safety_details)
+        layout.addWidget(self.safety_details)
         self.details_toggle.toggled.connect(self._toggle_details)
-
-        right.addStretch()
         self.runtime = QLabel()
         self.runtime.setObjectName("subtitle")
-        right.addWidget(self.runtime)
-
-        columns.addLayout(left, 3)
-        columns.addLayout(right, 2)
-        layout.addLayout(columns, 1)
+        layout.addWidget(self.runtime)
+        layout.addStretch()
         self._runtime_state()
         return panel
 
@@ -172,9 +157,39 @@ class VideoBatchQtWindow(QMainWindow):
         self.clear.clicked.connect(self._clear_lists)
         self.output_button.clicked.connect(self._choose_output)
         self.output.textChanged.connect(self._refresh)
+        self.settings_save_timer = QTimer(self)
+        self.settings_save_timer.setSingleShot(True)
+        self.settings_save_timer.setInterval(400)
+        self.settings_save_timer.timeout.connect(self._save_dashboard_settings)
+        for field in ("resolution", "quality", "effect"):
+            getattr(self, field).currentIndexChanged.connect(
+                lambda _index, name=field: self._dashboard_changed(name)
+            )
+        self.output.editingFinished.connect(lambda: self._dashboard_changed("output_dir"))
         self.start.clicked.connect(self._start)
         self.cancel.clicked.connect(self._cancel)
         install_workflow_shortcuts(self)
+
+    def _dashboard_changed(self, field: str) -> None:
+        value = self.output.text() if field == "output_dir" else getattr(self, field).currentData()
+        try:
+            self.dashboard_settings = self.dashboard_settings.set_user_value(field, value)
+        except ValueError:
+            # A blank, partially edited path must not overwrite the last valid value.
+            return
+        self._settings_dirty = True
+        self.settings_save_timer.start()
+
+    def _save_dashboard_settings(self) -> None:
+        if not self._settings_dirty:
+            return
+        try:
+            save_settings(self.dashboard_settings)
+        except OSError as exc:
+            self._write_log(f"Videoeinstellungen konnten nicht gespeichert werden: {exc}")
+            self.next_step.setText("Videoeinstellungen konnten nicht gespeichert werden. Bitte Speicherort prüfen.")
+        else:
+            self._settings_dirty = False
 
     def _toggle_log(self, visible: bool) -> None:
         self.log.setVisible(visible)
@@ -189,23 +204,24 @@ class VideoBatchQtWindow(QMainWindow):
         )
 
     def _choose_audio(self) -> None:
-        files, _ = QFileDialog.getOpenFileNames(
-            self, "Audiodateien", str(Path.home()),
-            "Audio (*.mp3 *.wav *.flac *.m4a *.aac *.ogg *.opus *.wma);;Alle Dateien (*)",
-        )
-        self.audio.add_paths([Path(value) for value in files])
+        from .qt_media_import_dialog import MediaImportDialog
+        dialog = MediaImportDialog(self, audio=True, initial_dir=Path.home() / "Music")
+        selected = dialog.wait()
+        if selected:
+            self.audio.add_paths(list(selected))
 
     def _choose_media(self) -> None:
-        files, _ = QFileDialog.getOpenFileNames(
-            self, "Bilder oder Videos", str(Path.home()),
-            "Medien (*.png *.jpg *.jpeg *.webp *.avif *.mp4 *.mkv *.mov *.webm *.mpeg *.mpg);;Alle Dateien (*)",
-        )
-        self.media.add_paths([Path(value) for value in files])
+        from .qt_media_import_dialog import MediaImportDialog
+        dialog = MediaImportDialog(self, audio=False, initial_dir=Path.home() / "Pictures")
+        selected = dialog.wait()
+        if selected:
+            self.media.add_paths(list(selected))
 
     def _choose_output(self) -> None:
         selected = QFileDialog.getExistingDirectory(self, "Ausgabeordner", self.output.text() or str(Path.home()))
         if selected:
             self.output.setText(selected)
+            self._dashboard_changed("output_dir")
 
     def _clear_lists(self) -> None:
         if self.runner.running or self.preparing:
@@ -262,7 +278,7 @@ class VideoBatchQtWindow(QMainWindow):
                 f"Nächster Schritt: 1 · Paarung vervollständigen — {len(audios)} Audio, {len(media)} Medien."
             )
         elif not output_ready:
-            self.next_step.setText("Nächster Schritt: 2 · Einen Ausgabeordner wählen.")
+            self.next_step.setText("Nächster Schritt: einen Ausgabeordner oben wählen.")
         else:
             self.next_step.setText(f"Bereit: {jobs} Video(s). Nächster Schritt: 3 · Videos erstellen.")
 
@@ -274,23 +290,26 @@ class VideoBatchQtWindow(QMainWindow):
         self.runtime.setText("🔴 Fehlt: " + ", ".join(missing) if missing else "🟢 FFmpeg + FFprobe gefunden")
 
     def _options(self) -> BatchOptions:
-        """Use exactly the visible global settings; avoid preset re-application."""
+        """Freeze the *displayed* values into the actual job options."""
         from .command_builder import PROFILES, RESOLUTIONS
-        resolution = str(self.resolution.currentData())
-        quality = str(self.quality.currentData())
-        effect_key = str(self.effect.currentData())
-        if resolution not in RESOLUTIONS or quality not in PROFILES:
-            raise ValueError("Ungültige Dashboard-Einstellung.")
-        if not self.output.text().strip():
-            raise ValueError("Bitte einen Ausgabeordner wählen.")
-        spec = QUICK_MODES.get(effect_key)
+        state = self.dashboard_settings
+        for field in ("resolution", "quality", "effect", "output_dir"):
+            value = self.output.text() if field == "output_dir" else getattr(self, field).currentData()
+            state = state.set_user_value(field, value)
+        if state.resolution not in RESOLUTIONS or state.quality not in PROFILES:
+            raise ValueError("Videoauflösung oder Qualität wird nicht unterstützt.")
+        self.dashboard_settings = state
+        self._settings_dirty = True
+        self._save_dashboard_settings()
         return BatchOptions(
-            output_dir=Path(self.output.text().strip()).expanduser(),
-            resolution=resolution, profile=quality,
-            visual_effect=spec.visual_effect if spec else "none",
-            transition=spec.transition if spec else "none",
+            output_dir=state.output_dir,
+            resolution=state.resolution,
+            profile=state.quality,
+            visual_effect=state.effect,
+            transition="none",
             verification=self.verification.currentText(),
-            quick_mode="custom", assignment_mode="pairwise",
+            quick_mode="custom",
+            assignment_mode="pairwise",
         )
 
     def _start(self) -> None:
@@ -531,6 +550,7 @@ class VideoBatchQtWindow(QMainWindow):
             self._write_log("Sicheres Beenden angefordert; laufender Vorgang wird zuerst abgeschlossen.")
             event.ignore()
             return
+        self._save_dashboard_settings()
         event.accept()
 
 
