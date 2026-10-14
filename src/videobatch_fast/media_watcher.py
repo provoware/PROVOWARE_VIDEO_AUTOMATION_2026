@@ -127,7 +127,7 @@ class MediaWatcher:
         while offset + _HEADER.size <= len(data):
             wd, mask, _cookie, size = _HEADER.unpack_from(data, offset)
             raw_name = data[offset + _HEADER.size:offset + _HEADER.size + size]
-            filename = os.fsdecode(raw_name.split(b"\\0", 1)[0])
+            filename = os.fsdecode(raw_name.split(b"\x00", 1)[0])
             offset += _HEADER.size + size
             if mask & _IN_Q_OVERFLOW:
                 self.coverage_limited = True
