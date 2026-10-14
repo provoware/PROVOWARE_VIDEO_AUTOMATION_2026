@@ -100,24 +100,46 @@ class MediaIndex:
         self.excluded_paths = frozenset(Path(p).expanduser().absolute() for p in excluded_paths)
         self._lock = threading.Lock()
 
+    def _open_schema(self) -> sqlite3.Connection:
+        conn = sqlite3.connect(self.database, timeout=10)
+        try:
+            conn.execute("PRAGMA busy_timeout=10000")
+            conn.execute("PRAGMA journal_mode=WAL")
+            version = conn.execute("PRAGMA user_version").fetchone()[0]
+            if version not in (0, SCHEMA_VERSION):
+                raise ValueError("Unbekannte Version des Medienindexes")
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS media("
+                "root TEXT NOT NULL, path TEXT PRIMARY KEY, parent TEXT NOT NULL, "
+                "size INTEGER NOT NULL, mtime_ns INTEGER NOT NULL, kind TEXT NOT NULL)"
+            )
+            conn.execute("CREATE INDEX IF NOT EXISTS media_parent ON media(parent)")
+            conn.execute(f"PRAGMA user_version={SCHEMA_VERSION}")
+            conn.commit()
+            return conn
+        except (sqlite3.DatabaseError, ValueError, OSError):
+            conn.close()
+            raise
+
     def _connect(self) -> sqlite3.Connection:
         self.database.parent.mkdir(parents=True, exist_ok=True)
-        conn = sqlite3.connect(self.database, timeout=10)
-        conn.execute("PRAGMA busy_timeout=10000")
-        conn.execute("PRAGMA journal_mode=WAL")
-        version = conn.execute("PRAGMA user_version").fetchone()[0]
-        if version not in (0, SCHEMA_VERSION):
-            conn.close()
-            raise ValueError("Unbekannte Version des Medienindexes")
-        conn.execute(
-            "CREATE TABLE IF NOT EXISTS media("
-            "root TEXT NOT NULL, path TEXT PRIMARY KEY, parent TEXT NOT NULL, "
-            "size INTEGER NOT NULL, mtime_ns INTEGER NOT NULL, kind TEXT NOT NULL)"
-        )
-        conn.execute("CREATE INDEX IF NOT EXISTS media_parent ON media(parent)")
-        conn.execute(f"PRAGMA user_version={SCHEMA_VERSION}")
-        conn.commit()
-        return conn
+        try:
+            return self._open_schema()
+        except sqlite3.DatabaseError:
+            # This is only regenerable metadata. Keep the broken database for
+            # diagnostics; NEVER delete or modify source media or other files.
+            import time
+            backup = self.database.with_name(
+                f"{self.database.name}.corrupt-{time.time_ns()}"
+            )
+            if not self.database.is_file():
+                raise
+            os.replace(self.database, backup)
+            for suffix in ("-wal", "-shm"):
+                aux = Path(str(self.database) + suffix)
+                if aux.exists():
+                    os.replace(aux, Path(str(backup) + suffix))
+            return self._open_schema()
 
     def cached_directory(self, directory: Path, *, limit: int = 3000) -> list[IndexedMedium]:
         """Fast read-only display; all entries are treated as unverified."""
