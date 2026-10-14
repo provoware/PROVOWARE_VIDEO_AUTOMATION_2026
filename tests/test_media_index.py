@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import os
+import sqlite3
+
+import pytest
 import threading
 from pathlib import Path
 
@@ -188,3 +191,34 @@ def test_index_large_directory_keeps_only_media(tmp_path: Path) -> None:
     second = index.refresh_root("downloads")
     assert second.complete and second.unchanged == 250
     assert (second.added, second.changed, second.removed) == (0, 0, 0)
+
+
+@pytest.mark.parametrize(
+    "error", [
+        sqlite3.OperationalError("database is locked"),
+        sqlite3.OperationalError("attempt to write a readonly database"),
+        sqlite3.OperationalError("database or disk is full"),
+    ],
+)
+def test_noncorruption_database_errors_never_move_existing_index(
+    tmp_path: Path, monkeypatch, error: Exception,
+) -> None:
+    index, roots = _index(tmp_path)
+    media = roots["pictures"] / "original.png"
+    media.write_bytes(b"original")
+    assert index.refresh_root("pictures").complete
+    previous = index.database.read_bytes()
+    def denied():
+        raise error
+    monkeypatch.setattr(index, "_open_schema", denied)
+    with pytest.raises(sqlite3.DatabaseError):
+        index.refresh_root("pictures")
+    assert index.database.read_bytes() == previous
+    assert list(index.database.parent.glob("*.corrupt-*")) == []
+    assert media.read_bytes() == b"original"
+
+
+def test_cached_directory_read_does_not_initialize_index(tmp_path: Path) -> None:
+    index, roots = _index(tmp_path)
+    assert index.cached_directory(roots["pictures"]) == []
+    assert not index.database.exists()
