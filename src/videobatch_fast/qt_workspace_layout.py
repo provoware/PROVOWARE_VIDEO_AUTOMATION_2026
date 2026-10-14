@@ -110,6 +110,20 @@ def _overview_page(window) -> QFrame:
         row_layout.addWidget(button)
         row_layout.addWidget(hint, 1)
         layout.addWidget(row)
+    tools_hint = QLabel("Zusätzliche Werkzeuge")
+    tools_hint.setObjectName("section")
+    layout.addWidget(tools_hint)
+    for text, route in (
+        ("Bildvorschau öffnen", "preview"),
+        ("Diashow öffnen", "slideshow"),
+        ("Projektverwaltung", "project"),
+        ("Hilfe öffnen", "help"),
+        ("Diagnose öffnen", "diagnostics"),
+    ):
+        button = QPushButton(text)
+        button.setObjectName("workspaceNav")
+        button.clicked.connect(lambda _checked=False, key=route: _request_route(window, key))
+        layout.addWidget(button)
     layout.addStretch()
     return panel
 
