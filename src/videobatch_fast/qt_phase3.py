@@ -63,6 +63,8 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         self.navigation_dock.setWidget(self.workspace_navigation)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.navigation_dock)
         self.resizeDocks([self.navigation_dock], [205], Qt.Orientation.Horizontal)
+        # Main tabs replace the old permanently visible nine-button sidebar.
+        self.navigation_dock.hide()
 
         self.phase3_dock = QDockWidget("Projekt & Hilfe", self)
         self.phase3_dock.setObjectName("phase3Dock")
@@ -134,7 +136,7 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
             self.phase2_tabs.setCurrentWidget(self.slideshow)
             self.slideshow.setFocus()
         elif route == "effects":
-            self.mode.setFocus()
+            self.verification.setFocus()
         elif route == "queue":
             self.table.setFocus()
         elif route == "project":
@@ -255,7 +257,7 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
             self.project_panel.note.clear()
             self.audio.clear()
             self.media.clear()
-            self.output.setText(str(Path.home() / "Videos" / "VideoBatch"))
+            # Keep the user-selected global destination when creating a project.
             mode_index = self.mode.findData("smart_auto")
             if mode_index >= 0:
                 self.mode.setCurrentIndex(mode_index)
