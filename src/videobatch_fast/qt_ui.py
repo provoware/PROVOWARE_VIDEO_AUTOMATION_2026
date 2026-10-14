@@ -185,7 +185,7 @@ class VideoBatchQtWindow(QMainWindow):
         self.media_exclusions.setMaximumHeight(94)
         try:
             self.media_exclusions.setPlainText(
-                "\\n".join(str(path) for path in load_exclusions())
+                "\n".join(str(path) for path in load_exclusions())
             )
         except ValueError:
             self.media_exclusions.setPlaceholderText(
