@@ -26,6 +26,8 @@ from PySide6.QtWidgets import (
 
 from .incremental_directory import DirectoryRecord, scan_directory_batches
 from .media_dialog_support import human_size, safe_media_directory, sort_directory_records
+from .media_index import MediaIndex
+from .qt_thumbnail_cache import load_thumbnail
 from .probe import AUDIO_EXTENSIONS, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS
 from .qt_phase2_components import PreviewPanel
 
@@ -54,6 +56,8 @@ class MediaImportDialog(QDialog):
         self.result: tuple[Path, ...] = ()
         self.collected: list[Path] = []
         self._records: list[DirectoryRecord] = []
+        self._cached_index = MediaIndex()
+        self._scan_seen: set[str] = set()
         self._scan_generation = 0
         self._scan_cancel = threading.Event()
         self._scan_complete = False
@@ -75,6 +79,7 @@ class MediaImportDialog(QDialog):
         self._scanBatch.connect(self._apply_scan_batch)
         self._scanDone.connect(self._finish_scan)
         self._thumbReady.connect(self._apply_thumbnail)
+        self.finished.connect(self._stop_background_tasks)
         self.files.verticalScrollBar().valueChanged.connect(self._show_visible_thumbnails)
         self.files.horizontalScrollBar().valueChanged.connect(self._show_visible_thumbnails)
         self._load_directory()
@@ -201,10 +206,25 @@ class MediaImportDialog(QDialog):
         cancel = self._scan_cancel
         directory = self.current_dir
         self._records = []
+        self._scan_seen.clear()
         self._scan_complete = False
         self.files.clear()
+        # The cache is a last-known listing, not proof that files still exist.
+        try:
+            indexed = self._cached_index.cached_directory(directory)
+            self._records = [
+                DirectoryRecord(item.path, False, item.size, item.mtime_ns / 1_000_000_000)
+                for item in indexed
+            ]
+        except Exception:
+            self._records = []
+        if self._records:
+            self._render_records()
         self.preview.set_source(None, include_image=False)
-        self.status.setText("Erste Dateien werden geladen …")
+        self.status.setText(
+            f"{len(self._records)} zuletzt bekannte Medien · Aktualisierung läuft …"
+            if self._records else "Erste Dateien werden geladen …"
+        )
         self.scan_progress.setRange(0, 0)
         self.scan_stop.setEnabled(True)
 
@@ -234,14 +254,25 @@ class MediaImportDialog(QDialog):
         if generation != self._scan_generation:
             return
         records = list(records_object)
-        self._records.extend(records)
-        self.status.setText(f"{len(self._records)} Einträge gefunden · Scan läuft …")
+        current = {str(record.path): index for index, record in enumerate(self._records)}
+        for record in records:
+            key = str(record.path)
+            self._scan_seen.add(key)
+            if key in current:
+                self._records[current[key]] = record
+            else:
+                current[key] = len(self._records)
+                self._records.append(record)
+        self.status.setText(f"{len(self._records)} Einträge · Ordner wird geprüft …")
         self._render_records()
 
     def _finish_scan(self, generation: int, error: str) -> None:
         if generation != self._scan_generation:
             return
         self._scan_complete = True
+        if not error and not self._scan_cancel.is_set():
+            self._records = [record for record in self._records
+                             if str(record.path) in self._scan_seen]
         self.scan_progress.setRange(0, 100)
         self.scan_progress.setValue(100)
         self.scan_stop.setEnabled(False)
@@ -346,14 +377,14 @@ class MediaImportDialog(QDialog):
             if not self.files.visualItemRect(item).intersects(viewport):
                 continue
             filename = str(item.data(Qt.ItemDataRole.UserRole) or "")
-            if Path(filename).suffix.lower() not in IMAGE_EXTENSIONS:
+            if Path(filename).suffix.lower() not in (IMAGE_EXTENSIONS | VIDEO_EXTENSIONS):
                 continue
             key = self._thumb_keys.get(filename)
             if key is None or key in self._thumb_pending or key in self._thumb_images:
                 continue
             self._thumb_pending.add(key)
             generation = self._thumb_generation
-            future = self._thumb_pool.submit(self._decode_thumbnail, filename)
+            future = self._thumb_pool.submit(load_thumbnail, Path(filename))
 
             def on_done(fut, image_key=key, token=generation):
                 try:
@@ -373,6 +404,9 @@ class MediaImportDialog(QDialog):
 
     def _apply_thumbnail(self, generation: int, key: object, picture: object) -> None:
         self._thumb_pending.discard(key)
+        if generation != self._thumb_generation:
+            QTimer.singleShot(0, self._show_visible_thumbnails)
+            return
         if not isinstance(picture, QImage) or picture.isNull():
             return
         self._thumb_images[key] = picture
@@ -446,9 +480,14 @@ class MediaImportDialog(QDialog):
         self.result = ()
         super().reject()
 
-    def closeEvent(self, event) -> None:
+    def _stop_background_tasks(self, *_args: object) -> None:
+        if self._thumb_closing:
+            return
         self._scan_cancel.set()
         self._thumb_closing = True
         self._thumb_pool.shutdown(wait=False, cancel_futures=True)
         self.preview.shutdown()
+
+    def closeEvent(self, event) -> None:
+        self._stop_background_tasks()
         super().closeEvent(event)
