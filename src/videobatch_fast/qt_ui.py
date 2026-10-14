@@ -196,14 +196,26 @@ class VideoBatchQtWindow(QMainWindow):
         self.verification.addItems(["Vollständig", "Schnell"])
         self.verification.setToolTip("Vollständig überprüft das fertige Video genauer.")
         layout.addWidget(self.verification)
-        layout.addWidget(field_label("Ordner bei der Mediensuche auslassen"))
+        self.exclusions_toggle = QToolButton()
+        self.exclusions_toggle.setText("▸ Eigene Programmierordner auslassen")
+        self.exclusions_toggle.setCheckable(True)
+        self.exclusions_toggle.setAccessibleDescription(
+            "Optional. Ordner innerhalb von Videos, Downloads und Bilder gezielt auslassen."
+        )
+        layout.addWidget(self.exclusions_toggle)
+        exclusions_box = QFrame()
+        exclusion_layout = QVBoxLayout(exclusions_box)
+        exclusion_layout.setContentsMargins(6, 4, 6, 4)
+        exclusions_box.setVisible(False)
+        self.exclusions_toggle.toggled.connect(exclusions_box.setVisible)
+        exclusion_layout.addWidget(field_label("Ordner bei der Mediensuche auslassen"))
         info = QLabel(
             "Hier kannst du eigene Programmierordner in Videos, Downloads oder Bilder "
             "ausschließen. Ein vollständiger Ordnerpfad pro Zeile. "
             "Andere Dateien werden ohnehin ignoriert."
         )
         info.setWordWrap(True)
-        layout.addWidget(info)
+        exclusion_layout.addWidget(info)
         self.media_exclusions = QPlainTextEdit()
         self.media_exclusions.setAccessibleName("Ausgeschlossene Projektordner")
         self.media_exclusions.setPlaceholderText(
@@ -218,14 +230,18 @@ class VideoBatchQtWindow(QMainWindow):
             self.media_exclusions.setPlaceholderText(
                 "Gespeicherte Liste ist beschädigt. Bitte hier neue Ordner eingeben."
             )
-        layout.addWidget(self.media_exclusions)
+        exclusion_layout.addWidget(self.media_exclusions)
+        self.browse_exclusion_button = QPushButton("Projektordner auswählen …")
+        self.browse_exclusion_button.clicked.connect(self._browse_media_exclusion)
+        exclusion_layout.addWidget(self.browse_exclusion_button)
         self.save_exclusions_button = QPushButton("Ausgeschlossene Ordner speichern")
         self.save_exclusions_button.clicked.connect(self._save_media_exclusions)
-        layout.addWidget(self.save_exclusions_button)
+        exclusion_layout.addWidget(self.save_exclusions_button)
         self.media_exclusion_status = QLabel("")
         self.media_exclusion_status.setObjectName("subtitle")
         self.media_exclusion_status.setWordWrap(True)
-        layout.addWidget(self.media_exclusion_status)
+        exclusion_layout.addWidget(self.media_exclusion_status)
+        layout.addWidget(exclusions_box)
         self.details_toggle = QToolButton()
         self.details_toggle.setText("▸ Technische Details und Sicherheit")
         self.details_toggle.setCheckable(True)
@@ -265,6 +281,18 @@ class VideoBatchQtWindow(QMainWindow):
         self.start.clicked.connect(self._start)
         self.cancel.clicked.connect(self._cancel)
         install_workflow_shortcuts(self)
+
+    def _browse_media_exclusion(self) -> None:
+        selected = QFileDialog.getExistingDirectory(
+            self, "Programmierordner auslassen", str(media_roots()["downloads"])
+        )
+        if not selected:
+            return
+        existing = [line.strip() for line in self.media_exclusions.toPlainText().splitlines()
+                    if line.strip()]
+        if selected not in existing:
+            existing.append(selected)
+        self.media_exclusions.setPlainText("\n".join(existing))
 
     def _save_media_exclusions(self) -> None:
         paths = self.media_exclusions.toPlainText().splitlines()
