@@ -14,7 +14,7 @@ class DashboardSettingsTests(unittest.TestCase):
         settings = DashboardSettings().set_user_value("resolution", "Full HD")
         settings = settings.set_user_value("effect", "hardtechno")
         changed = settings.apply_preset({"resolution": "Original", "effect": "none", "quality": "Hoch"})
-        self.assertEqual(changed.resolution, "Full HD")
+        self.assertEqual(changed.resolution, "1920×1080")
         self.assertEqual(changed.effect, "hardtechno")
         self.assertEqual(changed.quality, "quality")
 
