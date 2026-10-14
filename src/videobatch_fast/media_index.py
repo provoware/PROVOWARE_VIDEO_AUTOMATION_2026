@@ -152,12 +152,20 @@ class MediaIndex:
         if not any(directory == root or root in directory.parents
                    for root in self.roots.values()):
             return []
-        with self._lock:
-            with closing(self._connect()) as db, db:
+        if not self.database.is_file():
+            return []
+        # File dialogs run in the GUI thread. Never wait for a writer or
+        # initialize/migrate the schema while showing cached entries.
+        try:
+            uri = self.database.absolute().as_uri() + "?mode=ro"
+            with sqlite3.connect(uri, uri=True, timeout=0.05) as db:
+                db.execute("PRAGMA busy_timeout=50")
                 rows = db.execute(
                     "SELECT path,size,mtime_ns,kind FROM media WHERE parent=? "
                     "ORDER BY path COLLATE NOCASE LIMIT ?", (str(directory), max(1, limit))
                 ).fetchall()
+        except (OSError, sqlite3.Error):
+            return []
         return [IndexedMedium(Path(p), size, mtime, kind) for p, size, mtime, kind in rows]
 
     def refresh(self, *, cancel: threading.Event | None = None) -> list[ScanResult]:
