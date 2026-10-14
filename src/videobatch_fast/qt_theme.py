@@ -7,10 +7,10 @@ QWidget {
     background: #0b1016;
     color: #f3f7ff;
     font-family: "Noto Sans", "DejaVu Sans", sans-serif;
-    font-size: 11pt;
+    font-size: 12pt;
 }
 QMainWindow { background: #070b10; }
-QFrame#panel, QFrame#card, QFrame#workflowGuide, QFrame#actionFooter {
+QFrame#panel, QFrame#card, QFrame#workflowGuide, QFrame#actionFooter, QFrame#dashboardControls {
     background: #182433;
     border: 2px solid #6f87a3;
     border-radius: 12px;
@@ -23,20 +23,20 @@ QFrame#loadDashboard {
 }
 QLabel#loadLabel {
     color: #e2eaf5;
-    font-size: 8.5pt;
+    font-size: 12pt;
     font-weight: 750;
 }
 QProgressBar#loadMeter {
     min-height: 15px;
     max-height: 15px;
-    font-size: 8pt;
+    font-size: 11pt;
     font-weight: 700;
 }
 QLabel#title { font-size: 22pt; font-weight: 800; }
 QLabel#subtitle { color: #e2eaf5; }
 QLabel#section { font-size: 13pt; font-weight: 700; }
 QLabel#kpiValue { font-size: 16pt; font-weight: 800; }
-QLabel#kpiLabel { color: #e2eaf5; font-size: 9.5pt; }
+QLabel#kpiLabel { color: #e2eaf5; font-size: 12pt; }
 QLabel#statusChip {
     background: #202c3b;
     border: 1px solid #5b7392;
@@ -244,13 +244,13 @@ SCALE_LEVELS = (100, 125, 150, 175, 200)
 def scaled_style(percent: int) -> str:
     scale = min(SCALE_LEVELS, key=lambda value: abs(value - int(percent))) / 100.0
     return APP_STYLE + f"""
-QWidget {{ font-size: {11 * scale:.1f}pt; }}
+QWidget {{ font-size: {12 * scale:.1f}pt; }}
 QLabel#title {{ font-size: {22 * scale:.1f}pt; }}
 QLabel#section {{ font-size: {13 * scale:.1f}pt; }}
 QLabel#kpiValue {{ font-size: {16 * scale:.1f}pt; }}
-QLabel#kpiLabel {{ font-size: {9.5 * scale:.1f}pt; }}
+QLabel#kpiLabel {{ font-size: {12 * scale:.1f}pt; }}
 QLabel#nextStep {{ font-size: {11.5 * scale:.1f}pt; }}
-QLabel#loadLabel {{ font-size: {8.5 * scale:.1f}pt; }}
+QLabel#loadLabel {{ font-size: {12 * scale:.1f}pt; }}
 QPushButton, QToolButton, QLineEdit, QComboBox {{ min-height: {round(34 * scale)}px; }}
 QCheckBox::indicator {{ width: {round(22 * scale)}px; height: {round(22 * scale)}px; }}
 QProgressBar {{ min-height: {round(18 * scale)}px; }}
