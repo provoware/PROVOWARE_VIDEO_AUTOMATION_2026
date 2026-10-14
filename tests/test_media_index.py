@@ -129,3 +129,19 @@ def test_explicit_exclusion_directory(tmp_path: Path) -> None:
                        roots=roots, excluded_paths=frozenset({project}))
     assert index.refresh_root("downloads").added == 0
     assert index.cached_directory(project) == []
+
+
+def test_xdg_home_does_not_trigger_full_home_scan(tmp_path: Path, monkeypatch) -> None:
+    config = tmp_path / ".config"
+    config.mkdir()
+    (config / "user-dirs.dirs").write_text(
+        'XDG_DOWNLOAD_DIR="$HOME"\n'
+        'XDG_PICTURES_DIR="/"\n'
+        'XDG_VIDEOS_DIR="$HOME/Videos"\n', encoding="utf-8"
+    )
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(config))
+    roots = media_roots()
+    assert roots["downloads"] == tmp_path / "Downloads"
+    assert roots["pictures"] != Path("/")
+    assert tmp_path not in roots.values()
