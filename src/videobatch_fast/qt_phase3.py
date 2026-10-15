@@ -274,28 +274,39 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         self._route_workspace("project")
         self._write_log(f"Neues Projekt sicher angelegt: {candidate.name}.")
 
-    def _save_current_project(self, *_args, silent: bool = False) -> bool:
+    def _persist_project_to(self, target: Path, *, silent: bool = False) -> bool:
+        """Write first and update the active project only after successful I/O."""
         if self.runner.running or self.preparing:
             if not silent:
                 QMessageBox.information(
-                    self,
-                    "Speichern verschoben",
-                    "Während der laufenden Produktion wird die Projektdatei nicht verändert.",
+                    self, "Speichern verschoben",
+                    "Während einer laufenden Produktion wird die Projektdatei nicht verändert."
                 )
             return False
         try:
             state = self._collect_project_state()
-            saved = save_project_state(self._project_file, state)
+            saved = save_project_state(target, state)
         except Exception as exc:
-            self._write_log(f"Projekt konnte nicht gespeichert werden: {type(exc).__name__}: {exc}")
+            self._write_log(
+                f"Projekt konnte nicht gespeichert werden: {type(exc).__name__}: {exc}"
+            )
             if not silent:
-                QMessageBox.critical(self, "Speichern fehlgeschlagen", f"{type(exc).__name__}: {exc}")
+                QMessageBox.critical(
+                    self, "Projekt nicht gespeichert",
+                    "Der Speicherort ist möglicherweise nicht erreichbar oder voll. "
+                    "Das aktuelle Projekt bleibt geöffnet.\n\n"
+                    f"Technische Einzelheiten: {type(exc).__name__}: {exc}"
+                )
             return False
+        self._project_file = saved
         self._project_state = state
         self._project_dirty = False
         self.project_panel.set_saved(saved)
         self._write_log(f"Projekt gespeichert: {saved.name}.")
         return True
+
+    def _save_current_project(self, *_args, silent: bool = False) -> bool:
+        return self._persist_project_to(self._project_file, silent=silent)
 
     def _save_project_as(self) -> None:
         selected, _ = QFileDialog.getSaveFileName(
@@ -309,9 +320,8 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         target = Path(selected).expanduser()
         if target.suffix.lower() != ".json":
             target = target.with_name(target.name + ".vbfast.json")
-        self._project_file = target
-        self._project_dirty = True
-        self._save_current_project()
+        # Never replace self._project_file with an unwritable destination.
+        self._persist_project_to(target)
 
     def _mark_project_dirty(self, *_args) -> None:
         if self._loading_project:
@@ -335,7 +345,28 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
 
     def closeEvent(self, event) -> None:
         if self._project_dirty and not self.runner.running and not self.preparing:
-            self._save_current_project(silent=True)
+            if not self._save_current_project(silent=True):
+                # An automatic save failure must never silently discard work.
+                while True:
+                    answer = QMessageBox.warning(
+                        self,
+                        "Projektänderungen nicht gespeichert",
+                        "VideoBatch konnte deine Änderungen nicht speichern. "
+                        "Du kannst es erneut versuchen, weiterarbeiten oder "
+                        "das Programm ausdrücklich ohne Speichern schließen.",
+                        QMessageBox.StandardButton.Retry
+                        | QMessageBox.StandardButton.Discard
+                        | QMessageBox.StandardButton.Cancel,
+                        QMessageBox.StandardButton.Cancel,
+                    )
+                    if answer == QMessageBox.StandardButton.Retry:
+                        if self._save_current_project(silent=True):
+                            break
+                    elif answer == QMessageBox.StandardButton.Discard:
+                        break
+                    else:
+                        event.ignore()
+                        return
         super().closeEvent(event)
 
 
