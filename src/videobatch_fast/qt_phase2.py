@@ -160,6 +160,7 @@ class VideoBatchQtPhase2Window(SelectionPreviewMixin, VideoBatchQtWindow):
                     audio.name,
                     f"Diashow · {len(images)} Bilder",
                     "Bereit" if images else "Bilder fehlen",
+                    "0 %" if images else "–",
                 )
                 for column, text in enumerate(values):
                     self.table.setItem(row, column, QTableWidgetItem(text))
