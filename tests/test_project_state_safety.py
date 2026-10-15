@@ -68,3 +68,17 @@ def test_json_list_is_not_silently_accepted_as_an_empty_project(
     assert healed
     assert state["project_name"] == "Neues Projekt"
     assert list(tmp_path.glob("*.corrupt.*"))
+
+
+def test_missing_user_selected_project_is_not_created(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(project_state, "ensure_app_dirs", lambda: None)
+    monkeypatch.setattr(project_state, "default_project_file",
+                        lambda: tmp_path / "default.vbfast.json")
+    missing = tmp_path / "vanished.vbfast.json"
+    with pytest.raises(FileNotFoundError):
+        project_state.load_project_state(missing)
+    assert not missing.exists()
+    project, state, healed = project_state.load_project_state()
+    assert project == tmp_path / "default.vbfast.json"
+    assert project.is_file()
+    assert not healed
