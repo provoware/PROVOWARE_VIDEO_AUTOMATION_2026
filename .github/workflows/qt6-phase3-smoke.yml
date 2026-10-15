@@ -159,6 +159,9 @@ jobs:
             tests/test_retry_queue_resilience.py \
             tests/test_recovery_consistency.py \
             tests/test_project_state.py \
+            tests/test_project_state_safety.py \
+            tests/test_pairing_status.py \
+            tests/test_probe_render.py \
             tests/test_persistent_thumbnail_cache.py \
             tests/test_quick_modes_2_2.py \
             tests/test_ab_channel_installer_rc15.py \
