@@ -39,6 +39,7 @@ from .job_journal import (
     recovery_input_paths,
     recovery_options,
 )
+from .pairing_status import pairing_status
 from .models import BatchOptions
 from .playlist import AudioPlayer, Playlist
 from .plugin_approvals import build_identity, grant_approval, revoke_approval, validate_approval
@@ -202,12 +203,12 @@ def _parity_start(self) -> None:
                 )
                 self._refresh()
                 return
-    elif not audios or len(audios) != len(media):
+    elif not pairing_status(len(audios), len(media), self.output.text()).ready:
         QMessageBox.warning(
-            self,
-            "Paarung unvollständig",
-            "Zu jedem Audio muss genau ein Bild oder Video gehören.\n\n"
-            "Alternative: Im Bereich „Diashow“ die Zuordnung „Alle Bilder je Audio“ wählen.",
+            self, "Paarung noch unvollständig",
+            pairing_status(len(audios), len(media), self.output.text()).explanation
+            + "\\n\\nAlternative: Im Bereich Diashow können alle Bilder "
+              "je Audiodatei verwendet werden."
         )
         return
     try:
