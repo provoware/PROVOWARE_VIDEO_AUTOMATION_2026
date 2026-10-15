@@ -3,12 +3,13 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+from unittest.mock import patch
 from pathlib import Path
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QMessageBox
 
 from videobatch_fast.config import load_config
 from videobatch_fast.dashboard_settings import load_settings
@@ -168,6 +169,37 @@ def main() -> int:
         assert payload["calendar_notes"]["2026-09-11"]["note"] == "Parität prüfen"
         assert payload["meta"]["frontend"] == "qt-phase3"
         assert payload["meta"]["qt_active_workspace"] == "queue"
+
+        # Real Qt instance: simulate a full / read-only disk and verify that
+        # Save As, closing, and project switching never discard edits.
+        previous = window._project_file
+        destination = temporary_path / "new-name.vbfast.json"
+        window.project_panel.note.setPlainText("Ungespeicherte Änderungen")
+        window._project_dirty = True
+        with (
+            patch("videobatch_fast.qt_phase3.save_project_state",
+                  side_effect=PermissionError("Disk is read-only")),
+            patch("videobatch_fast.qt_phase3.QFileDialog.getSaveFileName",
+                  return_value=(str(destination), "")),
+            patch("videobatch_fast.qt_phase3.QMessageBox.critical"),
+        ):
+            window._save_project_as()
+            assert window._project_file == previous
+            assert window._project_dirty
+            assert not destination.exists()
+        with (
+            patch("videobatch_fast.qt_phase3.save_project_state",
+                  side_effect=OSError("Disk full")),
+            patch("videobatch_fast.qt_phase3.QMessageBox.warning",
+                  return_value=QMessageBox.StandardButton.Cancel),
+        ):
+            assert window.close() is False
+            assert window.isVisible()
+            assert window._project_dirty
+        # Recovery: a later successful save clears the dirty state.
+        assert window._save_current_project()
+        assert not window._project_dirty
+        assert window._project_file == previous
 
         for route in window.workspace_navigation.buttons:
             window._route_workspace(route)
