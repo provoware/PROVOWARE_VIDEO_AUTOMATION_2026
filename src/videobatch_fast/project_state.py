@@ -144,6 +144,13 @@ def load_project_state(path: Path | str | None = None) -> tuple[Path, dict[str, 
     ensure_app_dirs()
     project_path = Path(path).expanduser() if path else default_project_file()
     if not project_path.exists():
+        # Only the application's default project may be created implicitly.
+        # A manually selected project disappearing before opening is an
+        # error, not permission to silently replace it with a blank one.
+        if project_path != default_project_file():
+            raise FileNotFoundError(
+                f"Ausgewähltes Projekt ist nicht mehr vorhanden: {project_path}"
+            )
         state = normalize_project_state({})
         save_project_state(project_path, state)
         return project_path, state, False
