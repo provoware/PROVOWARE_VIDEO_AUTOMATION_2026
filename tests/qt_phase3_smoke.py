@@ -201,6 +201,35 @@ def main() -> int:
         assert not window._project_dirty
         assert window._project_file == previous
 
+        # Simulate a Qt widget failure halfway through changing projects.
+        # The previous project and its visible content must be restored.
+        from videobatch_fast.project_state import save_project_state
+        other_file = temporary_path / "unapplied.vbfast.json"
+        save_project_state(other_file, {"project_name": "Unapplied"})
+        old_project = window._project_file
+        old_note = window.project_panel.note.toPlainText()
+        old_audio = window.audio.production_paths()
+        original_apply = window._apply_project_state
+        calls = [0]
+
+        def fail_first_application(state):
+            calls[0] += 1
+            if calls[0] == 1:
+                window.audio.clear()
+                raise RuntimeError("Simulated Qt widget failure")
+            return original_apply(state)
+
+        with patch.object(window, "_apply_project_state", side_effect=fail_first_application):
+            try:
+                window._load_project(other_file)
+            except RuntimeError:
+                pass
+            else:
+                raise AssertionError("Partial project change succeeded unexpectedly")
+        assert window._project_file == old_project
+        assert window.project_panel.note.toPlainText() == old_note
+        assert window.audio.production_paths() == old_audio
+
         for route in window.workspace_navigation.buttons:
             window._route_workspace(route)
             app.processEvents()
