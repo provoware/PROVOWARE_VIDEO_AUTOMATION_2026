@@ -221,9 +221,23 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
 
     def _load_project(self, path: Path) -> None:
         project_path, state, healed = load_project_state(path)
-        self._project_file = project_path
-        self._apply_project_state(state)
-        self.project_panel.set_project(project_path, state, healed=healed)
+        previous_file = self._project_file
+        previous_state = self._collect_project_state()
+        previous_dirty = self._project_dirty
+        try:
+            self._project_file = project_path
+            self._apply_project_state(state)
+            self.project_panel.set_project(project_path, state, healed=healed)
+        except Exception:
+            # Applying a project touches many Qt widgets. Restore the old
+            # workspace as well as its name instead of leaving a mixed state.
+            self._project_file = previous_file
+            try:
+                self._apply_project_state(previous_state)
+                self.project_panel.set_project(previous_file, previous_state)
+            finally:
+                self._project_dirty = previous_dirty
+            raise
         self._write_log(
             f"Projekt {'repariert und ' if healed else ''}geladen: {project_path.name}."
         )
@@ -296,9 +310,17 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         finally:
             self._loading_project = False
         self._project_dirty = True
-        self._save_current_project()
+        saved = self._save_current_project(silent=True)
         self._route_workspace("project")
-        self._write_log(f"Neues Projekt sicher angelegt: {candidate.name}.")
+        if saved:
+            self._write_log(f"Neues Projekt sicher angelegt: {candidate.name}.")
+        else:
+            QMessageBox.warning(
+                self, "Neues Projekt noch nicht vollständig gespeichert",
+                "Das neue Projekt wurde angelegt, aber seine aktuellen Angaben "
+                "konnten nicht gespeichert werden. Das Projekt bleibt geöffnet "
+                "und als ungespeichert markiert. Bitte erneut speichern."
+            )
 
     def _persist_project_to(self, target: Path, *, silent: bool = False) -> bool:
         """Write first and update the active project only after successful I/O."""
