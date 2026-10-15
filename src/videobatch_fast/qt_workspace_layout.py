@@ -231,7 +231,15 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     window.start.setObjectName("primary")
     window.start.setAccessibleDescription("Startet die geprüften Video-Aufträge.")
     window.start.setMinimumWidth(220)
+    window.probe_button = QPushButton("▶ Probevideo · max. 10 Sekunden")
+    window.probe_button.setObjectName("secondary")
+    window.probe_button.setToolTip(
+        "Erstellt ein kurzes Video nur aus dem ersten normalen Audio-/Medienpaar. "
+        "Die Ausgabe landet getrennt im Probevideo-Ordner."
+    )
+    window.probe_button.setAccessibleName("Kurzes Probevideo aus dem ersten Dateipaar")
     action_row.addWidget(window.cancel)
+    action_row.addWidget(window.probe_button)
     action_row.addWidget(window.start)
     layout.addLayout(action_row)
 
@@ -246,13 +254,18 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     window.show_result_log.setAccessibleDescription("Öffnet die technischen Meldungen zum letzten Durchlauf.")
     window.show_result_log.setEnabled(False)
     window.show_result_log.clicked.connect(lambda: window.log_toggle.setChecked(True))
+    window.open_probe_button = QPushButton("Probevideo öffnen")
+    window.open_probe_button.setVisible(False)
+    window.open_probe_button.setEnabled(False)
     result_row.addWidget(window.open_output)
+    result_row.addWidget(window.open_probe_button)
     result_row.addWidget(window.show_result_log)
     result_row.addStretch()
     layout.addLayout(result_row)
 
     window._production_footer_widgets = [
         window.activity_detail, total_label, window.progress, job_label, window.job_progress,
-        window.cancel, window.start, result_label, window.open_output, window.show_result_log,
+        window.cancel, window.probe_button, window.start, result_label,
+        window.open_output, window.open_probe_button, window.show_result_log,
     ]
     outer.addWidget(footer)
