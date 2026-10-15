@@ -485,11 +485,20 @@ class MediaImportDialog(QDialog):
 
     def _collect_paths(self, paths: list[Path]) -> None:
         known = set(self.collected)
+        stale = 0
         for path in paths:
+            # Cache entries may have been deleted or replaced with a link while
+            # the user was browsing. Never hand such files to the renderer.
+            if path.is_symlink() or not path.is_file():
+                stale += 1
+                continue
             if path not in known:
                 self.collected.append(path)
                 known.add(path)
-        self.collection_status.setText(f"{len(self.collected)} Datei(en) gesammelt")
+        message = f"{len(self.collected)} Datei(en) gesammelt"
+        if stale:
+            message += f" · {stale} nicht mehr verfügbare Datei(en) übersprungen"
+        self.collection_status.setText(message)
 
     def _collect_selection(self) -> None:
         self._collect_paths(self._selected_file_paths())
@@ -497,7 +506,15 @@ class MediaImportDialog(QDialog):
     def _accept_selection(self) -> None:
         selected = self._selected_file_paths()
         self._collect_paths(selected)
-        self.result = tuple(self.collected)
+        # Previously collected files may disappear before the final click.
+        self.result = tuple(
+            path for path in self.collected if not path.is_symlink() and path.is_file()
+        )
+        if len(self.result) != len(self.collected):
+            self.collection_status.setText(
+                "Einige Dateien sind nicht mehr verfügbar. "
+                "Bitte die verbleibende Auswahl kontrollieren."
+            )
         if not self.result:
             self.status.setText("Noch keine Datei ausgewählt.")
             return
