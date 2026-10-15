@@ -18,6 +18,7 @@ from PIL import Image
 
 from videobatch_fast.command_builder import build_command
 from videobatch_fast.models import BatchOptions, MediaInfo, PairJob
+from videobatch_fast.probe_render import plan_probe
 
 
 def _command(binary: str, *args: str, timeout: int = 45) -> subprocess.CompletedProcess:
@@ -97,3 +98,45 @@ def test_ffmpeg_creates_real_playable_mp4_without_touching_sources(
     assert float(payload["format"]["duration"]) > 0.4
     assert all(hashlib.sha256(path.read_bytes()).hexdigest() == digest
                for path, digest in source_hashes.items())
+
+
+def test_short_preview_is_real_mp4_and_uses_only_disposable_destination(
+    tmp_path: Path,
+) -> None:
+    ffmpeg = shutil.which("ffmpeg")
+    ffprobe = shutil.which("ffprobe")
+    if not ffmpeg or not ffprobe:
+        pytest.fail("FFmpeg und FFprobe für den Live-Probelauf erforderlich.")
+    audio, image, _ = _inputs(tmp_path)
+    originals = {source: hashlib.sha256(source.read_bytes()).hexdigest()
+                 for source in (audio, image)}
+    normal = tmp_path / "production" / "normal.mp4"
+    preview = tmp_path / "cache" / "probe" / "vb-probe-live.mp4"
+    preview.parent.mkdir(parents=True)
+    job = PairJob(
+        index=2, audio=audio, media=image, output=normal,
+        audio_info=MediaInfo(path=audio, kind="audio", duration=1.0),
+        media_info=MediaInfo(path=image, kind="image", width=160, height=90),
+        fast_path=False, reason="preview smoke",
+    )
+    options = BatchOptions(
+        output_dir=normal.parent, resolution="1280×720", profile="turbo",
+        visual_effect="none", quick_mode="custom", codec="libx264", fps=12,
+        max_threads=2, audio_bitrate="96k",
+    )
+    short_job, short_options = plan_probe(job, options, preview)
+    ffmpeg_command = build_command(short_job, short_options)
+    result = subprocess.run(ffmpeg_command, capture_output=True, text=True,
+                            errors="replace", timeout=45, check=False)
+    assert result.returncode == 0, result.stderr[-2800:]
+    assert preview.stat().st_size > 1024
+    result = _command(ffprobe, "-v", "error", "-show_entries",
+                      "format=duration:stream=codec_type", "-of", "json",
+                      str(preview))
+    payload = json.loads(result.stdout)
+    assert result.returncode == 0
+    assert 0.4 < float(payload["format"]["duration"]) <= 1.6
+    assert {s["codec_type"] for s in payload["streams"]} >= {"audio", "video"}
+    assert not normal.exists()
+    assert all(hashlib.sha256(source.read_bytes()).hexdigest() == digest
+               for source, digest in originals.items())
