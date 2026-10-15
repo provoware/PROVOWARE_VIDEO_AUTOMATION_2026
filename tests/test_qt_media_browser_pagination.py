@@ -30,3 +30,26 @@ def test_browser_paginates_large_directory_without_losing_search(tmp_path: Path)
     finally:
         dialog.close()
         app.processEvents()
+
+
+def test_cached_missing_media_and_replaced_symlinks_are_not_imported(tmp_path: Path) -> None:
+    app = QApplication.instance() or QApplication([])
+    dialog = MediaImportDialog(None, audio=False, initial_dir=tmp_path)
+    try:
+        actual = tmp_path / "valid.png"
+        actual.write_bytes(b"fake image bytes")
+        vanished = tmp_path / "gone.png"
+        outside = tmp_path / "outside.png"
+        outside.write_bytes(b"not a source")
+        shortcut = tmp_path / "shortcut.png"
+        shortcut.symlink_to(outside)
+        dialog._collect_paths([actual, vanished, shortcut])
+        assert dialog.collected == [actual]
+        assert "2 nicht mehr verfügbare" in dialog.collection_status.text()
+        actual.unlink()  # removed after the user collected it
+        dialog._accept_selection()
+        assert dialog.result == ()
+        assert "Noch keine Datei" in dialog.status.text()
+    finally:
+        dialog.close()
+        app.processEvents()
