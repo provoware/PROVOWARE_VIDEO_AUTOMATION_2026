@@ -169,6 +169,28 @@ class VideoBatchQtPhase2Window(SelectionPreviewMixin, VideoBatchQtWindow):
         pending = self.slideshow.pending_analysis and self.slideshow.scene_sync_enabled
         output_ready = bool(self.output.text().strip())
         ready = bool(jobs) and output_ready and not self.runner.running and not self.preparing and not pending
+        # The 1:1 pairing banner comes from the shared base _refresh().
+        # Overwrite it here when multiple images are intentionally used per audio.
+        if not audios:
+            explanation = "⚠ Diashow: Bitte mindestens eine Audiodatei hinzufügen."
+        elif not images:
+            explanation = "⚠ Diashow: Bitte mindestens ein Bild hinzufügen."
+        elif pending:
+            explanation = "⌛ Diashow: Die Audio-Szenenanalyse läuft noch."
+        elif not output_ready:
+            explanation = "⚠ Diashow: Bitte den Ausgabeordner auswählen."
+        else:
+            explanation = (
+                f"✓ Diashow bereit: {jobs} Video(s) aus jeweils "
+                f"{len(images)} Bild(ern) pro Audiodatei."
+            )
+        self.pairing_summary_label.setText(explanation)
+        # The short first-pair probe cannot represent a multi-image slideshow.
+        self.probe_button.setEnabled(False)
+        self.probe_button.setToolTip(
+            "Diese Kurzprobe unterstützt nur ein normales Audio-/Bild- "
+            "oder Audio-/Videopaar. Für Diashows die eigene Vorschau verwenden."
+        )
         self.start.setEnabled(ready)
         self.step_files.setText("1 · Dateien ✓" if jobs else "1 · Dateien")
         self.step_output.setText("2 · Ausgabe ✓" if output_ready else "2 · Ausgabe")
