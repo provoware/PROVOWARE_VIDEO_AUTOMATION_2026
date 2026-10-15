@@ -235,20 +235,46 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
             str(projects_dir()),
             "VideoBatch-Projekt (*.vbfast.json);;JSON (*.json)",
         )
-        if selected:
+        if not selected:
+            return
+        if self._project_dirty and not self._save_current_project():
+            # A failed save must never be followed by replacing the workspace.
+            return
+        try:
             self._load_project(Path(selected).expanduser())
-            self._route_workspace("project")
+        except (OSError, ValueError, TypeError) as exc:
+            QMessageBox.warning(
+                self, "Projekt konnte nicht geöffnet werden",
+                "Die Projektdatei ist derzeit nicht lesbar oder konnte nicht "
+                "sicher wiederhergestellt werden. Das bisherige Projekt bleibt "
+                f"geöffnet.\\n\\nGrund: {exc}"
+            )
+            return
+        self._route_workspace("project")
 
     def _new_project(self) -> None:
         if self.runner.running or self.preparing:
             QMessageBox.warning(self, "Produktion läuft", "Während einer laufenden Produktion wird kein neues Projekt angelegt.")
             return
-        stamp = time.strftime("%Y%m%d_%H%M%S")
+        if self._project_dirty and not self._save_current_project():
+            # Do not discard changes on a failed autosave.
+            return
+                stamp = time.strftime("%Y%m%d_%H%M%S")
         candidate = projects_dir() / f"projekt_{stamp}.vbfast.json"
         counter = 1
         while candidate.exists():
             candidate = projects_dir() / f"projekt_{stamp}_{counter}.vbfast.json"
             counter += 1
+        # Reserve the new project safely BEFORE clearing the old workspace.
+        try:
+            save_project_state(candidate, {"project_name": "Neues Projekt"})
+        except (OSError, ValueError, TypeError) as exc:
+            QMessageBox.warning(
+                self, "Neues Projekt nicht erstellt",
+                "Das neue Projekt konnte nicht gespeichert werden. "
+                f"Das bisherige Projekt bleibt erhalten.\\n\\nGrund: {exc}"
+            )
+            return
         self._project_file = candidate
         self._project_state = {"project_name": "Neues Projekt"}
         self._loading_project = True
