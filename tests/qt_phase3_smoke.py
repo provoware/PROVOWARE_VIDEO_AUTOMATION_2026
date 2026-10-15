@@ -109,6 +109,29 @@ def main() -> int:
         window.audio.add_paths([source_z, source_a])
         window.media.add_paths([media_z, media_a])
 
+        # Multi-image slideshow is valid with 2 audios and 3 images.
+        # The shared pairwise banner must not mislabel that as incomplete.
+        from videobatch_fast.slideshow import (
+            SLIDESHOW_MODE_ALL_IMAGES, SLIDESHOW_MODE_PAIRWISE,
+        )
+        slide_extra = temporary_path / "third-cover.png"
+        slide_extra.write_bytes(b"smoke-image-extra")
+        window.media.add_paths([slide_extra])
+        window.slideshow.assignment.setCurrentIndex(
+            window.slideshow.assignment.findData(SLIDESHOW_MODE_ALL_IMAGES)
+        )
+        app.processEvents()
+        assert "Diashow" in window.pairing_summary_label.text()
+        assert "Audiodatei" not in window.pairing_summary_label.text()
+        assert not window.probe_button.isEnabled()
+        window.slideshow.assignment.setCurrentIndex(
+            window.slideshow.assignment.findData(SLIDESHOW_MODE_PAIRWISE)
+        )
+        window.media.clear()
+        window.media.add_paths([media_z, media_a])
+        app.processEvents()
+        assert "Bereit für 2 Video" in window.pairing_summary_label.text()
+
         # Sorting changes only the view until the user explicitly accepts it as
         # production order. This restores the old data-safety contract.
         window.parity_audio_sort.setCurrentIndex(window.parity_audio_sort.findData("name_asc"))
