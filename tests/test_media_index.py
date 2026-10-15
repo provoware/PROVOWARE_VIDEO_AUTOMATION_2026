@@ -222,3 +222,36 @@ def test_cached_directory_read_does_not_initialize_index(tmp_path: Path) -> None
     index, roots = _index(tmp_path)
     assert index.cached_directory(roots["pictures"]) == []
     assert not index.database.exists()
+
+
+def test_new_exclusion_hides_old_cached_entries_immediately(tmp_path: Path) -> None:
+    index, roots = _index(tmp_path)
+    project = roots["downloads"] / "MyCodeProject"
+    project.mkdir()
+    image = project / "mockup.png"
+    image.write_bytes(b"image")
+    assert index.refresh_root("downloads").complete
+    assert [item.path for item in index.cached_directory(project)] == [image]
+    # No refresh: the exclusion must already apply to cached listings.
+    restricted = MediaIndex(
+        database=index.database, roots=roots, excluded_paths=frozenset({project})
+    )
+    assert restricted.cached_directory(project) == []
+    assert restricted.cached_directory(roots["downloads"]) == []
+
+
+def test_cached_directory_never_exposes_legacy_development_entries(tmp_path: Path) -> None:
+    index, roots = _index(tmp_path)
+    import sqlite3
+    developer = roots["downloads"] / ".venv"
+    developer.mkdir()
+    image = developer / "preview.png"
+    image.write_bytes(b"image")
+    # Simulate a record stored by a previous, less restrictive index version.
+    index.refresh_root("downloads")
+    with sqlite3.connect(index.database) as db:
+        db.execute(
+            "INSERT INTO media(root,path,parent,size,mtime_ns,kind) VALUES(?,?,?,?,?,?)",
+            ("downloads", str(image), str(developer), 5, 1, "image"),
+        )
+    assert index.cached_directory(developer) == []
