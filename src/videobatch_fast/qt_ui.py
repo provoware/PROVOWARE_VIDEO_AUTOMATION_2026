@@ -437,6 +437,7 @@ class VideoBatchQtWindow(QMainWindow):
         files_ready = bool(jobs)
         self.kpi_values["jobs"].setText(str(jobs))
         ready = files_ready and output_ready and not self.runner.running and not self.preparing
+        self.probe_button.setEnabled(ready)
         self.start.setEnabled(ready)
 
         self.step_files.setText("1 · Dateien ✓" if files_ready else "1 · Dateien")
@@ -606,8 +607,10 @@ class VideoBatchQtWindow(QMainWindow):
                         self._probe_pending = False
                         try:
                             destination = probe_output()
-                            self.jobs = [plan_probe(self.jobs[0], options, destination)[0]]
-                            options = plan_probe(self.jobs[0], options, destination)[1]
+                            short_job, options = plan_probe(
+                                self.jobs[0], options, destination
+                            )
+                            self.jobs = [short_job]
                             self._probe_file = destination
                             self._probe_active = True
                             prune_probes(destination.parent, keep=10)
