@@ -20,6 +20,7 @@ from .event_buffer import EventBuffer
 from .display_formatting import format_clock, format_eta, format_size
 from .jobs import build_jobs
 from .models import BatchOptions, PairJob
+from .pairing_status import pairing_status
 from .media_index import MediaIndex, media_roots
 from .media_index_preferences import load_exclusions, save_exclusions
 from .qt_main_layout import build_main_ui
@@ -181,6 +182,11 @@ class VideoBatchQtWindow(QMainWindow):
             "Kontrolle · automatische Paarung",
             "Hier nur prüfen: 1. Audio + 1. Medium = 1 Video. Du musst hier nichts einstellen.",
         )
+        self.pairing_summary_label = QLabel("Bitte zuerst Audio und Bilder/Videos auswählen.")
+        self.pairing_summary_label.setObjectName("pairingReadiness")
+        self.pairing_summary_label.setWordWrap(True)
+        self.pairing_summary_label.setAccessibleName("Bereitschaft und Dateipaarung")
+        layout.addWidget(self.pairing_summary_label)
         self.table = QTableWidget(0, 5)
         configure_job_table(self.table)
         layout.addWidget(self.table, 1)
@@ -395,6 +401,14 @@ class VideoBatchQtWindow(QMainWindow):
 
     def _refresh(self, *, preserve_results: bool = False) -> None:
         audios, media = self.audio.production_paths(), self.media.production_paths()
+        pairing = pairing_status(len(audios), len(media), self.output.text())
+        self.pairing_summary_label.setText(
+            ("✓ " if pairing.ready else "⚠ ") + pairing.explanation
+        )
+        self.pairing_summary_label.setToolTip(
+            "Dies ist die Zuordnungsvorschau; tatsächliche Formate werden "
+            "erst bei der Startprüfung kontrolliert."
+        )
         self.kpi_values["audio"].setText(str(len(audios)))
         self.kpi_values["media"].setText(str(len(media)))
         if not preserve_results:
@@ -432,9 +446,7 @@ class VideoBatchQtWindow(QMainWindow):
         elif not audios:
             self.next_step.setText("Nächster Schritt: 1 · Mindestens eine Audiodatei hinzufügen.")
         elif len(audios) != len(media):
-            self.next_step.setText(
-                f"Nächster Schritt: 1 · Paarung vervollständigen — {len(audios)} Audio, {len(media)} Medien."
-            )
+            self.next_step.setText("Nächster Schritt: " + pairing.explanation)
         elif not output_ready:
             self.next_step.setText("Nächster Schritt: einen Ausgabeordner oben wählen.")
         else:
