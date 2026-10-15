@@ -8,8 +8,8 @@ import threading
 import time
 from pathlib import Path
 
-from PySide6.QtCore import QTimer, Qt, Signal
-from PySide6.QtGui import QCloseEvent, QColor
+from PySide6.QtCore import QTimer, Qt, Signal, QUrl
+from PySide6.QtGui import QCloseEvent, QColor, QDesktopServices
 from PySide6.QtWidgets import (
     QApplication, QComboBox, QFileDialog, QFrame, QHBoxLayout,
     QLabel, QLineEdit, QMainWindow, QMessageBox, QPlainTextEdit, QPushButton,
@@ -21,6 +21,7 @@ from .display_formatting import format_clock, format_eta, format_size
 from .jobs import build_jobs
 from .models import BatchOptions, PairJob
 from .pairing_status import pairing_status
+from .probe_render import plan_probe, probe_output, prune_probes
 from .media_index import MediaIndex, media_roots
 from .media_index_preferences import load_exclusions, save_exclusions
 from .qt_main_layout import build_main_ui
@@ -52,6 +53,9 @@ class VideoBatchQtWindow(QMainWindow):
         self.prepare_thread: threading.Thread | None = None
         self.close_after_stop = False
         self.jobs: list[PairJob] = []
+        self._probe_pending = False
+        self._probe_active = False
+        self._probe_file: Path | None = None
         self._settings_warning = ""
         try:
             self.dashboard_settings = load_settings()
@@ -303,6 +307,8 @@ class VideoBatchQtWindow(QMainWindow):
             )
         self.output.editingFinished.connect(lambda: self._dashboard_changed("output_dir"))
         self.start.clicked.connect(self._start)
+        self.probe_button.clicked.connect(self._request_probe)
+        self.open_probe_button.clicked.connect(self._open_probe)
         self.cancel.clicked.connect(self._cancel)
         install_workflow_shortcuts(self)
 
@@ -527,8 +533,39 @@ class VideoBatchQtWindow(QMainWindow):
         self.prepare_thread = threading.Thread(target=prepare, daemon=True, name="VideoBatch-Qt-Prepare")
         self.prepare_thread.start()
 
+    def _request_probe(self) -> None:
+        """Use the ordinary validated preparation and the normal batch runner."""
+        if self.runner.running or self.preparing:
+            return
+        slideshow = getattr(self, "slideshow", None)
+        if slideshow is not None and getattr(slideshow, "assignment_mode", "pairwise") != "pairwise":
+            QMessageBox.information(
+                self, "Probevideo für normale Dateipaare",
+                "Der kurze Probelauf unterstützt derzeit ein Audio mit einem "
+                "Bild oder Video. Für eine Diashow bitte die Vorschau im "
+                "Diashow-Bereich verwenden."
+            )
+            return
+        self._probe_pending = True
+        self._probe_active = False
+        self.open_probe_button.setVisible(False)
+        self.open_probe_button.setEnabled(False)
+        self._start()
+        # If the ordinary validation blocked preparation, no probe must be
+        # accidentally launched by a later click on Videos erstellen.
+        if not self.preparing:
+            self._probe_pending = False
+
+    def _open_probe(self) -> None:
+        if self._probe_file is not None and self._probe_file.is_file():
+            QDesktopServices.openUrl(QUrl.fromLocalFile(str(self._probe_file)))
+        else:
+            QMessageBox.information(self, "Probevideo nicht verfügbar",
+                                    "Das Probevideo ist nicht mehr vorhanden.")
+
     def _cancel(self) -> None:
         if self.preparing and not self.runner.running:
+            self._probe_pending = False
             self.prepare_generation += 1
             self.preparing = False
             self.progress.setRange(0, 100)
@@ -560,14 +597,30 @@ class VideoBatchQtWindow(QMainWindow):
                 self.progress.setRange(0, 100)
                 self.job_progress.setRange(0, 100)
                 if kind == "error":
+                    self._probe_pending = False
                     self._show_start_error(str(data), "Vorbereitung")
                 else:
                     self.jobs = list(data)
                     options = rest[0]
+                    if self._probe_pending:
+                        self._probe_pending = False
+                        try:
+                            destination = probe_output()
+                            self.jobs = [plan_probe(self.jobs[0], options, destination)[0]]
+                            options = plan_probe(self.jobs[0], options, destination)[1]
+                            self._probe_file = destination
+                            self._probe_active = True
+                            prune_probes(destination.parent, keep=10)
+                        except (ValueError, OSError, IndexError) as exc:
+                            self._probe_active = False
+                            self._show_start_error(str(exc), "Probevorbereitung")
+                            self._drain_events()
+                            return
                     self._load_jobs()
                     try:
                         self.runner.start(self.jobs, options)
                     except Exception as exc:
+                        self._probe_active = False
                         self._show_start_error(f"{type(exc).__name__}: {exc}", "Start")
         self._drain_events()
         prepare_alive = bool(self.prepare_thread and self.prepare_thread.is_alive())
@@ -665,6 +718,22 @@ class VideoBatchQtWindow(QMainWindow):
         for row in range(max(0, self.table.rowCount() - open_), self.table.rowCount()):
             self._row_status(row, "Nicht gestartet", "–")
         self._refresh(preserve_results=True)
+        if self._probe_active:
+            self._probe_active = False
+            good = ok == 1 and not failed and not open_ and not cancelled
+            self.open_probe_button.setVisible(good)
+            self.open_probe_button.setEnabled(good)
+            if good:
+                self.next_step.setText(
+                    "Probevideo fertig (höchstens 10 Sekunden). "
+                    "Mit „Probevideo öffnen“ das Ergebnis prüfen. "
+                    "Die normale Ausgabe wurde nicht verändert."
+                )
+            else:
+                self.next_step.setText(
+                    "Probevideo nicht erfolgreich. Fehlerdetails unter "
+                    "„Technische Meldungen anzeigen“ prüfen."
+                )
 
     def _load_jobs(self) -> None:
         self.table.setRowCount(len(self.jobs))
