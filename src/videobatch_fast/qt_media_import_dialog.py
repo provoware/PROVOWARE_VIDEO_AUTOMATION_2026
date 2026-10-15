@@ -57,6 +57,9 @@ class MediaImportDialog(QDialog):
         self.collected: list[Path] = []
         self._records: list[DirectoryRecord] = []
         self._record_positions: dict[str, int] = {}
+        self._records_version = 0
+        self._sorted_cache_key: tuple[str, bool, int] | None = None
+        self._sorted_cache: list[DirectoryRecord] = []
         self._cached_index = MediaIndex()
         self._scan_seen: set[str] = set()
         self._scan_generation = 0
@@ -222,6 +225,7 @@ class MediaImportDialog(QDialog):
         cancel = self._scan_cancel
         directory = self.current_dir
         self._records = []
+        self._records_version += 1
         self._record_positions.clear()
         self._display_limit = 2000
         self._scan_seen.clear()
@@ -275,6 +279,8 @@ class MediaImportDialog(QDialog):
         if generation != self._scan_generation:
             return
         records = list(records_object)
+        if records:
+            self._records_version += 1
         for record in records:
             key = str(record.path)
             self._scan_seen.add(key)
@@ -294,6 +300,7 @@ class MediaImportDialog(QDialog):
         self._scan_complete = True
         self._redraw_timer.stop()
         if not error and not self._scan_cancel.is_set():
+            self._records_version += 1
             self._records = [record for record in self._records
                              if str(record.path) in self._scan_seen]
             self._record_positions = {
@@ -333,7 +340,13 @@ class MediaImportDialog(QDialog):
     def _render_records(self) -> None:
         selected = {Path(str(item.data(Qt.ItemDataRole.UserRole))) for item in self.files.selectedItems()}
         query = self.filter_edit.text().strip().casefold()
-        records = sort_directory_records(self._records, self.sort_key, self.sort_reverse)
+        key = (self.sort_key, self.sort_reverse, self._records_version)
+        if self._sorted_cache_key != key:
+            self._sorted_cache = sort_directory_records(
+                self._records, self.sort_key, self.sort_reverse
+            )
+            self._sorted_cache_key = key
+        records = self._sorted_cache
         if query:
             records = [record for record in records if query in record.path.name.casefold()]
 
