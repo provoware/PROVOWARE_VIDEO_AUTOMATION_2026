@@ -172,7 +172,17 @@ class MediaIndex:
                 ).fetchall()
         except (OSError, sqlite3.Error):
             return []
-        return [IndexedMedium(Path(p), size, mtime, kind) for p, size, mtime, kind in rows]
+        # Apply exclusions even to old cache rows, before the next scan finishes.
+        # A stored record is not permission to reveal a newly excluded project.
+        def allowed(path_text: str) -> bool:
+            path = Path(path_text)
+            return not any(path == excluded or excluded in path.parents
+                           for excluded in self.excluded_paths) and not any(
+                part.casefold() in EXCLUDED_DIRECTORY_NAMES
+                for part in path.relative_to(directory).parts[:-1]
+            )
+        return [IndexedMedium(Path(p), size, mtime, kind)
+                for p, size, mtime, kind in rows if allowed(p)]
 
     def refresh(self, *, cancel: threading.Event | None = None) -> list[ScanResult]:
         results = []
