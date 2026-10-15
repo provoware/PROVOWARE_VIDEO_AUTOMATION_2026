@@ -259,7 +259,7 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         if self._project_dirty and not self._save_current_project():
             # Do not discard changes on a failed autosave.
             return
-                stamp = time.strftime("%Y%m%d_%H%M%S")
+        stamp = time.strftime("%Y%m%d_%H%M%S")
         candidate = projects_dir() / f"projekt_{stamp}.vbfast.json"
         counter = 1
         while candidate.exists():
