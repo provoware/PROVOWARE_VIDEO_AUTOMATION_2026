@@ -172,15 +172,23 @@ class MediaIndex:
                 ).fetchall()
         except (OSError, sqlite3.Error):
             return []
-        # Apply exclusions even to old cache rows, before the next scan finishes.
-        # A stored record is not permission to reveal a newly excluded project.
+        # Filter cached paths immediately when exclusions are changed. A
+        # cached row is unverified data, never authorization to show a project.
         def allowed(path_text: str) -> bool:
             path = Path(path_text)
-            return not any(path == excluded or excluded in path.parents
-                           for excluded in self.excluded_paths) and not any(
-                part.casefold() in EXCLUDED_DIRECTORY_NAMES
-                for part in path.relative_to(directory).parts[:-1]
-            )
+            if path.parent != directory:
+                return False
+            if any(path == excluded or excluded in path.parents
+                   for excluded in self.excluded_paths):
+                return False
+            for root in self.roots.values():
+                if root == directory or root in directory.parents:
+                    relative = directory.relative_to(root)
+                    return not any(
+                        part.casefold() in EXCLUDED_DIRECTORY_NAMES
+                        for part in relative.parts
+                    )
+            return False
         return [IndexedMedium(Path(p), size, mtime, kind)
                 for p, size, mtime, kind in rows if allowed(p)]
 
