@@ -122,7 +122,8 @@ def main() -> int:
         )
         app.processEvents()
         assert "Diashow" in window.pairing_summary_label.text()
-        assert "Audiodatei" not in window.pairing_summary_label.text()
+        assert window.pairing_summary_label.text().startswith("✓ Diashow bereit:")
+        assert "fehlen" not in window.pairing_summary_label.text()
         assert not window.probe_button.isEnabled()
         window.slideshow.assignment.setCurrentIndex(
             window.slideshow.assignment.findData(SLIDESHOW_MODE_PAIRWISE)
