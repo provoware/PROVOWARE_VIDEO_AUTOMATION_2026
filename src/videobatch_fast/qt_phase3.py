@@ -261,7 +261,7 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
                 self, "Projekt konnte nicht geöffnet werden",
                 "Die Projektdatei ist derzeit nicht lesbar oder konnte nicht "
                 "sicher wiederhergestellt werden. Das bisherige Projekt bleibt "
-                f"geöffnet.\\n\\nGrund: {exc}"
+                f"geöffnet.\n\nGrund: {exc}"
             )
             return
         self._route_workspace("project")
@@ -286,7 +286,7 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
             QMessageBox.warning(
                 self, "Neues Projekt nicht erstellt",
                 "Das neue Projekt konnte nicht gespeichert werden. "
-                f"Das bisherige Projekt bleibt erhalten.\\n\\nGrund: {exc}"
+                f"Das bisherige Projekt bleibt erhalten.\n\nGrund: {exc}"
             )
             return
         self._project_file = candidate
