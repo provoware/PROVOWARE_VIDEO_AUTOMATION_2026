@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "kind": "development_candidate_ci_evidence",
+  "source_pr": 240,
+  "source_commit": "dfed481648d847dc35154a5976eb0aa13383afb9",
+  "release_approval": false,
+  "stable_ready": false,
+  "source_release_manifest": {
+    "file_count": 517,
+    "files_sha256": "fca605ceaff8d9f9a91f92027b23a2579df07c2efafe00cbbc8dddfd72bc1076"
+  },
+  "historical_rc24_evidence": {
+    "path": "diagnostics/release_readiness/RELEASE_EVIDENCE.json",
+    "file_count": 496,
+    "reported_tests_passed": 325,
+    "note": "Historical RC24 evidence remains unchanged and is not evidence for all 517 current files."
+  },
+  "checks": [
+    {
+      "name": "CP-09 FFmpeg evidence audit",
+      "run_id": 39069605746,
+      "conclusion": "success",
+      "source_commit": "dfed481648d847dc35154a5976eb0aa13383afb9",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39069605746"
+    },
+    {
+      "name": "Release contract sync",
+      "run_id": 39069605714,
+      "conclusion": "failure",
+      "source_commit": "dfed481648d847dc35154a5976eb0aa13383afb9",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39069605714"
+    },
+    {
+      "name": "PR ancestry guard",
+      "run_id": 39069605759,
+      "conclusion": "success",
+      "source_commit": "dfed481648d847dc35154a5976eb0aa13383afb9",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39069605759"
+    },
+    {
+      "name": "Bounded resumable long-render rehearsal",
+      "run_id": 39069605676,
+      "conclusion": "success",
+      "source_commit": "dfed481648d847dc35154a5976eb0aa13383afb9",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39069605676"
+    },
+    {
+      "name": "Repository merge preflight",
+      "run_id": 39069605674,
+      "conclusion": "failure",
+      "source_commit": "dfed481648d847dc35154a5976eb0aa13383afb9",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39069605674"
+    },
+    {
+      "name": "Kubuntu 26.04 Wayland preview contract",
+      "run_id": 39069605692,
+      "conclusion": "success",
+      "source_commit": "dfed481648d847dc35154a5976eb0aa13383afb9",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39069605692"
+    },
+    {
+      "name": "Qt6 Phase 3 orchestrated validation",
+      "run_id": 39069605722,
+      "conclusion": "success",
+      "source_commit": "dfed481648d847dc35154a5976eb0aa13383afb9",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39069605722"
+    },
+    {
+      "name": "Trusted PR ancestry guard",
+      "run_id": 39069603979,
+      "conclusion": "success",
+      "source_commit": "dfed481648d847dc35154a5976eb0aa13383afb9",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39069603979"
+    }
+  ],
+  "unverified": [
+    "Full candidate-specific evidence regeneration from measured current test coverage and artifact statistics",
+    "Native physical Kubuntu 26.04 KDE Plasma Wayland visual acceptance at 100/125/150/200 percent"
+  ],
+  "release_contract_blocker": "Historical RELEASE_EVIDENCE manifest file_count=496 while candidate manifest file_count=517; must generate genuinely new validated candidate evidence before updating derived release-status files."
+}
