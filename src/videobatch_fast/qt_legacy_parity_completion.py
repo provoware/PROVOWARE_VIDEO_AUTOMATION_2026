@@ -446,8 +446,9 @@ def _browse(window: object, *, audio: bool) -> None:
 def _patch_media_browsers() -> None:
     from .qt_phase2 import VideoBatchQtPhase2Window
 
-    VideoBatchQtWindow._choose_audio = _choose_audio
-    VideoBatchQtWindow._choose_media = _choose_media
+    # All visible import buttons must use the SAME preview-capable browser.
+    VideoBatchQtWindow._choose_audio = lambda self: _browse(self, audio=True)
+    VideoBatchQtWindow._choose_media = lambda self: _browse(self, audio=False)
     VideoBatchQtPhase2Window._browse_audio = lambda self: _browse(self, audio=True)
     VideoBatchQtPhase2Window._browse_media = lambda self: _browse(self, audio=False)
 

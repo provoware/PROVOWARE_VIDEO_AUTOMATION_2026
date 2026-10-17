@@ -239,3 +239,41 @@ def test_background_task_error_is_reported_and_manager_remains_usable() -> None:
     assert errors == [("broken", "boom")]
     assert completed == ["ok"]
     assert manager.errors() == ("broken: RuntimeError: boom",)
+
+
+def test_fresh_start_recovers_unfinished_journal_without_autorun(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    """Simulate process loss after journal persisted an active job."""
+    from videobatch_fast.job_journal import (
+        BatchJournal, recoverable_batches, recovery_input_paths,
+        recovery_options, acknowledge_recovery,
+    )
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
+    job = _job(tmp_path, 7)
+    original_audio = job.audio.read_bytes()
+    original_media = job.media.read_bytes()
+    options = BatchOptions(
+        output_dir=tmp_path, resolution="1280×720",
+        profile="quality", visual_effect="vivid", quick_mode="custom",
+    )
+    journal = BatchJournal("simulated-power-loss", [job], options)
+    journal.mark_started(job.index)
+    # Do not finish journal: stand in for a process that disappeared.
+    del journal
+    restored = recoverable_batches()
+    assert len(restored) == 1
+    assert restored[0]["recoverable_jobs"] == 1
+    assert restored[0]["jobs"][0]["state"] == "running"
+    audios, media = recovery_input_paths(restored)
+    assert audios == [job.audio] and media == [job.media]
+    saved = recovery_options(restored)
+    assert saved["profile"] == "quality"
+    assert saved["visual_effect"] == "vivid"
+    assert saved["resolution"] == "1280×720"
+    assert not job.output.exists(), "Wiederherstellung darf keinen Render automatisch starten."
+    archived = acknowledge_recovery(restored[0]["journal_path"], action="manual-review")
+    assert archived.is_file()
+    assert recoverable_batches() == []
+    assert job.audio.read_bytes() == original_audio
+    assert job.media.read_bytes() == original_media

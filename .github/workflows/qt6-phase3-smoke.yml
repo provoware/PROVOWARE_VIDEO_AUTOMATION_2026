@@ -118,7 +118,12 @@ jobs:
             tests/test_tk_free_core_contract.py \
             tests/test_architecture_v1_collision_contract.py \
             tests/test_persistence_v1_contract.py \
-            tests/test_ffmpeg_v1_contract.py
+            tests/test_ffmpeg_v1_contract.py \
+            tests/test_dashboard_settings_contract.py \
+            tests/test_dashboard_ffmpeg_contract.py \
+            tests/test_media_index.py \
+            tests/test_media_index_preferences.py \
+            tests/test_media_watcher.py
 
   core-regression:
     name: "2A · Kern-Prüfer / unterstützte Regression"
@@ -154,6 +159,9 @@ jobs:
             tests/test_retry_queue_resilience.py \
             tests/test_recovery_consistency.py \
             tests/test_project_state.py \
+            tests/test_project_state_safety.py \
+            tests/test_pairing_status.py \
+            tests/test_probe_render.py \
             tests/test_persistent_thumbnail_cache.py \
             tests/test_quick_modes_2_2.py \
             tests/test_ab_channel_installer_rc15.py \
@@ -163,6 +171,9 @@ jobs:
             tests/test_ui_ready_handshake_contract.py \
             tests/test_multipart_installer.py \
             tests/test_autonomous_reliability_rc25.py
+
+      - name: Benchmark media-only SQLite index with 100000 mixed files
+        run: PYTHONPATH=src python scripts/benchmark_media_index.py --count 100000
 
   offline-qt-runtime-gate:
     name: "2B · Runtime-Prüfer / offline Qt"
@@ -234,7 +245,10 @@ jobs:
       - name: Prove offline install flags and consent contract
         run: python tests/test_qt_runtime_toolchain_contract.py
 
+      # Feature pull requests validate Qt independently of the frozen RC manifest.
+      # The separate merge preflight retains the strict release-manifest gate.
       - name: Check compact release manifest from clean HEAD
+        if: github.event_name != 'pull_request'
         run: |
           set -Eeuo pipefail
           git restore --source=HEAD --staged --worktree -- toolchain_wheelhouse
@@ -345,6 +359,16 @@ jobs:
 
       - name: Run Phase 3 project workspace smoke on Wayland
         run: python tests/qt_phase3_smoke.py
+
+      - name: Verify persistent Qt thumbnails
+        run: python -m pytest -q tests/test_qt_thumbnail_cache.py tests/test_qt_media_browser_pagination.py
+
+      - name: Render and probe disposable real FFmpeg MP4 files
+        run: |
+          set -Eeuo pipefail
+          command -v ffmpeg
+          command -v ffprobe
+          python -m pytest -q tests/test_real_ffmpeg_smoke.py
 
       - name: Prepare verified private Qt runtime for launcher
         env:

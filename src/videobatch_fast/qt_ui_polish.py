@@ -20,7 +20,7 @@ QLabel#panelHint {
 }
 QLabel#helperText {
     color: #aebfd3;
-    font-size: 9.5pt;
+    font-size: 12pt;
 }
 QLabel#fieldLabel {
     color: #f3f7ff;
@@ -141,10 +141,13 @@ def configure_job_table(table: QTableWidget) -> None:
     table.setTextElideMode(Qt.TextElideMode.ElideMiddle)
     table.verticalHeader().setVisible(False)
     table.verticalHeader().setDefaultSectionSize(38)
-    table.horizontalHeader().setStretchLastSection(True)
-    table.setColumnWidth(0, 42)
-    table.setColumnWidth(3, 105)
-    table.setColumnWidth(4, 145)
+    from PySide6.QtWidgets import QHeaderView
+    header = table.horizontalHeader()
+    header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+    header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+    header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+    header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+    header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
 
 
 def job_table_item(text: str, column: int) -> QTableWidgetItem:
@@ -162,6 +165,9 @@ def install_workflow_shortcuts(window) -> None:
     window._workflow_shortcuts = []
 
     def activate(route: str, target) -> None:
+        if route == "global_settings":
+            target.setFocus()
+            return
         handler = getattr(window, "_route_workspace", None)
         if callable(handler):
             handler(route)
@@ -173,7 +179,7 @@ def install_workflow_shortcuts(window) -> None:
 
     for sequence, route, target in (
         ("Alt+1", "media", window.audio),
-        ("Alt+2", "effects", window.output),
+        ("Alt+2", "global_settings", window.output),
         ("Alt+3", "queue", window.start),
     ):
         shortcut = QShortcut(QKeySequence(sequence), window)

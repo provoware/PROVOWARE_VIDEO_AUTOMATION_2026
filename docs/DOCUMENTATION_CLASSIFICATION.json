@@ -241,6 +241,12 @@
     },
     "docs/reference/VISUAL_APPROVAL_NORMALIZATION.md": {
       "category": "technical"
+    },
+    "docs/VIDEOBATCH_CP_UX_IMPLEMENTIERUNGSSTAND_2026.md": {
+      "category": "internal"
+    },
+    "docs/VIDEOBATCH_CP_UX_LAIENPRUEFUNG_2026.md": {
+      "category": "internal"
     }
   },
   "excluded_relative_links": [],

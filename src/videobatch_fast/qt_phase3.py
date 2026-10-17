@@ -63,6 +63,8 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         self.navigation_dock.setWidget(self.workspace_navigation)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.navigation_dock)
         self.resizeDocks([self.navigation_dock], [205], Qt.Orientation.Horizontal)
+        # Main tabs replace the old permanently visible nine-button sidebar.
+        self.navigation_dock.hide()
 
         self.phase3_dock = QDockWidget("Projekt & Hilfe", self)
         self.phase3_dock.setObjectName("phase3Dock")
@@ -134,7 +136,7 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
             self.phase2_tabs.setCurrentWidget(self.slideshow)
             self.slideshow.setFocus()
         elif route == "effects":
-            self.mode.setFocus()
+            self.verification.setFocus()
         elif route == "queue":
             self.table.setFocus()
         elif route == "project":
@@ -219,9 +221,23 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
 
     def _load_project(self, path: Path) -> None:
         project_path, state, healed = load_project_state(path)
-        self._project_file = project_path
-        self._apply_project_state(state)
-        self.project_panel.set_project(project_path, state, healed=healed)
+        previous_file = self._project_file
+        previous_state = self._collect_project_state()
+        previous_dirty = self._project_dirty
+        try:
+            self._project_file = project_path
+            self._apply_project_state(state)
+            self.project_panel.set_project(project_path, state, healed=healed)
+        except Exception:
+            # Applying a project touches many Qt widgets. Restore the old
+            # workspace as well as its name instead of leaving a mixed state.
+            self._project_file = previous_file
+            try:
+                self._apply_project_state(previous_state)
+                self.project_panel.set_project(previous_file, previous_state)
+            finally:
+                self._project_dirty = previous_dirty
+            raise
         self._write_log(
             f"Projekt {'repariert und ' if healed else ''}geladen: {project_path.name}."
         )
@@ -233,13 +249,29 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
             str(projects_dir()),
             "VideoBatch-Projekt (*.vbfast.json);;JSON (*.json)",
         )
-        if selected:
+        if not selected:
+            return
+        if self._project_dirty and not self._save_current_project():
+            # A failed save must never be followed by replacing the workspace.
+            return
+        try:
             self._load_project(Path(selected).expanduser())
-            self._route_workspace("project")
+        except (OSError, ValueError, TypeError) as exc:
+            QMessageBox.warning(
+                self, "Projekt konnte nicht geöffnet werden",
+                "Die Projektdatei ist derzeit nicht lesbar oder konnte nicht "
+                "sicher wiederhergestellt werden. Das bisherige Projekt bleibt "
+                f"geöffnet.\n\nGrund: {exc}"
+            )
+            return
+        self._route_workspace("project")
 
     def _new_project(self) -> None:
         if self.runner.running or self.preparing:
             QMessageBox.warning(self, "Produktion läuft", "Während einer laufenden Produktion wird kein neues Projekt angelegt.")
+            return
+        if self._project_dirty and not self._save_current_project():
+            # Do not discard changes on a failed autosave.
             return
         stamp = time.strftime("%Y%m%d_%H%M%S")
         candidate = projects_dir() / f"projekt_{stamp}.vbfast.json"
@@ -247,6 +279,16 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         while candidate.exists():
             candidate = projects_dir() / f"projekt_{stamp}_{counter}.vbfast.json"
             counter += 1
+        # Reserve the new project safely BEFORE clearing the old workspace.
+        try:
+            save_project_state(candidate, {"project_name": "Neues Projekt"})
+        except (OSError, ValueError, TypeError) as exc:
+            QMessageBox.warning(
+                self, "Neues Projekt nicht erstellt",
+                "Das neue Projekt konnte nicht gespeichert werden. "
+                f"Das bisherige Projekt bleibt erhalten.\n\nGrund: {exc}"
+            )
+            return
         self._project_file = candidate
         self._project_state = {"project_name": "Neues Projekt"}
         self._loading_project = True
@@ -255,7 +297,7 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
             self.project_panel.note.clear()
             self.audio.clear()
             self.media.clear()
-            self.output.setText(str(Path.home() / "Videos" / "VideoBatch"))
+            # Keep the user-selected global destination when creating a project.
             mode_index = self.mode.findData("smart_auto")
             if mode_index >= 0:
                 self.mode.setCurrentIndex(mode_index)
@@ -268,32 +310,51 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         finally:
             self._loading_project = False
         self._project_dirty = True
-        self._save_current_project()
+        saved = self._save_current_project(silent=True)
         self._route_workspace("project")
-        self._write_log(f"Neues Projekt sicher angelegt: {candidate.name}.")
+        if saved:
+            self._write_log(f"Neues Projekt sicher angelegt: {candidate.name}.")
+        else:
+            QMessageBox.warning(
+                self, "Neues Projekt noch nicht vollständig gespeichert",
+                "Das neue Projekt wurde angelegt, aber seine aktuellen Angaben "
+                "konnten nicht gespeichert werden. Das Projekt bleibt geöffnet "
+                "und als ungespeichert markiert. Bitte erneut speichern."
+            )
 
-    def _save_current_project(self, *_args, silent: bool = False) -> bool:
+    def _persist_project_to(self, target: Path, *, silent: bool = False) -> bool:
+        """Write first and update the active project only after successful I/O."""
         if self.runner.running or self.preparing:
             if not silent:
                 QMessageBox.information(
-                    self,
-                    "Speichern verschoben",
-                    "Während der laufenden Produktion wird die Projektdatei nicht verändert.",
+                    self, "Speichern verschoben",
+                    "Während einer laufenden Produktion wird die Projektdatei nicht verändert."
                 )
             return False
         try:
             state = self._collect_project_state()
-            saved = save_project_state(self._project_file, state)
+            saved = save_project_state(target, state)
         except Exception as exc:
-            self._write_log(f"Projekt konnte nicht gespeichert werden: {type(exc).__name__}: {exc}")
+            self._write_log(
+                f"Projekt konnte nicht gespeichert werden: {type(exc).__name__}: {exc}"
+            )
             if not silent:
-                QMessageBox.critical(self, "Speichern fehlgeschlagen", f"{type(exc).__name__}: {exc}")
+                QMessageBox.critical(
+                    self, "Projekt nicht gespeichert",
+                    "Der Speicherort ist möglicherweise nicht erreichbar oder voll. "
+                    "Das aktuelle Projekt bleibt geöffnet.\n\n"
+                    f"Technische Einzelheiten: {type(exc).__name__}: {exc}"
+                )
             return False
+        self._project_file = saved
         self._project_state = state
         self._project_dirty = False
         self.project_panel.set_saved(saved)
         self._write_log(f"Projekt gespeichert: {saved.name}.")
         return True
+
+    def _save_current_project(self, *_args, silent: bool = False) -> bool:
+        return self._persist_project_to(self._project_file, silent=silent)
 
     def _save_project_as(self) -> None:
         selected, _ = QFileDialog.getSaveFileName(
@@ -307,9 +368,8 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         target = Path(selected).expanduser()
         if target.suffix.lower() != ".json":
             target = target.with_name(target.name + ".vbfast.json")
-        self._project_file = target
-        self._project_dirty = True
-        self._save_current_project()
+        # Never replace self._project_file with an unwritable destination.
+        self._persist_project_to(target)
 
     def _mark_project_dirty(self, *_args) -> None:
         if self._loading_project:
@@ -333,7 +393,28 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
 
     def closeEvent(self, event) -> None:
         if self._project_dirty and not self.runner.running and not self.preparing:
-            self._save_current_project(silent=True)
+            if not self._save_current_project(silent=True):
+                # An automatic save failure must never silently discard work.
+                while True:
+                    answer = QMessageBox.warning(
+                        self,
+                        "Projektänderungen nicht gespeichert",
+                        "VideoBatch konnte deine Änderungen nicht speichern. "
+                        "Du kannst es erneut versuchen, weiterarbeiten oder "
+                        "das Programm ausdrücklich ohne Speichern schließen.",
+                        QMessageBox.StandardButton.Retry
+                        | QMessageBox.StandardButton.Discard
+                        | QMessageBox.StandardButton.Cancel,
+                        QMessageBox.StandardButton.Cancel,
+                    )
+                    if answer == QMessageBox.StandardButton.Retry:
+                        if self._save_current_project(silent=True):
+                            break
+                    elif answer == QMessageBox.StandardButton.Discard:
+                        break
+                    else:
+                        event.ignore()
+                        return
         super().closeEvent(event)
 
 
