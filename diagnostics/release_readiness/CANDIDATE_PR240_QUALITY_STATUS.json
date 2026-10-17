@@ -20,6 +20,7 @@
     "file_count": 517,
     "files_sha256": "fca605ceaff8d9f9a91f92027b23a2579df07c2efafe00cbbc8dddfd72bc1076"
   },
+  "measured_source_commit": "11b546e7c12826495e7d16ee8021c1003316b470",
   "note": "CI records describe the cited candidate snapshot; never extrapolate to later commits.",
   "physical_ui_acceptance": "open",
   "quality_tools": {
