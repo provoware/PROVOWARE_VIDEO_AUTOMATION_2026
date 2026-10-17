@@ -140,3 +140,65 @@ def test_short_preview_is_real_mp4_and_uses_only_disposable_destination(
     assert not normal.exists()
     assert all(hashlib.sha256(source.read_bytes()).hexdigest() == digest
                for source, digest in originals.items())
+
+
+@pytest.mark.parametrize("slideshow", [False, True])
+@pytest.mark.parametrize("profile,effect", [("turbo", "none"), ("quality", "vivid")])
+def test_real_render_matrix_quality_effect_and_slideshow(
+    tmp_path: Path, slideshow: bool, profile: str, effect: str,
+) -> None:
+    """Validate decoded MP4 results, not merely planned encoder arguments."""
+    ffmpeg, ffprobe = shutil.which("ffmpeg"), shutil.which("ffprobe")
+    if not ffmpeg or not ffprobe:
+        pytest.fail("FFmpeg und FFprobe sind für den echten Rendertest notwendig.")
+    audio, first, second = _inputs(tmp_path)
+    source_hashes = {
+        path: hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in (audio, first, second)
+    }
+    output = tmp_path / f"{profile}-{effect}-{'slides' if slideshow else 'image'}.mp4"
+    job = PairJob(
+        index=1, audio=audio, media=first, output=output,
+        audio_info=MediaInfo(audio, "audio", duration=1.0),
+        media_info=MediaInfo(first, "image", width=160, height=90),
+        fast_path=False, reason="render matrix",
+        media_sequence=(first, second) if slideshow else (),
+        slide_durations=(0.5, 0.5) if slideshow else (),
+    )
+    options = BatchOptions(
+        output_dir=tmp_path, resolution="Original", profile=profile,
+        visual_effect=effect, codec="libx264", fps=12,
+        max_threads=2, quick_mode="custom", audio_bitrate="96k",
+    )
+    command = build_command(job, options)
+    assert command[command.index("-crf") + 1] in {"23", "18"}
+    encoded = subprocess.run(
+        command, capture_output=True, text=True, errors="replace",
+        timeout=60, check=False,
+    )
+    assert encoded.returncode == 0, encoded.stderr[-3000:]
+    assert output.is_file() and output.stat().st_size > 1024
+    inspected = _command(
+        ffprobe, "-v", "error", "-show_entries",
+        "stream=codec_type,width,height:format=duration", "-of", "json",
+        str(output),
+    )
+    assert inspected.returncode == 0, inspected.stderr
+    payload = json.loads(inspected.stdout)
+    assert any(
+        s["codec_type"] == "video" and s.get("width") == 160
+        and s.get("height") == 90 for s in payload["streams"]
+    )
+    assert any(s["codec_type"] == "audio" for s in payload["streams"])
+    assert 0.4 < float(payload["format"]["duration"]) <= 1.5
+    # Decode actual frames and audio: valid metadata alone is insufficient.
+    decoded = _command(
+        ffmpeg, "-v", "error", "-i", str(output),
+        "-map", "0:v:0", "-frames:v", "2", "-f", "null", "-",
+        timeout=30,
+    )
+    assert decoded.returncode == 0, decoded.stderr
+    assert all(
+        hashlib.sha256(path.read_bytes()).hexdigest() == digest
+        for path, digest in source_hashes.items()
+    )
