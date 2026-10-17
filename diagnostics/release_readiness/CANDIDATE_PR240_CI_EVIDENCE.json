@@ -77,5 +77,27 @@
     "Full candidate-specific evidence regeneration from measured current test coverage and artifact statistics",
     "Native physical Kubuntu 26.04 KDE Plasma Wayland visual acceptance at 100/125/150/200 percent"
   ],
-  "release_contract_blocker": "Historical RELEASE_EVIDENCE manifest file_count=496 while candidate manifest file_count=517; must generate genuinely new validated candidate evidence before updating derived release-status files."
+  "release_contract_blocker": "Historical RELEASE_EVIDENCE manifest file_count=496 while candidate manifest file_count=517; must generate genuinely new validated candidate evidence before updating derived release-status files.",
+  "latest_observed_candidate_ci": {
+    "source_commit": "11b546e7c12826495e7d16ee8021c1003316b470",
+    "core_regression": {
+      "passed": 167,
+      "failed": 0,
+      "job_id": 117505355342,
+      "workflow_run_id": 39069951719,
+      "scope": "core regression partition only; not full suite"
+    },
+    "offline_quality": {
+      "result": "passed",
+      "job_id": 117505309407,
+      "workflow_run_id": 39069951716,
+      "tools": [
+        "mypy 2.3.0",
+        "bandit 1.9.4",
+        "pip-audit 2.10.1",
+        "ruff 0.16.1"
+      ]
+    },
+    "ci_note": "Additional Qt6 orchestration and release-gate status must be checked on final commit. Historical 325 regression total is not candidate-specific."
+  }
 }
