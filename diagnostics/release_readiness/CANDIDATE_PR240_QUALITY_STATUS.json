@@ -3,7 +3,7 @@
     "Physische Kubuntu-/Wayland-Abnahme",
     "Release contract sync"
   ],
-  "candidate_commit": "65e10e316e54585c83687194efafe8bd7cbd695a",
+  "candidate_commit": "effd1bf838e47c9b7fca61886e6b0eb90f416701",
   "ci_checks": {
     "Bounded resumable long-render rehearsal": "success",
     "CP-09 FFmpeg evidence audit": "success",
@@ -18,13 +18,13 @@
   "kind": "candidate_only_status",
   "manifest": {
     "file_count": 518,
-    "files_sha256": "d4cefbeac76cf976ff72ad6789765a9167e9e1f60007d4a7b2166fa58fb8991a"
+    "files_sha256": "5241c475459f4d22ce5897f08e718faa6c6d66dcd9e6ac0726ecfd41b2d1be8b"
   },
-  "measured_source_commit": "65e10e316e54585c83687194efafe8bd7cbd695a",
-  "note": "CI records describe the cited candidate snapshot; never extrapolate to later commits.",
+  "measured_source_commit": "effd1bf838e47c9b7fca61886e6b0eb90f416701",
+  "note": "CI status cites an exact prior product-tree commit; diagnostics-only follow-up cannot establish a physical release approval.",
   "physical_ui_acceptance": "open",
   "quality_tools": {
-    "job_id": 117510447693,
+    "job_id": 117518205652,
     "result": "passed",
     "tools": [
       "mypy 2.3.0",
@@ -32,15 +32,15 @@
       "pip-audit 2.10.1",
       "ruff 0.16.1"
     ],
-    "workflow_run_id": 39071668435
+    "workflow_run_id": 39074316939
   },
   "ready_to_merge": false,
   "release_approved": false,
   "schema_version": 1,
   "verified_core_partition": {
     "failed": 0,
-    "job_id": 117510463206,
+    "job_id": 117518343957,
     "passed": 167,
-    "workflow_run_id": 39071668363
+    "workflow_run_id": 39074316914
   }
 }
