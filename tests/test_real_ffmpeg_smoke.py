@@ -12,6 +12,7 @@ import struct
 import subprocess
 import wave
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 from PIL import Image
@@ -26,7 +27,7 @@ def _command(binary: str, *args: str, timeout: int = 45) -> subprocess.Completed
                           errors="replace", timeout=timeout, check=False)
 
 
-def _audio(path: Path) -> None:
+def _audio(path: Path, seconds: int = 1) -> None:
     rate = 8000
     with wave.open(str(path), "wb") as out:
         out.setnchannels(1)
@@ -34,7 +35,7 @@ def _audio(path: Path) -> None:
         out.setframerate(rate)
         frames = b"".join(
             struct.pack("<h", int(10000 * math.sin(2 * math.pi * 440 * tick / rate)))
-            for tick in range(rate)
+            for tick in range(rate * seconds)
         )
         out.writeframes(frames)
 
@@ -201,4 +202,97 @@ def test_real_render_matrix_quality_effect_and_slideshow(
     assert all(
         hashlib.sha256(path.read_bytes()).hexdigest() == digest
         for path, digest in source_hashes.items()
+    )
+
+
+def test_real_ffmpeg_cancel_persists_retry_across_runner_restart(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Cancel a genuine live encoder, reopen its retry state, and render again."""
+    if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
+        pytest.fail("FFmpeg und FFprobe sind für den Wiederanlauftest erforderlich.")
+    from videobatch_fast.runner import BatchRunner
+    from videobatch_fast.retry_queue import RetryQueueStore, job_identity
+    from videobatch_fast import runner as runner_module
+
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
+    audio, image, _ = _inputs(tmp_path)
+    _audio(audio, seconds=8)
+    originals = {
+        source: hashlib.sha256(source.read_bytes()).hexdigest()
+        for source in (audio, image)
+    }
+    output = tmp_path / "interrupted.mp4"
+    job = PairJob(
+        index=1, audio=audio, media=image, output=output,
+        audio_info=MediaInfo(audio, "audio", duration=8.0),
+        media_info=MediaInfo(image, "image", width=160, height=90),
+        fast_path=False, reason="live cancellation",
+    )
+    options = BatchOptions(
+        output_dir=tmp_path, resolution="Original", profile="turbo",
+        visual_effect="none", codec="libx264", fps=12,
+        max_threads=2, quick_mode="custom", audio_bitrate="96k",
+    )
+    retry_path = tmp_path / "retry_queue.json"
+    runner = BatchRunner(lambda _event: None, retry_queue_path=retry_path)
+    ordinary_command = runner_module.build_command
+
+    def paced_command(actual_job, actual_options, **kwargs):
+        command = ordinary_command(actual_job, actual_options, **kwargs)
+        command.insert(command.index("-i"), "-re")
+        return command
+
+    # -re throttles the live source. No fake FFmpeg process is used.
+    with patch.object(runner_module, "build_command", side_effect=paced_command):
+        runner.start([job], options)
+        deadline = __import__("time").monotonic() + 8.0
+        try:
+            while __import__("time").monotonic() < deadline:
+                process = runner._process
+                if process is not None and process.poll() is None:
+                    break
+                __import__("time").sleep(0.05)
+            else:
+                pytest.fail("Kein laufender FFmpeg-Prozess zum Abbrechen gefunden.")
+            runner.cancel()
+            assert runner.wait(timeout=20), "Abbruch beendete den Stapel nicht."
+        finally:
+            if runner.running:
+                runner.cancel()
+                runner.wait(timeout=10)
+
+    # Simulate a fresh process: do not reuse the previous in-memory queue.
+    persisted = RetryQueueStore(retry_path)
+    entries = persisted.eligible_entries()
+    assert len(entries) == 1
+    assert entries[0]["job_id"] == job_identity(job)
+    assert entries[0]["attempts"] == 1
+    assert entries[0]["output"] == str(output)
+    assert all(
+        hashlib.sha256(path.read_bytes()).hexdigest() == digest
+        for path, digest in originals.items()
+    )
+
+    # A resumed job must use a fresh destination; never overwrite originals.
+    resumed = PairJob(
+        index=2, audio=audio, media=image, output=tmp_path / "resumed.mp4",
+        audio_info=job.audio_info, media_info=job.media_info,
+        fast_path=False, reason="new validated destination",
+    )
+    completed = subprocess.run(
+        build_command(resumed, options), capture_output=True, text=True,
+        errors="replace", timeout=60, check=False,
+    )
+    assert completed.returncode == 0, completed.stderr[-3000:]
+    probe = _command(shutil.which("ffprobe"), "-v", "error", "-show_entries",
+                     "stream=codec_type:format=duration", "-of", "json",
+                     str(resumed.output))
+    assert probe.returncode == 0, probe.stderr
+    payload = json.loads(probe.stdout)
+    assert {stream["codec_type"] for stream in payload["streams"]} >= {"audio", "video"}
+    assert float(payload["format"]["duration"]) > 7.0
+    assert all(
+        hashlib.sha256(path.read_bytes()).hexdigest() == digest
+        for path, digest in originals.items()
     )
