@@ -38,7 +38,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install pinned lightweight test runner
-        run: python -m pip install --disable-pip-version-check --no-input pytest==9.0.2
+        run: python -m pip install --disable-pip-version-check --no-input pytest==9.0.2 cryptography==50.0.0
 
       - name: Compile release-contract guards
         run: |
