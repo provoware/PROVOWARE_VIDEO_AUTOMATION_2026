@@ -2,95 +2,95 @@
   "schema_version": 1,
   "kind": "development_candidate_ci_evidence",
   "source_pr": 240,
-  "source_commit": "dfed481648d847dc35154a5976eb0aa13383afb9",
+  "source_commit": "65e10e316e54585c83687194efafe8bd7cbd695a",
   "release_approval": false,
   "stable_ready": false,
   "source_release_manifest": {
-    "file_count": 517,
-    "files_sha256": "fca605ceaff8d9f9a91f92027b23a2579df07c2efafe00cbbc8dddfd72bc1076"
+    "file_count": 518,
+    "files_sha256": "d4cefbeac76cf976ff72ad6789765a9167e9e1f60007d4a7b2166fa58fb8991a"
   },
   "historical_rc24_evidence": {
     "path": "diagnostics/release_readiness/RELEASE_EVIDENCE.json",
     "file_count": 496,
     "reported_tests_passed": 325,
-    "note": "Historical RC24 evidence remains unchanged and is not evidence for all 517 current files."
+    "note": "RC24-Nachweise beschreiben ausschließlich 496 historische Dateien und 325 historische Tests, nicht die aktuelle 518-Dateien-Entwicklung."
   },
   "checks": [
     {
       "name": "CP-09 FFmpeg evidence audit",
-      "run_id": 39069605746,
+      "run_id": 39071668535,
       "conclusion": "success",
-      "source_commit": "dfed481648d847dc35154a5976eb0aa13383afb9",
-      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39069605746"
+      "source_commit": "65e10e316e54585c83687194efafe8bd7cbd695a",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39071668535"
     },
     {
       "name": "Release contract sync",
-      "run_id": 39069605714,
+      "run_id": 39071668576,
       "conclusion": "failure",
-      "source_commit": "dfed481648d847dc35154a5976eb0aa13383afb9",
-      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39069605714"
+      "source_commit": "65e10e316e54585c83687194efafe8bd7cbd695a",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39071668576"
     },
     {
       "name": "PR ancestry guard",
-      "run_id": 39069605759,
+      "run_id": 39071668478,
       "conclusion": "success",
-      "source_commit": "dfed481648d847dc35154a5976eb0aa13383afb9",
-      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39069605759"
+      "source_commit": "65e10e316e54585c83687194efafe8bd7cbd695a",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39071668478"
     },
     {
       "name": "Bounded resumable long-render rehearsal",
-      "run_id": 39069605676,
+      "run_id": 39071668328,
       "conclusion": "success",
-      "source_commit": "dfed481648d847dc35154a5976eb0aa13383afb9",
-      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39069605676"
+      "source_commit": "65e10e316e54585c83687194efafe8bd7cbd695a",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39071668328"
     },
     {
       "name": "Repository merge preflight",
-      "run_id": 39069605674,
-      "conclusion": "failure",
-      "source_commit": "dfed481648d847dc35154a5976eb0aa13383afb9",
-      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39069605674"
+      "run_id": 39071668435,
+      "conclusion": "success",
+      "source_commit": "65e10e316e54585c83687194efafe8bd7cbd695a",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39071668435"
     },
     {
       "name": "Kubuntu 26.04 Wayland preview contract",
-      "run_id": 39069605692,
+      "run_id": 39071668336,
       "conclusion": "success",
-      "source_commit": "dfed481648d847dc35154a5976eb0aa13383afb9",
-      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39069605692"
+      "source_commit": "65e10e316e54585c83687194efafe8bd7cbd695a",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39071668336"
     },
     {
       "name": "Qt6 Phase 3 orchestrated validation",
-      "run_id": 39069605722,
+      "run_id": 39071668363,
       "conclusion": "success",
-      "source_commit": "dfed481648d847dc35154a5976eb0aa13383afb9",
-      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39069605722"
+      "source_commit": "65e10e316e54585c83687194efafe8bd7cbd695a",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39071668363"
     },
     {
       "name": "Trusted PR ancestry guard",
-      "run_id": 39069603979,
+      "run_id": 39071666761,
       "conclusion": "success",
-      "source_commit": "dfed481648d847dc35154a5976eb0aa13383afb9",
-      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39069603979"
+      "source_commit": "65e10e316e54585c83687194efafe8bd7cbd695a",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39071666761"
     }
   ],
   "unverified": [
-    "Full candidate-specific evidence regeneration from measured current test coverage and artifact statistics",
-    "Native physical Kubuntu 26.04 KDE Plasma Wayland visual acceptance at 100/125/150/200 percent"
+    "Echte physische Kubuntu 26.04 KDE Plasma Wayland Sichtabnahme bei 100/125/150/200 Prozent",
+    "Einzigartige Gesamtzahl sämtlicher Projektprüfungen und aktuelle Coverage sind nicht gemessen; einzelne geprüfte Teilmengen sind nachfolgend belegt"
   ],
-  "release_contract_blocker": "Historical RELEASE_EVIDENCE manifest file_count=496 while candidate manifest file_count=517; must generate genuinely new validated candidate evidence before updating derived release-status files.",
+  "release_contract_blocker": "Release contract sync bewusst nicht freigegeben: gültige reale Kubuntu-Abnahme für den manifestgebundenen 518-Dateien-Kandidaten fehlt; der Nachweisstatus bleibt ready_to_merge=false.",
   "latest_observed_candidate_ci": {
-    "source_commit": "11b546e7c12826495e7d16ee8021c1003316b470",
+    "source_commit": "65e10e316e54585c83687194efafe8bd7cbd695a",
     "core_regression": {
       "passed": 167,
       "failed": 0,
-      "job_id": 117505355342,
-      "workflow_run_id": 39069951719,
-      "scope": "core regression partition only; not full suite"
+      "job_id": 117510463206,
+      "workflow_run_id": 39071668363,
+      "scope": "unterstützte Kern-Regression; kein vollständiger Coverage-Lauf"
     },
     "offline_quality": {
       "result": "passed",
-      "job_id": 117505309407,
-      "workflow_run_id": 39069951716,
+      "job_id": 117510447693,
+      "workflow_run_id": 39071668435,
       "tools": [
         "mypy 2.3.0",
         "bandit 1.9.4",
@@ -98,6 +98,44 @@
         "ruff 0.16.1"
       ]
     },
-    "ci_note": "Additional Qt6 orchestration and release-gate status must be checked on final commit. Historical 325 regression total is not candidate-specific."
+    "measured_partitions": [
+      {
+        "label": "Architektur und Linux",
+        "passed": 110,
+        "job_id": 117510412633,
+        "workflow_run_id": 39071668363
+      },
+      {
+        "label": "Wayland-Verträge",
+        "passed": 45,
+        "job_id": 117510559478,
+        "workflow_run_id": 39071668363
+      },
+      {
+        "label": "Thumbnail/Medienbrowser",
+        "passed": 4,
+        "job_id": 117510559478,
+        "workflow_run_id": 39071668363
+      },
+      {
+        "label": "Echte FFmpeg-Tests",
+        "passed": 9,
+        "job_id": 117510559478,
+        "workflow_run_id": 39071668363
+      },
+      {
+        "label": "Historische Release-Regressionen",
+        "passed": 23,
+        "job_id": 117510390473,
+        "workflow_run_id": 39071668576
+      },
+      {
+        "label": "Kandidaten-Vertragstests",
+        "passed": 5,
+        "job_id": 117510390473,
+        "workflow_run_id": 39071668576
+      }
+    ],
+    "ci_note": "Einzelne Teilmengen überlappen; nicht als unterschiedliche Tests zusammenzählen. Der CI-Snapshot gehört zu exakt diesem Commit. Ein nachfolgender reiner diagnostics-Nachweiscommit ist noch nicht selbst geprüft."
   }
 }

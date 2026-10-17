@@ -36,7 +36,7 @@ def test_report_is_reproducible_but_not_release_approval(
     result = generator.build()
     assert result["candidate_commit"] == snapshot["source_commit"]
     assert result["measured_source_commit"] == snapshot["latest_observed_candidate_ci"]["source_commit"]
-    assert result["measured_source_commit"] != result["candidate_commit"]
+    assert result["measured_source_commit"] == result["candidate_commit"]
     assert result["verified_core_partition"]["passed"] == 167
     assert "Release contract sync" in result["blocking_checks"]
     assert result["release_approved"] is False

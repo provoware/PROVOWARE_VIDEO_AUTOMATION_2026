@@ -1,9 +1,8 @@
 {
   "blocking_checks": [
-    "Release contract sync",
-    "Repository merge preflight"
+    "Release contract sync"
   ],
-  "candidate_commit": "dfed481648d847dc35154a5976eb0aa13383afb9",
+  "candidate_commit": "65e10e316e54585c83687194efafe8bd7cbd695a",
   "ci_checks": {
     "Bounded resumable long-render rehearsal": "success",
     "CP-09 FFmpeg evidence audit": "success",
@@ -11,20 +10,20 @@
     "PR ancestry guard": "success",
     "Qt6 Phase 3 orchestrated validation": "success",
     "Release contract sync": "failure",
-    "Repository merge preflight": "failure",
+    "Repository merge preflight": "success",
     "Trusted PR ancestry guard": "success"
   },
   "historical_release_evidence_separate": true,
   "kind": "candidate_only_status",
   "manifest": {
-    "file_count": 517,
-    "files_sha256": "fca605ceaff8d9f9a91f92027b23a2579df07c2efafe00cbbc8dddfd72bc1076"
+    "file_count": 518,
+    "files_sha256": "d4cefbeac76cf976ff72ad6789765a9167e9e1f60007d4a7b2166fa58fb8991a"
   },
-  "measured_source_commit": "11b546e7c12826495e7d16ee8021c1003316b470",
+  "measured_source_commit": "65e10e316e54585c83687194efafe8bd7cbd695a",
   "note": "CI records describe the cited candidate snapshot; never extrapolate to later commits.",
   "physical_ui_acceptance": "open",
   "quality_tools": {
-    "job_id": 117505309407,
+    "job_id": 117510447693,
     "result": "passed",
     "tools": [
       "mypy 2.3.0",
@@ -32,15 +31,15 @@
       "pip-audit 2.10.1",
       "ruff 0.16.1"
     ],
-    "workflow_run_id": 39069951716
+    "workflow_run_id": 39071668435
   },
   "ready_to_merge": false,
   "release_approved": false,
   "schema_version": 1,
   "verified_core_partition": {
     "failed": 0,
-    "job_id": 117505355342,
+    "job_id": 117510463206,
     "passed": 167,
-    "workflow_run_id": 39069951719
+    "workflow_run_id": 39071668363
   }
 }
