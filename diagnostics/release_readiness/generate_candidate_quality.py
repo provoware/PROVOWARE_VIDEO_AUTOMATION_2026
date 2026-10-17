@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -21,13 +22,46 @@ def build() -> dict:
     checks = evidence.get("checks")
     if not isinstance(checks, list) or len(checks) != 8:
         raise ValueError("Acht einzelne Prüfungen sind erforderlich")
-    source = evidence["source_commit"]
-    if any(item.get("source_commit") != source for item in checks):
-        raise ValueError("Die Prüfnachweise müssen denselben Quellcommit betreffen")
-    measured = evidence.get("latest_observed_candidate_ci", {})
-    regression = measured.get("core_regression", {})
-    if regression.get("source_commit") not in (None, measured.get("source_commit")):
+    source = evidence.get("source_commit")
+    if not isinstance(source, str) or re.fullmatch(r"[0-9a-f]{40}", source) is None:
+        raise ValueError("Ungültiger vollständiger Kandidaten-Commit")
+    names = [item.get("name") for item in checks if isinstance(item, dict)]
+    if len(names) != 8 or len(set(names)) != 8:
+        raise ValueError("Die acht Prüfnamen müssen eindeutig sein")
+    for item in checks:
+        if item.get("source_commit") != source:
+            raise ValueError("Ein Prüfnachweis gehört zu einem anderen Commit")
+        if item.get("conclusion") not in {"success", "failure", "cancelled", "timed_out"}:
+            raise ValueError("Unbekanntes oder unvollständiges Prüfergebnis")
+        run_id = item.get("run_id")
+        if type(run_id) is not int or run_id < 1:
+            raise ValueError("Fehlende GitHub-Prüflaufnummer")
+        expected = ("https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/"
+                    f"actions/runs/{run_id}")
+        if item.get("url") != expected:
+            raise ValueError("GitHub-URL passt nicht zur Prüflaufnummer")
+    if evidence.get("release_approval") is not False or evidence.get("stable_ready") is not False:
+        raise ValueError("Entwicklungsnachweise sind keine Release-Freigabe")
+    manifest = evidence.get("source_release_manifest")
+    if not isinstance(manifest, dict) or type(manifest.get("file_count")) is not int:
+        raise ValueError("Kandidaten-Manifest ist unvollständig")
+    if manifest["file_count"] <= 0 or not isinstance(manifest.get("files_sha256"), str):
+        raise ValueError("Kandidaten-Manifest enthält keine gültigen Zahlen")
+    if re.fullmatch(r"[0-9a-f]{64}", manifest["files_sha256"]) is None:
+        raise ValueError("Kandidaten-Manifest enthält keine gültige SHA-256-Prüfsumme")
+    measured = evidence.get("latest_observed_candidate_ci")
+    if not isinstance(measured, dict):
+        raise ValueError("Messnachweise fehlen")
+    measured_source = measured.get("source_commit")
+    if not isinstance(measured_source, str) or re.fullmatch(r"[0-9a-f]{40}", measured_source) is None:
+        raise ValueError("Der gemessene Quellcommit fehlt")
+    regression = measured.get("core_regression")
+    if not isinstance(regression, dict):
+        raise ValueError("Kern-Testnachweis fehlt")
+    if regression.get("source_commit") not in (None, measured_source):
         raise ValueError("Widersprüchliche Testherkunft")
+    if measured.get("offline_quality", {}).get("result") != "passed":
+        raise ValueError("Offline-Qualitätsnachweis nicht erfolgreich")
     if not isinstance(regression.get("passed"), int) or regression["passed"] <= 0:
         raise ValueError("Keine belegte positive Kern-Testzahl")
     results = {item["name"]: item["conclusion"] for item in checks}
@@ -36,6 +70,7 @@ def build() -> dict:
         "schema_version": 1,
         "kind": "candidate_only_status",
         "candidate_commit": source,
+        "measured_source_commit": measured_source,
         "manifest": evidence["source_release_manifest"],
         "historical_release_evidence_separate": True,
         "ci_checks": results,
