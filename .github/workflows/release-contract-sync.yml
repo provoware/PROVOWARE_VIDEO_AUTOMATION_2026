@@ -61,6 +61,7 @@ jobs:
           tests/test_release_finalization_rc9.py
           tests/test_operator_stable_acceptance.py
           tests/test_stable_promotion_guards.py
+          tests/test_release_evidence_separation.py
 
       - name: Verify all generated release evidence is synchronized
         run: python diagnostics/release_readiness/generate_from_evidence.py --check
