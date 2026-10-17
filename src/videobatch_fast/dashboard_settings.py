@@ -7,12 +7,12 @@ from __future__ import annotations
 
 import json
 import os
-import tempfile
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Mapping
 
 from .quick_modes import QUICK_MODES
+from .safe_io import atomic_write_json
 
 SCHEMA_VERSION = 2
 RESOLUTION_LABELS = {
@@ -136,21 +136,9 @@ def load_settings(path: Path | None = None) -> DashboardSettings:
 
 
 def save_settings(settings: DashboardSettings, path: Path | None = None) -> None:
+    """Persist settings with the shared durable-write contract.
+
+    Never truncate the previous file if serialization or writing fails.
+    """
     target = path or settings_path()
-    target.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-    temporary: str | None = None
-    try:
-        with tempfile.NamedTemporaryFile(
-            mode="w", encoding="utf-8", dir=target.parent,
-            prefix=".dashboard-", suffix=".tmp", delete=False
-        ) as handle:
-            temporary = handle.name
-            os.chmod(temporary, 0o600)
-            json.dump(settings.to_dict(), handle, ensure_ascii=False, indent=2)
-            handle.write("\n")
-            handle.flush()
-            os.fsync(handle.fileno())
-        os.replace(temporary, target)
-    finally:
-        if temporary is not None and os.path.exists(temporary):
-            os.unlink(temporary)
+    atomic_write_json(target, settings.to_dict())
