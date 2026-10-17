@@ -296,3 +296,39 @@ def test_real_ffmpeg_cancel_persists_retry_across_runner_restart(
         hashlib.sha256(path.read_bytes()).hexdigest() == digest
         for path, digest in originals.items()
     )
+
+
+def test_real_mp4_effect_changes_decoded_pixels(tmp_path: Path) -> None:
+    """Measure actual decoded frame differences, not just effect arguments."""
+    ffmpeg = shutil.which("ffmpeg")
+    if not ffmpeg or not shutil.which("ffprobe"):
+        pytest.fail("FFmpeg und FFprobe erforderlich.")
+    audio, source, _ = _inputs(tmp_path)
+    frames = []
+    for effect in ("none", "vivid"):
+        target = tmp_path / f"effect-{effect}.mp4"
+        job = PairJob(
+            index=1, audio=audio, media=source, output=target,
+            audio_info=MediaInfo(audio, "audio", duration=1.0),
+            media_info=MediaInfo(source, "image", width=160, height=90),
+            fast_path=False, reason="decoded effect comparison",
+        )
+        options = BatchOptions(
+            output_dir=tmp_path, profile="turbo", resolution="Original",
+            visual_effect=effect, quick_mode="custom", codec="libx264",
+            fps=12, max_threads=2, audio_bitrate="96k",
+        )
+        result = _command(ffmpeg, *build_command(job, options)[1:], timeout=60)
+        assert result.returncode == 0, result.stderr[-2500:]
+        decoded = subprocess.run(
+            [ffmpeg, "-v", "error", "-i", str(target), "-map", "0:v:0",
+             "-frames:v", "1", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"],
+            capture_output=True, timeout=30, check=False,
+        )
+        assert decoded.returncode == 0, decoded.stderr[-2000:]
+        assert len(decoded.stdout) == 160 * 90 * 3
+        frames.append(decoded.stdout)
+    differences = sum(a != b for a, b in zip(*frames))
+    assert differences > len(frames[0]) // 100, (
+        f"Der Effekt verändert nur {differences} der {len(frames[0])} Farbwerte."
+    )
