@@ -113,4 +113,4 @@ Der verbindliche Schreib- und Prüfstandard steht in `docs/DOKUMENTATIONSSTANDAR
 - `docs/archive/release-history/STABLE_GATE_ITERATION_2.8.3-rc24_2026-09-11.md`
 - `docs/archive/release-history/VISUAL_DESKTOP_APPROVAL.md`
 
-Diese Dateien dienen nur noch der Historie. Für den aktuellen Status gelten `diagnostics/release_readiness/RELEASE_EVIDENCE.json`, `STATUS.md` und `README.md`.
+Diese Dateien dienen nur noch der Historie. `diagnostics/release_readiness/RELEASE_EVIDENCE.json` dokumentiert ausschließlich den historischen RC24-Nachweis (496 Dateien); für PR #240 liegen die getrennten Entwicklungsnachweise in `CANDIDATE_PR240_CI_EVIDENCE.json` und `CANDIDATE_PR240_QUALITY_STATUS.json` im selben Verzeichnis. Einstieg und ausdrückliche Freigabesperren stehen in `README.md` und `STATUS.md`.
