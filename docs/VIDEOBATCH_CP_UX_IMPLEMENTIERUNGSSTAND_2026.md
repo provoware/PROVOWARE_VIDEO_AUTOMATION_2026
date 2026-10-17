@@ -61,3 +61,27 @@ Status: **Implementiert im PR-Zweig, nicht freigegeben, nicht gemergt.**
 3. Das Release-Manifest erst für den endgültigen Kandidaten synchronisieren. Historisches RC24-Nachweispaket unverändert lassen.
 4. Physische Kubuntu-26.04-/Plasma-/Wayland-Sichtprüfung bei 100, 125, 150 und 200 Prozent bleibt gesondert offen.
 5. Kein Merge, keine Stable-Promotion und kein fingierter Benutzer-Abnahmenachweis.
+
+## Entwicklungsiteration 2 – tatsächliche FFmpeg-Ausgaben
+
+**Ausgangs-Commit:** `c58b512f8f2a6c54d6aff0b63e9b36cac3da22a4`.
+
+### Prüfauswertung auf dem Ausgangs-Commit
+
+- Bestanden: PR ancestry guard, Trusted ancestry guard, Release contract sync, CP-09 FFmpeg evidence audit, Qt6 Phase 3 orchestrated validation, Kubuntu 26.04 Wayland preview contract.
+- Nicht bestanden: Repository merge preflight / Design manifest contract. Ursache: historisches RC24-Release-Manifest ist noch nicht auf die neuen Entwicklungsdateien zugeschnitten. Dies bleibt bis zur echten Kandidatenfinalisierung eine **bewusste Freigabesperre**.
+- Alle Prüfergebnisse gelten **nur** für den jeweils genannten Commit. Keine Übertragung auf spätere Teständerungen.
+
+### Neue echte Medienregression
+
+`tests/test_real_ffmpeg_smoke.py` ergänzt einen vierteiligen, vollständig synthetischen Test:
+1. Einzelbild mit Ton, Turbo ohne Bildeffekt.
+2. Einzelbild mit Ton, Qualitätsprofil `quality` und `vivid`.
+3. Zweibild-Diashow mit Ton, Turbo ohne Bildeffekt.
+4. Zweibild-Diashow mit Ton, Qualitätsprofil `quality` und `vivid`.
+
+Die Prüfkriterien sind FFmpeg-Rückgabecode, MP4-Datei, tatsächliche Videoauflösung und vorhandene Audiospur per FFprobe, Dauer, dekodierbare Videoframes und unveränderte SHA-256-Quellhashes. Damit wird die Prüfung über den bloßen FFmpeg-Befehl hinaus ausgedehnt.
+
+**Wichtig:** Die Tests auf dem neuen Commit dürfen erst nach bestätigtem GitHub-Prüflauf als bestanden bezeichnet werden. Die vorhandenen Wiederanlauf- und Retry-Tests verwenden teilweise simulierte Laufzeitergebnisse; echte Systemunterbrechungen bzw. Neustarts bleiben ein separater, offener Integrationsnachweis. Eine Metadaten- und Dekodierprüfung allein beweist nicht die subjektive Stärke oder Sichtbarkeit eines Bildeffekts.
+
+**Freigabe:** weiterhin gesperrt – kein Merge, keine Stable-Promotion, keine erfundene reale Sichtprüfung.
