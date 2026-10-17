@@ -2,6 +2,7 @@
 from pathlib import Path
 
 from videobatch_fast.command_builder import PROFILES, RESOLUTIONS, build_command, resolved_options
+from videobatch_fast.dashboard_settings import DashboardSettings
 from videobatch_fast.models import BatchOptions, MediaInfo, PairJob
 
 
@@ -50,3 +51,31 @@ def test_explicit_output_directory_preserved(tmp_path):
     job = _job(tmp_path)
     settings = BatchOptions(output_dir=Path(tmp_path / "out"), quick_mode="custom")
     assert resolved_options(job, settings).output_dir == settings.output_dir
+
+def test_dashboard_values_survive_preset_and_reach_ffmpeg(tmp_path):
+    """A user-selected resolution/profile/effect must reach the final command."""
+    from videobatch_fast.effects import effect_filter
+
+    settings = DashboardSettings()
+    settings = settings.set_user_value("resolution", "Full HD")
+    settings = settings.set_user_value("quality", "Maximum")
+    settings = settings.set_user_value("effect", "vivid")
+    settings = settings.set_user_value("output_dir", tmp_path / "fertig")
+    settings = settings.apply_preset({
+        "resolution": "HD", "quality": "Schnell", "effect": "none",
+        "output_dir": tmp_path / "falsch",
+    })
+    options = BatchOptions(
+        output_dir=settings.output_dir, resolution=settings.resolution,
+        profile=settings.quality, visual_effect=settings.effect,
+        transition="none", quick_mode="custom",
+    )
+    job = _job(tmp_path)
+    resolved = resolved_options(job, options)
+    command = build_command(job, resolved)
+    assert resolved.output_dir == tmp_path / "fertig"
+    assert resolved.resolution == "1920×1080"
+    assert resolved.profile == "maximum"
+    assert "scale=1920:1080:" in command[command.index("-vf") + 1]
+    assert effect_filter("vivid") in command[command.index("-vf") + 1]
+    assert command[command.index("-crf") + 1] == str(PROFILES["maximum"].crf)
