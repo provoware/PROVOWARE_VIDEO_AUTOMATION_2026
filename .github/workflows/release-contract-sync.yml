@@ -45,6 +45,8 @@ jobs:
           set -Eeuo pipefail
           python -m py_compile \
             diagnostics/release_readiness/generate_from_evidence.py \
+            diagnostics/release_readiness/generate_candidate_quality.py \
+            diagnostics/release_readiness/test_candidate_quality.py \
             scripts/export_stable_acceptance_evidence.py \
             scripts/validate_release_contract_sync.py \
             scripts/validate_stable_acceptance.py \
@@ -62,6 +64,12 @@ jobs:
 
       - name: Verify all generated release evidence is synchronized
         run: python diagnostics/release_readiness/generate_from_evidence.py --check
+
+      - name: Verify independent candidate snapshot without granting release
+        run: |
+          set -Eeuo pipefail
+          python -m pytest -q diagnostics/release_readiness/test_candidate_quality.py
+          python diagnostics/release_readiness/generate_candidate_quality.py --check
 
       - name: Verify manifest, evidence and status files agree
         run: python scripts/validate_release_contract_sync.py --json
