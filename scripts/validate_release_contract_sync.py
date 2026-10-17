@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 import sys
 from typing import Any, Mapping
 
@@ -129,11 +130,18 @@ def validate() -> dict[str, Any]:
     # A development manifest must match the real current file set; historical
     # release results never qualify this new tree for Stable.
     if manifest != historical_manifest:
-        from build_release_manifest import build_payload, drift_report
-
-        current = build_payload(compact=True)
-        if drift_report(manifest, current)["status"] != "passed":
-            raise ContractSyncError("Aktuelles Entwicklungsmanifest stimmt nicht mit dem Dateibaum überein")
+        try:
+            check = subprocess.run(
+                [sys.executable, str(ROOT / "scripts/build_release_manifest.py"), "--check"],
+                cwd=ROOT, capture_output=True, text=True, timeout=45, check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise ContractSyncError(f"Kanonische Manifestprüfung nicht ausführbar: {exc}") from exc
+        if check.returncode != 0:
+            raise ContractSyncError(
+                "Aktuelles Entwicklungsmanifest stimmt nicht mit dem Dateibaum überein: "
+                + (check.stdout + check.stderr)[-800:]
+            )
         candidate = _load(ROOT / "diagnostics/release_readiness/CANDIDATE_PR240_QUALITY_STATUS.json")
         candidate_manifest = _mapping(candidate.get("manifest"), "Kandidatenstatus.manifest")
         if candidate_manifest.get("file_count") != count:
