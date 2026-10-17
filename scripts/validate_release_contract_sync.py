@@ -161,7 +161,7 @@ def validate() -> dict[str, Any]:
             validate_evidence,
         )
 
-        acceptance_dir = ROOT / "diagnostics/release_readiness/CANDIDATE_PR240_ACCEPTANCE"
+        acceptance_dir = (ROOT / "diagnostics/release_readiness/CANDIDATE_PR240_ACCEPTANCE" / str(manifest.get("version")))
         try:
             validate_evidence(
                 acceptance_dir,

@@ -23,11 +23,12 @@ ACCEPTANCE_DIR = ROOT / "CANDIDATE_PR240_ACCEPTANCE"
 def _physical_acceptance_valid(snapshot: dict) -> bool:
     """Reuse the existing manifest-bound physical acceptance validator."""
     required = ("kubuntu_26_04_wayland.json", "long_render.json")
-    if not all((ACCEPTANCE_DIR / name).is_file() for name in required):
-        return False
     try:
         raw = RELEASE_MANIFEST.read_bytes()
         current = json.loads(raw)
+        candidate_dir = ACCEPTANCE_DIR / str(current["version"])
+        if not all((candidate_dir / name).is_file() for name in required):
+            return False
         if any(current.get(key) != snapshot.get(key)
                for key in ("file_count", "files_sha256")):
             return False
@@ -35,7 +36,7 @@ def _physical_acceptance_valid(snapshot: dict) -> bool:
             [
                 sys.executable,
                 str(ROOT.parents[1] / "scripts/validate_stable_acceptance.py"),
-                "--evidence-dir", str(ACCEPTANCE_DIR),
+                "--evidence-dir", str(candidate_dir),
                 "--candidate", str(current["version"]),
                 "--manifest-sha256", hashlib.sha256(raw).hexdigest(),
             ],

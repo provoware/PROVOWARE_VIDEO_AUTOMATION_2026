@@ -80,3 +80,29 @@ def test_real_acceptance_is_required_and_release_remains_unapproved(
     snapshot["checks"][0]["conclusion"] = "failure"
     save_snapshot(snapshot)
     assert generator.build()["ready_to_merge"] is False
+
+def test_versioned_export_path_matches_real_acceptance_validator(
+    snapshot: dict, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import subprocess
+
+    candidate_root = tmp_path / "exported-evidence"
+    manifest = json.loads(generator.RELEASE_MANIFEST.read_text(encoding="utf-8"))
+    versioned = candidate_root / manifest["version"]
+    versioned.mkdir(parents=True)
+    for name in ("kubuntu_26_04_wayland.json", "long_render.json"):
+        (versioned / name).write_text("{}", encoding="utf-8")
+
+    calls = []
+
+    def fake_run(argv, **_kwargs):
+        calls.append(argv)
+        return subprocess.CompletedProcess(argv, 0, "", "")
+
+    monkeypatch.setattr(generator, "ACCEPTANCE_DIR", candidate_root)
+    monkeypatch.setattr(generator.subprocess, "run", fake_run)
+    assert generator._physical_acceptance_valid(snapshot["source_release_manifest"])
+    assert calls[0][calls[0].index("--evidence-dir") + 1] == str(versioned)
+
+    wrong = dict(snapshot["source_release_manifest"], files_sha256="0" * 64)
+    assert not generator._physical_acceptance_valid(wrong)
