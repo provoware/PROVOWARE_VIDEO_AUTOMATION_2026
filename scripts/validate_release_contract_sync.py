@@ -65,7 +65,7 @@ def validate() -> dict[str, Any]:
     # The historical release evidence belongs to this pinned RC24 tree, not
     # to the newer integration candidate. Verify the archived Git blob too.
     archived_bytes = HISTORICAL_MANIFEST_PATH.read_bytes()
-    object_bytes = b"blob " + str(len(archived_bytes)).encode("ascii") + b"\\0" + archived_bytes
+    object_bytes = b"blob " + str(len(archived_bytes)).encode("ascii") + b"\x00" + archived_bytes
     if hashlib.sha1(object_bytes).hexdigest() != HISTORICAL_MANIFEST_GIT_BLOB:
         raise ContractSyncError("Historisches RC24-Manifest wurde verändert")
     historical_manifest = _load(HISTORICAL_MANIFEST_PATH)
@@ -138,15 +138,30 @@ def validate() -> dict[str, Any]:
         candidate_manifest = _mapping(candidate.get("manifest"), "Kandidatenstatus.manifest")
         if candidate_manifest.get("file_count") != count:
             raise ContractSyncError("Der Kandidatenstatus hat eine fremde Manifest-Dateizahl")
-        if candidate.get("release_approved") is not False or candidate.get("ready_to_merge") is not False:
-            raise ContractSyncError("Unbelegte Kandidatenfreigabe in der Statusdatei")
-        # A complete new release evidence set and physical acceptance are
-        # prerequisites. Until then this remains a deliberately failing gate.
-        raise ContractSyncError(
-            "RC24-Historie verifiziert (496 Dateien); 517-Dateien-Kandidat "
-            "ohne vollständige aktuelle Release-Nachweise und reale Kubuntu-Abnahme. "
-            "Kandidat bleibt gesperrt."
+        if candidate_manifest.get("files_sha256") != manifest.get("files_sha256"):
+            raise ContractSyncError("Kandidaten-Nachweis gehört nicht zum aktuellen Dateibaum")
+        if candidate.get("release_approved") is not False:
+            raise ContractSyncError("Stable-Freigabe darf nicht aus CI-Nachweisen abgeleitet werden")
+        if candidate.get("ready_to_merge") is not True:
+            raise ContractSyncError(
+                "RC24-Historie geprüft; neuer Kandidat ohne bestätigte Merge-Freigabe"
+            )
+        # Actual acceptance is never inferred from CI or prior release files.
+        from validate_stable_acceptance import (
+            AcceptanceBlocked,
+            manifest_sha256,
+            validate_evidence,
         )
+
+        acceptance_dir = ROOT / "diagnostics/release_readiness/CANDIDATE_PR240_ACCEPTANCE"
+        try:
+            validate_evidence(
+                acceptance_dir,
+                str(manifest.get("version")),
+                manifest_sha256(MANIFEST_PATH),
+            )
+        except AcceptanceBlocked as exc:
+            raise ContractSyncError(f"Reale Zielsystemabnahme fehlt: {exc}") from exc
 
     todo = TODO_PATH.read_text(encoding="utf-8")
     if "P0 – vor Merge von PR #128" in todo or "P0 - vor Merge von PR #128" in todo:
