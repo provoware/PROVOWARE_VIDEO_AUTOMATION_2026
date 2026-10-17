@@ -144,21 +144,41 @@ def load_project_state(path: Path | str | None = None) -> tuple[Path, dict[str, 
     ensure_app_dirs()
     project_path = Path(path).expanduser() if path else default_project_file()
     if not project_path.exists():
+        # Only the application's default project may be created implicitly.
+        # A manually selected project disappearing before opening is an
+        # error, not permission to silently replace it with a blank one.
+        if project_path != default_project_file():
+            raise FileNotFoundError(
+                f"Ausgewähltes Projekt ist nicht mehr vorhanden: {project_path}"
+            )
         state = normalize_project_state({})
         save_project_state(project_path, state)
         return project_path, state, False
+    # Read-access errors are not corruption: keep the original project intact.
+    # In particular, do not replace a temporarily unreadable project by blanks.
     try:
-        state = normalize_project_state(json.loads(project_path.read_text(encoding="utf-8")))
-        return project_path, state, False
-    except (OSError, UnicodeError, json.JSONDecodeError, ValueError, TypeError):
-
+        text = project_path.read_text(encoding="utf-8")
+    except UnicodeError:
+        corrupted = True
+    else:
         try:
-            quarantine_file(project_path, label="corrupt")
-        except OSError:
-            pass
+            source = json.loads(text)
+        except (json.JSONDecodeError, UnicodeError):
+            corrupted = True
+        else:
+            if not isinstance(source, dict):
+                corrupted = True
+            else:
+                return project_path, normalize_project_state(source), False
+
+    if corrupted:
+        # Quarantine must succeed before creating any replacement. If backup
+        # fails (read-only/full disk), propagate the error without data loss.
+        quarantine_file(project_path, label="corrupt")
         state = normalize_project_state({})
         save_project_state(project_path, state)
         return project_path, state, True
+    raise AssertionError("Unreachable project loader state")
 
 
 def save_project_state(path: Path | str, state: dict[str, Any]) -> Path:

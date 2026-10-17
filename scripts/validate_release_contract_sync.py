@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
+import subprocess
 import sys
 from typing import Any, Mapping
 
@@ -13,6 +15,8 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "RELEASE_MANIFEST.json"
 PACKAGE_MANIFEST_PATH = ROOT / "manifest.json"
 EVIDENCE_PATH = ROOT / "diagnostics/release_readiness/RELEASE_EVIDENCE.json"
+HISTORICAL_MANIFEST_PATH = ROOT / "diagnostics/release_readiness/HISTORICAL_RC24_RELEASE_MANIFEST.json"
+HISTORICAL_MANIFEST_GIT_BLOB = "c9fd5fe01ce9db899bebf9d7ffd1d7cb8829d6f2"
 QUALITY_PATH = ROOT / "QUALITY_ENVIRONMENT_STATUS.json"
 BUILD_REPORT_PATH = ROOT / f"VideoBatch_Fast_{build_label()}_BUILD_REPORT_save_.json"
 README_PATH = ROOT / "README.md"
@@ -59,6 +63,13 @@ def _sha256_text(value: object) -> bool:
 
 def validate() -> dict[str, Any]:
     manifest = _load(MANIFEST_PATH)
+    # The historical release evidence belongs to this pinned RC24 tree, not
+    # to the newer integration candidate. Verify the archived Git blob too.
+    archived_bytes = HISTORICAL_MANIFEST_PATH.read_bytes()
+    object_bytes = b"blob " + str(len(archived_bytes)).encode("ascii") + b"\x00" + archived_bytes
+    if hashlib.sha1(object_bytes).hexdigest() != HISTORICAL_MANIFEST_GIT_BLOB:
+        raise ContractSyncError("Historisches RC24-Manifest wurde verändert")
+    historical_manifest = _load(HISTORICAL_MANIFEST_PATH)
     package_manifest = _load(PACKAGE_MANIFEST_PATH)
     evidence = _load(EVIDENCE_PATH)
     quality = _load(QUALITY_PATH)
@@ -74,9 +85,10 @@ def validate() -> dict[str, Any]:
 
     product = _mapping(evidence.get("product"), "RELEASE_EVIDENCE.product")
     evidence_manifest = _mapping(evidence.get("manifest"), "RELEASE_EVIDENCE.manifest")
-    if evidence_manifest.get("file_count") != count:
+    historical_count = historical_manifest.get("file_count")
+    if evidence_manifest.get("file_count") != historical_count:
         raise ContractSyncError(
-            f"RELEASE_EVIDENCE nennt {evidence_manifest.get('file_count')} statt {count} Manifestdateien"
+            f"Historischer RC24-Nachweis nennt {evidence_manifest.get('file_count')} statt {historical_count} Dateien"
         )
     if evidence_manifest.get("status") != "passed":
         raise ContractSyncError("RELEASE_EVIDENCE.manifest.status muss passed sein")
@@ -101,12 +113,12 @@ def validate() -> dict[str, Any]:
         raise ContractSyncError("manifest.json verweist auf keinen gültigen Einstieg")
 
     internal = _mapping(quality.get("internal_gates"), "QUALITY_ENVIRONMENT_STATUS.internal_gates")
-    if internal.get("release_manifest_files") != count:
-        raise ContractSyncError("QUALITY_ENVIRONMENT_STATUS enthält eine veraltete Manifest-Dateizahl")
-    if build.get("release_manifest_files") != count:
-        raise ContractSyncError("Buildbericht enthält eine veraltete Manifest-Dateizahl")
+    if internal.get("release_manifest_files") != historical_count:
+        raise ContractSyncError("Historischer Qualitätsstatus passt nicht zum RC24-Manifest")
+    if build.get("release_manifest_files") != historical_count:
+        raise ContractSyncError("Historischer Buildbericht passt nicht zum RC24-Manifest")
 
-    expected_line = f"Release-Manifest: {count} Dateien"
+    expected_line = f"Release-Manifest: {historical_count} Dateien"
     for path in (README_PATH, STATUS_PATH):
         try:
             text = path.read_text(encoding="utf-8")
@@ -114,6 +126,50 @@ def validate() -> dict[str, Any]:
             raise ContractSyncError(f"{path.name} kann nicht gelesen werden: {exc}") from exc
         if expected_line not in text:
             raise ContractSyncError(f"{path.name} enthält nicht den aktuellen Status: {expected_line}")
+
+    # A development manifest must match the real current file set; historical
+    # release results never qualify this new tree for Stable.
+    if manifest != historical_manifest:
+        try:
+            check = subprocess.run(
+                [sys.executable, str(ROOT / "scripts/build_release_manifest.py"), "--check"],
+                cwd=ROOT, capture_output=True, text=True, timeout=45, check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise ContractSyncError(f"Kanonische Manifestprüfung nicht ausführbar: {exc}") from exc
+        if check.returncode != 0:
+            raise ContractSyncError(
+                "Aktuelles Entwicklungsmanifest stimmt nicht mit dem Dateibaum überein: "
+                + (check.stdout + check.stderr)[-800:]
+            )
+        candidate = _load(ROOT / "diagnostics/release_readiness/CANDIDATE_PR240_QUALITY_STATUS.json")
+        candidate_manifest = _mapping(candidate.get("manifest"), "Kandidatenstatus.manifest")
+        if candidate_manifest.get("file_count") != count:
+            raise ContractSyncError("Der Kandidatenstatus hat eine fremde Manifest-Dateizahl")
+        if candidate_manifest.get("files_sha256") != manifest.get("files_sha256"):
+            raise ContractSyncError("Kandidaten-Nachweis gehört nicht zum aktuellen Dateibaum")
+        if candidate.get("release_approved") is not False:
+            raise ContractSyncError("Stable-Freigabe darf nicht aus CI-Nachweisen abgeleitet werden")
+        if candidate.get("ready_to_merge") is not True:
+            raise ContractSyncError(
+                "RC24-Historie geprüft; neuer Kandidat ohne bestätigte Merge-Freigabe"
+            )
+        # Actual acceptance is never inferred from CI or prior release files.
+        from validate_stable_acceptance import (
+            AcceptanceBlocked,
+            manifest_sha256,
+            validate_evidence,
+        )
+
+        acceptance_dir = (ROOT / "diagnostics/release_readiness/CANDIDATE_PR240_ACCEPTANCE" / str(manifest.get("version")))
+        try:
+            validate_evidence(
+                acceptance_dir,
+                str(manifest.get("version")),
+                manifest_sha256(MANIFEST_PATH),
+            )
+        except AcceptanceBlocked as exc:
+            raise ContractSyncError(f"Reale Zielsystemabnahme fehlt: {exc}") from exc
 
     todo = TODO_PATH.read_text(encoding="utf-8")
     if "P0 – vor Merge von PR #128" in todo or "P0 - vor Merge von PR #128" in todo:

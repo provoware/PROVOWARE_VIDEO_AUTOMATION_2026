@@ -17,9 +17,20 @@
 - Physische Kubuntu-26.04-Plasma-Wayland-Abnahme: Der reale 125-%-Screenshot vom 06.10.2026 zeigte abgeschnittene und überladene Arbeitsbereiche. Der daraus abgeleitete seitengetrennte Qt-Stand muss vor Stable erneut real auf Kubuntu 26.04 / KDE Plasma / Wayland bei 100 %, 125 %, 150 % und 200 % geprüft werden.
 <!-- release-status:end -->
 
+> **Nachweisgrenze:** Die vorstehenden RC24-Zahlen (325 Tests, 496 Release-Dateien) stammen aus dem unveränderten historischen Nachweis. Sie sind **keine** Prüfung des Integrationskandidaten PR #240 (Dateiumfang laut aktuellem `RELEASE_MANIFEST.json`). Dessen separate, commitgebundene Ergebnisse stehen unter `diagnostics/release_readiness/CANDIDATE_PR240_CI_EVIDENCE.json` und `CANDIDATE_PR240_QUALITY_STATUS.json`. Es gibt keine neue Stable-Freigabe; eine reale Kubuntu-/Wayland-Sichtabnahme bei 100/125/150/200 % fehlt.
+
+
 ## Überblick
 
 VideoBatch Fast ist die lokale Video-Automation für **Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6**. Der aktuelle Stand ist **2.8.3-rc24**. Der aktuelle Releasekandidat enthält jetzt einen seitengetrennten Qt-Arbeitsbereich als Reaktion auf den realen 125-%-Sichtbefund vom 06.10.2026. Dateien, Ausgabe und Produktion besitzen eigene Arbeitsseiten; Projekt, Hilfe und Diagnose verdrängen den Hauptablauf nicht mehr. Vor Stable ist eine erneute reale Sichtprüfung bei 100 %, 125 %, 150 % und 200 % erforderlich.
+
+## Integrationskandidat #240 – noch nicht als Release freigegeben
+
+In [PR #240](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/240) werden die geprüften Änderungen aus [PR #239](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/239) auf sauberer Entwicklungshistorie integriert: global sichtbare Videoeinstellungen, ein einheitlicher Medienbrowser mit großen Vorschauen und dauerhaften Miniaturbildern sowie ein auf **Videos, Downloads und Bilder** begrenzter SQLite-Medienindex.
+
+Programmdateien und Entwicklungsordner werden nicht als Medien aufgenommen. Eigene Unterordner lassen sich unter **Erweitert** ausschließen. Auf Linux überwacht VideoBatch Änderungen über inotify, mit gelegentlichen Nachprüfungen, falls die Überwachung unvollständig ist. Originaldateien werden nicht verändert.
+
+**Status:** Entwicklungszweig, keine neue Releasefreigabe. Die oben angegebenen RC24-Zahlen gelten ausdrücklich nur für den damaligen, separat dokumentierten Stand. Ein Merge und eine neue Stable-Version setzen neue Release-Nachweise sowie eine reale Kubuntu-Sichtprüfung voraus.
 
 ## Schnellstart
 
@@ -54,7 +65,8 @@ chmod +x videobatch.sh
 | `docs/` | aktuelle Fach- und Projektdokumentation |
 | `docs/reference/` | technische Referenzdokumente, bewusst aus dem Hauptverzeichnis ausgelagert |
 | `docs/archive/` | historische interne Nachweise und alte Prüfstände |
-| `diagnostics/release_readiness/` | kanonische Release-Evidence |
+| `diagnostics/release_readiness/RELEASE_EVIDENCE.json` | historischer RC24-Release-Nachweis (496 Dateien) |
+| `diagnostics/release_readiness/CANDIDATE_PR240_QUALITY_STATUS.json` | getrennte Entwicklungsnachweise (keine Freigabe) |
 | `RELEASE_MANIFEST.json` | kompakter reproduzierbarer Release-Vertrag |
 
 **Ordnungskonzept:** Im Hauptverzeichnis bleiben vor allem Startdateien, aktive Release-Unterlagen und maschinenlesbare Verträge. Technische Hintergrunddokumente gehören nach `docs/reference/`; historische interne Nachweise nach `docs/archive/`.

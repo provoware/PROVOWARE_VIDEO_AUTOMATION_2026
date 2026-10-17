@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "kind": "development_candidate_ci_evidence",
+  "source_pr": 240,
+  "source_commit": "effd1bf838e47c9b7fca61886e6b0eb90f416701",
+  "release_approval": false,
+  "stable_ready": false,
+  "source_release_manifest": {
+    "file_count": 518,
+    "files_sha256": "5241c475459f4d22ce5897f08e718faa6c6d66dcd9e6ac0726ecfd41b2d1be8b"
+  },
+  "historical_rc24_evidence": {
+    "path": "diagnostics/release_readiness/RELEASE_EVIDENCE.json",
+    "file_count": 496,
+    "reported_tests_passed": 325,
+    "note": "RC24-Nachweise beschreiben ausschließlich 496 historische Dateien und 325 historische Tests, nicht die aktuelle 518-Dateien-Entwicklung."
+  },
+  "checks": [
+    {
+      "name": "CP-09 FFmpeg evidence audit",
+      "run_id": 39074317098,
+      "conclusion": "success",
+      "source_commit": "effd1bf838e47c9b7fca61886e6b0eb90f416701",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39074317098"
+    },
+    {
+      "name": "Release contract sync",
+      "run_id": 39074317012,
+      "conclusion": "failure",
+      "source_commit": "effd1bf838e47c9b7fca61886e6b0eb90f416701",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39074317012"
+    },
+    {
+      "name": "PR ancestry guard",
+      "run_id": 39074316959,
+      "conclusion": "success",
+      "source_commit": "effd1bf838e47c9b7fca61886e6b0eb90f416701",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39074316959"
+    },
+    {
+      "name": "Bounded resumable long-render rehearsal",
+      "run_id": 39074316986,
+      "conclusion": "success",
+      "source_commit": "effd1bf838e47c9b7fca61886e6b0eb90f416701",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39074316986"
+    },
+    {
+      "name": "Repository merge preflight",
+      "run_id": 39074316939,
+      "conclusion": "success",
+      "source_commit": "effd1bf838e47c9b7fca61886e6b0eb90f416701",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39074316939"
+    },
+    {
+      "name": "Kubuntu 26.04 Wayland preview contract",
+      "run_id": 39074316927,
+      "conclusion": "success",
+      "source_commit": "effd1bf838e47c9b7fca61886e6b0eb90f416701",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39074316927"
+    },
+    {
+      "name": "Qt6 Phase 3 orchestrated validation",
+      "run_id": 39074316914,
+      "conclusion": "success",
+      "source_commit": "effd1bf838e47c9b7fca61886e6b0eb90f416701",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39074316914"
+    },
+    {
+      "name": "Trusted PR ancestry guard",
+      "run_id": 39074314158,
+      "conclusion": "success",
+      "source_commit": "effd1bf838e47c9b7fca61886e6b0eb90f416701",
+      "url": "https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39074314158"
+    }
+  ],
+  "unverified": [
+    "Physische Kubuntu-26.04-Plasma-Wayland-Sichtprüfung der vier Skalierungen 100/125/150/200 Prozent",
+    "Manifestgebundener Nachweis für den echten großen Medien-Langzeitrender auf externer Zielplatte; CI-Probelauf ersetzt ihn nicht",
+    "Einheitliche aktuelle Gesamt-Testabdeckung aller Python-Module liegt nicht vor (nur belegte Prüfabschnitte)"
+  ],
+  "release_contract_blocker": "Bewusst gesperrt: reale physische Kubuntu-Abnahme und aktueller manifestgebundener großer Langzeitrender fehlen; RC24-Historie wird nicht umdeklariert.",
+  "latest_observed_candidate_ci": {
+    "source_commit": "effd1bf838e47c9b7fca61886e6b0eb90f416701",
+    "core_regression": {
+      "passed": 167,
+      "failed": 0,
+      "job_id": 117518343957,
+      "workflow_run_id": 39074316914,
+      "scope": "unterstützte Kern-Regression; keine aktuelle Gesamt-Coverage"
+    },
+    "offline_quality": {
+      "result": "passed",
+      "job_id": 117518205652,
+      "workflow_run_id": 39074316939,
+      "tools": [
+        "mypy 2.3.0",
+        "bandit 1.9.4",
+        "pip-audit 2.10.1",
+        "ruff 0.16.1"
+      ]
+    },
+    "measured_partitions": [
+      {
+        "label": "Architektur und Linux",
+        "passed": 110,
+        "job_id": 117518282886,
+        "workflow_run_id": 39074316914
+      },
+      {
+        "label": "Wayland-Verträge",
+        "passed": 45,
+        "job_id": 117518442298,
+        "workflow_run_id": 39074316914
+      },
+      {
+        "label": "Thumbnail und Medienbrowser",
+        "passed": 4,
+        "job_id": 117518442298,
+        "workflow_run_id": 39074316914
+      },
+      {
+        "label": "Echte FFmpeg-MP4-Tests",
+        "passed": 9,
+        "job_id": 117518442298,
+        "workflow_run_id": 39074316914
+      },
+      {
+        "label": "Historische Release-Vertragstests",
+        "passed": 23,
+        "job_id": 117518205790,
+        "workflow_run_id": 39074317012
+      },
+      {
+        "label": "Kandidaten-Nachweistests",
+        "passed": 6,
+        "failed": 1,
+        "job_id": 117518205790,
+        "workflow_run_id": 39074317012,
+        "note": "Negativtest zur Versionsordnerprüfung fehlgeschlagen wegen einer inzwischen durch diesen Nachweisabgleich behobenen Manifestreferenz; keine grüne Prüffreigabe beansprucht"
+      }
+    ],
+    "ci_note": "Testpartitionen überlappen; keine Summierung als eindeutige Gesamtzahl. CI-Protokolle beziehen sich auf den zitierten Quellcommit, das Manifest bleibt bei diagnostischen Folgecommits unverändert."
+  }
+}

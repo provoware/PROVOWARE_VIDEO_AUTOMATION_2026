@@ -43,7 +43,7 @@ def scan_directory_batches(
                 if item.is_symlink():
                     continue
                 is_dir = item.is_dir(follow_symlinks=False)
-                if not is_dir and (not item.is_file(follow_symlinks=False) or Path(item.name).suffix.lower() not in allowed):
+                if not is_dir and (Path(item.name).suffix.lower() not in allowed or not item.is_file(follow_symlinks=False)):
                     continue
                 stat = item.stat(follow_symlinks=False)
             except OSError:

@@ -16,12 +16,12 @@ from .fault_lab import FaultLabResult, run_fault_lab
 
 
 WORKSPACE_ROUTES: tuple[tuple[str, str, str], ...] = (
-    ("dashboard", "Übersicht", "Einfacher Drei-Schritt-Ablauf und aktueller Status"),
+    ("dashboard", "Werkzeuge", "Hilfe und zusätzliche Werkzeuge"),
     ("media", "1 · Dateien", "Audio, Bilder und Videos auswählen"),
     ("preview", "Vorschau", "Eine ausgewählte Datei ansehen und prüfen"),
     ("slideshow", "Diashow", "Reihenfolge, Übergänge und Szenen einstellen"),
-    ("effects", "2 · Ausgabe", "Zielordner, Verarbeitung und Kontrolle festlegen"),
-    ("queue", "3 · Produktion", "Automatische Aufträge und Fortschritt prüfen"),
+    ("effects", "Erweitert", "Selten benötigte Prüf- und Sicherheitseinstellungen"),
+    ("queue", "2 · Produktion", "Aufträge erstellen und Fortschritt prüfen"),
     ("project", "Projekt", "Projekt öffnen, speichern und Notiz verwalten"),
     ("help", "Hilfe", "Drei-Schritt-Schnellhilfe und sichere Fehlerregeln"),
     ("diagnostics", "Diagnose", "System prüfen und technische Diagnose öffnen"),

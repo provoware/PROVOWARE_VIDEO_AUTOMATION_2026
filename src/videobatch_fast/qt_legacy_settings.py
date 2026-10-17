@@ -25,8 +25,8 @@ def build_settings_tab(window: Any, *, combo_factory: ComboFactory) -> QWidget:
     tab = QWidget()
     layout = QVBoxLayout(tab)
     intro = QLabel(
-        "Übernommene Einstellungen der früheren Tk-Version. "
-        "Automatik bleibt der Standard; „Eigene Feineinstellung“ schaltet die Expertenfelder frei."
+        "Selten benötigte technische Optionen. Auflösung, Qualität und Bildeffekt "
+        "werden ausschließlich in der dauerhaft sichtbaren Leiste gewählt."
     )
     intro.setWordWrap(True)
     intro.setObjectName("subtitle")
@@ -65,10 +65,7 @@ def build_settings_tab(window: Any, *, combo_factory: ComboFactory) -> QWidget:
         str(cfg.get("transition", "none")),
     )
     form.addRow("Ausgabeart", window.parity_output_mode)
-    form.addRow("Auflösung", window.parity_resolution)
     form.addRow("Video-Codec", window.parity_codec)
-    form.addRow("Renderprofil", window.parity_profile)
-    form.addRow("Bildeffekt", window.parity_effect)
     form.addRow("Ein-/Ausblendung", window.parity_transition)
     layout.addLayout(form)
 
@@ -112,7 +109,7 @@ def build_settings_tab(window: Any, *, combo_factory: ComboFactory) -> QWidget:
         str(cfg.get("theme", "neon_gravity")),
     )
     window.parity_font_scale = QSpinBox()
-    window.parity_font_scale.setRange(80, 160)
+    window.parity_font_scale.setRange(100, 200)
     window.parity_font_scale.setSuffix(" %")
     window.parity_font_scale.setSingleStep(10)
     window.parity_font_scale.setValue(int(cfg.get("font_scale", 105)))
