@@ -21,7 +21,7 @@
     "files_sha256": "5241c475459f4d22ce5897f08e718faa6c6d66dcd9e6ac0726ecfd41b2d1be8b"
   },
   "measured_source_commit": "effd1bf838e47c9b7fca61886e6b0eb90f416701",
-  "note": "CI status cites an exact prior product-tree commit; diagnostics-only follow-up cannot establish a physical release approval.",
+  "note": "CI records describe the cited candidate snapshot; never extrapolate to later commits.",
   "physical_ui_acceptance": "open",
   "quality_tools": {
     "job_id": 117518205652,
