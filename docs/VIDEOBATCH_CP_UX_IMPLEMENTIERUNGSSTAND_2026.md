@@ -33,3 +33,31 @@ Status: **Implementiert im PR-Zweig, nicht freigegeben, nicht gemergt.**
 1. CI-Fehler auf PR #239 anhand der Logs beheben; die Änderungsregeln nicht umgehen.
 2. Reale Skalierungs-/Fensterprüfung; UI-Elemente bei Bedarf erneut anordnen.
 3. CP-E/CP-F: 100.000-Dateien-Benchmark, echte Miniaturansichten und Skalierungsprüfungen; später Gesamtabnahme.
+
+## Entwicklungsiteration 1 – 17.10.2026
+
+**Referenz:** main `e728d47`; Ausgangs-PR-Head `4b0a57b`; Folge-Commits `f219662`, `fc0216f`, `a4c657f`.
+
+### Konsolidierung / Bestandsabgleich
+
+- Der aktuelle Umbau bleibt in PR #239 (Draft); main und das historische RC24-Releasepaket sind unberührt.
+- #239 umfasst am Ausgangsstand 45 geänderte Dateien und 120 Commits: zusammenhängende Bereiche sind Dashboard/Qt, Medienbrowser/Vorschau, SQLite-Index/Watcher, Tests und Dokumentation.
+- PR #231 und #232 behandeln denselben alten Autosave-Doppelaufruf und dürfen nicht unabhängig ohne Kollisionsprüfung integriert werden.
+- PR #236 und #237 sind reine Planungsdokumentation: als Referenz nutzbar, keine zweite Implementierungsquelle.
+- Der dokumentierte Gesamtstatus 97 Prozent bezieht sich ausschließlich auf die ursprüngliche RC24-Evidence, nicht auf eine neu vermessene Fertigstellung von PR #239.
+- Die Merge-Sperre ist nachvollziehbar: historisches Release-Manifest 496 Dateien, aktueller PR-Dateibaum erwartet 517. Keine automatische Neudeklaration von RC24 als freigegeben.
+
+### Code und Regression
+
+- Dashboard-Speicherung benutzt die bereits vorhandene zentrale dauerhafte Schreibfunktion `safe_io.atomic_write_json`; eigene Speicherroutine entfernt.
+- Neue Tests decken Schreibfehler ohne Zerstörung vorhandener Einstellungen und Nutzung des gemeinsamen Schreibpfads ab.
+- Neuer End-to-End-Vertrag auf Befehlsebene: ausdrücklich gewählte Auflösung, Qualität, Effekt und Ausgabeordner bleiben gegenüber einem nachfolgenden Preset erhalten und fließen in den erstellten FFmpeg-Befehl ein.
+- Die vorhandenen echten Bild+Ton- und Diashow-FFmpeg-Tests bleiben maßgeblich; der neue Vertragstest ist *kein* neuer physischer Medienlauf.
+
+### Verbindliche Restprüfungen
+
+1. Sämtliche CI-Prüfungen auf dem **neuen finalen Commit** abwarten und eventuelle Fehler beheben. Kein grünes Ergebnis älterer Commits übertragen.
+2. Renderpfade für Video, Diashow, Abbruch, Wiederanlauf und Kopierpfad erweitern und auf echten Ausgabedateien kontrollieren.
+3. Das Release-Manifest erst für den endgültigen Kandidaten synchronisieren. Historisches RC24-Nachweispaket unverändert lassen.
+4. Physische Kubuntu-26.04-/Plasma-/Wayland-Sichtprüfung bei 100, 125, 150 und 200 Prozent bleibt gesondert offen.
+5. Kein Merge, keine Stable-Promotion und kein fingierter Benutzer-Abnahmenachweis.
