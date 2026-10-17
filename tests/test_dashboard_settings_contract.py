@@ -1,6 +1,7 @@
 """Regression tests for dashboard selection precedence and safe serialization."""
 import unittest
 import tempfile
+from unittest.mock import patch
 from pathlib import Path
 
 from videobatch_fast.dashboard_settings import DashboardSettings, load_settings, save_settings
@@ -43,6 +44,26 @@ class DashboardSettingsTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 load_settings(target)
             self.assertEqual(target.read_text(encoding="utf-8"), "{defekt")
+
+    def test_failed_write_preserves_previous_settings(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "config" / "settings.json"
+            saved = DashboardSettings().set_user_value("resolution", "HD")
+            save_settings(saved, target)
+            before = target.read_bytes()
+            with patch("videobatch_fast.dashboard_settings.atomic_write_json", side_effect=OSError("voll")):
+                with self.assertRaises(OSError):
+                    save_settings(DashboardSettings().set_user_value("quality", "Maximum"), target)
+            self.assertEqual(target.read_bytes(), before)
+            self.assertEqual(load_settings(target), saved)
+
+    def test_persistence_uses_shared_atomic_writer(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "settings.json"
+            state = DashboardSettings()
+            with patch("videobatch_fast.dashboard_settings.atomic_write_json") as writer:
+                save_settings(state, target)
+            writer.assert_called_once_with(target, state.to_dict())
 
     def test_unknown_and_invalid_values_rejected(self):
         with self.assertRaises(ValueError):
