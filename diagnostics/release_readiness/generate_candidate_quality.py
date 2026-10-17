@@ -6,13 +6,44 @@ Never modifies the historical RC24 evidence or release status artifacts.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 INPUT = ROOT / "CANDIDATE_PR240_CI_EVIDENCE.json"
 OUTPUT = ROOT / "CANDIDATE_PR240_QUALITY_STATUS.json"
+RELEASE_MANIFEST = ROOT.parents[1] / "RELEASE_MANIFEST.json"
+ACCEPTANCE_DIR = ROOT / "CANDIDATE_PR240_ACCEPTANCE"
+
+
+def _physical_acceptance_valid(snapshot: dict) -> bool:
+    """Reuse the existing manifest-bound physical acceptance validator."""
+    required = ("kubuntu_26_04_wayland.json", "long_render.json")
+    if not all((ACCEPTANCE_DIR / name).is_file() for name in required):
+        return False
+    try:
+        raw = RELEASE_MANIFEST.read_bytes()
+        current = json.loads(raw)
+        if any(current.get(key) != snapshot.get(key)
+               for key in ("file_count", "files_sha256")):
+            return False
+        check = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT.parents[1] / "scripts/validate_stable_acceptance.py"),
+                "--evidence-dir", str(ACCEPTANCE_DIR),
+                "--candidate", str(current["version"]),
+                "--manifest-sha256", hashlib.sha256(raw).hexdigest(),
+            ],
+            check=False, capture_output=True, text=True, timeout=20,
+        )
+    except (OSError, KeyError, ValueError, subprocess.TimeoutExpired):
+        return False
+    return check.returncode == 0
 
 
 def build() -> dict:
@@ -66,6 +97,15 @@ def build() -> dict:
         raise ValueError("Keine belegte positive Kern-Testzahl")
     results = {item["name"]: item["conclusion"] for item in checks}
     failures = sorted(name for name, value in results.items() if value != "success")
+    physical_valid = _physical_acceptance_valid(manifest)
+    prereqs_passed = all(
+        value == "success"
+        for name, value in results.items()
+        if name != "Release contract sync"  # Self-referential gate.
+    )
+    preflight_ready = physical_valid and prereqs_passed and source == measured_source
+    if not physical_valid:
+        failures.append("Physische Kubuntu-/Wayland-Abnahme")
     return {
         "schema_version": 1,
         "kind": "candidate_only_status",
@@ -81,10 +121,10 @@ def build() -> dict:
             "workflow_run_id": regression["workflow_run_id"],
         },
         "quality_tools": measured["offline_quality"],
-        "blocking_checks": failures,
-        "physical_ui_acceptance": "open",
+        "blocking_checks": sorted(failures),
+        "physical_ui_acceptance": "passed" if physical_valid else "open",
         "release_approved": False,
-        "ready_to_merge": False,
+        "ready_to_merge": preflight_ready,
         "note": "CI records describe the cited candidate snapshot; never extrapolate to later commits.",
     }
 

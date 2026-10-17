@@ -41,6 +41,8 @@ def test_report_is_reproducible_but_not_release_approval(
     assert "Release contract sync" in result["blocking_checks"]
     assert result["release_approved"] is False
     assert result["ready_to_merge"] is False
+    assert result["physical_ui_acceptance"] == "open"
+    assert "Physische Kubuntu-/Wayland-Abnahme" in result["blocking_checks"]
     monkeypatch.setattr(sys, "argv", ["generator", "--check"])
     assert generator.main() == 1
     monkeypatch.setattr(sys, "argv", ["generator"])
@@ -65,3 +67,16 @@ def test_modified_or_falsely_approved_evidence_is_rejected(snapshot: dict, tampe
     save_snapshot(changed)
     with pytest.raises(ValueError):
         generator.build()
+
+def test_real_acceptance_is_required_and_release_remains_unapproved(
+    snapshot: dict, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Isolated mock tests the gate logic, not a real physical approval.
+    monkeypatch.setattr(generator, "_physical_acceptance_valid", lambda _manifest: True)
+    accepted = generator.build()
+    assert accepted["ready_to_merge"] is True
+    assert accepted["release_approved"] is False
+    assert accepted["physical_ui_acceptance"] == "passed"
+    snapshot["checks"][0]["conclusion"] = "failure"
+    save_snapshot(snapshot)
+    assert generator.build()["ready_to_merge"] is False

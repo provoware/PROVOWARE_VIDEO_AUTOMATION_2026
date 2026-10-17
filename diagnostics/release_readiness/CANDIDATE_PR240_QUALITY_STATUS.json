@@ -1,5 +1,6 @@
 {
   "blocking_checks": [
+    "Physische Kubuntu-/Wayland-Abnahme",
     "Release contract sync"
   ],
   "candidate_commit": "65e10e316e54585c83687194efafe8bd7cbd695a",
