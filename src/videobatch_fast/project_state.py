@@ -46,6 +46,16 @@ def _bounded_int(value: Any, default: int, minimum: int, maximum: int) -> int:
     return result if minimum <= result <= maximum else default
 
 
+def _bounded_tenth(value: Any) -> float:
+    try:
+        selected = float(value)
+    except (ValueError, TypeError):
+        return 1.0
+    if not 0 <= selected <= 5:
+        return 1.0
+    return round(selected, 1)
+
+
 def _base_project_state(source: dict[str, Any], now: str) -> dict[str, Any]:
     local = time.localtime()
     return {
@@ -61,6 +71,14 @@ def _base_project_state(source: dict[str, Any], now: str) -> dict[str, Any]:
         "quick_mode": str(source.get("quick_mode", "smart_auto") or "smart_auto"),
         "assignment_mode": str(source.get("assignment_mode", "pairwise") or "pairwise"),
         "slideshow_transition": str(source.get("slideshow_transition", "auto") or "auto"),
+        "slideshow_transition_seconds": _bounded_tenth(source.get("slideshow_transition_seconds", 1.0)),
+        "effect_intensity": _bounded_int(source.get("effect_intensity", 100), 100, 0, 100),
+        "transition_duration": _bounded_tenth(source.get("transition_duration", 0.8)),
+        "resolution": str(source.get("resolution", "Original") or "Original"),
+        "profile": str(source.get("profile", "fast") or "fast"),
+        "visual_effect": str(source.get("visual_effect", "none") or "none"),
+        "transition": str(source.get("transition", "none") or "none"),
+        "verification": str(source.get("verification", "Vollständig") or "Vollständig"),
         "slideshow_scene_sync": bool(source.get("slideshow_scene_sync", False)),
         "slideshow_order_mode": (
             str(source.get("slideshow_order_mode", ORDER_MANUAL) or ORDER_MANUAL)
