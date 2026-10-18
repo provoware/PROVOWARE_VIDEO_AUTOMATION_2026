@@ -137,6 +137,7 @@ class VideoBatchQtPhase2Window(SelectionPreviewMixin, VideoBatchQtWindow):
             options,
             assignment_mode=self.slideshow.assignment_mode,
             slideshow_transition=self.slideshow.transition_preset,
+            slideshow_transition_seconds=self.slideshow.transition_seconds,
             slideshow_scene_sync=self.slideshow.scene_sync_enabled,
         )
 
