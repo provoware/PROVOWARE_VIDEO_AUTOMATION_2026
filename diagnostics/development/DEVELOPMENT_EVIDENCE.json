@@ -5,7 +5,7 @@
   "historical_version": "2.8.3-rc24",
   "historical_file_count": 496,
   "manifest_file_count": 498,
-  "manifest_files_sha256": "pending-manifest-calculation",
+  "manifest_files_sha256": "89ce202000a589724359c0b1d72f5676a04db29cd6fc3fde38317cffcccbfea3",
   "stable_ready": false,
   "notes": "Historical RC24 release and source evidence remain immutable. This candidate cannot be promoted to Stable without full quality checks and physical Kubuntu UI acceptance."
 }
