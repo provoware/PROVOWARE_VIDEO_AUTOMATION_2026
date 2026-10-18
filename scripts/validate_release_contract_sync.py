@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "RELEASE_MANIFEST.json"
 PACKAGE_MANIFEST_PATH = ROOT / "manifest.json"
 EVIDENCE_PATH = ROOT / "diagnostics/release_readiness/RELEASE_EVIDENCE.json"
+DEVELOPMENT_PATH = ROOT / "diagnostics/development/VIDEO_CONTROLS_20261018.json"
 QUALITY_PATH = ROOT / "QUALITY_ENVIRONMENT_STATUS.json"
 BUILD_REPORT_PATH = ROOT / f"VideoBatch_Fast_{build_label()}_BUILD_REPORT_save_.json"
 README_PATH = ROOT / "README.md"
@@ -74,10 +75,25 @@ def validate() -> dict[str, Any]:
 
     product = _mapping(evidence.get("product"), "RELEASE_EVIDENCE.product")
     evidence_manifest = _mapping(evidence.get("manifest"), "RELEASE_EVIDENCE.manifest")
-    if evidence_manifest.get("file_count") != count:
-        raise ContractSyncError(
-            f"RELEASE_EVIDENCE nennt {evidence_manifest.get('file_count')} statt {count} Manifestdateien"
-        )
+    historical_count = evidence_manifest.get("file_count")
+    if not isinstance(historical_count, int) or historical_count <= 0:
+        raise ContractSyncError("Historische RELEASE_EVIDENCE besitzt keine gültige Manifestdateizahl")
+    development = historical_count != count
+    if development:
+        # RC24 remains immutable: only the development branch's manifest may grow.
+        # Merely allowing drift without a separate, exact contract is forbidden.
+        candidate = _load(DEVELOPMENT_PATH)
+        if (
+            candidate.get("schema_version") != 1
+            or candidate.get("status") != "development"
+            or candidate.get("historical_version") != product.get("version")
+            or candidate.get("historical_file_count") != historical_count
+            or candidate.get("manifest_file_count") != count
+            or candidate.get("manifest_files_sha256") != manifest.get("files_sha256")
+            or candidate.get("stable_ready") is not False
+            or evidence.get("stable_ready") is not False
+        ):
+            raise ContractSyncError("Entwicklungsnachweis weicht von RC24 oder dem aktuellen Quellmanifest ab")
     if evidence_manifest.get("status") != "passed":
         raise ContractSyncError("RELEASE_EVIDENCE.manifest.status muss passed sein")
     if product.get("version") != manifest.get("version") or product.get("version") != manifest.get("build"):
@@ -101,12 +117,12 @@ def validate() -> dict[str, Any]:
         raise ContractSyncError("manifest.json verweist auf keinen gültigen Einstieg")
 
     internal = _mapping(quality.get("internal_gates"), "QUALITY_ENVIRONMENT_STATUS.internal_gates")
-    if internal.get("release_manifest_files") != count:
-        raise ContractSyncError("QUALITY_ENVIRONMENT_STATUS enthält eine veraltete Manifest-Dateizahl")
-    if build.get("release_manifest_files") != count:
-        raise ContractSyncError("Buildbericht enthält eine veraltete Manifest-Dateizahl")
+    if internal.get("release_manifest_files") != historical_count:
+        raise ContractSyncError("Historischer QUALITY_ENVIRONMENT_STATUS weicht von RC24 ab")
+    if build.get("release_manifest_files") != historical_count:
+        raise ContractSyncError("Historischer Buildbericht weicht von RC24 ab")
 
-    expected_line = f"Release-Manifest: {count} Dateien"
+    expected_line = f"Release-Manifest: {historical_count} Dateien"
     for path in (README_PATH, STATUS_PATH):
         try:
             text = path.read_text(encoding="utf-8")
@@ -121,12 +137,13 @@ def validate() -> dict[str, Any]:
 
     return {
         "schema_version": 1,
-        "status": "passed",
+        "status": "development_consistent" if development else "passed",
         "version": manifest.get("version"),
         "channel": manifest.get("channel"),
         "manifest_files": count,
         "manifest_files_sha256": manifest.get("files_sha256"),
-        "stable_ready": bool(evidence.get("stable_ready")),
+        "stable_ready": False if development else bool(evidence.get("stable_ready")),
+        "historical_release_manifest_files": historical_count,
     }
 
 
@@ -146,7 +163,7 @@ def main() -> int:
         print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     else:
         print(
-            f"RELEASE-CONTRACT BESTANDEN · {result['version']} · "
+            f"VERTRAGSABGLEICH BESTANDEN ({result['status']}) · {result['version']} · "
             f"{result['manifest_files']} Dateien · Stable={result['stable_ready']}"
         )
     return 0
