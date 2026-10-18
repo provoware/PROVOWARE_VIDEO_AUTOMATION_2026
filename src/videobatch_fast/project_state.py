@@ -64,7 +64,7 @@ def _base_project_state(source: dict[str, Any], now: str) -> dict[str, Any]:
         "resolution": str(source.get("resolution", "Original") or "Original"),
         "profile": str(source.get("profile", "fast") or "fast"),
         "visual_effect": str(source.get("visual_effect", "none") or "none"),
-        "effect_intensity": _bounded_int(source.get("effect_intensity"), 100, 0, 100),
+        "effect_intensity": _bounded_int(source.get("effect_intensity"), 50, 0, 100),
         "codec": str(source.get("codec", "libx264") or "libx264"),
         "transition": str(source.get("transition", "none") or "none"),
         "slideshow_scene_sync": bool(source.get("slideshow_scene_sync", False)),
