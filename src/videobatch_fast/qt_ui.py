@@ -153,10 +153,11 @@ class VideoBatchQtWindow(QMainWindow):
         self.quick_intensity = QSlider(Qt.Orientation.Horizontal)
         self.quick_intensity.setRange(0, 100)
         self.quick_intensity.setSingleStep(1)
-        self.quick_intensity.setValue(100)
+        self.quick_intensity.setValue(50)
         self.quick_intensity.setAccessibleName("Effektstärke 0 bis 100 Prozent")
+        self.quick_intensity.setToolTip("0 % = aus, 50 % = bisherige Stärke, 100 % = verstärkt")
         effect_row.addWidget(self.quick_intensity, 1)
-        self.quick_intensity_label = QLabel("100 %")
+        self.quick_intensity_label = QLabel("50 %")
         effect_row.addWidget(self.quick_intensity_label)
         left.addLayout(effect_row)
         self.quick_intensity.valueChanged.connect(
