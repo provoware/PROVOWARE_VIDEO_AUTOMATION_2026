@@ -30,7 +30,7 @@ def test_moved_content_remains_byte_identical_to_original_git_blob() -> None:
     moves = json.loads((ROOT / "registries/ROOT_MIGRATION_REGISTRY.json").read_text(encoding="utf-8"))["moves"]
     for entry in moves:
         data = (ROOT / entry["to"]).read_bytes()
-        digest = hashlib.sha1(f"blob {len(data)}\\0".encode("ascii") + data).hexdigest()
+        digest = hashlib.sha1(f"blob {len(data)}\0".encode("ascii") + data).hexdigest()
         assert digest == entry["blob_sha"], f"Dateiinhalt unzulässig verändert: {entry['to']}"
 
 
