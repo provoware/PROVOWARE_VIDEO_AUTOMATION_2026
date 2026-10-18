@@ -92,7 +92,7 @@ def _normalize_choice_fields(result: dict[str, Any]) -> None:
         "output_mode": {"Gemeinsamer Ordner", "Neben Mediendatei"},
         "resolution": {"Original", "1280×720", "1920×1080", "2560×1440", "3840×2160"},
         "codec": {"libx264", "libx265"},
-        "profile": {"turbo", "fast", "balanced", "quality"},
+        "profile": {"turbo", "fast", "balanced", "quality", "maximum"},
         "verification": {"Schnell", "Vollständig"},
         "visual_effect": set(VISUAL_EFFECTS),
         "transition": set(TRANSITIONS),
