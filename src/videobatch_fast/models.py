@@ -67,10 +67,13 @@ class BatchOptions:
     fps: int = 25
     max_threads: int = 0
     visual_effect: str = "none"
+    effect_intensity: int = 100
     transition: str = "none"
+    transition_duration: float | None = None
     quick_mode: str = "custom"
     assignment_mode: str = "pairwise"
     slideshow_transition: str = "auto"
+    slideshow_transition_seconds: float = 1.0
     slideshow_scene_sync: bool = False
 
 
