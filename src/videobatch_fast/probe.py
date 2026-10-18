@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import re
 from fractions import Fraction
 import shutil
 import subprocess
@@ -65,7 +66,7 @@ def probe_media_cached(path_text: str, mtime_ns: int, size: int) -> MediaInfo:
         # nicht durch die bloße Dateiendung als gültiges Medium erscheinen.
         return MediaInfo(path, "unknown", size_bytes=size)
     streams = payload.get("streams") if isinstance(payload, dict) else []
-    streams = streams if isinstance(streams, list) else []
+    streams = [stream for stream in streams if isinstance(stream, dict)] if isinstance(streams, list) else []
     video = next((stream for stream in streams if stream.get("codec_type") == "video"), None)
     audio = next((stream for stream in streams if stream.get("codec_type") == "audio"), None)
     extension_kind = classify_extension(path)
@@ -74,7 +75,9 @@ def probe_media_cached(path_text: str, mtime_ns: int, size: int) -> MediaInfo:
     kind = "video" if video else "audio" if audio else "unknown"
     if extension_kind == "image" and video:
         kind = "image"
-    duration_value = (payload.get("format") or {}).get("duration")
+    format_info = payload.get("format") if isinstance(payload, dict) else {}
+    format_info = format_info if isinstance(format_info, dict) else {}
+    duration_value = format_info.get("duration")
     if duration_value in {None, "N/A", ""}:
         stream = audio or video or {}
         duration_value = stream.get("duration")
@@ -128,3 +131,46 @@ def ffmpeg_version() -> str:
         return first.replace("ffmpeg version ", "").split(" Copyright", 1)[0]
     except (OSError, subprocess.SubprocessError):
         return "unbekannt"
+
+@lru_cache(maxsize=256)
+def sample_audio_peak(path_text: str, modified_ns: int, size: int) -> float | None:
+    """Measure at most the opening six seconds; never claim a whole-song scan.
+
+    The function is cached by file identity and has a strict subprocess timeout.
+    It only reads the source and writes decoded samples to FFmpeg's null sink.
+    """
+    del modified_ns, size  # Cache key is intentional; nothing is written to the source.
+    binary = ffmpeg_path()
+    if not binary:
+        return None
+    command = [
+        binary, "-hide_banner", "-nostdin", "-v", "info", "-t", "6",
+        "-i", path_text, "-map", "0:a:0", "-vn",
+        "-af", "volumedetect", "-f", "null", "-",
+    ]
+    try:
+        completed = subprocess.run(
+            command, capture_output=True, text=True, timeout=12,
+            check=False, errors="replace",
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if completed.returncode != 0:
+        return None
+    match = re.search(r"max_volume:\\s*(-?[\\d.]+)\\s*dB", completed.stderr or "")
+    if not match:
+        return None
+    try:
+        peak = float(match.group(1))
+    except ValueError:
+        return None
+    return peak if math.isfinite(peak) and -200 <= peak <= 20 else None
+
+
+def sampled_audio_peak(path: Path) -> float | None:
+    """Read a bounded audio sample without modifying the file."""
+    try:
+        stat = Path(path).stat()
+    except OSError:
+        return None
+    return sample_audio_peak(str(Path(path).resolve()), stat.st_mtime_ns, stat.st_size)
