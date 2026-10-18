@@ -124,7 +124,7 @@ Auf der Seite `2 · Ausgabe` stehen die wichtigsten Optionen direkt sichtbar:
 
 - **Auflösung:** Original, 1280×720 (HD), 1920×1080 (Full HD), 2560×1440 (QHD), 3840×2160 (UHD/4K).
 - **Qualität:** Turbo, Schnell, Ausgewogen, Hoch oder Maximum. Höhere Qualität benötigt meist mehr Zeit und Platz. „Maximum“ ist keine verlustfreie Speicherung.
-- **Bildeffekt und Effektstärke:** Effekt auswählen und per Regler 0–100 % einstellen. Bei „Keine“ hat der Regler keinen Zweck und ist deaktiviert.
+- **Bildeffekt und Effektstärke:** Effekt auswählen und per Regler 0–100 % einstellen: 0 % = aus, 50 % = bisherige Stärke, 100 % = verstärkte Wirkung. Bei „Keine“ ist der Regler deaktiviert. Sicherheitsbegrenzte Blitz-Effekte werden dabei nicht stärker als bisher.
 - **Verarbeitung:** Ein Schnellmodus bleibt verfügbar. Sobald du Auflösung, Profil, Effekt oder Stärke manuell änderst, wechselt das Programm auf eigene Einstellungen.
 - **Weitere Einstellungen:** Der Schalter `⚙ Weitere Einstellungen` öffnet mit einem Klick die zusätzlichen Einstellungen (Ausgabeart, Codec, Ein-/Ausblendung des vollständigen Videos, Darstellung und Archiv).
 
