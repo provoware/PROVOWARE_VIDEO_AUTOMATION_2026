@@ -1151,6 +1151,7 @@ def _finish_parity_init(window: object) -> None:
     _connect_settings(window)
     _sync_manual_controls_from_mode(window)
     _connect_easy_output_settings(window)
+    window.quick_advanced.clicked.connect(lambda: _show_parity_tab(window, 0))
     apply_theme(window)
 
     try:
