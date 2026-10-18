@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "status": "development",
+  "candidate": "qt-output-controls-2026-10-18",
+  "historical_version": "2.8.3-rc24",
+  "historical_file_count": 496,
+  "manifest_file_count": 498,
+  "manifest_files_sha256": "pending-manifest-calculation",
+  "stable_ready": false,
+  "notes": "Historical RC24 release and source evidence remain immutable. This candidate cannot be promoted to Stable without full quality checks and physical Kubuntu UI acceptance."
+}
