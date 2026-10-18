@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import math
 import os
+from fractions import Fraction
 import shutil
 import subprocess
 from functools import lru_cache
@@ -52,7 +54,7 @@ def probe_media_cached(path_text: str, mtime_ns: int, size: int) -> MediaInfo:
         return MediaInfo(path, "unknown", size_bytes=size)
     command = [
         binary, "-v", "error", "-show_entries",
-        "format=duration:stream=index,codec_type,codec_name,width,height,duration",
+        "format=duration:stream=index,codec_type,codec_name,width,height,duration,avg_frame_rate,r_frame_rate",
         "-of", "json", str(path),
     ]
     try:
@@ -67,7 +69,9 @@ def probe_media_cached(path_text: str, mtime_ns: int, size: int) -> MediaInfo:
     video = next((stream for stream in streams if stream.get("codec_type") == "video"), None)
     audio = next((stream for stream in streams if stream.get("codec_type") == "audio"), None)
     extension_kind = classify_extension(path)
-    kind = "video" if video else "audio" if audio else extension_kind
+    # An extension alone is not proof of readable media. FFprobe returned no
+    # usable track, so the input must fail the ordinary media validation.
+    kind = "video" if video else "audio" if audio else "unknown"
     if extension_kind == "image" and video:
         kind = "image"
     duration_value = (payload.get("format") or {}).get("duration")
@@ -81,6 +85,18 @@ def probe_media_cached(path_text: str, mtime_ns: int, size: int) -> MediaInfo:
     except (TypeError, ValueError):
         duration = None
     stream = video or audio or {}
+    rate_differs = False
+    if video and kind == "video":
+        try:
+            nominal = float(Fraction(str(video.get("r_frame_rate", "0/1"))))
+            average = float(Fraction(str(video.get("avg_frame_rate", "0/1"))))
+            rate_differs = (
+                math.isfinite(nominal) and math.isfinite(average)
+                and nominal > 0 and average > 0
+                and abs(nominal - average) / nominal > 0.08
+            )
+        except (ValueError, ZeroDivisionError, OverflowError):
+            rate_differs = False
     return MediaInfo(
         path=path,
         kind=kind,
@@ -89,6 +105,7 @@ def probe_media_cached(path_text: str, mtime_ns: int, size: int) -> MediaInfo:
         width=int(stream["width"]) if stream.get("width") else None,
         height=int(stream["height"]) if stream.get("height") else None,
         size_bytes=size,
+        variable_frame_rate=rate_differs,
     )
 
 

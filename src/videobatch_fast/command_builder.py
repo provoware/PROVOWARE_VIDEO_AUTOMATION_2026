@@ -177,6 +177,11 @@ def build_command(job: PairJob, options: BatchOptions, *, force_encode: bool = F
     duration = job.audio_info.duration
     video_filter = _video_filter(job, selected)
     use_copy = job.fast_path and not force_encode and video_filter is None
+    if not use_copy and selected.resolution == "Original":
+        # libx264/libx265 with yuv420p reject odd dimensions. Pad the last
+        # pixel instead of cropping a photo or changing its proportions.
+        pad_even = "pad=ceil(iw/2)*2:ceil(ih/2)*2"
+        video_filter = f"{pad_even},{video_filter}" if video_filter else pad_even
 
     if job.media_info.kind == "image":
         command += ["-loop", "1", "-framerate", str(selected.fps), "-i", str(job.media), "-i", str(job.audio)]
