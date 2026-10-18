@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "plan_quality_checks.py"

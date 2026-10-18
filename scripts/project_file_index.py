@@ -9,7 +9,6 @@ import json
 import os
 import select
 import stat
-import struct
 import subprocess
 import time
 from collections import Counter
@@ -207,8 +206,6 @@ def watch(root: Path, path: Path) -> None:
         for directory, names, _files in os.walk(root, followlinks=False):
             names[:] = sorted(name for name in names if name not in IGNORED_DIRS
                               and not (Path(directory) / name).is_symlink())
-            if directory in watched:
-                continue
             if libc.inotify_add_watch(fd, os.fsencode(directory), EVENT_MASK) < 0:
                 raise OSError(ctypes.get_errno(), f"Ordnerüberwachung: {directory}")
             watched.add(directory)

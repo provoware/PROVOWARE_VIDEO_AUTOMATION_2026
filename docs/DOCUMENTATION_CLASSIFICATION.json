@@ -229,6 +229,16 @@
         "Abschlussprüfung",
         "Nächster Schritt"
       ]
+    },
+    "01_START_HIER/README.md": {
+      "category": "active",
+      "required_sections": [
+        "Programm starten",
+        "Hilfen"
+      ]
+    },
+    "docs/DATEI_UND_ORDNERINDEX.md": {
+      "category": "technical"
     }
   },
   "excluded_relative_links": [],

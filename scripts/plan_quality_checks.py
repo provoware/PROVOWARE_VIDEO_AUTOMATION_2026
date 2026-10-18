@@ -46,7 +46,7 @@ def plan(changed: Iterable[str], *, final: bool = False,
         raise ValueError("Unsicherer geänderter Pfad")
     # A completely unknown change cannot be classified safely.
     known_prefixes = (
-        ".github/", ".githooks/", "src/", "scripts/", "tests/", "docs/",
+        ".github/", ".githooks/", "01_START_HIER/", "src/", "scripts/", "tests/", "docs/",
         "resources/", "registries/", "diagnostics/", "debugging/",
         ".release/", "visual_inspection/", "toolchain_wheelhouse/",
     )
