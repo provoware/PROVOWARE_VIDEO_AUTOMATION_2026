@@ -372,9 +372,9 @@ def _sync_manual_controls_from_mode(window: object) -> None:
         widget.setEnabled(custom)
     if not custom:
         window.quick_intensity.blockSignals(True)
-        window.quick_intensity.setValue(100)
+        window.quick_intensity.setValue(50)
         window.quick_intensity.blockSignals(False)
-        window.quick_intensity_label.setText("100 %")
+        window.quick_intensity_label.setText("50 %")
         spec = QUICK_MODES.get(key, QUICK_MODES["smart_auto"])
         mappings = (
             (window.parity_resolution, spec.resolution),
@@ -1079,8 +1079,8 @@ def _connect_easy_output_settings(window: object) -> None:
 
     window.quick_intensity.valueChanged.connect(intensity_changed)
     startup_intensity = (
-        int(window._parity_config.get("effect_intensity", 100))
-        if window.mode.currentData() == "custom" else 100
+        int(window._parity_config.get("effect_intensity", 50))
+        if window.mode.currentData() == "custom" else 50
     )
     window.quick_intensity.blockSignals(True)
     window.quick_intensity.setValue(max(0, min(100, startup_intensity)))
