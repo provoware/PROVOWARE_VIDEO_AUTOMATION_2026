@@ -16,89 +16,8 @@
         "Nächster Schritt"
       ]
     },
-    "docs/CHANGELOG.md": {
-      "category": "historical"
-    },
     "CODE_QUALITY_REPORT_2.8.3-rc24_save_.md": {
       "category": "historical"
-    },
-    "docs/DEVELOPER_GUIDE.md": {
-      "category": "active",
-      "required_sections": [
-        "Ziel",
-        "Pflichtgrad",
-        "Voraussetzungen",
-        "Sicherung und Rückweg",
-        "Schritt-für-Schritt-Anleitung",
-        "Abschlussprüfung",
-        "Nächster Schritt"
-      ]
-    },
-    "ERROR_HANDLING.md": {
-      "category": "active",
-      "required_sections": [
-        "Ziel",
-        "Pflichtgrad",
-        "Voraussetzungen",
-        "Schritt-für-Schritt-Anleitung",
-        "Abschlussprüfung",
-        "Nächster Schritt"
-      ]
-    },
-    "FINAL_AUDIT_2.8.3-rc24_save_.md": {
-      "category": "historical"
-    },
-    "FRESH_PACKAGE_REPORT_save_.md": {
-      "category": "historical"
-    },
-    "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md": {
-      "category": "historical"
-    },
-    "PROJEKTORDNERSTRUKTUR_save_.md": {
-      "category": "technical"
-    },
-    "README.md": {
-      "category": "active",
-      "required_sections": [
-        "Dokumentation",
-        "Schnellstart",
-        "Abschlussprüfung"
-      ]
-    },
-    "RELEASE_NOTES_save_.md": {
-      "category": "historical"
-    },
-    "START_HIER_save_.md": {
-      "category": "active",
-      "required_sections": [
-        "Ziel",
-        "Pflichtgrad",
-        "Voraussetzungen",
-        "Schritt-für-Schritt-Anleitung",
-        "Abschlussprüfung",
-        "Nächster Schritt"
-      ]
-    },
-    "STATUS.md": {
-      "category": "internal"
-    },
-    "TEST_REPORT_save_.md": {
-      "category": "technical"
-    },
-    "TODO.md": {
-      "category": "internal"
-    },
-    "docs/UPDATE_SYSTEM.md": {
-      "category": "active",
-      "required_sections": [
-        "Ziel",
-        "Pflichtgrad",
-        "Voraussetzungen",
-        "Sicherung und Rückweg",
-        "Schritt-für-Schritt-Anleitung",
-        "Abschlussprüfung",
-        "Nächster Schritt"
-      ]
     },
     "docs/ARCHITEKTUR.md": {
       "category": "technical"
@@ -120,11 +39,32 @@
     "docs/CALENDAR_TASK_OVERVIEW.md": {
       "category": "internal"
     },
+    "docs/CHANGELOG.md": {
+      "category": "historical"
+    },
     "docs/CODE_QUALITY_PIPELINE.md": {
       "category": "technical"
     },
     "docs/DATA_INTEGRITY_HARDENING.md": {
       "category": "technical"
+    },
+    "docs/design/VIDEOBATCH_DESIGN_IMPLEMENTATION_PLAN.md": {
+      "category": "technical"
+    },
+    "docs/design/VIDEOBATCH_GRAPHICS_MANIFEST.md": {
+      "category": "technical"
+    },
+    "docs/DEVELOPER_GUIDE.md": {
+      "category": "active",
+      "required_sections": [
+        "Ziel",
+        "Pflichtgrad",
+        "Voraussetzungen",
+        "Sicherung und Rückweg",
+        "Schritt-für-Schritt-Anleitung",
+        "Abschlussprüfung",
+        "Nächster Schritt"
+      ]
     },
     "docs/DOKUMENTATIONSINDEX.md": {
       "category": "active",
@@ -161,10 +101,10 @@
     "docs/PHASE2_FREEZE.md": {
       "category": "historical"
     },
-    "docs/PLUGIN_APPROVALS.md": {
+    "docs/PLUGIN_APPROVAL_MANAGEMENT.md": {
       "category": "technical"
     },
-    "docs/PLUGIN_APPROVAL_MANAGEMENT.md": {
+    "docs/PLUGIN_APPROVALS.md": {
       "category": "technical"
     },
     "docs/PLUGIN_OS_ISOLATION.md": {
@@ -176,46 +116,13 @@
     "docs/PLUGIN_SIGNING.md": {
       "category": "technical"
     },
+    "docs/PROJEKTORDNER_DATEIINDEX_PRUEFSTRATEGIE.md": {
+      "category": "technical"
+    },
     "docs/QT6_PHASE2_MIGRATION_MATRIX.md": {
       "category": "technical"
     },
     "docs/QUICK_MODES.md": {
-      "category": "technical"
-    },
-    "docs/REPRODUCIBLE_UPDATE_PIPELINE.md": {
-      "category": "technical"
-    },
-    "docs/STABLE_ACCEPTANCE_EVIDENCE.md": {
-      "category": "historical"
-    },
-    "docs/VISUAL_DESKTOP_APPROVAL.md": {
-      "category": "technical"
-    },
-    "docs/VISUAL_INSPECTION_HTML.md": {
-      "category": "technical"
-    },
-    "docs/VISUAL_REGRESSION.md": {
-      "category": "technical"
-    },
-    "docs/WORKSPACE_2X2_AND_DEBUGGING.md": {
-      "category": "technical"
-    },
-    "docs/WORKSPACE_LAYOUT_PROFILES.md": {
-      "category": "technical"
-    },
-    "docs/WORKSPACE_VISUAL_REGRESSION.md": {
-      "category": "technical"
-    },
-    "docs/design/VIDEOBATCH_DESIGN_IMPLEMENTATION_PLAN.md": {
-      "category": "technical"
-    },
-    "docs/design/VIDEOBATCH_GRAPHICS_MANIFEST.md": {
-      "category": "technical"
-    },
-    "resources/signing/README.md": {
-      "category": "technical"
-    },
-    "toolchain_wheelhouse/README.md": {
       "category": "technical"
     },
     "docs/reference/BEST_PRACTICES.md": {
@@ -242,11 +149,107 @@
     "docs/reference/VISUAL_APPROVAL_NORMALIZATION.md": {
       "category": "technical"
     },
+    "docs/REPRODUCIBLE_UPDATE_PIPELINE.md": {
+      "category": "technical"
+    },
+    "docs/STABLE_ACCEPTANCE_EVIDENCE.md": {
+      "category": "historical"
+    },
+    "docs/UPDATE_SYSTEM.md": {
+      "category": "active",
+      "required_sections": [
+        "Ziel",
+        "Pflichtgrad",
+        "Voraussetzungen",
+        "Sicherung und Rückweg",
+        "Schritt-für-Schritt-Anleitung",
+        "Abschlussprüfung",
+        "Nächster Schritt"
+      ]
+    },
     "docs/VIDEOBATCH_CP_UX_IMPLEMENTIERUNGSSTAND_2026.md": {
       "category": "internal"
     },
     "docs/VIDEOBATCH_CP_UX_LAIENPRUEFUNG_2026.md": {
       "category": "internal"
+    },
+    "docs/VISUAL_DESKTOP_APPROVAL.md": {
+      "category": "technical"
+    },
+    "docs/VISUAL_INSPECTION_HTML.md": {
+      "category": "technical"
+    },
+    "docs/VISUAL_REGRESSION.md": {
+      "category": "technical"
+    },
+    "docs/WORKSPACE_2X2_AND_DEBUGGING.md": {
+      "category": "technical"
+    },
+    "docs/WORKSPACE_LAYOUT_PROFILES.md": {
+      "category": "technical"
+    },
+    "docs/WORKSPACE_VISUAL_REGRESSION.md": {
+      "category": "technical"
+    },
+    "ERROR_HANDLING.md": {
+      "category": "active",
+      "required_sections": [
+        "Ziel",
+        "Pflichtgrad",
+        "Voraussetzungen",
+        "Schritt-für-Schritt-Anleitung",
+        "Abschlussprüfung",
+        "Nächster Schritt"
+      ]
+    },
+    "FINAL_AUDIT_2.8.3-rc24_save_.md": {
+      "category": "historical"
+    },
+    "FRESH_PACKAGE_REPORT_save_.md": {
+      "category": "historical"
+    },
+    "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md": {
+      "category": "historical"
+    },
+    "PROJEKTORDNERSTRUKTUR_save_.md": {
+      "category": "technical"
+    },
+    "README.md": {
+      "category": "active",
+      "required_sections": [
+        "Dokumentation",
+        "Schnellstart",
+        "Abschlussprüfung"
+      ]
+    },
+    "RELEASE_NOTES_save_.md": {
+      "category": "historical"
+    },
+    "resources/signing/README.md": {
+      "category": "technical"
+    },
+    "START_HIER_save_.md": {
+      "category": "active",
+      "required_sections": [
+        "Ziel",
+        "Pflichtgrad",
+        "Voraussetzungen",
+        "Schritt-für-Schritt-Anleitung",
+        "Abschlussprüfung",
+        "Nächster Schritt"
+      ]
+    },
+    "STATUS.md": {
+      "category": "internal"
+    },
+    "TEST_REPORT_save_.md": {
+      "category": "technical"
+    },
+    "TODO.md": {
+      "category": "internal"
+    },
+    "toolchain_wheelhouse/README.md": {
+      "category": "technical"
     }
   },
   "excluded_relative_links": [],
