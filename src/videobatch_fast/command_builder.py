@@ -18,6 +18,8 @@ RESOLUTIONS = {
     "Original": None,
     "1280×720": (1280, 720),
     "1920×1080": (1920, 1080),
+    "2560×1440": (2560, 1440),
+    "3840×2160": (3840, 2160),
 }
 
 COPY_COMPATIBLE_CODECS = {"h264", "hevc", "av1", "mpeg4"}
@@ -31,7 +33,7 @@ def can_use_fast_copy(job: PairJob, options: BatchOptions) -> tuple[bool, str]:
     selected = resolved_options(job, options)
     if job.is_slideshow:
         return False, "Diashows werden als ein synchronisierter Video-Stream erzeugt."
-    if selected.visual_effect != "none":
+    if selected.visual_effect != "none" and selected.effect_intensity > 0:
         return False, "Der gewählte Bildeffekt im Automatik-Look benötigt eine schnelle Einpass-Neucodierung."
     if selected.transition != "none":
         return False, "Die gewählte Ein-/Ausblendung benötigt eine schnelle Einpass-Neucodierung."
@@ -61,7 +63,7 @@ def _video_filter(job: PairJob, options: BatchOptions) -> str | None:
     scale_filter = _scale_filter(options.resolution)
     if scale_filter:
         filters.append(scale_filter)
-    selected_effect = effect_filter(options.visual_effect)
+    selected_effect = effect_filter(options.visual_effect, options.effect_intensity)
     if selected_effect:
         filters.append(selected_effect)
     filters.extend(transition_filters(options.transition, job.audio_info.duration))
