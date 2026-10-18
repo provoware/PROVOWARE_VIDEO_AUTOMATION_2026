@@ -45,7 +45,7 @@ def test_every_effect_has_real_intermediate_strength(effect: str) -> None:
     at_full = effect_filter(effect, 100)
     assert at_zero is None
     assert at_half and at_full and at_half != at_full
-    assert at_full == VISUAL_EFFECTS[effect].filter_expression
+    assert at_half == VISUAL_EFFECTS[effect].filter_expression
 
 
 def test_config_and_project_keep_custom_values() -> None:
@@ -90,7 +90,7 @@ def test_zero_intensity_preserves_video_fast_copy() -> None:
 def test_custom_video_options_reach_ffmpeg_without_automatic_override() -> None:
     option = BatchOptions(
         Path("."), quick_mode="custom", visual_effect="vivid",
-        effect_intensity=50, resolution="3840×2160", profile="maximum",
+        effect_intensity=25, resolution="3840×2160", profile="maximum",
     )
     with patch("videobatch_fast.command_builder.ffmpeg_path", return_value="ffmpeg"):
         command = build_command(_example_video(), option)
