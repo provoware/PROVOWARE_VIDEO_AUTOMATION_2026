@@ -145,3 +145,108 @@ Die Ausgabe ist lesend und behauptet ausdrücklich keine Vollständigkeit bei
 dynamisch zusammengesetzten Dateipfaden. Vor dem nächsten tatsächlichen Umzug
 sind deshalb zusätzliche Laufzeit- und Paketprüfungen Pflicht. Ein
 freigegebener Prüfstatus wird dadurch nicht erzeugt.
+
+## Gebündelter SHA-256-Umsetzungsplan – PR #244 (Entwicklungsstand)
+
+**Entscheidung:** Bestehenden Dateiindex und das Testnachweisregister
+weiterentwickeln statt zusätzliche parallele Prüfsysteme einzuführen.
+Ein Datei-Fingerabdruck wird in allen Teilbereichen einheitlich berechnet;
+ein *Prüfbereich-Fingerabdruck* fasst die relevanten Dateipfade und
+Dateiinhalte eines einzelnen Tests zusammen. **Status nie im Dateinamen.**
+
+### ① Gemeinsame Dateiidentität und sichere Migration
+
+**Umsetzung:** Alle aktuellen SHA-256-Verwendungen inventarisieren.
+Eine gemeinsame Funktion führt Inhalt, relativen Pfad, Dateigröße und
+SHA-256 zusammen. Der vorhandene `project_file_index.py` bleibt
+maßgeblich. Schreibvorgänge nur in den XDG-Zustandsordner außerhalb
+des Projekts. Versionsmigration vorhandener JSON-Register vorsehen.
+
+**Schutz:** Reine Umbenennung ist eine *Pfadänderung*, auch bei gleichem
+Inhalt. Unlesbare Dateien, Symlinks, Änderungen während der Hashbildung
+und ungültige Registerwerte machen Prüfergebnisse ungültig.
+Zeitstempel und Größe allein sind kein Ersatz für Inhaltsprüfsummen.
+Startskripte, historische RC24-Nachweise und Release-Verträge bleiben
+bis zum nachgewiesenen sicheren Umzug unverändert.
+
+**Nachweis:** Hinzufügen, Entfernen, Umbenennen, Verschieben,
+Inhaltsänderung, beschädigter Index und parallele Dateiveränderung
+gezielt testen; anschließend Start- und Migrationsverträge prüfen.
+
+### ② Abhängigkeitsgraph und bereichsbezogene Prüf-Fingerabdrücke
+
+**Umsetzung:** Für jede ausdrücklich erlaubte **lokale
+Entwicklungsprüfung** alle direkten und mittelbaren Eingaben erfassen:
+Produktionscode, Testdateien, gemeinsame Hilfsmodule, Vorlagen,
+Konfiguration und Prüfspezifikation. Ein reproduzierbarer SHA-256
+über sortierte Paare aus *relativem Pfad und Inhaltsprüfsumme*
+einschließlich Schemaversion ersetzt für geeignete Tests den
+bisherigen Fingerabdruck des gesamten Repositorys.
+
+**Schutz:** Dynamische oder unbekannte Abhängigkeiten, fehlende Dateien
+oder geänderte Pfade erzwingen die erneute Ausführung (fail-closed).
+Die Abhängigkeitsliste ist zunächst **manuell geprüft und ausdrücklich
+freigegeben**; automatische Vermutungen sind nur Hinweise.
+Kein Hash-Nachweis ersetzt einen tatsächlichen Start- oder Importtest.
+
+**Nachweis:** Eine reine Dokumentationsänderung lässt einen
+nachweislich unabhängigen Test gültig. Eine gemeinsame geänderte
+Hilfsdatei macht alle abhängigen Tests ungültig. Bei unbekannten
+Abhängigkeiten wird niemals eine Prüfung eingespart.
+
+### ③ Strenges Prüfregister und kontrollierte Einsparung
+
+**Umsetzung:** `test_evidence_registry.py` behält die zentrale
+Verantwortung. Ein wiederverwendbarer Eintrag bindet
+Test-ID, Testdefinition/Version, tatsächlichen Befehl, Git-Commit,
+sauberen Arbeitsbaum, Prüfbereich-Fingerabdruck, Python-/Paket-
+und relevante FFmpeg-Versionen, Umgebungsdaten, Zeitpunkt,
+Rückgabewert 0 und bestätigten Prüferfolg. Programmstand vor
+und nach der Testausführung erneut erfassen.
+
+**Freigabestufen:** Zuerst nur Entscheidung anzeigen, dann mit
+Negativtests nachweisen, dass keine Pflichtprüfung ausgelassen wird.
+Erst danach `--reuse` für eine kleine, geprüfte Liste lokaler
+Entwicklungsprüfungen zulassen. Ohne `--reuse` immer ausführen.
+Bei jedem fehlenden, alten oder widersprüchlichen Nachweis
+automatisch neu prüfen.
+
+**Niemals einsparen:** Verpflichtende GitHub-CI, vorgeschriebene
+`test.sh`-Stufen, Sicherheits- und Release-Gates,
+Signatur-/Paketintegrität, Manifestprüfung, reale Kubuntu-
+Wayland-Abnahme und Langzeitrendern. Ergebnis-Wiederverwendung
+ist **keine** Stable-Freigabe.
+
+### ④ Hilfe, Prüfkette und Abschlussnachweis
+
+**Hilfe:** Benutzerhandbuch, Qt-Hilfeseite und Wegweiser müssen
+verständlich zwischen *Medienindex* (persönliche Audio-, Foto- und
+Videodateien) und *Projekt-Dateiindex* (Entwicklungsdateien)
+unterscheiden. Klare Meldungen: unverändert, geändert, unklar,
+Prüfung notwendig, Prüfung wiederverwendet. Hilfe darf keine
+Produktion, Löschung oder Prüfung heimlich starten.
+
+**Regression am identischen Commit:** Fokus- und Negativtests,
+`python3 scripts/project_file_index.py --audit-migration --json`,
+Dokumentationsvalidierung, `bash -n` aller Startskripte,
+Installations-/Offlinepfade und `test.sh --docs`, `--core`,
+`--local` passend zur Änderung prüfen. CI und echte Kubuntu-
+Wayland-Bedien- sowie Medienabnahme bleiben gesondert nachzuweisen.
+**Vorher PR #244 Draft; main und Releasefreigabe unverändert.**
+
+### Arbeitsgrenzen und Abnahmekriterien
+
+- **Klein bündeln:** Paket 1 Hash-Vertrag und Tests; Paket 2
+  Abhängigkeiten/Negativtests; Paket 3 Prüfwiederverwendung/Tests;
+  Paket 4 Benutzerhilfe und Gesamtregression.
+- **Keine Doppelimplementierung:** Erweiterungen in vorhandenen
+  Skripten, Registern und Hilfen; neue Datei nur bei konkretem Bedarf.
+- **Nachvollziehbar:** Jeder Entwicklungsschritt mit Commit,
+  Prüfsummen, Testversion und Testumgebung dokumentiert.
+- **Fertig bedeutet:** echte Tests grün und Pfad-, Start-,
+  Installations- und Release-Verträge nachgewiesen; keine
+  stillschweigende Einsparung von Pflichtprüfungen.
+
+**Umsetzungsstatus:** ①–③ geplant; bestehende Basis vorhanden.
+④ Hilfe-Dokumentation wird vorab ergänzt. Neue Prüfwiederverwendung
+für Teilbereiche ist noch **nicht** implementiert.

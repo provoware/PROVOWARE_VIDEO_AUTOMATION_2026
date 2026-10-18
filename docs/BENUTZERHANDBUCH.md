@@ -328,3 +328,35 @@ Bei einem ungültigen oder nicht mehr verfügbaren Effekt:
 - Fehlerdetails: `ERROR_HANDLING.md`
 - Updates: `UPDATE_SYSTEM.md`
 - Projektstruktur: `PROJEKTORDNERSTRUKTUR_save_.md`
+
+## Hilfe: SHA-256, Dateiindex und Prüfstatus verstehen
+
+**Ziel:** Eine Meldung zur Dateiprüfung einordnen, ohne technische
+Vorkenntnisse. **Pflichtgrad:** Für die normale Videoproduktion optional.
+
+**Einfach erklärt:** SHA-256 ist ein digitaler Fingerabdruck des
+*Dateiinhalts*. Ändert sich der Inhalt, ändert sich normalerweise
+der Fingerabdruck. Bei reinem Umbenennen bleibt er gleich;
+deshalb kontrolliert VideoBatch auch den Speicherpfad.
+
+**Wichtig: zwei getrennte Aufgaben.** Der **Medienindex** zeigt
+deine Musik, Fotos und Videos. Der **Projekt-Dateiindex** ist ein
+Entwicklungswerkzeug und kontrolliert Programmdateien und deren
+Änderungen. Du musst diesen nicht bedienen, um Videos zu erzeugen.
+Originalmedien werden durch die Projekt-Dateiprüfung nicht verändert.
+
+**Prüfstatus:** „Bestanden“ bedeutet: ein bestimmter Test wurde
+erfolgreich ausgeführt. „Wiederverwendet“ darf künftig nur dann
+erscheinen, wenn der passende Test für genau denselben geprüften
+Stand nachweislich erfolgreich war. Ein beschädigter, unbekannter
+oder veralteter Nachweis verlangt einen neuen Test. **Keine
+Sicherheitsprüfung und keine Releasefreigabe wird ersetzt.**
+
+**Bei einem Fehler:** Nichts an Originalmedien ändern und keine
+pauschalen Berechtigungen vergeben. Entwickler finden Befehle,
+Schutzregeln und weitere Prüfungen in
+[Dateiindex und Prüfstrategie](PROJEKTORDNER_DATEIINDEX_PRUEFSTRATEGIE.md).
+
+**Abschlussprüfung:** Der normale Start und die Medienauswahl
+funktionieren weiterhin ohne SHA-256-Eingaben. Eine Hilfeauswahl
+zeigt nur Informationen an und startet keine Hintergrundprüfungen.

@@ -26,6 +26,7 @@ Dieser Wegweiser ordnet jede aktuelle Anleitung und jeden historischen Nachweis 
 | Entwicklungsumgebung und erster Beitrag | `docs/DEVELOPER_GUIDE.md` |
 | Architektur und Arbeitsregeln | `docs/reference/DEVELOPER_HANDBOOK.md`, `docs/ARCHITEKTUR.md`, `AGENTS.md` |
 | Codequalitätsprüfung | `docs/CODE_QUALITY_PIPELINE.md`, `docs/OFFLINE_QUALITY_ENVIRONMENT.md` |
+| SHA-256-Dateiindex, Prüfregister und Umsetzungsplan | `docs/PROJEKTORDNER_DATEIINDEX_PRUEFSTRATEGIE.md` |
 | reproduzierbare Updates | `docs/REPRODUCIBLE_UPDATE_PIPELINE.md` |
 | Plugins prüfen | `docs/reference/PLUGIN_SYSTEM.md`, `docs/PLUGIN_PERMISSIONS.md`, `docs/PLUGIN_SIGNING.md`, `docs/PLUGIN_APPROVALS.md`, `docs/PLUGIN_APPROVAL_MANAGEMENT.md`, `docs/PLUGIN_OS_ISOLATION.md` |
 | visuelle Prüfung | `docs/VISUAL_INSPECTION_HTML.md`, `docs/VISUAL_REGRESSION.md`, `docs/WORKSPACE_VISUAL_REGRESSION.md` |
