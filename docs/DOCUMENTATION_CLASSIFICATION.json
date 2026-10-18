@@ -241,6 +241,9 @@
     },
     "docs/reference/VISUAL_APPROVAL_NORMALIZATION.md": {
       "category": "technical"
+    },
+    "docs/GUI_OPTIMIERUNG_AUDIT_2026-10-18.md": {
+      "category": "technical"
     }
   },
   "excluded_relative_links": [],
