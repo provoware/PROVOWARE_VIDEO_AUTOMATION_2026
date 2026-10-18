@@ -110,3 +110,11 @@ werden nie automatisch übersprungen.
 Der gesetzliche beziehungsweise technische Dateistatus ist **nicht** Teil
 eines Dateinamens. Technische Fehler in einem Test werden protokolliert,
 niemals zu einem grünen Freigabestatus umgedeutet.
+
+### Automatische Migrationsprüfung
+```bash
+python3 scripts/project_file_index.py --audit-migration --json
+```
+Die Prüfung kontrolliert originale Git-Blobs, Ordnerklassifikation und
+verbliebene Codeverweise auf alte Root-Dateipfade. Positive Ergebnisse sind
+keine Freigabe von CI-, Signatur- oder Releaseprüfungen.

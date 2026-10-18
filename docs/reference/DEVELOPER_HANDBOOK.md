@@ -136,7 +136,7 @@ SemVer:
 - RC-Suffix: noch nicht Stable-freigegeben
 
 Bei jeder Iteration müssen mindestens `VERSION.json`, `manifest.json`,
-`CHANGELOG.md`, `STATUS.md`, `TEST_REPORT_save_.md` und `DEVELOPMENT_STATUS.json`
+`docs/CHANGELOG.md`, `STATUS.md`, `TEST_REPORT_save_.md` und `DEVELOPMENT_STATUS.json`
 konsistent sein.
 
 ## 10. Stable-Grenze

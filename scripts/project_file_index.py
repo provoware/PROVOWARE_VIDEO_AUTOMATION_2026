@@ -138,15 +138,61 @@ def refresh() -> dict:
     return result
 
 
+
+def migration_audit() -> dict[str, object]:
+    """Check byte-identical moves and inspect active code for stale paths."""
+    records = json.loads((ROOT / "registries/ROOT_MIGRATION_REGISTRY.json").read_text(encoding="utf-8"))["moves"]
+    labels = json.loads((ROOT / "docs/DOCUMENTATION_CLASSIFICATION.json").read_text(encoding="utf-8"))["documents"]
+    findings: list[str] = []
+    moves: list[dict[str, object]] = []
+    for entry in records:
+        former = str(entry["from"])
+        target = ROOT / str(entry["to"])
+        correct = not (ROOT / former).exists() and target.is_file()
+        if correct:
+            content = target.read_bytes()
+            digest = hashlib.sha1(f"blob {len(content)}".encode("ascii") + bytes([0]) + content).hexdigest()
+            correct = digest == entry["blob_sha"]
+        correct = correct and former not in labels and str(entry["to"]) in labels
+        moves.append({"from": former, "to": str(entry["to"]), "preserved": correct})
+        if not correct:
+            findings.append(f"Verschiebung oder Dateiintegrität verletzt: {former}")
+    references: list[dict[str, object]] = []
+    old_names = [str(record["from"]) for record in records]
+    for folder in ("src", "scripts", "tests"):
+        for path in (ROOT / folder).rglob("*"):
+            if path.suffix not in {".py", ".sh"} or path.is_symlink():
+                continue
+            relative = path.relative_to(ROOT).as_posix()
+            if relative in {"scripts/project_file_index.py", "tests/test_root_migration_contract.py"}:
+                continue
+            for number, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+                for name in old_names:
+                    if name in line and ("docs/" + name) not in line:
+                        references.append({"path": relative, "line": number, "former": name})
+    if references:
+        findings.append("Alte Pfade in aktivem Python-/Shell-Code gefunden.")
+    return {"status": "passed" if not findings else "review_required",
+            "moves": moves, "unresolved_code_references": references,
+            "problems": findings, "release_authorized": False}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Datei- und Prüfindex ohne Releasefreigabe")
     parser.add_argument("--watch", action="store_true",
                         help="Änderungen während der Entwicklung automatisch registrieren")
     parser.add_argument("--interval", type=float, default=5.0)
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--audit-migration", action="store_true",
+                        help="Alte Pfade und Dateiintegrität der Migration prüfen")
     args = parser.parse_args()
     if args.watch and args.interval < 1:
         parser.error("Das Überwachungsintervall muss mindestens 1 Sekunde betragen.")
+    if args.audit_migration:
+        report = migration_audit()
+        print(json.dumps(report, ensure_ascii=False, indent=2) if args.json else
+              f"ROOT-MIGRATION: {report['status']} · Befunde: {len(report['problems'])}")
+        return 0 if report["status"] == "passed" else 1
     last = None
     while True:
         result = refresh()

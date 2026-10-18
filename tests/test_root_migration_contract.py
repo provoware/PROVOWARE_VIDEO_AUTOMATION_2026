@@ -52,3 +52,17 @@ def test_documented_root_migration_does_not_approve_release() -> None:
     registry = json.loads((ROOT / "registries/ROOT_MIGRATION_REGISTRY.json").read_text(encoding="utf-8"))
     assert registry["stable_release_approved"] is False
     assert "STARTEN.sh" in registry["preserved_entrypoints"]
+
+
+def test_root_migration_has_no_old_runtime_references() -> None:
+    import subprocess
+    import sys
+    outcome = subprocess.run(
+        [sys.executable, str(ROOT / "scripts/project_file_index.py"),
+         "--audit-migration", "--json"],
+        capture_output=True, text=True, timeout=30, check=False,
+    )
+    report = json.loads(outcome.stdout)
+    assert outcome.returncode == 0, report["problems"]
+    assert report["status"] == "passed"
+    assert report["release_authorized"] is False
