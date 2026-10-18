@@ -11,7 +11,8 @@ PROFILES: dict[str, EncodeProfile] = {
     "turbo": EncodeProfile("turbo", "Turbo", "ultrafast", 23, "Maximale Geschwindigkeit, größere Datei."),
     "fast": EncodeProfile("fast", "Schnell", "veryfast", 21, "Sehr schnell bei guter Qualität."),
     "balanced": EncodeProfile("balanced", "Ausgewogen", "faster", 20, "Etwas kleiner, moderat langsamer."),
-    "quality": EncodeProfile("quality", "Qualität", "medium", 18, "Hohe Qualität, deutlich langsamer."),
+    "quality": EncodeProfile("quality", "Hoch", "medium", 18, "Hohe Qualität, deutlich langsamer."),
+    "maximum": EncodeProfile("maximum", "Maximum", "slow", 16, "Sehr hohe Qualität, hoher Rechenaufwand; nicht verlustfrei."),
 }
 
 RESOLUTIONS = {
