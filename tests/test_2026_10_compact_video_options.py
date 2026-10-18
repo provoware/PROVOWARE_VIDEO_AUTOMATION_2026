@@ -130,9 +130,9 @@ def test_real_five_second_crossfade_when_ffmpeg_is_available(tmp_path: Path) -> 
                 + struct.pack(">I", zlib.crc32(kind + data) & 0xFFFFFFFF)
             )
         header = struct.pack(">IIBBBBB", 64, 64, 8, 2, 0, 0, 0)
-        pixels = b"".join(b"\\x00" + bytes(color) * 64 for _ in range(64))
+        pixels = b"".join(b"\x00" + bytes(color) * 64 for _ in range(64))
         return (
-            b"\\x89PNG\\r\\n\\x1a\\n" + chunk(b"IHDR", header)
+            b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", header)
             + chunk(b"IDAT", zlib.compress(pixels)) + chunk(b"IEND", b"")
         )
 
@@ -144,7 +144,7 @@ def test_real_five_second_crossfade_when_ffmpeg_is_available(tmp_path: Path) -> 
         wf.setnchannels(1)
         wf.setsampwidth(2)
         wf.setframerate(8000)
-        wf.writeframes(b"\\x00\\x00" * (12 * 8000))
+        wf.writeframes(b"\x00\x00" * (12 * 8000))
 
     plan = build_slideshow_plan(12.0, 2, "5.0")
     assert plan is not None and plan.crossfade_duration == 5.0
