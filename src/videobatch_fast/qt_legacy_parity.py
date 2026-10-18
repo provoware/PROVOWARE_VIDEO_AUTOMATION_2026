@@ -70,6 +70,7 @@ LEGACY_OPTION_KEYS = (
     "verification",
     "keep_lists",
     "visual_effect",
+    "effect_intensity",
     "transition",
     "quick_mode",
     "assignment_mode",
@@ -839,6 +840,8 @@ def _apply_recovery_options(window: object, options: dict[str, object]) -> None:
     for key, combo in mappings:
         if key in options:
             _select_combo_data(combo, options[key])
+    if "effect_intensity" in options:
+        window.quick_intensity.setValue(max(0, min(100, int(options["effect_intensity"]))))
     if "verification" in options:
         index = window.verification.findText(str(options["verification"]))
         if index >= 0:
@@ -1064,7 +1067,14 @@ def _connect_easy_output_settings(window: object) -> None:
         _save_project_silent(window)
 
     window.quick_intensity.valueChanged.connect(intensity_changed)
-    window.quick_intensity.setValue(int(window._parity_config.get("effect_intensity", 100)))
+    startup_intensity = (
+        int(window._parity_config.get("effect_intensity", 100))
+        if window.mode.currentData() == "custom" else 100
+    )
+    window.quick_intensity.blockSignals(True)
+    window.quick_intensity.setValue(max(0, min(100, startup_intensity)))
+    window.quick_intensity.blockSignals(False)
+    window.quick_intensity_label.setText(f"{window.quick_intensity.value()} %")
 
 
 def _patch_special_callbacks(window: object) -> None:
