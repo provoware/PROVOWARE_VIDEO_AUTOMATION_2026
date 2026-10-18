@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "mode": "development_only",
+  "reused_evidence_is_release_authorization": false,
+  "required_context": [
+    "test_id",
+    "commit_sha",
+    "clean_checkout",
+    "source_digest",
+    "environment_fingerprint",
+    "test_definition_digest",
+    "command",
+    "test_status",
+    "completed_unix"
+  ],
+  "policy": "Only exact, clean and successful local development tests may be reused. Never override test.sh, CI or stable gates.",
+  "tests": {
+    "docs_validation": {
+      "purpose": "Dokumentationspfade und interne Links",
+      "argv": [
+        "{python}",
+        "scripts/validate_documentation.py"
+      ],
+      "timeout_seconds": 90,
+      "cacheable": true
+    },
+    "file_index": {
+      "purpose": "Dateiindex und Änderungserkennung",
+      "argv": [
+        "{python}",
+        "-m",
+        "pytest",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "tests/test_project_file_index.py"
+      ],
+      "timeout_seconds": 90,
+      "cacheable": true
+    },
+    "root_migration": {
+      "purpose": "Physische Root-Migration und unveränderte historische Dateien",
+      "argv": [
+        "{python}",
+        "-m",
+        "pytest",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "tests/test_root_migration_contract.py"
+      ],
+      "timeout_seconds": 90,
+      "cacheable": true
+    },
+    "media_preflight": {
+      "purpose": "Defensive FFmpeg-Eingangsvalidierung",
+      "argv": [
+        "{python}",
+        "-m",
+        "pytest",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "tests/test_preflight_media_safety_20261018.py",
+        "tests/test_media_preflight_advisories_20261018.py"
+      ],
+      "timeout_seconds": 180,
+      "cacheable": true
+    },
+    "error_explanation": {
+      "purpose": "Laiengerechte Fehlermeldungen",
+      "argv": [
+        "{python}",
+        "-m",
+        "pytest",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "tests/test_human_error_explanation_20261018.py"
+      ],
+      "timeout_seconds": 90,
+      "cacheable": true
+    }
+  },
+  "non_cacheable": [
+    "mandatory_ci",
+    "test.sh",
+    "verify_release.sh",
+    "verify_release.sh --strict",
+    "release_manifest",
+    "security_gates",
+    "physical_wayland_approval",
+    "long_render_acceptance"
+  ]
+}
