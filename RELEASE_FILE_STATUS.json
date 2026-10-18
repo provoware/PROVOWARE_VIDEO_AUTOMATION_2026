@@ -9,47 +9,47 @@
     {
       "evidence": "Geprüfter Nutzerstart und sichere erste Schritte",
       "label": "Schnellstart",
-      "path": "START_HIER_save_.md"
+      "path": "docs/start/START_HIER_save_.md"
     },
     {
       "evidence": "Benutzerpfade, A/B-Slots und Berechtigungsschutz dokumentiert",
       "label": "Installationsanleitung",
-      "path": "AUTOINSTALLATION_save_.md"
+      "path": "docs/start/AUTOINSTALLATION_save_.md"
     },
     {
       "evidence": "Ordner, Start, Sicherheit und Funktionen beschrieben",
       "label": "Projektübersicht",
-      "path": "PROJEKTORDNERSTRUKTUR_save_.md"
+      "path": "docs/start/PROJEKTORDNERSTRUKTUR_save_.md"
     },
     {
       "evidence": "Aktueller RC24-Funktionsstand dokumentiert",
       "label": "Releasehinweise",
-      "path": "RELEASE_NOTES_save_.md"
+      "path": "docs/archive/rc24/RELEASE_NOTES_save_.md"
     },
     {
       "evidence": "Automatisierte und offene Prüfungen getrennt ausgewiesen",
       "label": "Testbericht",
-      "path": "TEST_REPORT_save_.md"
+      "path": "docs/archive/rc24/TEST_REPORT_save_.md"
     },
     {
       "evidence": "Saubere Paketprüfung für RC24 dokumentiert",
       "label": "Paketbericht",
-      "path": "FRESH_PACKAGE_REPORT_save_.md"
+      "path": "docs/archive/rc24/FRESH_PACKAGE_REPORT_save_.md"
     },
     {
       "evidence": "Interne Qualitätsprüfung ohne Befund",
       "label": "Codequalitätsbericht",
-      "path": "CODE_QUALITY_REPORT_2.8.3-rc24_save_.md"
+      "path": "docs/archive/rc24/CODE_QUALITY_REPORT_2.8.3-rc24_save_.md"
     },
     {
       "evidence": "Umgesetzte Funktions- und Sicherheitsverträge dokumentiert",
       "label": "Implementierungsbericht",
-      "path": "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md"
+      "path": "docs/archive/rc24/IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md"
     },
     {
       "evidence": "RC-Gates und offene Stable-Gates ehrlich getrennt",
       "label": "RC-Abschlussaudit",
-      "path": "FINAL_AUDIT_2.8.3-rc24_save_.md"
+      "path": "docs/archive/rc24/FINAL_AUDIT_2.8.3-rc24_save_.md"
     },
     {
       "evidence": "Aus der kanonischen RELEASE_EVIDENCE.json erzeugt",

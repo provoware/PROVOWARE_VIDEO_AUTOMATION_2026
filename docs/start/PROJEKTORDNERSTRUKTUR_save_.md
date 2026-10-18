@@ -23,7 +23,9 @@ Diese Übersicht beschreibt das Basisprojekt für Laien, Tester und Entwickler. 
 ├── registries/                   # Prüfregister für UI, Qualität, Plugins, Updates und Szenarien
 ├── scripts/                      # Build-, Prüf- und Dokumentationshilfen
 ├── tests/                        # Automatisierte Tests
-├── docs/                         # Vertiefende technische Dokumentation
+├── docs/start/                   # Einstieg, Installation, Projektübersicht
+├── docs/manuals/                 # Technische Handbücher
+├── docs/archive/rc24/            # Historische RC24-Berichte
 │   └── archive/release-history/  # Historische Nachweise, nicht Bestandteil des Releasepakets
 ├── toolchain_wheelhouse/         # Hinweise zur gesperrten Qualitäts-Werkzeugkette
 ├── visual_inspection/            # Dateien für visuelle Abnahmen
@@ -42,6 +44,7 @@ Diese Übersicht beschreibt das Basisprojekt für Laien, Tester und Entwickler. 
 ├── test.sh                       # paketbezogene, schreibgeschützte Teststrecke
 ├── quality.sh                    # Qualitätsstrecke mit Ruff, MyPy, Bandit und pip-audit
 ├── STARTEN.sh                    # einfacher Start für Nutzer
+├── 01_START_HIER/               # kompakter Laieneinstieg
 └── start.sh / videobatch.sh      # technische Starthelfer
 ```
 
