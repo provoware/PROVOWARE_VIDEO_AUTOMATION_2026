@@ -129,8 +129,16 @@
     "long_render_acceptance"
   ],
   "dependency_review": {
-    "status": "analysis_only",
+    "status": "import_audit_added_all_unverified",
     "default_scope": "full_tree_fallback",
-    "automatic_scoped_reuse": false
+    "automatic_scoped_reuse": false,
+    "requirements": [
+      "Python transitive imports",
+      "dynamic file inputs",
+      "pytest configuration and plugins",
+      "external tools and runtime packages",
+      "negative tests",
+      "independent review"
+    ]
   }
 }

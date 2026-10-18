@@ -302,3 +302,16 @@ Der vorhandene CP-09-Entwicklungsworkflow wurde um eine eigene Teststufe
 für SHA-256, Bereichsprüfung und Nachweisregister erweitert. Die Teststufe
 muss auf **demselben Commit** erfolgreich sein; ein bestehendes CP-09-Grün
 allein ist kein Beleg. Teilbereichsoptimierung bleibt gesperrt.
+
+## Importprüfung (nur Analyse)
+Für alle fünf registrierten Tests ist ein zusätzlicher lesender Importabgleich vorhanden:
+
+```bash
+python3 scripts/test_dependency_scope.py file_index --imports
+```
+
+Der Bericht enthält erkannte direkte und mittelbare Python-Abhängigkeiten,
+fehlende Eingaben und Hinweise auf dynamische Dateiladevorgänge. Er meldet
+**niemals automatisch einen vollständigen Graphen oder eine Freigabe**;
+Konfigurationsdateien, Test-Erweiterungen, externe Prozesse und indirekte
+Datenzugriffe müssen zusätzlich sachlich geprüft werden.

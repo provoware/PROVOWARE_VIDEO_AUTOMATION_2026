@@ -43,3 +43,19 @@ jobs:
         env:
           PYTHONPATH: src
         run: python -m pytest -q -p no:cacheprovider tests/test_sha256_dependency_scope.py tests/test_test_evidence_registry.py tests/test_project_file_index.py
+
+      - name: Check developer docs and migration contracts
+        env:
+          PYTHONPATH: src
+        run: |
+          python scripts/validate_documentation.py
+          python scripts/project_file_index.py --audit-migration --json
+          python -m pytest -q -p no:cacheprovider tests/test_root_migration_contract.py tests/test_documentation_contract.py
+          bash -n STARTEN.sh start.sh videobatch.sh setup.sh test.sh verify_release.sh
+      - name: Inspect declared dependency graphs
+        run: |
+          python scripts/test_dependency_scope.py file_index --imports
+          python scripts/test_dependency_scope.py docs_validation --imports
+          python scripts/test_dependency_scope.py root_migration --imports
+          python scripts/test_dependency_scope.py media_preflight --imports
+          python scripts/test_dependency_scope.py error_explanation --imports

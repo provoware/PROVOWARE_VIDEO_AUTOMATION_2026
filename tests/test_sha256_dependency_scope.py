@@ -91,3 +91,11 @@ def test_review_is_advisory_until_indirect_inputs_verified():
     assert policy["dependency_review"]["automatic_scoped_reuse"] is False
     assert all(not s["dependencies_reviewed"] for s in policy["tests"].values())
     assert all(s["dependency_candidates"] for s in policy["tests"].values())
+
+
+def test_import_audit_does_not_approve_unresolved_graph():
+    report = test_dependency_scope.python_import_audit("file_index")
+    assert "scripts/project_file_index.py" in report["discovered_paths"]
+    assert "scripts/sha256_contract.py" in report["discovered_paths"]
+    assert not report["complete"]
+    assert not report["scope_reuse_approved"]
