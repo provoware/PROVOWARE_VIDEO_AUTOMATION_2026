@@ -28,6 +28,8 @@ from .qt_main_layout import build_main_ui
 from .qt_theme import APP_STYLE
 from .dashboard_settings import DashboardSettings, load_settings, save_settings
 from .runner import BatchRunner
+from .validation import validate_pairs
+from .resource_estimation import estimate_job_output_bytes
 from .qt_source_panel import build_sources_panel
 from .qt_system_load_dashboard import SystemLoadDashboard
 from .qt_ui_polish import (
@@ -527,7 +529,15 @@ class VideoBatchQtWindow(QMainWindow):
         def prepare() -> None:
             try:
                 jobs = build_jobs(audios, media, options)
-                self.prepare_queue.put(("ok", (generation, jobs, options)))
+                issues = validate_pairs(jobs, options, audio_peak_limit=2)
+                blocking = [item for item in issues if item.blocking]
+                if blocking:
+                    raise ValueError("\\n".join(
+                        f"{item.title}: {item.message} Lösung: {item.solution}"
+                        for item in blocking[:6]
+                    ))
+                self.prepare_queue.put(("ok", (generation, jobs, options,
+                                                [item for item in issues if not item.blocking])))
             except Exception as exc:
                 self.prepare_queue.put(("error", (generation, f"{type(exc).__name__}: {exc}")))
 
@@ -603,6 +613,32 @@ class VideoBatchQtWindow(QMainWindow):
                 else:
                     self.jobs = list(data)
                     options = rest[0]
+                    notices = rest[1] if len(rest) > 1 else []
+                    if notices:
+                        details = "\\n\\n".join(
+                            f"• {notice.title}: {notice.message}\\n{notice.solution}"
+                            for notice in notices[:5]
+                        )
+                        if len(notices) > 5:
+                            details += f"\\n\\nWeitere Hinweise: {len(notices) - 5}"
+                        response = QMessageBox.question(
+                            self, "Hinweise vor der Videoerstellung",
+                            details + "\\n\\nTrotz dieser Hinweise fortfahren?",
+                            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                            QMessageBox.StandardButton.No,
+                        )
+                        if response != QMessageBox.StandardButton.Yes:
+                            self._probe_pending = False
+                            self._status("ABGEBROCHEN")
+                            self._write_log("Produktion nach Hinweisen nicht gestartet.")
+                            self._refresh()
+                            return
+                    if not self._probe_pending:
+                        estimated = sum(estimate_job_output_bytes(j, options) for j in self.jobs)
+                        self._write_log(
+                            f"Grobe Dateigrößenschätzung: {estimated / 1024**2:.0f} MiB "
+                            "einschließlich Auftragsreserve; keine Größen- oder Laufzeitgarantie."
+                        )
                     if self._probe_pending:
                         self._probe_pending = False
                         try:
@@ -743,7 +779,21 @@ class VideoBatchQtWindow(QMainWindow):
         for row, job in enumerate(self.jobs):
             for col, text in enumerate((str(job.index), job.audio.name, job.media.name, "Geprüft", "0 %")):
                 self.table.setItem(row, col, job_table_item(text, col))
-            self.table.item(row, 2).setToolTip(f"Ausgabe: {job.output}")
+            duration = job.audio_info.duration
+            duration_text = f"{duration:.1f} Sekunden" if duration else "unbekannt"
+            self.table.item(row, 1).setToolTip(
+                f"Audio: {job.audio}\\nAudiodauer: {duration_text}"
+            )
+            self.table.item(row, 2).setToolTip(
+                f"Medium: {job.media}\\nAusgabe: {job.output.name}\\nZiel: {job.output.parent}"
+            )
+        if self.jobs:
+            first = self.jobs[0]
+            self.pairing_summary_label.setText(
+                f"✓ {len(self.jobs)} Auftrag/Aufträge geprüft. "
+                f"Beispiel: {first.audio.name} + {first.media.name} → {first.output.name}. "
+                "Dateidetails stehen in den beiden Spalten als Hinweis bereit."
+            )
 
     def _row_status(self, row: int, text: str, progress: str | None = None, *, failed: bool = False) -> None:
         if 0 <= row < self.table.rowCount():
