@@ -22,7 +22,15 @@
         "scripts/validate_documentation.py"
       ],
       "timeout_seconds": 90,
-      "cacheable": true
+      "cacheable": true,
+      "dependency_candidates": [
+        "scripts/validate_documentation.py",
+        "scripts/release_file_contract.py",
+        "docs/DOCUMENTATION_CLASSIFICATION.json",
+        "RELEASE_MANIFEST.json"
+      ],
+      "dependencies_reviewed": false,
+      "dependency_review_note": "Candidates only; indirect imports and dynamic tool inputs require review."
     },
     "file_index": {
       "purpose": "Dateiindex und Änderungserkennung",
@@ -36,7 +44,15 @@
         "tests/test_project_file_index.py"
       ],
       "timeout_seconds": 90,
-      "cacheable": true
+      "cacheable": true,
+      "dependency_candidates": [
+        "scripts/project_file_index.py",
+        "scripts/sha256_contract.py",
+        "tests/test_project_file_index.py",
+        "registries/PROJECT_FILE_POLICY.json"
+      ],
+      "dependencies_reviewed": false,
+      "dependency_review_note": "Candidates only; indirect imports and dynamic tool inputs require review."
     },
     "root_migration": {
       "purpose": "Physische Root-Migration und unveränderte historische Dateien",
@@ -50,7 +66,15 @@
         "tests/test_root_migration_contract.py"
       ],
       "timeout_seconds": 90,
-      "cacheable": true
+      "cacheable": true,
+      "dependency_candidates": [
+        "scripts/project_file_index.py",
+        "scripts/root_dependency_inventory.py",
+        "tests/test_root_migration_contract.py",
+        "registries/ROOT_MIGRATION_REGISTRY.json"
+      ],
+      "dependencies_reviewed": false,
+      "dependency_review_note": "Candidates only; indirect imports and dynamic tool inputs require review."
     },
     "media_preflight": {
       "purpose": "Defensive FFmpeg-Eingangsvalidierung",
@@ -65,7 +89,14 @@
         "tests/test_media_preflight_advisories_20261018.py"
       ],
       "timeout_seconds": 180,
-      "cacheable": true
+      "cacheable": true,
+      "dependency_candidates": [
+        "src/videobatch_fast/command_builder.py",
+        "tests/test_preflight_media_safety_20261018.py",
+        "tests/test_media_preflight_advisories_20261018.py"
+      ],
+      "dependencies_reviewed": false,
+      "dependency_review_note": "Candidates only; indirect imports and dynamic tool inputs require review."
     },
     "error_explanation": {
       "purpose": "Laiengerechte Fehlermeldungen",
@@ -79,7 +110,12 @@
         "tests/test_human_error_explanation_20261018.py"
       ],
       "timeout_seconds": 90,
-      "cacheable": true
+      "cacheable": true,
+      "dependency_candidates": [
+        "tests/test_human_error_explanation_20261018.py"
+      ],
+      "dependencies_reviewed": false,
+      "dependency_review_note": "Candidates only; indirect imports and dynamic tool inputs require review."
     }
   },
   "non_cacheable": [
@@ -91,5 +127,10 @@
     "security_gates",
     "physical_wayland_approval",
     "long_render_acceptance"
-  ]
+  ],
+  "dependency_review": {
+    "status": "analysis_only",
+    "default_scope": "full_tree_fallback",
+    "automatic_scoped_reuse": false
+  }
 }

@@ -14,15 +14,14 @@ from importlib import metadata
 from pathlib import Path
 
 from project_file_index import ROOT, snapshot
+from sha256_contract import digest_json
+from test_dependency_scope import scoped_report
 
 POLICY = ROOT / "registries/TEST_EVIDENCE_POLICY.json"
 
 
 def sha(value: object) -> str:
-    return hashlib.sha256(
-        json.dumps(value, ensure_ascii=False, sort_keys=True,
-                   separators=(",", ":")).encode("utf-8")
-    ).hexdigest()
+    return digest_json(value)
 
 
 def evidence_path() -> Path:
@@ -84,9 +83,11 @@ def current(test_id: str, policy: dict) -> dict:
         raise ValueError("Prüfparameter sind ungültig")
     command = [sys.executable, *args[1:]]
     head, clean = git_identity()
+    scope = scoped_report(test_id, snapshot())
     return {
         "test_id": test_id, "commit_sha": head,
-        "clean_checkout": clean, "source_digest": sha(snapshot()),
+        "clean_checkout": clean, "source_digest": scope["source_digest"],
+        "scope_mode": scope["scope"],
         "environment_fingerprint": environment_digest(),
         "test_definition_digest": sha({"test": spec, "policy_version": policy["schema_version"]}),
         "command": command, "test_status": "not_run",
@@ -112,6 +113,9 @@ def matches(previous: object, latest: dict) -> bool:
     if previous.get("exit_code") != 0 or previous.get("reuse_allowed") is not True:
         return False
     if not isinstance(previous.get("completed_unix"), int) or previous["completed_unix"] <= 0:
+        return False
+    # Reviewed subsets remain advisory until phase 3 is separately approved.
+    if previous.get("scope_mode") != "full_tree_fallback" or latest.get("scope_mode") != "full_tree_fallback":
         return False
     keys = ("test_id", "commit_sha", "source_digest",
             "environment_fingerprint", "test_definition_digest", "command")

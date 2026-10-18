@@ -279,3 +279,20 @@ automatische Testeinsparung** frei. Das bestehende Prüfregister
 verwendet für Phase ③ weiterhin seinen konservativen Gesamtbaumwert;
 die Integration bereichsspezifischer Wiederverwendung folgt erst
 nach unabhängiger Abhängigkeitsprüfung und Negativtests.
+
+## Abhängigkeitsprüfung und Freigabesperre – nächste Iteration
+
+Die fünf im Register `registries/TEST_EVIDENCE_POLICY.json` hinterlegten
+Entwicklungsprüfungen besitzen jetzt ausdrücklich **vorläufige Kandidaten**
+für direkte Eingabedateien. Sie sind nicht als vollständig markiert:
+Importketten, dynamische Aufrufe und externe Programme können zusätzliche
+Abhängigkeiten erzeugen. Der zuverlässige Vorgabemodus bleibt daher
+`full_tree_fallback` (gesamter Dateiindex), und eine engere automatische
+Wiederverwendung bleibt gesperrt.
+
+`test_evidence_registry.py` verwendet die gemeinsame SHA-256-Berechnung
+des Abhängigkeitswerkzeugs und kennzeichnet den Umfang des Prüfnachweises.
+Bereits gespeicherte Ergebnisse ohne diese Kennzeichnung werden nicht
+wiederverwendet. Für jeden später geprüften Teilbereich sind vor der
+Freigabe ein vollständiger Import- und Eingabegraph, verifizierte
+Negativtests und die bestehenden verpflichtenden Prüfgates erforderlich.

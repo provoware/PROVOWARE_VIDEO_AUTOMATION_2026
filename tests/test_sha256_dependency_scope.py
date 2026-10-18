@@ -50,3 +50,44 @@ def test_unreviewed_scope_uses_entire_inventory():
     modified = {**files, "docs/help.md": {"sha256": "c" * 64}}
     assert report["source_digest"] != test_dependency_scope.scoped_report(
         "file_index", modified)["source_digest"]
+
+def test_invalid_dependency_inputs_and_renames_fail_closed():
+    import pytest
+    for bad in ("../escape.py", "/absolute.py", "./relative.py"):
+        with pytest.raises(ValueError):
+            dependency_digest({bad: {"sha256": "a" * 64}}, [bad])
+    with pytest.raises(ValueError):
+        dependency_digest({"x.py": {"sha256": "wrong"}}, ["x.py"])
+    with pytest.raises(ValueError):
+        dependency_digest({}, [])
+
+
+def test_mutation_detected_between_file_statistics(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    import pytest
+    p = tmp_path / "dynamic.txt"
+    p.write_text("value")
+    original = Path.stat
+    count = [0]
+    def fake_stat(self, *args, **kwargs):
+        info = original(self, *args, **kwargs)
+        if self == p:
+            count[0] += 1
+            if count[0] == 3:
+                return SimpleNamespace(
+                    st_size=info.st_size + 1,
+                    st_mtime_ns=info.st_mtime_ns,
+                    st_ctime_ns=info.st_ctime_ns,
+                    st_ino=info.st_ino, st_dev=info.st_dev)
+        return info
+    monkeypatch.setattr(Path, "stat", fake_stat)
+    with pytest.raises(ValueError, match="verändert"):
+        file_sha256(p)
+
+
+def test_review_is_advisory_until_indirect_inputs_verified():
+    import json
+    policy = json.loads(test_dependency_scope.POLICY.read_text(encoding="utf-8"))
+    assert policy["dependency_review"]["automatic_scoped_reuse"] is False
+    assert all(not s["dependencies_reviewed"] for s in policy["tests"].values())
+    assert all(s["dependency_candidates"] for s in policy["tests"].values())

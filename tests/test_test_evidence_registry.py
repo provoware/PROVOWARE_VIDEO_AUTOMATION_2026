@@ -19,7 +19,7 @@ def sample() -> dict:
             "environment_fingerprint": "c" * 64,
             "test_definition_digest": "d" * 64,
             "command": ["/usr/bin/python3", "scripts/validate_documentation.py"],
-            "test_status": "not_run"}
+            "test_status": "not_run", "scope_mode": "full_tree_fallback"}
 
 
 def test_only_same_successful_commit_can_be_reused() -> None:
@@ -104,3 +104,11 @@ def test_incomplete_or_forged_success_is_not_reusable() -> None:
                        ("completed_unix", None)):
         assert not ledger.matches({**passed, field: bad}, current)
     assert not ledger.matches({**current, "test_status": "passed"}, current)
+
+def test_reviewed_scope_never_reuses_old_full_tree_evidence():
+    current = sample()
+    passed = {**current, "test_status": "passed", "exit_code": 0,
+              "reuse_allowed": True, "completed_unix": 1730000000}
+    assert ledger.matches(passed, current)
+    assert not ledger.matches(passed, {**current, "scope_mode": "reviewed"})
+    assert not ledger.matches({**passed, "scope_mode": "reviewed"}, current)
