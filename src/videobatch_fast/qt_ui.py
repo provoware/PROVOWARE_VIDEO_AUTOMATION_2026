@@ -192,6 +192,9 @@ class VideoBatchQtWindow(QMainWindow):
         verification_hint.setObjectName("subtitle")
         verification_hint.setWordWrap(True)
         right.addWidget(verification_hint)
+        self.quick_advanced = QPushButton("⚙ Weitere Einstellungen")
+        self.quick_advanced.setToolTip("Ausgabeart, Codec, Gesamtvideo-Überblendung, Darstellung und Archiv")
+        right.addWidget(self.quick_advanced)
 
         safety = QLabel("🛡 Originaldateien bleiben unverändert.")
         safety.setObjectName("safeHint")
