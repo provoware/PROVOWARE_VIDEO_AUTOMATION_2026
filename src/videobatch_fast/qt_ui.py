@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
 )
 
 from .event_buffer import EventBuffer
+from .error_handling import explain_runtime_problem
 from .display_formatting import format_clock, format_eta, format_size
 from .jobs import build_jobs
 from .models import BatchOptions, PairJob
@@ -676,6 +677,9 @@ class VideoBatchQtWindow(QMainWindow):
         self.kpi_values["active"].setText("Nein")
         self.cancel.setEnabled(False)
         self._refresh()
+        reason, solution = explain_runtime_problem(message)
+        self.next_step.setText(f"{reason} Nächster Schritt: {solution}")
+        self.activity_detail.setText(f"{phase}: {reason}")
 
     def _drain_events(self) -> None:
         for _ in range(200):
