@@ -1,7 +1,7 @@
 name: Qt6 Phase 3 orchestrated validation
 
-# The runtime manifest check also exposes the exact compact manifest after workflow-only release hotfixes.
-# It is reused for Stable finalizer hotfixes and authorization commits so manifest drift stays fail-closed.
+# PR builds verify a separate exact development manifest; the historical RC24
+# release manifest remains untouched until a dedicated, evidenced release.
 
 on:
   pull_request:
@@ -234,15 +234,14 @@ jobs:
       - name: Prove offline install flags and consent contract
         run: python tests/test_qt_runtime_toolchain_contract.py
 
-      - name: Check compact release manifest from clean HEAD
+      - name: Check exact development manifest from clean HEAD
         run: |
           set -Eeuo pipefail
           git restore --source=HEAD --staged --worktree -- toolchain_wheelhouse
           git diff --exit-code -- toolchain_wheelhouse
           RUNTIME_PY="$(python scripts/toolchain.py path --scope runtime --quiet | tail -n 1)"
-          "$RUNTIME_PY" scripts/build_release_manifest.py --compact
-          cat RELEASE_MANIFEST.json
-          git diff --exit-code -- RELEASE_MANIFEST.json
+          "$RUNTIME_PY" scripts/build_release_manifest.py --development --check --json
+          git diff --exit-code -- DEVELOPMENT_MANIFEST.json RELEASE_MANIFEST.json
 
   qt-phase3-wayland-smoke:
     name: "3 · Wayland-Prüfer / echter Qt-Lifecycle"
