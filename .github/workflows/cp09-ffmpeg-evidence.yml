@@ -86,5 +86,7 @@ jobs:
           fi
           git checkout -- tests/test_project_file_index.py
           python scripts/test_evidence_registry.py run file_index --reuse > restored.txt
-          grep -q "REUSED · file_index" restored.txt
-          echo "First execution: passed; identical: reused; modified: rerun; restored: reused."
+          grep -q "PRÜFSTATUS · file_index: passed" restored.txt
+          python scripts/test_evidence_registry.py run file_index --reuse > final.txt
+          grep -q "REUSED · file_index" final.txt
+          echo "First: passed; identical: reused; modified: rerun; restored: rerun; final: reused."
