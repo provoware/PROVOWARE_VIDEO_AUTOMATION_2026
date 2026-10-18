@@ -19,7 +19,7 @@ Die Diashow-Überblendung (`slideshow.py`) und die Ein-/Ausblendung des vollstä
 | Auflösung (Original/HD/FHD/QHD/UHD) | VERLAGERN UND ERWEITERN | Direkt auf der Ausgabeseite, gemeinsame Verarbeitung mit bestehender FFmpeg-Skalierung |
 | Kodierungsprofil / Qualität | VERLAGERN UND ERWEITERN | Direkt auf der Ausgabeseite, neue höchste angebotene Stufe `Maximum`; verlustfrei wird nicht versprochen |
 | Bildeffekt | VERLAGERN | Direkt erreichbar, im Paritätsdialog nicht doppelt anzeigen |
-| Effektstärke | ERGÄNZEN | 0–100 %, wirkt auf den eigentlichen FFmpeg-Filter, deaktiviert bei Effekt „Keine“ |
+| Effektstärke | ERGÄNZEN | 0–100 %; 50 % entspricht dem bisherigen Effekt, 100 % verstärkt ihn. Blitzamplitude bleibt sicherheitsbegrenzt; bei „Keine“ ist die Einstellung deaktiviert. |
 | Diashow-Überblendung | ERWEITERN | Automatik/alte Vorgaben weiterhin verfügbar, eigene Dauer 0,0–5,0 Sekunden mit 0,1-Schritt |
 | Ein-/Ausblendung des Gesamtvideos | BEHALTEN UND PRÄZISIEREN | Eigener, seltener benutzter Expertenwert mit eindeutiger Bezeichnung |
 | Ausgabeart / Codec | BELASSEN IM EXPERTENBEREICH | Für normale Anwender selten notwendig |
