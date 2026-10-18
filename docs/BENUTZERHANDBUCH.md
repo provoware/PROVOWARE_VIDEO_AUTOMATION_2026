@@ -118,6 +118,21 @@ Dadurch müssen nicht alle Bedienfelder gleichzeitig in eine einzige Fläche pas
 
 **Kann entfallen?** Ja, wenn die Automatik aktiv ist. Dann wählt VideoBatch einen passenden Modus.
 
+
+### Individuelle Videoeinstellungen (Entwicklungsstand PR #242)
+
+Auf der Seite **2 · Ausgabe** befinden sich die wichtigsten Werte direkt neben dem Schnellmodus:
+
+- **Auflösung:** Originalauflösung, HD (1280×720), Full HD (1920×1080), QHD (2560×1440), UHD/4K (3840×2160). Die Originalproportionen bleiben erhalten, fehlende Fläche wird aufgefüllt.
+- **Videoqualität:** Turbo, Schnell, Ausgewogen, Hoch oder Maximum. Höhere Qualität kann wesentlich länger dauern und größere Dateien erzeugen.
+- **Bildeffekt:** Den gewünschten Look auswählen und dessen **Effektstärke von 0 bis 100 %** regeln; 0 % bedeutet keine Bildveränderung.
+- **Ein-/Ausblende:** Effekt und **Blenddauer von 0,0 bis 5,0 Sekunden** einstellen. Bei zu kurzen Videos wird eine technisch mögliche Dauer verwendet.
+- **Diashow-Überblendung:** Unter „Diashow & Waveform“ lässt sich „Individuell“ wählen und die **Bildwechsel-Überblendung von 0,0 bis 5,0 Sekunden** einstellen. Das ist etwas anderes als die Ein-/Ausblendung des gesamten Videos.
+
+**Wichtig:** Sobald du einen einzelnen Wert manuell änderst, wählt das Programm „Eigene Einstellungen“. Nur so wird verhindert, dass ein festes Schnellprofil deine Auflösung oder Effektwerte unbemerkt ersetzt. Bei der Diashow zeigt die Zusammenfassung eine notwendige Verkürzung der Übergangszeit an.
+
+Diese Ergänzungen gehören zum Entwicklungszweig von **PR #242** und sind bis zur Freigabe noch nicht Bestandteil des stabilen Hauptzweigs.
+
 ### Schritt 5: Ausgabeordner prüfen
 
 **Aktion:** Einen eigenen beschreibbaren Zielordner auswählen.
