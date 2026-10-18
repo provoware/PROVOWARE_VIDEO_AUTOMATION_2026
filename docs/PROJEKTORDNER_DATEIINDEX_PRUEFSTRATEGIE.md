@@ -82,3 +82,31 @@ die Klassifikation und betroffene Nutzerverweise wurden gleichzeitig
 angepasst. Die historisch freigegebenen `_save_`-Dateien, Startskripte
 und kanonischen technischen Verträge bleiben bis zur gesonderten und
 nachgewiesenen Migration an ihrem Ort. Die Stable-Freigabe bleibt gesperrt.
+
+## Verbindliches Entwicklungs-Prüfregister (PR #244)
+Das vollständige lokale Register liegt unter
+`registries/TEST_EVIDENCE_POLICY.json`; sein ausführbarer Verwalter unter
+`scripts/test_evidence_registry.py`. Das Werkzeug startet **nur explizit
+hinterlegte** kurze Python-Prüfungen, zeichnet ihr echtes Ergebnis auf und
+verwendet ausschließlich bei identischem, sauberem Git-Commit,
+Dateibaum-Fingerabdruck, Python-/Paketumgebung und Prüfbefehl ein bereits
+bestandenen Nachweis.
+
+```bash
+python3 scripts/test_evidence_registry.py list
+python3 scripts/test_evidence_registry.py run file_index
+python3 scripts/test_evidence_registry.py run docs_validation --reuse
+python3 scripts/test_evidence_registry.py check docs_validation
+```
+
+Ohne `--reuse` wird stets ausgeführt. Bei schmutziger Arbeitskopie, fehlendem
+Git, veränderten Eingaben während der Prüfung, geänderter Umgebung oder
+fehlendem Ergebnis wird **nicht** wiederverwendet. Lokale Nachweise befinden
+sich außerhalb des Repositories unter `XDG_STATE_HOME/videobatch/test_evidence/`.
+**Wichtig:** `test.sh`, vorgeschriebene GitHub-CI-Prüfungen,
+`verify_release.sh`, Sicherheit, Paketintegrität und reale Kubuntu-Abnahme
+werden nie automatisch übersprungen.
+
+Der gesetzliche beziehungsweise technische Dateistatus ist **nicht** Teil
+eines Dateinamens. Technische Fehler in einem Test werden protokolliert,
+niemals zu einem grünen Freigabestatus umgedeutet.

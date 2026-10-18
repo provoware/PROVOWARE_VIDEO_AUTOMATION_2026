@@ -21,3 +21,11 @@ Verbindliche Registries:
 `ARTIFACT_ROLE_REGISTRY.json` kennzeichnet Dateien, die trotz Archivpfad weiterhin aktive Vertragsquellen sind. Solche Dateien dürfen nicht verschoben oder gelöscht werden, ohne Registry und alle deklarierten Verbraucher im selben Patch anzupassen.
 
 Doppelte JSON-Schlüssel, fehlende Schemas und unvollständige Verträge blockieren die Anwendung oder Releaseprüfung.
+
+## Zusätzliche beratende Entwicklungsregister
+
+- `PROJECT_FILE_POLICY.json`: lokal persistierter Dateiindex, ohne CI-Freigabewirkung.
+- `ROOT_MIGRATION_REGISTRY.json`: nachprüfbare Umzugswege mit ursprünglichen Git-Blob-IDs.
+- `TEST_EVIDENCE_POLICY.json`: ausschließlich für wiederverwendbare, unveränderte **Entwicklungstests**; kein Release-Gate und keine Stable-Freigabe.
+
+Diese Register ergänzen die bestehenden verbindlichen Release-Verträge, ersetzen sie nicht.

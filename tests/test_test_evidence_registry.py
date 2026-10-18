@@ -54,3 +54,42 @@ def test_changed_tree_invalidates_context(monkeypatch) -> None:
     second = ledger.current("docs_validation", policy)
     assert first["source_digest"] != second["source_digest"]
     assert not ledger.matches({**first, "test_status": "passed"}, second)
+
+
+def test_cli_caches_only_actual_success_and_exact_unchanged_inputs(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
+    monkeypatch.setattr(ledger, "git_identity", lambda: ("a" * 40, True))
+    monkeypatch.setattr(ledger, "environment_digest", lambda: "c" * 64)
+    source = {"module.py": {"sha256": "hash-a"}}
+    monkeypatch.setattr(ledger, "snapshot", lambda: dict(source))
+    launches = []
+
+    def actual_execution(context, timeout):
+        launches.append(context["test_id"])
+        return 0, "OK from subprocess"
+
+    monkeypatch.setattr(ledger, "execute", actual_execution)
+    assert ledger.run("docs_validation", reuse=True) == 0
+    assert ledger.run("docs_validation", reuse=True) == 0
+    assert launches == ["docs_validation"]
+    source["module.py"] = {"sha256": "hash-b"}
+    assert ledger.run("docs_validation", reuse=True) == 0
+    assert launches == ["docs_validation", "docs_validation"]
+
+
+def test_input_mutation_during_test_is_not_pass(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
+    monkeypatch.setattr(ledger, "git_identity", lambda: ("a" * 40, True))
+    monkeypatch.setattr(ledger, "environment_digest", lambda: "c" * 64)
+    source = {"module.py": {"sha256": "hash-a"}}
+    monkeypatch.setattr(ledger, "snapshot", lambda: dict(source))
+
+    def altered_during_test(context, timeout):
+        source["module.py"] = {"sha256": "hash-b"}
+        return 0, "OK"
+
+    monkeypatch.setattr(ledger, "execute", altered_during_test)
+    assert ledger.run("docs_validation", reuse=False) == 1
+    result = ledger.load_results()["results"]["docs_validation"]
+    assert result["test_status"] == "stale"
+    assert not result["reuse_allowed"]

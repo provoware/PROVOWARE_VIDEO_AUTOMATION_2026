@@ -23,3 +23,32 @@ def test_start_scripts_and_historical_ready_files_exist() -> None:
     for record in evidence["release_files"]["ready"]:
         assert (ROOT / record["path"]).is_file()
     assert not evidence["stable_ready"]
+
+
+def test_moved_content_remains_byte_identical_to_original_git_blob() -> None:
+    import hashlib
+    moves = json.loads((ROOT / "registries/ROOT_MIGRATION_REGISTRY.json").read_text(encoding="utf-8"))["moves"]
+    for entry in moves:
+        data = (ROOT / entry["to"]).read_bytes()
+        digest = hashlib.sha1(f"blob {len(data)}\\0".encode("ascii") + data).hexdigest()
+        assert digest == entry["blob_sha"], f"Dateiinhalt unzulässig verändert: {entry['to']}"
+
+
+def test_root_start_scripts_keep_valid_bash_syntax() -> None:
+    import shutil
+    import subprocess
+    if shutil.which("bash") is None:
+        return
+    for name in ("STARTEN.sh", "start.sh", "videobatch.sh", "test.sh",
+                 "verify_release.sh", "setup.sh", "quality.sh"):
+        finished = subprocess.run(
+            ["bash", "-n", str(ROOT / name)],
+            capture_output=True, text=True, timeout=10, check=False,
+        )
+        assert finished.returncode == 0, f"{name}: {finished.stderr}"
+
+
+def test_documented_root_migration_does_not_approve_release() -> None:
+    registry = json.loads((ROOT / "registries/ROOT_MIGRATION_REGISTRY.json").read_text(encoding="utf-8"))
+    assert registry["stable_release_approved"] is False
+    assert "STARTEN.sh" in registry["preserved_entrypoints"]
