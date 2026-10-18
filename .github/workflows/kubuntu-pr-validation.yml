@@ -111,8 +111,8 @@ jobs:
       - name: Check release manifest and canonical evidence
         run: |
           set -Eeuo pipefail
-          python3 scripts/build_release_manifest.py --check --json \
-            | tee "$RUNNER_TEMP/release-manifest-check.json"
+          python3 scripts/build_release_manifest.py --development --check --json \
+            | tee "$RUNNER_TEMP/development-manifest-check.json"
           python3 diagnostics/release_readiness/generate_from_evidence.py --check
 
       - name: Prove preflight remained read-only
@@ -285,8 +285,8 @@ jobs:
         run: |
           set -Eeuo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD_SHA"
-          python3 scripts/build_release_manifest.py --check --json \
-            | tee "$RUNNER_TEMP/release-manifest-check.json"
+          python3 scripts/build_release_manifest.py --development --check --json \
+            | tee "$RUNNER_TEMP/development-manifest-check.json"
           python3 diagnostics/release_readiness/generate_from_evidence.py --check
           python3 -m compileall -q -f src scripts diagnostics tests
           test -z "$(git status --porcelain --untracked-files=all)"
