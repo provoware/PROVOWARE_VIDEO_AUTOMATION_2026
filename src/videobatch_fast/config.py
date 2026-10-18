@@ -30,6 +30,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "window_geometry": "1380x860",
     "keep_lists": True,
     "visual_effect": "none",
+    "effect_intensity": 100,
     "transition": "none",
     "quick_mode": "smart_auto",
     "assignment_mode": "pairwise",
@@ -89,7 +90,7 @@ def _enum_value(value: Any, allowed: set[str], default: str) -> str:
 def _normalize_choice_fields(result: dict[str, Any]) -> None:
     choices = {
         "output_mode": {"Gemeinsamer Ordner", "Neben Mediendatei"},
-        "resolution": {"Original", "1280×720", "1920×1080"},
+        "resolution": {"Original", "1280×720", "1920×1080", "2560×1440", "3840×2160"},
         "codec": {"libx264", "libx265"},
         "profile": {"turbo", "fast", "balanced", "quality"},
         "verification": {"Schnell", "Vollständig"},
@@ -97,6 +98,7 @@ def _normalize_choice_fields(result: dict[str, Any]) -> None:
         "transition": set(TRANSITIONS),
         "quick_mode": set(QUICK_MODES),
         "assignment_mode": set(SLIDESHOW_MODES),
+        # Hand-entered durations are validated by valid_transition_preset below.
         "slideshow_transition": set(TRANSITION_PRESETS),
         "slideshow_order_mode": set(ORDER_MODES),
         "playlist_repeat": {"off", "one", "all"},
@@ -108,6 +110,9 @@ def _normalize_choice_fields(result: dict[str, Any]) -> None:
 
 
 def _normalize_slideshow_fields(result: dict[str, Any]) -> None:
+    from .slideshow import valid_transition_preset
+    raw_transition = str(result.get("slideshow_transition", "auto"))
+    result["slideshow_transition"] = raw_transition if valid_transition_preset(raw_transition) else "auto"
     result["slideshow_scene_sync"] = bool(result.get("slideshow_scene_sync", False))
     result["slideshow_random_seed"] = _bounded_int(
         result.get("slideshow_random_seed", 0), 0, 0, 2_147_483_647
@@ -117,6 +122,7 @@ def _normalize_slideshow_fields(result: dict[str, Any]) -> None:
 
 
 def _normalize_ui_fields(result: dict[str, Any]) -> None:
+    result["effect_intensity"] = _bounded_int(result.get("effect_intensity", 100), 100, 0, 100)
     result["font_scale"] = _bounded_int(result.get("font_scale", 105), 105, 80, 160)
     result["preview_zoom"] = _bounded_int(result.get("preview_zoom", 100), 100, 25, 800)
     result["active_tab"] = _bounded_int(result.get("active_tab", 0), 0, 0, 5)
