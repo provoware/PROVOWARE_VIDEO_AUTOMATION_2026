@@ -200,9 +200,7 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
             assignment_index = self.slideshow.assignment.findData(str(state.get("assignment_mode", "pairwise")))
             if assignment_index >= 0:
                 self.slideshow.assignment.setCurrentIndex(assignment_index)
-            transition_index = self.slideshow.transition.findData(str(state.get("slideshow_transition", "auto")))
-            if transition_index >= 0:
-                self.slideshow.transition.setCurrentIndex(transition_index)
+            self.slideshow.set_transition_preset(str(state.get("slideshow_transition", "auto")))
             self.slideshow.scene_sync.setChecked(bool(state.get("slideshow_scene_sync", False)))
             self._refresh()
 
