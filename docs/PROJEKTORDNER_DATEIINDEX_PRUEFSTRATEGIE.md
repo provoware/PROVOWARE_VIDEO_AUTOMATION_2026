@@ -132,3 +132,16 @@ sind teils historisch eingefrorene Nachweise oder zentrale Verträge:
 Deshalb werden sie **nicht auf Verdacht verschoben**. Für jeden weiteren
 Umzug ist eine aktualisierte Liste der Verbraucher und ihrer Pfadbezüge
 Voraussetzung, einschließlich Shell-Skripten und des Release-Dateivertrags.
+
+## Pfadabhängigkeiten der Root-Dateien systematisch erfassen
+`scripts/root_dependency_inventory.py` führt jede verbliebene Root-Datei
+mit ihrer Schutzklasse und statisch gefundenen Verweisen auf. Aufruf:
+
+```bash
+python3 scripts/root_dependency_inventory.py --json
+```
+
+Die Ausgabe ist lesend und behauptet ausdrücklich keine Vollständigkeit bei
+dynamisch zusammengesetzten Dateipfaden. Vor dem nächsten tatsächlichen Umzug
+sind deshalb zusätzliche Laufzeit- und Paketprüfungen Pflicht. Ein
+freigegebener Prüfstatus wird dadurch nicht erzeugt.
