@@ -48,8 +48,8 @@ TRANSITIONS: dict[str, TransitionSpec] = {
 }
 
 
-def effect_filter(effect_key: str, intensity: int = 100) -> str | None:
-    """Return an FFmpeg filter; 0 is neutral and 100 retains legacy rendering.
+def effect_filter(effect_key: str, intensity: int = 50) -> str | None:
+    """Return FFmpeg filters: 0 is neutral, 50 is legacy, 100 is amplified.
 
     Intermediate values interpolate the actual filter parameters rather than
     presenting a strength widget without an effect on the rendered video.
@@ -57,7 +57,7 @@ def effect_filter(effect_key: str, intensity: int = 100) -> str | None:
     spec = VISUAL_EFFECTS.get(effect_key, VISUAL_EFFECTS["none"])
     if spec.filter_expression is None:
         return None
-    strength = min(100, max(0, int(intensity))) / 100.0
+    strength = min(100, max(0, int(intensity))) / 50.0
     if strength == 0:
         return None
     if strength == 1:
@@ -69,11 +69,11 @@ def effect_filter(effect_key: str, intensity: int = 100) -> str | None:
     if effect_key == "vivid":
         return f"eq=contrast={value(1, 1.06)}:saturation={value(1, 1.08)}"
     if effect_key == "mono":
-        return f"hue=s={value(1, 0)},eq=contrast={value(1, 1.10)}"
+        return f"hue=s={max(0, 1 - strength):.4f},eq=contrast={value(1, 1.10)}"
     if effect_key == "sharpen":
         return f"unsharp=5:5:{value(0, 0.45)}:5:5:0.0"
     if effect_key == "vignette":
-        # Smaller angle means a weaker border darkening in FFmpeg vignette.
+        # The amount of vignette varies smoothly with the chosen strength.
         return f"vignette=PI/{5 / strength:.4f}"
     if effect_key == "hardtechno":
         return (
@@ -96,9 +96,10 @@ def effect_filter(effect_key: str, intensity: int = 100) -> str | None:
             f"saturation={value(1, 1.12)}:eval=frame"
         )
     if effect_key == "strobe_safe":
-        # Never amplify the flash above the existing safety-limited preset.
+        # Never amplify the flashing component above the legacy safety cap.
+        flash = min(1.0, strength) * 0.025
         return (
-            f"eq=brightness='{value(0, 0.025)}*sin(2*PI*t*4)':"
+            f"eq=brightness='{flash:.4f}*sin(2*PI*t*4)':"
             f"contrast={value(1, 1.10)}:eval=frame"
         )
     if effect_key == "glitch_light":
