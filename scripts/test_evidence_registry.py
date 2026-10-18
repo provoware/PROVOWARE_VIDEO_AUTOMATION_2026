@@ -108,6 +108,11 @@ def matches(previous: object, latest: dict) -> bool:
         return False
     if not latest["clean_checkout"] or not latest["commit_sha"]:
         return False
+    # Persisted results are not trusted merely because they say 'passed'.
+    if previous.get("exit_code") != 0 or previous.get("reuse_allowed") is not True:
+        return False
+    if not isinstance(previous.get("completed_unix"), int) or previous["completed_unix"] <= 0:
+        return False
     keys = ("test_id", "commit_sha", "source_digest",
             "environment_fingerprint", "test_definition_digest", "command")
     return all(previous.get(key) == latest.get(key) for key in keys) and (

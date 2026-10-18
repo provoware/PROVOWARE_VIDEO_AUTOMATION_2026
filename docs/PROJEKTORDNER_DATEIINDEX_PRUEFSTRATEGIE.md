@@ -118,3 +118,17 @@ python3 scripts/project_file_index.py --audit-migration --json
 Die Prüfung kontrolliert originale Git-Blobs, Ordnerklassifikation und
 verbliebene Codeverweise auf alte Root-Dateipfade. Positive Ergebnisse sind
 keine Freigabe von CI-, Signatur- oder Releaseprüfungen.
+
+## Verschärfung des Nachweisregisters
+Wiederverwendbare Einträge müssen neben identischem Commit, Quellenstand,
+Umgebung und Testdefinition auch einen **tatsächlich protokollierten
+Exit-Code 0**, `reuse_allowed=true` und einen gültigen Abschlusszeitpunkt
+enthalten. Fehlt ein Feld, wird erneut geprüft. Der Hinweis darf niemals
+eine echte Releasefreigabe ersetzen.
+
+## Aktueller Stand der physischen Bereinigung
+Die ersten drei Dokumente wurden nachweisbar verschoben. Weitere Root-Dateien
+sind teils historisch eingefrorene Nachweise oder zentrale Verträge:
+Deshalb werden sie **nicht auf Verdacht verschoben**. Für jeden weiteren
+Umzug ist eine aktualisierte Liste der Verbraucher und ihrer Pfadbezüge
+Voraussetzung, einschließlich Shell-Skripten und des Release-Dateivertrags.

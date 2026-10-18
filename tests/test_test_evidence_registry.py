@@ -24,7 +24,8 @@ def sample() -> dict:
 
 def test_only_same_successful_commit_can_be_reused() -> None:
     current = sample()
-    passed = {**current, "test_status": "passed"}
+    passed = {**current, "test_status": "passed", "exit_code": 0,
+              "reuse_allowed": True, "completed_unix": 1730000000}
     assert ledger.matches(passed, current)
     assert not ledger.matches({**passed, "commit_sha": "e" * 40}, current)
     assert not ledger.matches({**passed, "source_digest": "f" * 64}, current)
@@ -93,3 +94,13 @@ def test_input_mutation_during_test_is_not_pass(monkeypatch, tmp_path) -> None:
     result = ledger.load_results()["results"]["docs_validation"]
     assert result["test_status"] == "stale"
     assert not result["reuse_allowed"]
+
+
+def test_incomplete_or_forged_success_is_not_reusable() -> None:
+    current = sample()
+    passed = {**current, "test_status": "passed", "exit_code": 0,
+              "reuse_allowed": True, "completed_unix": 1730000000}
+    for field, bad in (("exit_code", 1), ("reuse_allowed", False),
+                       ("completed_unix", None)):
+        assert not ledger.matches({**passed, field: bad}, current)
+    assert not ledger.matches({**current, "test_status": "passed"}, current)
