@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "mode": "fail_closed_advisory",
+  "index_storage": "XDG_STATE_HOME/videobatch/project_index/",
+  "trigger": [
+    "manual_refresh",
+    "watch_mode_poll_at_least_1s"
+  ],
+  "names": "stable_semantic_names_no_status_suffix",
+  "file_states": [
+    "tracked",
+    "added",
+    "modified",
+    "deleted",
+    "renamed"
+  ],
+  "test_states": [
+    "not_run",
+    "passed",
+    "failed",
+    "blocked",
+    "stale"
+  ],
+  "never_cache_for_release": [
+    "physical_wayland_approval",
+    "real_long_render_acceptance",
+    "signatures",
+    "release_manifest",
+    "security_gates"
+  ],
+  "immutable_evidence_requirements": [
+    "commit_sha",
+    "environment_fingerprint",
+    "test_command",
+    "source_digest",
+    "result",
+    "timestamp"
+  ],
+  "nonnegotiable": "A suggested skip never changes any required CI or release gate."
+}
