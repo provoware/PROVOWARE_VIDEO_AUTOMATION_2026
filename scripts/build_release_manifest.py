@@ -17,6 +17,7 @@ from videobatch_fast.visual_approval import (
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "RELEASE_MANIFEST.json"
+DEVELOPMENT_MANIFEST = ROOT / "DEVELOPMENT_MANIFEST.json"
 
 
 class ManifestContractError(RuntimeError):
@@ -112,8 +113,8 @@ def build_payload(*, compact: bool = False) -> dict[str, Any]:
     return payload
 
 
-def load_manifest() -> dict[str, Any]:
-    value = _strict_json(MANIFEST)
+def load_manifest(path: Path = MANIFEST) -> dict[str, Any]:
+    value = _strict_json(path)
     if not isinstance(value, dict):
         raise ManifestContractError("Manifest-Wurzel muss ein JSON-Objekt sein")
     return value
@@ -138,7 +139,7 @@ def manifest_is_compact(value: Mapping[str, Any]) -> bool:
     return value.get("representation") == "compact"
 
 
-def drift_report(current: Mapping[str, Any], expected: Mapping[str, Any]) -> dict[str, Any]:
+def drift_report(current: Mapping[str, Any], expected: Mapping[str, Any], *, manifest_path: Path = MANIFEST) -> dict[str, Any]:
     changes: list[dict[str, Any]] = []
     current_compact = manifest_is_compact(current)
     expected_compact = manifest_is_compact(expected)
@@ -188,15 +189,15 @@ def drift_report(current: Mapping[str, Any], expected: Mapping[str, Any]) -> dic
     return {
         "schema_version": 1,
         "status": "passed" if not changes and not metadata else "drift",
-        "manifest": MANIFEST.relative_to(ROOT).as_posix(),
+        "manifest": manifest_path.relative_to(ROOT).as_posix(),
         "representation": "compact" if expected_compact else "full",
         "file_changes": changes,
         "metadata_changes": metadata,
     }
 
 
-def write_manifest(payload: Mapping[str, Any]) -> int:
-    MANIFEST.write_text(
+def write_manifest(payload: Mapping[str, Any], *, manifest_path: Path = MANIFEST) -> int:
+    manifest_path.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
@@ -208,14 +209,14 @@ def write_manifest(payload: Mapping[str, Any]) -> int:
     return 0
 
 
-def check_manifest(payload: Mapping[str, Any], json_output: bool) -> int:
+def check_manifest(payload: Mapping[str, Any], json_output: bool, *, manifest_path: Path = MANIFEST) -> int:
     try:
-        report = drift_report(load_manifest(), payload)
+        report = drift_report(load_manifest(manifest_path), payload, manifest_path=manifest_path)
     except ManifestContractError as exc:
         report = {
             "schema_version": 1,
             "status": "invalid",
-            "manifest": MANIFEST.relative_to(ROOT).as_posix(),
+            "manifest": manifest_path.relative_to(ROOT).as_posix(),
             "error": str(exc),
             "file_changes": [],
             "metadata_changes": [],
@@ -255,6 +256,11 @@ def parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Kompaktes Manifest mit kanonischem Gesamt-SHA-256 erzeugen oder prüfen.",
     )
+    result.add_argument(
+        "--development",
+        action="store_true",
+        help="Eigenes Entwicklungsmanifest statt des unveraenderlichen RC24-Nachweises.",
+    )
     return result
 
 
@@ -262,17 +268,22 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser().parse_args(argv)
     if args.json and not args.check:
         parser().error("--json erfordert --check")
-    compact = bool(args.compact)
+    manifest_path = DEVELOPMENT_MANIFEST if args.development else MANIFEST
+    compact = bool(args.compact or args.development)
     if args.check and not compact:
         try:
-            compact = manifest_is_compact(load_manifest())
+            compact = manifest_is_compact(load_manifest(manifest_path))
         except ManifestContractError:
             compact = False
     payload = build_payload(compact=compact)
+    if args.development:
+        payload["version"] = "2.8.3-dev"
+        payload["build"] = "development"
+        payload["channel"] = "development"
     return (
-        check_manifest(payload, json_output=bool(args.json))
+        check_manifest(payload, json_output=bool(args.json), manifest_path=manifest_path)
         if args.check
-        else write_manifest(payload)
+        else write_manifest(payload, manifest_path=manifest_path)
     )
 
 
