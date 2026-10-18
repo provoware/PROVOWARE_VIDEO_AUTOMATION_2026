@@ -48,8 +48,76 @@ TRANSITIONS: dict[str, TransitionSpec] = {
 }
 
 
-def effect_filter(effect_key: str) -> str | None:
-    return VISUAL_EFFECTS.get(effect_key, VISUAL_EFFECTS["none"]).filter_expression
+def effect_filter(effect_key: str, intensity: int = 100) -> str | None:
+    """Return an FFmpeg filter; 0 is neutral and 100 retains legacy rendering.
+
+    Intermediate values interpolate the actual filter parameters rather than
+    presenting a strength widget without an effect on the rendered video.
+    """
+    spec = VISUAL_EFFECTS.get(effect_key, VISUAL_EFFECTS["none"])
+    if spec.filter_expression is None:
+        return None
+    strength = min(100, max(0, int(intensity))) / 100.0
+    if strength == 0:
+        return None
+    if strength == 1:
+        return spec.filter_expression
+
+    def value(base: float, target: float) -> str:
+        return f"{base + (target - base) * strength:.4f}"
+
+    if effect_key == "vivid":
+        return f"eq=contrast={value(1, 1.06)}:saturation={value(1, 1.08)}"
+    if effect_key == "mono":
+        return f"hue=s={value(1, 0)},eq=contrast={value(1, 1.10)}"
+    if effect_key == "sharpen":
+        return f"unsharp=5:5:{value(0, 0.45)}:5:5:0.0"
+    if effect_key == "vignette":
+        # Smaller angle means a weaker border darkening in FFmpeg vignette.
+        return f"vignette=PI/{5 / strength:.4f}"
+    if effect_key == "hardtechno":
+        return (
+            f"eq=contrast={value(1, 1.18)}:saturation={value(1, 0.82)}:"
+            f"brightness={value(0, -0.025)},unsharp=3:3:{value(0, 0.25)}:3:3:0.0"
+        )
+    if effect_key == "industrial":
+        return (
+            f"eq=contrast={value(1, 1.16)}:saturation={value(1, 0.65)}:"
+            f"brightness={value(0, -0.045)}"
+        )
+    if effect_key == "acid":
+        return (
+            f"hue=h={value(0, 18)}:s={value(1, 1.35)},"
+            f"eq=contrast={value(1, 1.08)}"
+        )
+    if effect_key == "pulse":
+        return (
+            f"eq=contrast='{value(1, 1.10)}+{value(0, 0.05)}*sin(2*PI*t*2)':"
+            f"saturation={value(1, 1.12)}:eval=frame"
+        )
+    if effect_key == "strobe_safe":
+        # Never amplify the flash above the existing safety-limited preset.
+        return (
+            f"eq=brightness='{value(0, 0.025)}*sin(2*PI*t*4)':"
+            f"contrast={value(1, 1.10)}:eval=frame"
+        )
+    if effect_key == "glitch_light":
+        return (
+            f"hue=h={value(0, 6)}:s={value(1, 1.20)},"
+            f"eq=contrast={value(1, 1.10)},"
+            f"unsharp=3:3:{value(0, 0.20)}:3:3:0.0"
+        )
+    if effect_key == "cold":
+        return (
+            f"colorbalance=bs={value(0, 0.10)}:rs={value(0, -0.04)},"
+            f"eq=contrast={value(1, 1.08)}"
+        )
+    if effect_key == "red_alert":
+        return (
+            f"colorbalance=rs={value(0, 0.10)}:bs={value(0, -0.05)},"
+            f"eq=contrast={value(1, 1.12)}"
+        )
+    raise ValueError(f"Keine Intensitaetssteuerung fuer Effekt {effect_key!r}")
 
 
 def transition_filters(transition_key: str, duration: float | None) -> list[str]:
