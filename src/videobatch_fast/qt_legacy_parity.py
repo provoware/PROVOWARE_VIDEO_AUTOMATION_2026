@@ -1060,11 +1060,22 @@ def _connect_easy_output_settings(window: object) -> None:
         quick.currentIndexChanged.connect(changed)
         reflect()
 
+    # Avoid writing project and configuration files dozens of times while
+    # the user is dragging a slider; persist only the settled selection.
+    strength_save_timer = QTimer(window)
+    strength_save_timer.setSingleShot(True)
+    strength_save_timer.setInterval(450)
+    strength_save_timer.timeout.connect(
+        lambda: (_save_settings(window), _save_project_silent(window))
+    )
+    window._quick_strength_save_timer = strength_save_timer
+
     def intensity_changed(_value: int) -> None:
         if window.mode.currentData() != "custom":
             _select_combo_data(window.mode, "custom")
-        _save_settings(window)
-        _save_project_silent(window)
+        if hasattr(window, "_mark_project_dirty"):
+            window._mark_project_dirty()
+        strength_save_timer.start()
 
     window.quick_intensity.valueChanged.connect(intensity_changed)
     startup_intensity = (
