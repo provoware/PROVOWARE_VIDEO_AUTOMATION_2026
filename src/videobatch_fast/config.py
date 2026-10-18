@@ -12,7 +12,7 @@ from .project_state import default_project_file
 from .safe_io import atomic_write_json, quarantine_file
 from .quick_modes import QUICK_MODES
 from .workflow_layout import DEFAULT_WORKFLOW_LAYOUT_MODE, WORKFLOW_LAYOUT_MODES
-from .slideshow import SLIDESHOW_MODES, TRANSITION_PRESETS
+from .slideshow import SLIDESHOW_MODES
 from .slideshow_sequence import ORDER_MODES
 
 CONFIG_SCHEMA_VERSION = 3
@@ -98,8 +98,6 @@ def _normalize_choice_fields(result: dict[str, Any]) -> None:
         "transition": set(TRANSITIONS),
         "quick_mode": set(QUICK_MODES),
         "assignment_mode": set(SLIDESHOW_MODES),
-        # Hand-entered durations are validated by valid_transition_preset below.
-        "slideshow_transition": set(TRANSITION_PRESETS),
         "slideshow_order_mode": set(ORDER_MODES),
         "playlist_repeat": {"off", "one", "all"},
         "theme": {"neon_gravity", "acid_paper", "toxic_candy", "ultraviolet"},
