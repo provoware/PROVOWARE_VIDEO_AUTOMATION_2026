@@ -11,13 +11,16 @@ PROFILES: dict[str, EncodeProfile] = {
     "turbo": EncodeProfile("turbo", "Turbo", "ultrafast", 23, "Maximale Geschwindigkeit, größere Datei."),
     "fast": EncodeProfile("fast", "Schnell", "veryfast", 21, "Sehr schnell bei guter Qualität."),
     "balanced": EncodeProfile("balanced", "Ausgewogen", "faster", 20, "Etwas kleiner, moderat langsamer."),
-    "quality": EncodeProfile("quality", "Qualität", "medium", 18, "Hohe Qualität, deutlich langsamer."),
+    "quality": EncodeProfile("quality", "Hoch", "medium", 18, "Hohe Bildqualität."),
+    "maximum": EncodeProfile("maximum", "Maximum", "slow", 16, "Sehr hohe Qualität, langsam."),
 }
 
 RESOLUTIONS = {
     "Original": None,
     "1280×720": (1280, 720),
     "1920×1080": (1920, 1080),
+    "2560×1440": (2560, 1440),
+    "3840×2160": (3840, 2160),
 }
 
 COPY_COMPATIBLE_CODECS = {"h264", "hevc", "av1", "mpeg4"}
@@ -61,10 +64,10 @@ def _video_filter(job: PairJob, options: BatchOptions) -> str | None:
     scale_filter = _scale_filter(options.resolution)
     if scale_filter:
         filters.append(scale_filter)
-    selected_effect = effect_filter(options.visual_effect)
+    selected_effect = effect_filter(options.visual_effect, options.effect_intensity)
     if selected_effect:
         filters.append(selected_effect)
-    filters.extend(transition_filters(options.transition, job.audio_info.duration))
+    filters.extend(transition_filters(options.transition, job.audio_info.duration, options.transition_duration))
     return ",".join(filters) if filters else None
 
 
@@ -95,7 +98,7 @@ def _slideshow_filter(job: PairJob, options: BatchOptions) -> tuple[str, str]:
         raise ValueError("Diashowplan ist unvollständig: Audiodauer oder Bildzeiten fehlen.")
     width, height = _slideshow_canvas(job, options)
     crossfade = max(0.0, float(job.slide_transition))
-    effect = effect_filter(options.visual_effect)
+    effect = effect_filter(options.visual_effect, options.effect_intensity)
     chains: list[str] = []
     labels: list[str] = []
     for index, (_path, duration) in enumerate(zip(job.media_sequence, durations)):
@@ -135,7 +138,7 @@ def _slideshow_filter(job: PairJob, options: BatchOptions) -> tuple[str, str]:
         inputs = "".join(f"[{label}]" for label in labels)
         chains.append(f"{inputs}concat=n={len(labels)}:v=1:a=0[{current}]")
 
-    finishing = transition_filters(options.transition, job.audio_info.duration)
+    finishing = transition_filters(options.transition, job.audio_info.duration, options.transition_duration)
     if finishing:
         output = "slideshow_out"
         chains.append(f"[{current}]{','.join(finishing)},format=yuv420p[{output}]")
