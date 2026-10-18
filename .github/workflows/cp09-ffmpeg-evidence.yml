@@ -74,11 +74,14 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/test_evidence_registry.py run file_index --reuse > "$RUNNER_TEMP/first.txt"
+          cat "$RUNNER_TEMP/first.txt"
           grep -q "PRÜFSTATUS · file_index: passed" "$RUNNER_TEMP/first.txt"
           python scripts/test_evidence_registry.py run file_index --reuse > "$RUNNER_TEMP/second.txt"
+          cat "$RUNNER_TEMP/second.txt"
           grep -q "REUSED · file_index" "$RUNNER_TEMP/second.txt"
           printf '\n# temporary negative-test mutation\n' >> tests/test_project_file_index.py
           python scripts/test_evidence_registry.py run file_index --reuse > "$RUNNER_TEMP/changed.txt"
+          cat "$RUNNER_TEMP/changed.txt"
           grep -q "PRÜFSTATUS · file_index: passed" "$RUNNER_TEMP/changed.txt"
           if grep -q "REUSED · file_index" "$RUNNER_TEMP/changed.txt"; then
             echo "ERROR: dirty code was reused" >&2
@@ -86,7 +89,9 @@ jobs:
           fi
           git checkout -- tests/test_project_file_index.py
           python scripts/test_evidence_registry.py run file_index --reuse > "$RUNNER_TEMP/restored.txt"
+          cat "$RUNNER_TEMP/restored.txt"
           grep -q "PRÜFSTATUS · file_index: passed" "$RUNNER_TEMP/restored.txt"
           python scripts/test_evidence_registry.py run file_index --reuse > "$RUNNER_TEMP/final.txt"
+          cat "$RUNNER_TEMP/final.txt"
           grep -q "REUSED · file_index" "$RUNNER_TEMP/final.txt"
           echo "First: passed; identical: reused; modified: rerun; restored: rerun; final: reused."
