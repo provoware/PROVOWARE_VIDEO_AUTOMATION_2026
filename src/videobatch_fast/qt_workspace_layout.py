@@ -3,7 +3,7 @@ from __future__ import annotations
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QFrame, QHBoxLayout, QLabel, QProgressBar, QPushButton, QStackedWidget,
-    QVBoxLayout, QWidget,
+    QVBoxLayout, QWidget, QMessageBox,
 )
 
 from .qt_desktop_actions import open_output_folder
@@ -113,6 +113,27 @@ def _overview_page(window) -> QFrame:
     tools_hint = QLabel("Zusätzliche Werkzeuge")
     tools_hint.setObjectName("section")
     layout.addWidget(tools_hint)
+    hash_help = QPushButton("Hilfe: SHA-256 und Prüfstatus verstehen")
+    hash_help.setObjectName("workspaceNav")
+    hash_help.setAccessibleDescription(
+        "Erklärt Dateifingerabdruck, Medienindex und Entwicklungsprüfungen."
+    )
+    hash_help.clicked.connect(
+        lambda _checked=False: QMessageBox.information(
+            panel,
+            "SHA-256 und Prüfstatus",
+            "SHA-256 ist ein digitaler Fingerabdruck des Dateiinhalts. "
+            "Er hilft, Veränderungen an Dateien zu erkennen.\\n\\n"
+            "Dein Medienindex zeigt Musik, Fotos und Videos. "
+            "Der getrennte Projekt-Dateiindex ist ein Werkzeug für Entwickler "
+            "und verändert keine Originalmedien.\\n\\n"
+            "Ein bereits bestandener Entwicklungstest darf nur bei nachweislich "
+            "gleichen Voraussetzungen erneut verwendet werden. "
+            "Sicherheits- und Releaseprüfungen bleiben weiterhin Pflicht.\\n\\n"
+            "Mehr: docs/BENUTZERHANDBUCH.md, Abschnitt SHA-256."
+        )
+    )
+    layout.addWidget(hash_help)
     for text, route in (
         ("Bildvorschau öffnen", "preview"),
         ("Diashow öffnen", "slideshow"),

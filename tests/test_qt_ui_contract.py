@@ -340,3 +340,13 @@ def test_result_preserving_refresh_propagates_through_qt_layers() -> None:
     assert 'output_dir = Path(self.output.text().strip()).expanduser()' in qt_ui
     assert 'self.open_output.setEnabled(output_dir.is_dir())' in qt_ui
     assert 'Path(self.output.text().strip()).expanduser().is_dir()' in qt_ui
+
+
+def test_qt_help_explains_hashes_without_running_tests() -> None:
+    source = QT_WORKSPACE_LAYOUT.read_text(encoding="utf-8")
+    compile(source, str(QT_WORKSPACE_LAYOUT), "exec")
+    assert "Hilfe: SHA-256 und Prüfstatus verstehen" in source
+    assert "Dein Medienindex zeigt Musik, Fotos und Videos." in source
+    assert "Der getrennte Projekt-Dateiindex ist ein Werkzeug" in source
+    assert "Sicherheits- und Releaseprüfungen bleiben weiterhin Pflicht." in source
+    assert "lambda _checked=False: QMessageBox.information(" in source
