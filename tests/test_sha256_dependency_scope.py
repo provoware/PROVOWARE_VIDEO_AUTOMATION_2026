@@ -89,7 +89,8 @@ def test_review_is_advisory_until_indirect_inputs_verified():
     import json
     policy = json.loads(test_dependency_scope.POLICY.read_text(encoding="utf-8"))
     assert policy["dependency_review"]["automatic_scoped_reuse"] is False
-    assert all(not s["dependencies_reviewed"] for s in policy["tests"].values())
+    assert policy["tests"]["file_index"]["dependencies_reviewed"] is True
+    assert all(not s["dependencies_reviewed"] for name, s in policy["tests"].items() if name != "file_index")
     assert all(s["dependency_candidates"] for s in policy["tests"].values())
 
 

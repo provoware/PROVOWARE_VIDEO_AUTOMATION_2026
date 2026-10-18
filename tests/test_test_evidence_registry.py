@@ -112,3 +112,17 @@ def test_reviewed_scope_never_reuses_old_full_tree_evidence():
     assert ledger.matches(passed, current)
     assert not ledger.matches(passed, {**current, "scope_mode": "reviewed"})
     assert not ledger.matches({**passed, "scope_mode": "reviewed"}, current)
+
+
+
+def test_only_file_index_reviewed_scope_opted_in():
+    scope = sample()
+    scope.update(test_id="file_index", scope_mode="reviewed")
+    passed = {**scope, "test_status": "passed", "exit_code": 0,
+              "reuse_allowed": True, "completed_unix": 1730000000}
+    assert ledger.matches(passed, scope)
+    assert not ledger.matches({**passed, "source_digest": "z" * 64}, scope)
+    assert not ledger.matches({**passed, "environment_fingerprint": "z" * 64}, scope)
+    assert not ledger.matches({**passed, "commit_sha": "z" * 40}, scope)
+    blocked = {**scope, "test_id": "media_preflight"}
+    assert not ledger.matches({**passed, "test_id": "media_preflight"}, blocked)

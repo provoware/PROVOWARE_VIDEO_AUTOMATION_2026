@@ -315,3 +315,20 @@ fehlende Eingaben und Hinweise auf dynamische Dateiladevorgänge. Er meldet
 **niemals automatisch einen vollständigen Graphen oder eine Freigabe**;
 Konfigurationsdateien, Test-Erweiterungen, externe Prozesse und indirekte
 Datenzugriffe müssen zusätzlich sachlich geprüft werden.
+
+## Gezielt freigegebener erster Testbereich
+Als eng begrenzte Ausnahme ist **nur** die lokale kurze Unitprüfung
+`file_index` mit expliziten Eingabepfaden eingetragen. Enthalten sind
+Testdatei, Indexlogik, SHA-256-Modul, Prüfsystem, Registry und
+`pyproject.toml`; die Python-/Paketumgebung wird zusätzlich erfasst.
+Bei abweichendem Commit, Dateipfad, Dateiinhalt, Prüfumgebung oder
+Testergebnis ist eine Neuausführung erforderlich. Der Betrieb erfordert
+weiterhin ausdrücklich `--reuse`. Die restlichen vier Bereiche bleiben
+auf `full_tree_fallback` und sind nicht für Teilbereichsoptimierung
+freigegeben. CI, `test.sh`, Start-/Installations- und Releasegates
+dürfen durch diese eng begrenzte Freigabe nicht ausfallen.
+
+Die automatisierten Prüfungen erfassen Importketten, stellen aber noch
+keine allgemeine vollständige Analyse aller dynamischen Dateizugriffe
+oder externen Werkzeugabhängigkeiten dar. Der Start- und Installationstest
+im GitHub-Linux-Runner ersetzt nicht die echte Zielsystemabnahme.
