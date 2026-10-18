@@ -64,9 +64,12 @@ def build_settings_tab(window: Any, *, combo_factory: ComboFactory) -> QWidget:
         [(spec.label, key) for key, spec in TRANSITIONS.items()],
         str(cfg.get("transition", "none")),
     )
+    # Legacy selectors remain as a compatibility bridge but are not shown twice.
+    for control in (window.parity_resolution, window.parity_profile, window.parity_effect):
+        control.hide()
     form.addRow("Ausgabeart", window.parity_output_mode)
     form.addRow("Video-Codec", window.parity_codec)
-    form.addRow("Ein-/Ausblendung", window.parity_transition)
+    form.addRow("Gesamtes Video ein-/ausblenden", window.parity_transition)
     layout.addLayout(form)
 
     window.parity_keep_lists = QCheckBox("Dateilisten nach erfolgreicher Produktion behalten")
