@@ -82,7 +82,7 @@ def test_input_mutation_during_test_is_not_pass(monkeypatch, tmp_path) -> None:
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
     monkeypatch.setattr(ledger, "git_identity", lambda: ("a" * 40, True))
     monkeypatch.setattr(ledger, "environment_digest", lambda: "c" * 64)
-    source = {"module.py": {"sha256": "hash-a"}}
+    source = {"module.py": {"sha256": "a" * 64}}
     monkeypatch.setattr(ledger, "snapshot", lambda: dict(source))
 
     def altered_during_test(context, timeout):

@@ -296,3 +296,9 @@ Bereits gespeicherte Ergebnisse ohne diese Kennzeichnung werden nicht
 wiederverwendet. Für jeden später geprüften Teilbereich sind vor der
 Freigabe ein vollständiger Import- und Eingabegraph, verifizierte
 Negativtests und die bestehenden verpflichtenden Prüfgates erforderlich.
+
+## Prüflauf-Nachweis für SHA-256
+Der vorhandene CP-09-Entwicklungsworkflow wurde um eine eigene Teststufe
+für SHA-256, Bereichsprüfung und Nachweisregister erweitert. Die Teststufe
+muss auf **demselben Commit** erfolgreich sein; ein bestehendes CP-09-Grün
+allein ist kein Beleg. Teilbereichsoptimierung bleibt gesperrt.
