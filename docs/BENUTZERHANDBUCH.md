@@ -118,6 +118,24 @@ Dadurch müssen nicht alle Bedienfelder gleichzeitig in eine einzige Fläche pas
 
 **Kann entfallen?** Ja, wenn die Automatik aktiv ist. Dann wählt VideoBatch einen passenden Modus.
 
+### Videoauflösung, Qualität und Bildeffekte einstellen
+
+Auf der Seite `2 · Ausgabe` stehen die wichtigsten Optionen direkt sichtbar:
+
+- **Auflösung:** Original, 1280×720 (HD), 1920×1080 (Full HD), 2560×1440 (QHD), 3840×2160 (UHD/4K).
+- **Qualität:** Turbo, Schnell, Ausgewogen, Hoch oder Maximum. Höhere Qualität benötigt meist mehr Zeit und Platz. „Maximum“ ist keine verlustfreie Speicherung.
+- **Bildeffekt und Effektstärke:** Effekt auswählen und per Regler 0–100 % einstellen. Bei „Keine“ hat der Regler keinen Zweck und ist deaktiviert.
+- **Verarbeitung:** Ein Schnellmodus bleibt verfügbar. Sobald du Auflösung, Profil, Effekt oder Stärke manuell änderst, wechselt das Programm auf eigene Einstellungen.
+- **Weitere Einstellungen:** Der Schalter `⚙ Weitere Einstellungen` öffnet mit einem Klick die zusätzlichen Einstellungen (Ausgabeart, Codec, Ein-/Ausblendung des vollständigen Videos, Darstellung und Archiv).
+
+**Wichtig:** Eine größere Ausgabeauflösung erzeugt keine neuen Bilddetails aus einer kleinen Quelle. Falls der Videostream unverändert kopiert werden kann, ist das ohne zusätzliche Komprimierungsverluste günstiger als eine Neucodierung.
+
+### Diashow-Überblendungen
+
+Im Bereich `Diashow & Szenen` bei „Überblendung“ kannst du Automatik oder vorhandene Vorgaben wählen. Mit `Eigene Dauer (0,0–5,0 s)` erscheint eine Zahleneingabe für 0,0 bis 5,0 Sekunden, in Schritten von 0,1 Sekunden. 0,0 bedeutet einen direkten Bildwechsel. Bei sehr kurzen Szenen begrenzt die Planung die tatsächliche Überblendung automatisch, damit FFmpeg keinen unmöglichen Übergang erhält. Die Diashow-Zusammenfassung zeigt die berechnete Überblenddauer.
+
+Die **Ein-/Ausblendung des gesamten Videos** ist eine andere Funktion und bleibt separat in den weiteren Einstellungen.
+
 ### Schritt 5: Ausgabeordner prüfen
 
 **Aktion:** Einen eigenen beschreibbaren Zielordner auswählen.
