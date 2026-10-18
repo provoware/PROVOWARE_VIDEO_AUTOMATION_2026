@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "purpose": "Projektprüfungen nachvollziehbar planen; historische PASS-Nachweise nicht auf spätere Commits übertragen",
+  "change_detection": "Git Pfadänderungen und Git-Blob-Inhaltsidentität",
+  "mandatory_policy": "Unbekannte Änderungen und finale Kandidaten lösen vollständige Prüfung aus. Sicherheit, Releasebelege und finale Realabnahme werden niemals aus altem Cache freigegeben.",
+  "statuses": [
+    "required",
+    "not_affected",
+    "candidate_reuse_requires_evidence"
+  ],
+  "suites": [
+    {
+      "id": "structure",
+      "description": "Datei- und Ordnerindex, Benennungs- und Strukturverträge",
+      "tier": "always",
+      "patterns": [
+        "**"
+      ],
+      "command": "python scripts/project_file_index.py --check --git-index",
+      "reusable": false
+    },
+    {
+      "id": "docs",
+      "description": "Lesbarkeit, Verweise, klassifizierte Projektdokumente",
+      "tier": "selective",
+      "patterns": [
+        "**/*.md",
+        "docs/**",
+        "README.md",
+        "STATUS.md",
+        "TODO.md"
+      ],
+      "command": "python scripts/validate_documentation.py --json",
+      "reusable": true
+    },
+    {
+      "id": "core",
+      "description": "Sicherheit, Dateizugriff, Projektzustand, Ausgaben, Fehlerbehandlung",
+      "tier": "selective",
+      "patterns": [
+        "src/videobatch_fast/**",
+        "tests/**",
+        "scripts/**",
+        "registries/**",
+        "*.json"
+      ],
+      "command": "./test.sh --core",
+      "reusable": false
+    },
+    {
+      "id": "qt",
+      "description": "Oberfläche, Tastatur, Skalierung und Qt-Laufzeit",
+      "tier": "selective",
+      "patterns": [
+        "src/videobatch_fast/qt_*.py",
+        "src/videobatch_fast/*ui*.py",
+        "resources/themes/**",
+        "tests/*qt*",
+        "tests/*gui*"
+      ],
+      "command": "Qt6 Phase 3 orchestrated validation",
+      "reusable": true
+    },
+    {
+      "id": "media",
+      "description": "FFmpeg-Befehle, Medienprüfung, Langzeitverarbeitung",
+      "tier": "selective",
+      "patterns": [
+        "src/videobatch_fast/command_builder.py",
+        "src/videobatch_fast/probe.py",
+        "src/videobatch_fast/runner*.py",
+        "src/videobatch_fast/slideshow*.py",
+        "src/videobatch_fast/effects.py",
+        "src/videobatch_fast/jobs.py",
+        "tests/*ffmpeg*",
+        "tests/*render*"
+      ],
+      "command": "CP-09 FFmpeg evidence audit",
+      "reusable": false
+    },
+    {
+      "id": "supply_chain",
+      "description": "Abhängigkeiten und Werkzeugketten",
+      "tier": "selective",
+      "patterns": [
+        "requirements*",
+        "pyproject.toml",
+        "scripts/toolchain*.py",
+        "scripts/bootstrap.py",
+        ".github/workflows/**"
+      ],
+      "command": "Repository merge preflight",
+      "reusable": false
+    },
+    {
+      "id": "release_contract",
+      "description": "Historische Releasebelege und kanonische Änderungsnachweise",
+      "tier": "always",
+      "patterns": [
+        "**"
+      ],
+      "command": "Release contract sync",
+      "reusable": false
+    },
+    {
+      "id": "physical_desktop",
+      "description": "Echte Kubuntu-/Wayland-/Tastatur-Abnahme",
+      "tier": "final",
+      "patterns": [
+        "**"
+      ],
+      "command": "Physische Kubuntu-Abnahme durch den Bediener",
+      "reusable": false
+    },
+    {
+      "id": "real_long_render",
+      "description": "Realer vollständiger Langzeitrender mit externem Ziel",
+      "tier": "final",
+      "patterns": [
+        "**"
+      ],
+      "command": "Manifestgebundene externe Realabnahme",
+      "reusable": false
+    }
+  ],
+  "environment_contract": [
+    "Python-Version",
+    "Betriebssystemabbild",
+    "Qt-Version",
+    "FFmpeg-Version",
+    "Lockdateien",
+    "Testskript-Hash",
+    "Prüfcommit"
+  ],
+  "blocked_shortcuts": [
+    "kein Dateiname mit PASS/FERTIG als Beweis",
+    "keine Freigabe aus historischen RC24-Tests",
+    "kein selbst erzeugter PASS ohne echten Lauf",
+    "kein Überspringen sicherheitskritischer Checks",
+    "keine vollständige Prüfung ohne bindenden Commit"
+  ]
+}
