@@ -43,13 +43,13 @@ def test_sorted_dependency_digest_and_path_change():
 def test_unreviewed_scope_uses_entire_inventory():
     files = {"one.py": {"sha256": "a" * 64},
              "docs/help.md": {"sha256": "b" * 64}}
-    report = test_dependency_scope.scoped_report("file_index", files)
+    report = test_dependency_scope.scoped_report("docs_validation", files)
     assert report["scope"] == "full_tree_fallback"
     assert report["dependency_count"] == 2
     assert report["cache_optimization_enabled"] is False
     modified = {**files, "docs/help.md": {"sha256": "c" * 64}}
     assert report["source_digest"] != test_dependency_scope.scoped_report(
-        "file_index", modified)["source_digest"]
+        "docs_validation", modified)["source_digest"]
 
 def test_invalid_dependency_inputs_and_renames_fail_closed():
     import pytest
