@@ -134,8 +134,7 @@ class VideoBatchQtWindow(QMainWindow):
         left.addWidget(field_label("Verarbeitung"))
         self.mode = QComboBox()
         for key, spec in QUICK_MODES.items():
-            if key != "custom":
-                self.mode.addItem(spec.label + (" · empfohlen" if spec.recommended else ""), key)
+            self.mode.addItem(spec.label + (" · empfohlen" if spec.recommended else ""), key)
         index = self.mode.findData("smart_auto")
         self.mode.setCurrentIndex(max(0, index))
         left.addWidget(self.mode)
