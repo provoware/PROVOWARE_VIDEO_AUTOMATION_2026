@@ -114,8 +114,16 @@ def matches(previous: object, latest: dict) -> bool:
         return False
     if not isinstance(previous.get("completed_unix"), int) or previous["completed_unix"] <= 0:
         return False
-    # Reviewed subsets remain advisory until phase 3 is separately approved.
-    if previous.get("scope_mode") != "full_tree_fallback" or latest.get("scope_mode") != "full_tree_fallback":
+    # Explicit scope allowlist; no release, security or CI gating is reused.
+    mode = latest.get("scope_mode")
+    if previous.get("scope_mode") != mode:
+        return False
+    if mode == "reviewed":
+        policy = load_policy()
+        allowed = policy.get("dependency_review", {}).get("approved_scopes", [])
+        if latest.get("test_id") not in allowed:
+            return False
+    elif mode != "full_tree_fallback":
         return False
     keys = ("test_id", "commit_sha", "source_digest",
             "environment_fingerprint", "test_definition_digest", "command")
@@ -181,7 +189,7 @@ def run(test_id: str, reuse: bool) -> int:
     code, log = execute(latest, limit)
     after = current(test_id, policy)
     stable = all(latest.get(key) == after.get(key) for key in (
-        "commit_sha", "source_digest", "environment_fingerprint",
+        "commit_sha", "source_digest", "scope_mode", "environment_fingerprint",
         "test_definition_digest", "command", "clean_checkout",
     ))
     latest.update({
