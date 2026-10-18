@@ -48,10 +48,10 @@ def test_local_policy_never_has_release_commands() -> None:
 def test_changed_tree_invalidates_context(monkeypatch) -> None:
     monkeypatch.setattr(ledger, "git_identity", lambda: ("a" * 40, True))
     monkeypatch.setattr(ledger, "environment_digest", lambda: "c" * 64)
-    monkeypatch.setattr(ledger, "snapshot", lambda: {"a": {"sha256": "1"}})
+    monkeypatch.setattr(ledger, "snapshot", lambda: {"a": {"sha256": "1" * 64}})
     policy = ledger.load_policy()
     first = ledger.current("docs_validation", policy)
-    monkeypatch.setattr(ledger, "snapshot", lambda: {"a": {"sha256": "2"}})
+    monkeypatch.setattr(ledger, "snapshot", lambda: {"a": {"sha256": "2" * 64}})
     second = ledger.current("docs_validation", policy)
     assert first["source_digest"] != second["source_digest"]
     assert not ledger.matches({**first, "test_status": "passed"}, second)
@@ -61,7 +61,7 @@ def test_cli_caches_only_actual_success_and_exact_unchanged_inputs(monkeypatch, 
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
     monkeypatch.setattr(ledger, "git_identity", lambda: ("a" * 40, True))
     monkeypatch.setattr(ledger, "environment_digest", lambda: "c" * 64)
-    source = {"module.py": {"sha256": "hash-a"}}
+    source = {"module.py": {"sha256": "a" * 64}}
     monkeypatch.setattr(ledger, "snapshot", lambda: dict(source))
     launches = []
 
@@ -73,7 +73,7 @@ def test_cli_caches_only_actual_success_and_exact_unchanged_inputs(monkeypatch, 
     assert ledger.run("docs_validation", reuse=True) == 0
     assert ledger.run("docs_validation", reuse=True) == 0
     assert launches == ["docs_validation"]
-    source["module.py"] = {"sha256": "hash-b"}
+    source["module.py"] = {"sha256": "b" * 64}
     assert ledger.run("docs_validation", reuse=True) == 0
     assert launches == ["docs_validation", "docs_validation"]
 
@@ -86,7 +86,7 @@ def test_input_mutation_during_test_is_not_pass(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr(ledger, "snapshot", lambda: dict(source))
 
     def altered_during_test(context, timeout):
-        source["module.py"] = {"sha256": "hash-b"}
+        source["module.py"] = {"sha256": "b" * 64}
         return 0, "OK"
 
     monkeypatch.setattr(ledger, "execute", altered_during_test)
