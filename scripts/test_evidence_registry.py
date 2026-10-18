@@ -58,7 +58,8 @@ def environment_digest() -> str:
         "environment": {key: os.environ.get(key, "") for key in (
             "QT_QPA_PLATFORM", "DISPLAY", "WAYLAND_DISPLAY",
             "XDG_CONFIG_HOME", "XDG_CACHE_HOME", "VIDEOBATCH_FFMPEG",
-            "VIDEOBATCH_FFPROBE", "PYTHONPATH",
+            "VIDEOBATCH_FFPROBE", "PYTHONPATH", "PATH",
+            "PYTEST_ADDOPTS", "PYTEST_PLUGINS", "PYTHONHASHSEED",
         )},
     })
 

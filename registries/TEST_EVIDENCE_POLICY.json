@@ -30,7 +30,7 @@
         "RELEASE_MANIFEST.json"
       ],
       "dependencies_reviewed": false,
-      "dependency_review_note": "Candidates only; indirect imports and dynamic tool inputs require review."
+      "dependency_review_note": "Python imports and dynamic inputs inspected by CI; external tools, pytest configuration, release files or runtime data not fully bounded. Full-tree fingerprint required; scoped opt-in blocked."
     },
     "file_index": {
       "purpose": "Dateiindex und Änderungserkennung",
@@ -83,7 +83,7 @@
         "registries/ROOT_MIGRATION_REGISTRY.json"
       ],
       "dependencies_reviewed": false,
-      "dependency_review_note": "Candidates only; indirect imports and dynamic tool inputs require review."
+      "dependency_review_note": "Python imports and dynamic inputs inspected by CI; external tools, pytest configuration, release files or runtime data not fully bounded. Full-tree fingerprint required; scoped opt-in blocked."
     },
     "media_preflight": {
       "purpose": "Defensive FFmpeg-Eingangsvalidierung",
@@ -105,7 +105,7 @@
         "tests/test_media_preflight_advisories_20261018.py"
       ],
       "dependencies_reviewed": false,
-      "dependency_review_note": "Candidates only; indirect imports and dynamic tool inputs require review."
+      "dependency_review_note": "Python imports and dynamic inputs inspected by CI; external tools, pytest configuration, release files or runtime data not fully bounded. Full-tree fingerprint required; scoped opt-in blocked."
     },
     "error_explanation": {
       "purpose": "Laiengerechte Fehlermeldungen",
@@ -124,7 +124,7 @@
         "tests/test_human_error_explanation_20261018.py"
       ],
       "dependencies_reviewed": false,
-      "dependency_review_note": "Candidates only; indirect imports and dynamic tool inputs require review."
+      "dependency_review_note": "Python imports and dynamic inputs inspected by CI; external tools, pytest configuration, release files or runtime data not fully bounded. Full-tree fingerprint required; scoped opt-in blocked."
     }
   },
   "non_cacheable": [

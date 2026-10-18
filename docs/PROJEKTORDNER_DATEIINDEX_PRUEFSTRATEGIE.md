@@ -332,3 +332,40 @@ Die automatisierten Prüfungen erfassen Importketten, stellen aber noch
 keine allgemeine vollständige Analyse aller dynamischen Dateizugriffe
 oder externen Werkzeugabhängigkeiten dar. Der Start- und Installationstest
 im GitHub-Linux-Runner ersetzt nicht die echte Zielsystemabnahme.
+
+## Praxisnachweis – Wiederverwendung mit echter Ausführung
+Der CI-Workflow prüft zusätzlich eine Abfolge von vier **wirklich gestarteten**
+Kommandozeilenläufen auf demselben GitHub-Runner:
+1. Erster Aufruf startet den `file_index`-Test und verlangt ein protokolliertes PASS.
+2. Zweiter identischer Aufruf verlangt ausdrücklich `REUSED` ohne Testwiederholung.
+3. Der Runner verändert vorübergehend die Testdatei. Der nächste `--reuse`-Aufruf
+   muss einen wirklichen Test ausführen statt einen alten Nachweis zu übernehmen.
+4. Der Runner stellt die Datei wieder her; der alte saubere Nachweis kann nur dann
+   erneut verwendet werden, wenn alle Voraussetzungen vollständig übereinstimmen.
+
+Diese temporären Änderungen geschehen **ausschließlich im kurzlebigen
+CI-Arbeitsverzeichnis**; sie werden vor Abschluss zurückgenommen.
+Die Testergebnisse liegen nur im temporären Runner-Zustand.
+Kein Schritt verändert `main`, RC24-Nachweise oder den Stable-Releasevertrag.
+
+### Sperrliste der anderen vier Testbereiche
+`docs_validation`: Prüft zusätzlich dynamisch sämtliche dokumentierten Dateien,
+Links, Manifest- und Klassifikationsdaten. Eine kurze feste Abhängigkeitsliste
+ist nicht vollständig. **Teilbereichsfreigabe gesperrt.**
+
+`root_migration`: Prüft alte/verschobene Pfade, Git-Objekte und Quelltext-
+Verweise im Projekt. Das gesamte Root-/Dokumentationsumfeld ist relevant.
+**Teilbereichsfreigabe gesperrt.**
+
+`media_preflight`: Bezieht Medienkonfigurationen, Importe sowie FFmpeg und
+externe Laufzeitbedingungen ein. Der Importabgleich allein genügt nicht.
+**Teilbereichsfreigabe gesperrt.**
+
+`error_explanation`: Benutzt textuelle Ressourcen, Testhilfen und importierte
+Formatierungs-/Fehlerbehandlungsmodule. Die indirekten Eingaben sind nicht
+abschließend bestätigt. **Teilbereichsfreigabe gesperrt.**
+
+Bei allen vier bleibt der vollständige Dateibaum-Fingerabdruck maßgeblich.
+Eine selektive Optimierung ist ausschließlich für den expliziten
+lokalen Bereich `file_index` eingeschaltet; keine verpflichtende
+Test-, CI-, Installations- oder Releaseprüfung wird übersprungen.

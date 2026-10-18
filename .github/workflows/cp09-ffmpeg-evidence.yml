@@ -65,3 +65,26 @@ jobs:
           bash -n autoinstall.sh PORTABLE_BAUEN.sh FINALISIEREN.sh quality.sh runtime-toolchain.sh
           python -m compileall -q scripts/sha256_contract.py scripts/test_dependency_scope.py scripts/test_evidence_registry.py
           python -m pytest -q -p no:cacheprovider tests/test_repository_finalization.py tests/test_release_docs.py
+
+      - name: Prove actual opt-in reuse and dirty-tree rerun
+        env:
+          PYTHONPATH: src
+          PYTHONDONTWRITEBYTECODE: "1"
+          XDG_STATE_HOME: ${{ runner.temp }}/vb-evidence-check
+        run: |
+          set -euo pipefail
+          python scripts/test_evidence_registry.py run file_index --reuse > first.txt
+          grep -q "PRÜFSTATUS · file_index: passed" first.txt
+          python scripts/test_evidence_registry.py run file_index --reuse > second.txt
+          grep -q "REUSED · file_index" second.txt
+          printf '\n# temporary negative-test mutation\n' >> tests/test_project_file_index.py
+          python scripts/test_evidence_registry.py run file_index --reuse > changed.txt
+          grep -q "PRÜFSTATUS · file_index: passed" changed.txt
+          if grep -q "REUSED · file_index" changed.txt; then
+            echo "ERROR: dirty code was reused" >&2
+            exit 1
+          fi
+          git checkout -- tests/test_project_file_index.py
+          python scripts/test_evidence_registry.py run file_index --reuse > restored.txt
+          grep -q "REUSED · file_index" restored.txt
+          echo "First execution: passed; identical: reused; modified: rerun; restored: reused."
