@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
     QComboBox,
+    QDoubleSpinBox,
     QFrame,
     QHBoxLayout,
     QLabel,
@@ -245,6 +246,15 @@ class SlideshowPanel(QFrame):
         for key, label in TRANSITION_LABELS.items():
             self.transition.addItem(label, key)
         transition_row.addWidget(self.transition, 1)
+        self.transition_duration = QDoubleSpinBox()
+        self.transition_duration.setRange(0.0, 5.0)
+        self.transition_duration.setDecimals(1)
+        self.transition_duration.setSingleStep(0.1)
+        self.transition_duration.setSuffix(" s")
+        self.transition_duration.setValue(2.0)
+        self.transition_duration.setToolTip("Eigene Überblenddauer von 0 bis 5 Sekunden, in 0,1-Sekunden-Schritten.")
+        self.transition_duration.setVisible(False)
+        transition_row.addWidget(self.transition_duration)
         layout.addLayout(transition_row)
 
         self.scene_sync = QCheckBox("Bildwechsel an erkannten Szenen ausrichten")
@@ -332,7 +342,8 @@ class SlideshowPanel(QFrame):
         layout.addWidget(scroll, 1)
 
         self.assignment.currentIndexChanged.connect(self._state_changed)
-        self.transition.currentIndexChanged.connect(self._state_changed)
+        self.transition.currentIndexChanged.connect(self._transition_control_changed)
+        self.transition_duration.valueChanged.connect(self._state_changed)
         self.scene_sync.toggled.connect(self._scene_sync_changed)
         self.audio_select.currentIndexChanged.connect(self._audio_changed)
         self.analyze.clicked.connect(lambda: self.analyze_selected(refresh=True))
@@ -343,7 +354,23 @@ class SlideshowPanel(QFrame):
 
     @property
     def transition_preset(self) -> str:
+        if self.transition.currentData() == "manual":
+            return f"{self.transition_duration.value():.1f}"
         return str(self.transition.currentData() or "auto")
+
+    def _transition_control_changed(self, *_args: object) -> None:
+        self.transition_duration.setVisible(self.transition.currentData() == "manual")
+        self._state_changed()
+
+    def set_transition_preset(self, preset: str) -> None:
+        from .slideshow import valid_transition_preset
+        if preset not in {"auto", "none", "soft", "clear"} and valid_transition_preset(preset):
+            self.transition_duration.setValue(float(preset))
+            self.transition.setCurrentIndex(self.transition.findData("manual"))
+        else:
+            index = self.transition.findData(preset)
+            self.transition.setCurrentIndex(index if index >= 0 else self.transition.findData("auto"))
+        self.transition_duration.setVisible(self.transition.currentData() == "manual")
 
     @property
     def scene_sync_enabled(self) -> bool:
