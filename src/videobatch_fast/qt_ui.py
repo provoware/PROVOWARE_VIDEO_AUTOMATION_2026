@@ -12,10 +12,13 @@ from PySide6.QtWidgets import (
     QApplication, QComboBox, QFileDialog, QFrame, QHBoxLayout,
     QLabel, QLineEdit, QMainWindow, QMessageBox, QPlainTextEdit, QPushButton,
     QTableWidget, QTableWidgetItem, QToolButton, QVBoxLayout, QWidget,
+    QDoubleSpinBox, QSlider,
 )
 
 from .event_buffer import EventBuffer
 from .display_formatting import format_clock, format_eta, format_size, quality_target
+from .command_builder import PROFILES, RESOLUTIONS
+from .effects import VISUAL_EFFECTS, TRANSITIONS
 from .jobs import build_jobs
 from .models import BatchOptions, PairJob
 from .qt_main_layout import build_main_ui
@@ -110,17 +113,26 @@ class VideoBatchQtWindow(QMainWindow):
         return panel
 
     def _settings_panel(self) -> QWidget:
+        """Compact, directly editable output controls; no hidden quality choices."""
         panel, layout = self._panel(
-            "2 · Ausgabe festlegen",
-            "Ziel und Verarbeitung stehen links, Kontrolle und Sicherheit rechts. "
-            "So bleiben die Einstellungen auch bei großer Schrift ohne Seiten-Scrollen sichtbar.",
+            "2 · Ausgabe & Bildgestaltung",
+            "Auflösung, Qualität und Effekte direkt wählen. Ein Schnellmodus setzt "
+            "diese Werte sichtbar; eigene Änderungen schalten auf „Eigene Einstellungen“.",
         )
         columns = QHBoxLayout()
         columns.setSpacing(14)
         left = QVBoxLayout()
         right = QVBoxLayout()
 
-        left.addWidget(field_label("Wo sollen die fertigen Videos gespeichert werden?"))
+        def compact_row(target: QVBoxLayout, label: str, widget: QWidget) -> None:
+            row = QHBoxLayout()
+            caption = field_label(label)
+            caption.setMinimumWidth(112)
+            row.addWidget(caption)
+            row.addWidget(widget, 1)
+            target.addLayout(row)
+
+        left.addWidget(field_label("Ausgabeordner"))
         target = QHBoxLayout()
         self.output = QLineEdit(str(Path.home() / "Videos" / "VideoBatch"))
         self.output_button = QPushButton("Ordner wählen …")
@@ -130,34 +142,66 @@ class VideoBatchQtWindow(QMainWindow):
         target.addWidget(self.output_button)
         left.addLayout(target)
 
-        left.addWidget(field_label("Verarbeitung"))
         self.mode = QComboBox()
         for key, spec in QUICK_MODES.items():
-            if key != "custom":
-                self.mode.addItem(spec.label + (" · empfohlen" if spec.recommended else ""), key)
-        index = self.mode.findData("smart_auto")
-        self.mode.setCurrentIndex(max(0, index))
-        left.addWidget(self.mode)
+            self.mode.addItem(
+                ("Eigene Einstellungen" if key == "custom" else
+                 spec.label + (" · empfohlen" if spec.recommended else "")), key
+            )
+        self.mode.setCurrentIndex(max(0, self.mode.findData("smart_auto")))
+        compact_row(left, "Schnellmodus", self.mode)
+
+        self.resolution = QComboBox()
+        for key in RESOLUTIONS:
+            self.resolution.addItem(key.replace("Original", "Originalauflösung"), key)
+        compact_row(left, "Auflösung", self.resolution)
+
+        self.quality = QComboBox()
+        for key, profile in PROFILES.items():
+            self.quality.addItem(f"{profile.label} · {profile.description}", key)
+        compact_row(left, "Videoqualität", self.quality)
+
         self.mode_hint = QLabel()
         self.mode_hint.setObjectName("subtitle")
         self.mode_hint.setWordWrap(True)
         left.addWidget(self.mode_hint)
         left.addStretch()
 
-        right.addWidget(field_label("Kontrolle nach der Erstellung"))
+        self.effect_choice = QComboBox()
+        for key, effect in VISUAL_EFFECTS.items():
+            self.effect_choice.addItem(effect.label, key)
+        compact_row(right, "Bildeffekt", self.effect_choice)
+
+        intensity_row = QHBoxLayout()
+        intensity_caption = field_label("Effektstärke")
+        intensity_caption.setMinimumWidth(112)
+        intensity_row.addWidget(intensity_caption)
+        self.effect_intensity = QSlider(Qt.Orientation.Horizontal)
+        self.effect_intensity.setRange(0, 100)
+        self.effect_intensity.setSingleStep(1)
+        self.effect_intensity.setValue(100)
+        self.effect_intensity.setAccessibleName("Effektstärke in Prozent")
+        self.intensity_value = QLabel("100 %")
+        intensity_row.addWidget(self.effect_intensity, 1)
+        intensity_row.addWidget(self.intensity_value)
+        right.addLayout(intensity_row)
+
+        self.fade_choice = QComboBox()
+        for key, transition in TRANSITIONS.items():
+            self.fade_choice.addItem(transition.label, key)
+        compact_row(right, "Ein-/Ausblende", self.fade_choice)
+
+        self.fade_seconds = QDoubleSpinBox()
+        self.fade_seconds.setRange(0.0, 5.0)
+        self.fade_seconds.setSingleStep(0.1)
+        self.fade_seconds.setDecimals(1)
+        self.fade_seconds.setSuffix(" s")
+        self.fade_seconds.setAccessibleName("Dauer der Ein- und Ausblendung")
+        compact_row(right, "Blenddauer", self.fade_seconds)
+
         self.verification = QComboBox()
         self.verification.addItems(["Vollständig", "Schnell"])
-        self.verification.currentIndexChanged.connect(self._mode_changed)
-        right.addWidget(self.verification)
-        verification_hint = QLabel("Empfehlung: Vollständig. Schnell spart Zeit, prüft aber weniger.")
-        verification_hint.setObjectName("subtitle")
-        verification_hint.setWordWrap(True)
-        right.addWidget(verification_hint)
-
-        safety = QLabel("🛡 Originaldateien bleiben unverändert.")
-        safety.setObjectName("safeHint")
-        safety.setWordWrap(True)
-        right.addWidget(safety)
+        compact_row(right, "Ergebnisprüfung", self.verification)
 
         self.details_toggle = QToolButton()
         self.details_toggle.setText("▸ Technische Details & Sicherheit")
@@ -165,9 +209,8 @@ class VideoBatchQtWindow(QMainWindow):
         self.details_toggle.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
         right.addWidget(self.details_toggle)
         self.safety_details = QLabel(
-            "• eindeutige Ausgabedateien\n"
-            "• Fehlerprotokoll\n"
-            "• kontrollierter FFmpeg-Abbruch"
+            "Originaldateien unverändert · eindeutige Ausgaben · Fehlerprotokoll\n"
+            "Kontrollierter FFmpeg-Abbruch · Die Wahl 4K kann mehr Zeit und Speicher benötigen."
         )
         self.safety_details.setObjectName("subtitle")
         self.safety_details.setWordWrap(True)
@@ -175,14 +218,15 @@ class VideoBatchQtWindow(QMainWindow):
         right.addWidget(self.safety_details)
         self.details_toggle.toggled.connect(self._toggle_details)
 
-        right.addStretch()
         self.runtime = QLabel()
         self.runtime.setObjectName("subtitle")
         right.addWidget(self.runtime)
+        right.addStretch()
 
-        columns.addLayout(left, 3)
-        columns.addLayout(right, 2)
+        columns.addLayout(left, 1)
+        columns.addLayout(right, 1)
         layout.addLayout(columns, 1)
+        self._updating_preset = False
         self._mode_changed()
         self._runtime_state()
         return panel
@@ -194,6 +238,10 @@ class VideoBatchQtWindow(QMainWindow):
         self.output_button.clicked.connect(self._choose_output)
         self.output.textChanged.connect(self._refresh)
         self.mode.currentIndexChanged.connect(self._mode_changed)
+        for combo in (self.resolution, self.quality, self.effect_choice, self.fade_choice):
+            combo.currentIndexChanged.connect(self._set_custom)
+        self.effect_intensity.valueChanged.connect(self._intensity_changed)
+        self.fade_seconds.valueChanged.connect(self._set_custom)
         self.start.clicked.connect(self._start)
         self.cancel.clicked.connect(self._cancel)
         install_workflow_shortcuts(self)
@@ -291,13 +339,45 @@ class VideoBatchQtWindow(QMainWindow):
         if not self.runner.running and not self.preparing:
             self._status("BEREIT" if ready or not self.table.rowCount() else "PRÜFEN")
 
+    def _set_custom(self, *_args) -> None:
+        if getattr(self, "_updating_preset", False):
+            return
+        index = self.mode.findData("custom")
+        if index >= 0 and self.mode.currentIndex() != index:
+            self.mode.setCurrentIndex(index)
+        self.effect_intensity.setEnabled(self.effect_choice.currentData() != "none")
+        self.fade_seconds.setEnabled(self.fade_choice.currentData() != "none")
+
+    def _intensity_changed(self, value: int) -> None:
+        self.intensity_value.setText(f"{value} %")
+        self._set_custom()
+
     def _mode_changed(self) -> None:
         spec = QUICK_MODES.get(str(self.mode.currentData()), QUICK_MODES["smart_auto"])
-        self.mode_hint.setText(
-            f"Ziel: {quality_target(spec.key)}\n{spec.description}\n"
-            f"Qualität: {spec.resolution} · {spec.codec} / {spec.profile} · "
-            f"Prüfung: {self.verification.currentText()} · Tempo: {spec.speed_class}"
-        )
+        if spec.key != "custom":
+            self._updating_preset = True
+            try:
+                for widget, selected in (
+                    (self.resolution, spec.resolution),
+                    (self.quality, spec.profile),
+                    (self.effect_choice, spec.visual_effect),
+                    (self.fade_choice, spec.transition),
+                ):
+                    index = widget.findData(selected)
+                    if index >= 0:
+                        widget.setCurrentIndex(index)
+                self.effect_intensity.setValue(100)
+                self.intensity_value.setText("100 %")
+                self.fade_seconds.setValue(TRANSITIONS[spec.transition].duration)
+            finally:
+                self._updating_preset = False
+            self.mode_hint.setText(
+                f"Vorgabe: {quality_target(spec.key)} · {spec.description}"
+            )
+        else:
+            self.mode_hint.setText("Eigene Einstellungen aktiv · alle Werte werden für dieses Video übernommen.")
+        self.effect_intensity.setEnabled(self.effect_choice.currentData() != "none")
+        self.fade_seconds.setEnabled(self.fade_choice.currentData() != "none")
 
     def _runtime_state(self) -> None:
         missing = [name for name in ("ffmpeg", "ffprobe") if shutil.which(name) is None]
@@ -306,20 +386,31 @@ class VideoBatchQtWindow(QMainWindow):
     def _options(self) -> BatchOptions:
         if not self.output.text().strip():
             raise ValueError("Bitte einen Ausgabeordner wählen.")
+        mode = str(self.mode.currentData() or "smart_auto")
         base = BatchOptions(
             output_dir=Path(self.output.text().strip()).expanduser(),
             verification=self.verification.currentText(),
-            quick_mode=str(self.mode.currentData() or "smart_auto"),
+            quick_mode=mode,
             assignment_mode="pairwise",
+            resolution=str(self.resolution.currentData()),
+            profile=str(self.quality.currentData()),
+            visual_effect=str(self.effect_choice.currentData()),
+            effect_intensity=int(self.effect_intensity.value()),
+            transition=str(self.fade_choice.currentData()),
+            transition_duration=float(self.fade_seconds.value()) if mode == "custom" else None,
         )
-        selected = apply_quick_mode(base, base.quick_mode)
+        selected = apply_quick_mode(base, mode)
         return BatchOptions(
             output_dir=selected.output_dir, output_mode=selected.output_mode, resolution=selected.resolution,
             codec=selected.codec, profile=selected.profile, verification=self.verification.currentText(),
             overwrite=selected.overwrite, keep_lists=selected.keep_lists, audio_bitrate=selected.audio_bitrate,
             fps=selected.fps, max_threads=selected.max_threads, visual_effect=selected.visual_effect,
-            transition=selected.transition, quick_mode=selected.quick_mode, assignment_mode="pairwise",
-            slideshow_transition=selected.slideshow_transition, slideshow_scene_sync=selected.slideshow_scene_sync,
+            effect_intensity=selected.effect_intensity,
+            transition=selected.transition, transition_duration=selected.transition_duration,
+            quick_mode=selected.quick_mode, assignment_mode="pairwise",
+            slideshow_transition=selected.slideshow_transition,
+            slideshow_transition_seconds=selected.slideshow_transition_seconds,
+            slideshow_scene_sync=selected.slideshow_scene_sync,
         )
 
     def _start(self) -> None:
