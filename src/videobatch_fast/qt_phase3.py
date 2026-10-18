@@ -103,6 +103,10 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         self.media.changed.connect(self._mark_project_dirty)
         self.output.textChanged.connect(self._mark_project_dirty)
         self.mode.currentIndexChanged.connect(self._mark_project_dirty)
+        for widget in (self.resolution, self.quality, self.effect_choice, self.fade_choice):
+            widget.currentIndexChanged.connect(self._mark_project_dirty)
+        self.effect_intensity.valueChanged.connect(self._mark_project_dirty)
+        self.fade_seconds.valueChanged.connect(self._mark_project_dirty)
         self.verification.currentIndexChanged.connect(self._mark_project_dirty)
         self.slideshow.stateChanged.connect(self._mark_project_dirty)
         self.slideshow.orderChanged.connect(self._mark_project_dirty)
@@ -168,8 +172,16 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
                 "playlist_paths": list(state.get("playlist_paths", [])),
                 "output_dir": self.output.text().strip(),
                 "quick_mode": str(self.mode.currentData() or "smart_auto"),
+                "resolution": str(self.resolution.currentData() or "Original"),
+                "profile": str(self.quality.currentData() or "fast"),
+                "visual_effect": str(self.effect_choice.currentData() or "none"),
+                "effect_intensity": int(self.effect_intensity.value()),
+                "transition": str(self.fade_choice.currentData() or "none"),
+                "transition_duration": float(self.fade_seconds.value()),
+                "verification": self.verification.currentText(),
                 "assignment_mode": self.slideshow.assignment_mode,
                 "slideshow_transition": self.slideshow.transition_preset,
+                "slideshow_transition_seconds": self.slideshow.transition_seconds,
                 "slideshow_scene_sync": self.slideshow.scene_sync_enabled,
                 "meta": {
                     **(state.get("meta", {}) if isinstance(state.get("meta"), dict) else {}),
@@ -196,6 +208,21 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
             mode_index = self.mode.findData(str(state.get("quick_mode", "smart_auto")))
             if mode_index >= 0:
                 self.mode.setCurrentIndex(mode_index)
+            if str(state.get("quick_mode", "smart_auto")) == "custom":
+                for widget, value in (
+                    (self.resolution, state.get("resolution", "Original")),
+                    (self.quality, state.get("profile", "fast")),
+                    (self.effect_choice, state.get("visual_effect", "none")),
+                    (self.fade_choice, state.get("transition", "none")),
+                ):
+                    index = widget.findData(str(value))
+                    if index >= 0:
+                        widget.setCurrentIndex(index)
+                self.effect_intensity.setValue(int(state.get("effect_intensity", 100)))
+                self.fade_seconds.setValue(float(state.get("transition_duration", 0.8)))
+            verification_index = self.verification.findText(str(state.get("verification", "Vollständig")))
+            if verification_index >= 0:
+                self.verification.setCurrentIndex(verification_index)
 
             assignment_index = self.slideshow.assignment.findData(str(state.get("assignment_mode", "pairwise")))
             if assignment_index >= 0:
@@ -203,6 +230,7 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
             transition_index = self.slideshow.transition.findData(str(state.get("slideshow_transition", "auto")))
             if transition_index >= 0:
                 self.slideshow.transition.setCurrentIndex(transition_index)
+            self.slideshow.custom_transition_seconds.setValue(float(state.get("slideshow_transition_seconds", 1.0)))
             self.slideshow.scene_sync.setChecked(bool(state.get("slideshow_scene_sync", False)))
             self._refresh()
 
@@ -263,6 +291,7 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
             transition_index = self.slideshow.transition.findData("auto")
             if transition_index >= 0:
                 self.slideshow.transition.setCurrentIndex(transition_index)
+            self.slideshow.custom_transition_seconds.setValue(1.0)
             self.slideshow.scene_sync.setChecked(False)
             self._refresh()
         finally:
