@@ -42,7 +42,7 @@ def category(path: str) -> str:
     if path.startswith(("docs/archive/", ".release/")):
         return "historical"
     for prefix, name in (
-        ("tests/", "tests"), (".github/", "automation"),
+        ("tests/", "tests"), (".github/", "automation"), (".githooks/", "automation"),
         ("scripts/", "development"), ("src/", "application"),
         ("registries/", "registry"), ("resources/", "resources"),
         ("docs/", "documentation"), ("diagnostics/", "diagnostics"),
@@ -56,7 +56,7 @@ def category(path: str) -> str:
 
 
 def lifecycle(path: str) -> str:
-    if path.startswith(("docs/archive/", ".release/")) or "_save_" in path:
+    if path.startswith(("docs/archive/", ".release/")):
         return "historical"
     if path.startswith(("tests/", "scripts/", ".github/")):
         return "development"
