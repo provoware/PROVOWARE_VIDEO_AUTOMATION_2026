@@ -61,6 +61,12 @@ def _base_project_state(source: dict[str, Any], now: str) -> dict[str, Any]:
         "quick_mode": str(source.get("quick_mode", "smart_auto") or "smart_auto"),
         "assignment_mode": str(source.get("assignment_mode", "pairwise") or "pairwise"),
         "slideshow_transition": str(source.get("slideshow_transition", "auto") or "auto"),
+        "resolution": str(source.get("resolution", "Original") or "Original"),
+        "profile": str(source.get("profile", "fast") or "fast"),
+        "visual_effect": str(source.get("visual_effect", "none") or "none"),
+        "effect_intensity": _bounded_int(source.get("effect_intensity"), 100, 0, 100),
+        "codec": str(source.get("codec", "libx264") or "libx264"),
+        "transition": str(source.get("transition", "none") or "none"),
         "slideshow_scene_sync": bool(source.get("slideshow_scene_sync", False)),
         "slideshow_order_mode": (
             str(source.get("slideshow_order_mode", ORDER_MANUAL) or ORDER_MANUAL)
