@@ -250,3 +250,32 @@ Wayland-Bedien- sowie Medienabnahme bleiben gesondert nachzuweisen.
 **Umsetzungsstatus:** ①–③ geplant; bestehende Basis vorhanden.
 ④ Hilfe-Dokumentation wird vorab ergänzt. Neue Prüfwiederverwendung
 für Teilbereiche ist noch **nicht** implementiert.
+
+## Umsetzung Phasen ① + ② – technische Basis
+
+Gemeinsame SHA-256-Berechnung: `scripts/sha256_contract.py`.
+Sie liest Dateien abschnittsweise statt vollständig in den Speicher,
+weist symbolische Verknüpfungen zurück und überprüft, ob die Quelldatei
+während des Lesens verändert wurde. Die Dateiindex-Funktion nutzt
+nun diese gemeinsame Berechnung.
+
+Prüfbereich-Fingerabdrücke: `scripts/test_dependency_scope.py`.
+Ein Bereich wird aus alphabetisch sortierten Dateipfaden und
+SHA-256-Inhaltswerten mit eindeutiger Schemaversion gebildet.
+Fehlende Dateien, beschädigte Hashwerte, doppelte oder unsichere Pfade
+lösen einen Fehler aus. Ein verschobener Dateipfad ändert den
+Fingerabdruck, auch wenn der Dateiinhalt unverändert geblieben ist.
+
+```bash
+python3 scripts/test_dependency_scope.py file_index
+python3 scripts/test_dependency_scope.py docs_validation
+```
+
+**Wichtige Freigabegrenze:** Solange für eine Prüfung noch keine
+vollständig nachgewiesene und bestätigte Abhängigkeitsliste vorliegt,
+umfasst der Prüfbereich absichtlich den *gesamten* Dateiindex.
+Das neue Werkzeug liefert nur den Vergleich und schaltet **keine
+automatische Testeinsparung** frei. Das bestehende Prüfregister
+verwendet für Phase ③ weiterhin seinen konservativen Gesamtbaumwert;
+die Integration bereichsspezifischer Wiederverwendung folgt erst
+nach unabhängiger Abhängigkeitsprüfung und Negativtests.

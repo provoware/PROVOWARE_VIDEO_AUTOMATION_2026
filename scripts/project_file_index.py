@@ -11,6 +11,8 @@ import hashlib
 import json
 import os
 import subprocess
+
+from sha256_contract import file_sha256
 import time
 from pathlib import Path
 
@@ -58,7 +60,7 @@ def snapshot() -> dict[str, dict[str, object]]:
             entries[relative] = {
                 "category": category(relative),
                 "size": stat.st_size,
-                "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                "sha256": file_sha256(path),
             }
     return entries
 
