@@ -25,8 +25,8 @@ def build_settings_tab(window: Any, *, combo_factory: ComboFactory) -> QWidget:
     tab = QWidget()
     layout = QVBoxLayout(tab)
     intro = QLabel(
-        "Übernommene Einstellungen der früheren Tk-Version. "
-        "Automatik bleibt der Standard; „Eigene Feineinstellung“ schaltet die Expertenfelder frei."
+        "Auflösung, Qualität und Bildeffekt stehen direkt auf der Seite „2 · Ausgabe“. "
+        "Hier bleiben zusätzliche Einstellungen für erfahrene Benutzer."
     )
     intro.setWordWrap(True)
     intro.setObjectName("subtitle")
@@ -41,7 +41,7 @@ def build_settings_tab(window: Any, *, combo_factory: ComboFactory) -> QWidget:
     )
     window.parity_resolution = combo_factory(
         tab,
-        [(value, value) for value in ("Original", "1280×720", "1920×1080")],
+        [(value, value) for value in ("Original", "1280×720", "1920×1080", "2560×1440", "3840×2160")],
         str(cfg.get("resolution", "Original")),
     )
     window.parity_codec = combo_factory(
@@ -65,10 +65,7 @@ def build_settings_tab(window: Any, *, combo_factory: ComboFactory) -> QWidget:
         str(cfg.get("transition", "none")),
     )
     form.addRow("Ausgabeart", window.parity_output_mode)
-    form.addRow("Auflösung", window.parity_resolution)
     form.addRow("Video-Codec", window.parity_codec)
-    form.addRow("Renderprofil", window.parity_profile)
-    form.addRow("Bildeffekt", window.parity_effect)
     form.addRow("Ein-/Ausblendung", window.parity_transition)
     layout.addLayout(form)
 
