@@ -67,6 +67,7 @@ class BatchOptions:
     fps: int = 25
     max_threads: int = 0
     visual_effect: str = "none"
+    effect_intensity: int = 100
     transition: str = "none"
     quick_mode: str = "custom"
     assignment_mode: str = "pairwise"
