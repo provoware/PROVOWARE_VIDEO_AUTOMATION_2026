@@ -157,7 +157,7 @@ def sample_audio_peak(path_text: str, modified_ns: int, size: int) -> float | No
         return None
     if completed.returncode != 0:
         return None
-    match = re.search(r"max_volume:\\s*(-?[\\d.]+)\\s*dB", completed.stderr or "")
+    match = re.search(r"max_volume:\s*(-?[\d.]+)\s*dB", completed.stderr or "")
     if not match:
         return None
     try:
