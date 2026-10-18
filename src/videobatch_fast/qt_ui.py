@@ -9,11 +9,13 @@ from pathlib import Path
 from PySide6.QtCore import QTimer, Qt
 from PySide6.QtGui import QCloseEvent, QColor
 from PySide6.QtWidgets import (
-    QApplication, QComboBox, QFileDialog, QFrame, QHBoxLayout,
+    QApplication, QComboBox, QFileDialog, QFrame, QHBoxLayout, QSlider,
     QLabel, QLineEdit, QMainWindow, QMessageBox, QPlainTextEdit, QPushButton,
     QTableWidget, QTableWidgetItem, QToolButton, QVBoxLayout, QWidget,
 )
 
+from .command_builder import PROFILES, RESOLUTIONS
+from .effects import VISUAL_EFFECTS
 from .event_buffer import EventBuffer
 from .display_formatting import format_clock, format_eta, format_size, quality_target
 from .jobs import build_jobs
@@ -112,8 +114,7 @@ class VideoBatchQtWindow(QMainWindow):
     def _settings_panel(self) -> QWidget:
         panel, layout = self._panel(
             "2 · Ausgabe festlegen",
-            "Ziel und Verarbeitung stehen links, Kontrolle und Sicherheit rechts. "
-            "So bleiben die Einstellungen auch bei großer Schrift ohne Seiten-Scrollen sichtbar.",
+            "Auflösung, Qualität und Effekte direkt wählen; seltene Optionen bleiben unter Einstellungen.",
         )
         columns = QHBoxLayout()
         columns.setSpacing(14)
@@ -142,7 +143,46 @@ class VideoBatchQtWindow(QMainWindow):
         self.mode_hint.setObjectName("subtitle")
         self.mode_hint.setWordWrap(True)
         left.addWidget(self.mode_hint)
+
+        left.addWidget(field_label("Bildeffekt"))
+        self.quick_effect = QComboBox()
+        for key, effect in VISUAL_EFFECTS.items():
+            self.quick_effect.addItem(effect.label, key)
+        left.addWidget(self.quick_effect)
+        effect_row = QHBoxLayout()
+        effect_row.addWidget(QLabel("Effektstärke"))
+        self.quick_intensity = QSlider(Qt.Orientation.Horizontal)
+        self.quick_intensity.setRange(0, 100)
+        self.quick_intensity.setSingleStep(1)
+        self.quick_intensity.setValue(100)
+        self.quick_intensity.setAccessibleName("Effektstärke 0 bis 100 Prozent")
+        effect_row.addWidget(self.quick_intensity, 1)
+        self.quick_intensity_label = QLabel("100 %")
+        effect_row.addWidget(self.quick_intensity_label)
+        left.addLayout(effect_row)
+        self.quick_intensity.valueChanged.connect(
+            lambda value: self.quick_intensity_label.setText(f"{value} %")
+        )
+        self.quick_effect.currentIndexChanged.connect(
+            lambda *_: self.quick_intensity.setEnabled(self.quick_effect.currentData() != "none")
+        )
+        self.quick_intensity.setEnabled(False)
         left.addStretch()
+
+        right.addWidget(field_label("Videoauflösung"))
+        self.quick_resolution = QComboBox()
+        for resolution in RESOLUTIONS:
+            self.quick_resolution.addItem(
+                "Originalauflösung (ohne Skalierung)" if resolution == "Original" else resolution,
+                resolution,
+            )
+        right.addWidget(self.quick_resolution)
+
+        right.addWidget(field_label("Videoqualität"))
+        self.quick_profile = QComboBox()
+        for key, profile in PROFILES.items():
+            self.quick_profile.addItem(profile.label, key)
+        right.addWidget(self.quick_profile)
 
         right.addWidget(field_label("Kontrolle nach der Erstellung"))
         self.verification = QComboBox()
@@ -294,9 +334,8 @@ class VideoBatchQtWindow(QMainWindow):
     def _mode_changed(self) -> None:
         spec = QUICK_MODES.get(str(self.mode.currentData()), QUICK_MODES["smart_auto"])
         self.mode_hint.setText(
-            f"Ziel: {quality_target(spec.key)}\n{spec.description}\n"
-            f"Qualität: {spec.resolution} · {spec.codec} / {spec.profile} · "
-            f"Prüfung: {self.verification.currentText()} · Tempo: {spec.speed_class}"
+            "Eigene Werte aktiv." if spec.key == "custom"
+            else f"{quality_target(spec.key)} · {spec.speed_class}. Änderungen an den Feldern aktivieren eigene Werte."
         )
 
     def _runtime_state(self) -> None:
@@ -310,6 +349,10 @@ class VideoBatchQtWindow(QMainWindow):
             output_dir=Path(self.output.text().strip()).expanduser(),
             verification=self.verification.currentText(),
             quick_mode=str(self.mode.currentData() or "smart_auto"),
+            resolution=str(self.quick_resolution.currentData() or "Original"),
+            profile=str(self.quick_profile.currentData() or "fast"),
+            visual_effect=str(self.quick_effect.currentData() or "none"),
+            effect_intensity=self.quick_intensity.value(),
             assignment_mode="pairwise",
         )
         selected = apply_quick_mode(base, base.quick_mode)
@@ -318,7 +361,7 @@ class VideoBatchQtWindow(QMainWindow):
             codec=selected.codec, profile=selected.profile, verification=self.verification.currentText(),
             overwrite=selected.overwrite, keep_lists=selected.keep_lists, audio_bitrate=selected.audio_bitrate,
             fps=selected.fps, max_threads=selected.max_threads, visual_effect=selected.visual_effect,
-            transition=selected.transition, quick_mode=selected.quick_mode, assignment_mode="pairwise",
+            effect_intensity=selected.effect_intensity, transition=selected.transition, quick_mode=selected.quick_mode, assignment_mode="pairwise",
             slideshow_transition=selected.slideshow_transition, slideshow_scene_sync=selected.slideshow_scene_sync,
         )
 
