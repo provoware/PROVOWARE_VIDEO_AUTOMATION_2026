@@ -97,7 +97,7 @@ def _slideshow_filter(job: PairJob, options: BatchOptions) -> tuple[str, str]:
         raise ValueError("Diashowplan ist unvollständig: Audiodauer oder Bildzeiten fehlen.")
     width, height = _slideshow_canvas(job, options)
     crossfade = max(0.0, float(job.slide_transition))
-    effect = effect_filter(options.visual_effect)
+    effect = effect_filter(options.visual_effect, options.effect_intensity)
     chains: list[str] = []
     labels: list[str] = []
     for index, (_path, duration) in enumerate(zip(job.media_sequence, durations)):
