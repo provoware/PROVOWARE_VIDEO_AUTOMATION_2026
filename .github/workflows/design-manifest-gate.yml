@@ -64,8 +64,14 @@ jobs:
           python scripts/validate_documentation.py --json
           python scripts/check_github_actions_pins.py --json
 
-      - name: Verify release manifest
-        run: python scripts/build_release_manifest.py --check --json
+      - name: Verify exact manifest without rewriting historical release
+        run: |
+          set -Eeuo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            python scripts/build_release_manifest.py --development --check --json
+          else
+            python scripts/build_release_manifest.py --check --json
+          fi
 
       - name: Prove preflight remained read-only
         if: always()
