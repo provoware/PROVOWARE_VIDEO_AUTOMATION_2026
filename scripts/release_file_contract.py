@@ -35,6 +35,7 @@ EXCLUDE_FILES = frozenset(
     {
         ".gitattributes",
         "RELEASE_MANIFEST.json",
+        "DEVELOPMENT_MANIFEST.json",
         "STABLE_UPDATE_MANIFEST.json",
         "modern_visual_contact_sheet.png",
         ".coverage",
