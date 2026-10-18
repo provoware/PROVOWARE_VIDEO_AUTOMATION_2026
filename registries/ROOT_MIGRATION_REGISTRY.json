@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "base_commit": "29dc9f9943b9ea9eef4c673ad0ce1bb63ceba969",
+  "status": "requires_ci_and_real_system_checks",
+  "moves": [
+    {
+      "from": "DEVELOPER_GUIDE.md",
+      "to": "docs/DEVELOPER_GUIDE.md",
+      "blob_sha": "1aa93d6058d5ff872a663516fa15f089c7a3218f",
+      "updated_consumers": [
+        "docs/DOCUMENTATION_CLASSIFICATION.json",
+        "README.md",
+        "docs/DOKUMENTATIONSINDEX.md"
+      ]
+    },
+    {
+      "from": "UPDATE_SYSTEM.md",
+      "to": "docs/UPDATE_SYSTEM.md",
+      "blob_sha": "33c034fd153732d9af4c7e0a3bf944ea39545363",
+      "updated_consumers": [
+        "docs/DOCUMENTATION_CLASSIFICATION.json",
+        "README.md",
+        "docs/DOKUMENTATIONSINDEX.md",
+        "ERROR_HANDLING.md"
+      ]
+    },
+    {
+      "from": "CHANGELOG.md",
+      "to": "docs/CHANGELOG.md",
+      "blob_sha": "67f5bea04421dd903852006c7cffb31be5f18931",
+      "updated_consumers": [
+        "docs/DOCUMENTATION_CLASSIFICATION.json",
+        "README.md",
+        "docs/DOKUMENTATIONSINDEX.md"
+      ]
+    }
+  ],
+  "blocked": [
+    "Alle historischen *_save_-Freigaben bleiben an der alten Stelle.",
+    "Kanonische RC24-Evidenz bleibt eingefroren."
+  ],
+  "preserved_entrypoints": [
+    "STARTEN.sh",
+    "start.sh",
+    "videobatch.sh",
+    "test.sh"
+  ],
+  "stable_release_approved": false
+}

@@ -16,13 +16,13 @@
         "Nächster Schritt"
       ]
     },
-    "CHANGELOG.md": {
+    "docs/CHANGELOG.md": {
       "category": "historical"
     },
     "CODE_QUALITY_REPORT_2.8.3-rc24_save_.md": {
       "category": "historical"
     },
-    "DEVELOPER_GUIDE.md": {
+    "docs/DEVELOPER_GUIDE.md": {
       "category": "active",
       "required_sections": [
         "Ziel",
@@ -88,7 +88,7 @@
     "TODO.md": {
       "category": "internal"
     },
-    "UPDATE_SYSTEM.md": {
+    "docs/UPDATE_SYSTEM.md": {
       "category": "active",
       "required_sections": [
         "Ziel",

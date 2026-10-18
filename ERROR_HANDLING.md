@@ -210,4 +210,4 @@ Eine Fehlerbehebung ist erst abgeschlossen, wenn:
 
 ## Nächster Schritt
 
-Bei Startproblemen `START_HIER_save_.md`, bei Bedienfragen `docs/BENUTZERHANDBUCH.md`, bei Installationsproblemen `AUTOINSTALLATION_save_.md` und bei Updateproblemen `UPDATE_SYSTEM.md` verwenden.
+Bei Startproblemen `START_HIER_save_.md`, bei Bedienfragen `docs/BENUTZERHANDBUCH.md`, bei Installationsproblemen `AUTOINSTALLATION_save_.md` und bei Updateproblemen `docs/UPDATE_SYSTEM.md` verwenden.

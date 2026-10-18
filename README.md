@@ -79,10 +79,10 @@ chmod +x videobatch.sh
 | vollständige Bedienung | `docs/BENUTZERHANDBUCH.md` |
 | automatische Installation | `AUTOINSTALLATION_save_.md` |
 | Fehler sicher beheben | `ERROR_HANDLING.md` |
-| Update und Rückfall | `UPDATE_SYSTEM.md` |
+| Update und Rückfall | `docs/UPDATE_SYSTEM.md` |
 | Projektstruktur verstehen | `PROJEKTORDNERSTRUKTUR_save_.md` |
 | Dokumente einordnen | `docs/DOKUMENTATIONSINDEX.md` |
-| Entwickler-Einstieg | `DEVELOPER_GUIDE.md` |
+| Entwickler-Einstieg | `docs/DEVELOPER_GUIDE.md` |
 | technische Referenzen | `docs/reference/` |
 | Dokumentationsstandard | `docs/DOKUMENTATIONSSTANDARD.md` |
 
@@ -136,5 +136,5 @@ Ein erster Lauf gilt als erfolgreich, wenn die Oberfläche ohne Fehlermeldung st
 
 - **Einsteiger:** `START_HIER_save_.md`
 - **Nutzer:** `docs/BENUTZERHANDBUCH.md`
-- **Entwickler:** `DEVELOPER_GUIDE.md`
+- **Entwickler:** `docs/DEVELOPER_GUIDE.md`
 - **Aktueller Arbeitsplan:** `TODO.md`

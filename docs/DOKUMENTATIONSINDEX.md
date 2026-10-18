@@ -16,14 +16,14 @@ Dieser Wegweiser ordnet jede aktuelle Anleitung und jeden historischen Nachweis 
 | Projektordner und Dateien verstehen | `PROJEKTORDNERSTRUKTUR_save_.md` | Empfohlen |
 | Schnellmodi auswählen | `docs/QUICK_MODES.md` | Optional |
 | Fehler sicher beheben | `ERROR_HANDLING.md` | Pflicht bei Fehlern |
-| Updates und Rückfall verstehen | `UPDATE_SYSTEM.md` | Pflicht bei Updates |
+| Updates und Rückfall verstehen | `docs/UPDATE_SYSTEM.md` | Pflicht bei Updates |
 | aktuelle Änderungen nachlesen | `RELEASE_NOTES_save_.md` | Empfohlen |
 
 ## 2. Ich möchte entwickeln oder prüfen
 
 | Ziel | Richtige Datei |
 |---|---|
-| Entwicklungsumgebung und erster Beitrag | `DEVELOPER_GUIDE.md` |
+| Entwicklungsumgebung und erster Beitrag | `docs/DEVELOPER_GUIDE.md` |
 | Architektur und Arbeitsregeln | `docs/reference/DEVELOPER_HANDBOOK.md`, `docs/ARCHITEKTUR.md`, `AGENTS.md` |
 | Codequalitätsprüfung | `docs/CODE_QUALITY_PIPELINE.md`, `docs/OFFLINE_QUALITY_ENVIRONMENT.md` |
 | reproduzierbare Updates | `docs/REPRODUCIBLE_UPDATE_PIPELINE.md` |
@@ -51,7 +51,7 @@ Technische Referenzdokumente liegen gebündelt unter `docs/reference/`. Diese Da
 
 Die folgenden Dateien sind Belege eines bestimmten Entwicklungs- oder Prüfstands. Sie dürfen nicht als aktuelle Bedienungsanleitung verwendet werden:
 
-- `CHANGELOG.md`
+- `docs/CHANGELOG.md`
 - `CODE_QUALITY_REPORT_2.8.3-rc24_save_.md`
 - `FINAL_AUDIT_2.8.3-rc24_save_.md`
 - `FRESH_PACKAGE_REPORT_save_.md`

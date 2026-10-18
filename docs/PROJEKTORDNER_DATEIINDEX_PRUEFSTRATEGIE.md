@@ -74,3 +74,11 @@ einem bloß grünen Hinweis.
 
 Die Datei `registries/PROJECT_FILE_POLICY.json` definiert die minimalen
 Registrierungs- und Schutzregeln maschinenlesbar.
+
+## Physische Teilmigration: erster sicherer Block
+`DEVELOPER_GUIDE.md`, `UPDATE_SYSTEM.md` und `CHANGELOG.md` wurden
+mit unveränderten Git-Blobs in `docs/` verlagert. Der Dokumentationsindex,
+die Klassifikation und betroffene Nutzerverweise wurden gleichzeitig
+angepasst. Die historisch freigegebenen `_save_`-Dateien, Startskripte
+und kanonischen technischen Verträge bleiben bis zur gesonderten und
+nachgewiesenen Migration an ihrem Ort. Die Stable-Freigabe bleibt gesperrt.
