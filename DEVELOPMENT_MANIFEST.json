@@ -1,8 +1,8 @@
 {
   "build": "development",
   "channel": "development",
-  "file_count": 0,
-  "files_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "file_count": 498,
+  "files_sha256": "a08c3673b7c823982c3052697f5231fd639aa0f5b2c44786103f20e2b8897b1e",
   "name": "provoware - videoautomation - 2026",
   "representation": "compact",
   "schema_version": 3,
