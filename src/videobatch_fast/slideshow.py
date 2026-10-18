@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from math import isfinite
 from typing import Iterable
 
 from .audio_waveform import SceneMarker, scene_change_points
@@ -22,6 +23,7 @@ TRANSITION_LABELS = {
     "none": "Ohne Überblendung",
     "soft": "Sanft · 0,5 Sekunden",
     "clear": "Deutlich · 1,0 Sekunde",
+    "manual": "Eigene Dauer (0,0–5,0 s)",
 }
 
 
@@ -51,15 +53,31 @@ class SlideshowPlan:
         return (self.visible_duration,) * self.image_count
 
 
+def valid_transition_preset(preset: str) -> bool:
+    if preset in TRANSITION_PRESETS:
+        return True
+    try:
+        value = float(preset)
+    except (ValueError, TypeError):
+        return False
+    return isfinite(value) and 0 <= value <= 5 and abs(value * 10 - round(value * 10)) < 1e-8
+
+
 def transition_seconds(preset: str, *, audio_duration: float, image_count: int) -> float:
     if image_count <= 1 or audio_duration <= 0:
         return 0.0
-    selected = TRANSITION_PRESETS.get(preset, None)
+    manual = preset not in TRANSITION_PRESETS and valid_transition_preset(preset)
+    selected = float(preset) if manual else TRANSITION_PRESETS.get(preset, None)
     if selected is None:
         base = audio_duration / image_count
         selected = min(0.75, max(0.20, base * 0.12))
-    maximum = max(0.0, audio_duration / max(2.0, image_count * 2.5))
-    return round(min(float(selected), maximum), 3)
+    # Keep historical automatic/preset results; custom fades may run up to
+    # five seconds when enough visible time is available per slide.
+    maximum = (
+        audio_duration / image_count * 0.90 if manual
+        else audio_duration / max(2.0, image_count * 2.5)
+    )
+    return round(min(float(selected), max(0.0, maximum)), 3)
 
 
 def _input_durations(visible: tuple[float, ...], fade: float) -> tuple[float, ...]:
