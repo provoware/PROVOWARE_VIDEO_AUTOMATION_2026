@@ -34,9 +34,9 @@ def can_use_fast_copy(job: PairJob, options: BatchOptions) -> tuple[bool, str]:
     selected = resolved_options(job, options)
     if job.is_slideshow:
         return False, "Diashows werden als ein synchronisierter Video-Stream erzeugt."
-    if selected.visual_effect != "none":
+    if selected.visual_effect != "none" and selected.effect_intensity > 0:
         return False, "Der gewählte Bildeffekt im Automatik-Look benötigt eine schnelle Einpass-Neucodierung."
-    if selected.transition != "none":
+    if selected.transition != "none" and selected.transition_duration != 0:
         return False, "Die gewählte Ein-/Ausblendung benötigt eine schnelle Einpass-Neucodierung."
     if job.media_info.kind != "video":
         return False, "Bilder müssen einmal zu Video codiert werden."
