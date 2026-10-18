@@ -281,6 +281,7 @@ def _parity_options(self) -> BatchOptions:
         profile=str(self.parity_profile.currentData() or "fast"),
         verification=str(self.verification.currentText()),
         visual_effect=str(self.parity_effect.currentData() or "none"),
+        effect_intensity=int(self.quick_intensity.value()),
         transition=str(self.parity_transition.currentData() or "none"),
     )
 
@@ -335,11 +336,18 @@ def _save_settings(window: object) -> None:
             "verification": window.verification.currentText(),
             "keep_lists": window.parity_keep_lists.isChecked(),
             "visual_effect": str(window.parity_effect.currentData() or "none"),
+            "effect_intensity": int(window.quick_intensity.value()),
             "transition": str(window.parity_transition.currentData() or "none"),
             "quick_mode": str(window.mode.currentData() or "smart_auto"),
             "assignment_mode": getattr(window.slideshow, "assignment_mode", "pairwise"),
             "slideshow_transition": getattr(window.slideshow, "transition_preset", "auto"),
             "slideshow_scene_sync": bool(getattr(window.slideshow, "scene_sync_enabled", False)),
+            "resolution": str(window.parity_resolution.currentData() or "Original"),
+            "profile": str(window.parity_profile.currentData() or "fast"),
+            "visual_effect": str(window.parity_effect.currentData() or "none"),
+            "effect_intensity": int(window.quick_intensity.value()),
+            "codec": str(window.parity_codec.currentData() or "libx264"),
+            "transition": str(window.parity_transition.currentData() or "none"),
             "archive_used": window.parity_archive_used.isChecked(),
             "archive_project_dir": window.parity_archive_dir.text().strip(),
             "archive_suffix": window.parity_archive_suffix.text().strip() or "__verwendet",
@@ -368,6 +376,10 @@ def _sync_manual_controls_from_mode(window: object) -> None:
     ):
         widget.setEnabled(custom)
     if not custom:
+        window.quick_intensity.blockSignals(True)
+        window.quick_intensity.setValue(100)
+        window.quick_intensity.blockSignals(False)
+        window.quick_intensity_label.setText("100 %")
         spec = QUICK_MODES.get(key, QUICK_MODES["smart_auto"])
         mappings = (
             (window.parity_resolution, spec.resolution),
@@ -475,6 +487,17 @@ def _apply_project_extras(window: object, state: dict[str, object]) -> None:
         str(state.get("archive_suffix", "__verwendet") or "__verwendet")
     )
 
+    for key, combo in (
+        ("resolution", window.parity_resolution),
+        ("profile", window.parity_profile),
+        ("visual_effect", window.parity_effect),
+        ("codec", window.parity_codec),
+        ("transition", window.parity_transition),
+    ):
+        if key in state:
+            _select_combo_data(combo, str(state[key]))
+    if "effect_intensity" in state:
+        window.quick_intensity.setValue(max(0, min(100, int(state["effect_intensity"]))))
     window._parity_calendar_marks = dict(state.get("calendar_marks", {}) or {})
     window._parity_calendar_notes = dict(state.get("calendar_notes", {}) or {})
     try:
@@ -825,7 +848,7 @@ def _apply_recovery_options(window: object, options: dict[str, object]) -> None:
     if "assignment_mode" in options:
         _select_combo_data(window.slideshow.assignment, options["assignment_mode"])
     if "slideshow_transition" in options:
-        _select_combo_data(window.slideshow.transition, options["slideshow_transition"])
+        window.slideshow.set_transition_preset(str(options["slideshow_transition"]))
     if "slideshow_scene_sync" in options:
         window.slideshow.scene_sync.setChecked(bool(options["slideshow_scene_sync"]))
 
@@ -1008,6 +1031,42 @@ def _connect_settings(window: object) -> None:
     )
 
 
+def _connect_easy_output_settings(window: object) -> None:
+    """Keep the prominent selectors and the historic processing settings identical."""
+    for quick, parity in (
+        (window.quick_resolution, window.parity_resolution),
+        (window.quick_profile, window.parity_profile),
+        (window.quick_effect, window.parity_effect),
+    ):
+        def reflect(_index: int = -1, *, source=parity, target=quick) -> None:
+            index = target.findData(source.currentData())
+            if index >= 0:
+                target.blockSignals(True)
+                target.setCurrentIndex(index)
+                target.blockSignals(False)
+            window.quick_intensity.setEnabled(window.quick_effect.currentData() != "none")
+
+        def changed(_index: int = -1, *, source=quick, target=parity) -> None:
+            if window.mode.currentData() != "custom":
+                _select_combo_data(window.mode, "custom")
+            _select_combo_data(target, source.currentData())
+            _save_settings(window)
+            _save_project_silent(window)
+
+        parity.currentIndexChanged.connect(reflect)
+        quick.currentIndexChanged.connect(changed)
+        reflect()
+
+    def intensity_changed(_value: int) -> None:
+        if window.mode.currentData() != "custom":
+            _select_combo_data(window.mode, "custom")
+        _save_settings(window)
+        _save_project_silent(window)
+
+    window.quick_intensity.valueChanged.connect(intensity_changed)
+    window.quick_intensity.setValue(int(window._parity_config.get("effect_intensity", 100)))
+
+
 def _patch_special_callbacks(window: object) -> None:
     window._show_plugin_dialog = lambda: _plugin_scan(window)
     window._show_plugin_decision = lambda: _plugin_scan(window)
@@ -1070,6 +1129,7 @@ def _finish_parity_init(window: object) -> None:
     window._parity_ready = True
     _connect_settings(window)
     _sync_manual_controls_from_mode(window)
+    _connect_easy_output_settings(window)
     apply_theme(window)
 
     try:
