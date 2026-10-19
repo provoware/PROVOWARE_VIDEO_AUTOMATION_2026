@@ -17,7 +17,7 @@
 - Physische Kubuntu-26.04-Plasma-Wayland-Abnahme: Der reale 125-%-Screenshot vom 06.10.2026 zeigte abgeschnittene und überladene Arbeitsbereiche. Der daraus abgeleitete seitengetrennte Qt-Stand muss vor Stable erneut real auf Kubuntu 26.04 / KDE Plasma / Wayland bei 100 %, 125 %, 150 % und 200 % geprüft werden.
 <!-- release-status:end -->
 
-> **Nachweisgrenze:** Die vorstehenden RC24-Zahlen (325 Tests, 496 Release-Dateien) stammen aus dem unveränderten historischen Nachweis. Sie sind **keine** Prüfung des Integrationskandidaten PR #240 (Dateiumfang laut aktuellem `RELEASE_MANIFEST.json`). Dessen separate, commitgebundene Ergebnisse stehen unter `diagnostics/release_readiness/CANDIDATE_PR240_CI_EVIDENCE.json` und `CANDIDATE_PR240_QUALITY_STATUS.json`. Es gibt keine neue Stable-Freigabe; eine reale Kubuntu-/Wayland-Sichtabnahme bei 100/125/150/200 % fehlt.
+> **Nachweisgrenze:** Die vorstehenden RC24-Zahlen (325 Tests, 496 Release-Dateien) stammen aus dem unveränderten historischen Nachweis. Sie sind **keine** Prüfung des Integrationskandidaten PR #240 (Dateiumfang laut aktuellem `config/RELEASE_MANIFEST.json`). Dessen separate, commitgebundene Ergebnisse stehen unter `diagnostics/release_readiness/CANDIDATE_PR240_CI_EVIDENCE.json` und `CANDIDATE_PR240_QUALITY_STATUS.json`. Es gibt keine neue Stable-Freigabe; eine reale Kubuntu-/Wayland-Sichtabnahme bei 100/125/150/200 % fehlt.
 
 
 ## Überblick
@@ -42,18 +42,21 @@ Das historische RC24-Archiv wird nicht als neue Qualitätsmessung wiederverwende
 
 ## Schnellstart
 
+**Im Hauptordner bleiben nur sechs Dateien**, darunter `STARTEN.sh` und diese Anleitung. Technische Skripte befinden sich unter `scripts/entrypoints/`, Systemverträge unter `config/`.
+
+
 1. Projekt-ZIP vollständig entpacken.
 2. Terminal im Projektordner öffnen.
 3. Falls nötig den Starter ausführbar machen:
 
 ```bash
-chmod +x videobatch.sh
+chmod +x STARTEN.sh
 ```
 
 4. VideoBatch starten:
 
 ```bash
-./videobatch.sh
+./STARTEN.sh
 ```
 
 5. Für den ersten Lauf einen **kurzen Testauftrag** verwenden und das Ergebnis am Anfang, in der Mitte und am Ende abspielen.
@@ -64,7 +67,7 @@ chmod +x videobatch.sh
 
 | Bereich | Zweck |
 |---|---|
-| `videobatch.sh`, `start.sh`, `STARTEN.sh` | Start- und Launcherpfade |
+| `STARTEN.sh`, `scripts/entrypoints/` | Start- und Launcherpfade |
 | `docs/start/START_HIER_save_.md`, `docs/start/AUTOINSTALLATION_save_.md` | Einstieg und Installation |
 | `src/` | Anwendungscode |
 | `scripts/` | Prüf-, Build-, Release- und Wartungsskripte |
@@ -75,7 +78,7 @@ chmod +x videobatch.sh
 | `docs/archive/` | historische interne Nachweise und alte Prüfstände |
 | `diagnostics/release_readiness/RELEASE_EVIDENCE.json` | historischer RC24-Release-Nachweis (496 Dateien) |
 | `diagnostics/release_readiness/CANDIDATE_PR240_QUALITY_STATUS.json` | getrennte Entwicklungsnachweise (keine Freigabe) |
-| `RELEASE_MANIFEST.json` | kompakter reproduzierbarer Release-Vertrag |
+| `config/RELEASE_MANIFEST.json` | kompakter reproduzierbarer Release-Vertrag |
 
 **Ordnungskonzept:** Im Hauptverzeichnis bleiben vor allem Startdateien, aktive Release-Unterlagen und maschinenlesbare Verträge. Technische Hintergrunddokumente gehören nach `docs/reference/`; historische interne Nachweise nach `docs/archive/`.
 
@@ -122,7 +125,7 @@ Only standalone user and release deliverables receive _save_. Source modules, CI
 
 | Releasefertig (`_save_`) | Noch nicht releasefertig |
 |---|---|
-| `docs/start/START_HIER_save_.md`<br>Schnellstart: Geprüfter Nutzerstart und sichere erste Schritte | `TODO.md`<br>Offene Arbeitsliste: Automatisierte Gates werden für den seitengetrennten Qt-Stand neu geprüft; danach ist die reale 100/125/150/200-%-Sichtabnahme und anschließend die Stable-Promotion offen. |
+| `docs/start/START_HIER_save_.md`<br>Schnellstart: Geprüfter Nutzerstart und sichere erste Schritte | `docs/TODO.md`<br>Offene Arbeitsliste: Automatisierte Gates werden für den seitengetrennten Qt-Stand neu geprüft; danach ist die reale 100/125/150/200-%-Sichtabnahme und anschließend die Stable-Promotion offen. |
 | `docs/start/AUTOINSTALLATION_save_.md`<br>Installationsanleitung: Benutzerpfade, A/B-Slots und Berechtigungsschutz dokumentiert | `docs/LONG_RENDER_2.8.3-rc24.md`<br>Langzeitrender: Prüfvertrag bleibt als Referenz erhalten; Langzeitrender wurde am 29.09.2026 manuell als in Ordnung bestätigt |
 | `docs/start/PROJEKTORDNERSTRUKTUR_save_.md`<br>Projektübersicht: Ordner, Start, Sicherheit und Funktionen beschrieben | `docs/STABLE_ACCEPTANCE_EVIDENCE.md`<br>Stable-Abnahmenachweis: Basisfreigaben bleiben dokumentiert; der reale 125-%-Befund vom 06.10.2026 verlangt eine neue 100/125/150/200-%-Sichtabnahme des korrigierten Qt-Stands. |
 | `docs/archive/rc24/RELEASE_NOTES_save_.md`<br>Releasehinweise: Aktueller RC24-Funktionsstand dokumentiert | `QUALITY_ENVIRONMENT_STATUS.json`<br>Qualitätsumgebung: Maschinenlesbarer Qualitätsstatus; nach der Layoutkorrektur müssen die automatisierten Gates erneut grün sein und die physische 100/125/150/200-%-UI-Abnahme bleibt offen. |
@@ -145,4 +148,4 @@ Ein erster Lauf gilt als erfolgreich, wenn die Oberfläche ohne Fehlermeldung st
 - **Einsteiger:** `docs/start/START_HIER_save_.md`
 - **Nutzer:** `docs/BENUTZERHANDBUCH.md`
 - **Entwickler:** `docs/manuals/DEVELOPER_GUIDE.md`
-- **Aktueller Arbeitsplan:** `TODO.md`
+- **Aktueller Arbeitsplan:** `docs/TODO.md`
