@@ -23,6 +23,10 @@ CURRENT_FILE_PATHS = {
     "START_HIER_save_.md": "docs/start/START_HIER_save_.md",
     "AUTOINSTALLATION_save_.md": "docs/start/AUTOINSTALLATION_save_.md",
     "PROJEKTORDNERSTRUKTUR_save_.md": "docs/start/PROJEKTORDNERSTRUKTUR_save_.md",
+    "TODO.md": "docs/TODO.md",
+    "QUALITY_ENVIRONMENT_STATUS.json": "config/status/QUALITY_ENVIRONMENT_STATUS.json",
+    "VISUAL_INSPECTION_MANIFEST.json": "registries/VISUAL_INSPECTION_MANIFEST.json",
+    "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json": "docs/archive/rc24/VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
     "RELEASE_NOTES_save_.md": "docs/archive/rc24/RELEASE_NOTES_save_.md",
     "TEST_REPORT_save_.md": "docs/archive/rc24/TEST_REPORT_save_.md",
     "FRESH_PACKAGE_REPORT_save_.md": "docs/archive/rc24/FRESH_PACKAGE_REPORT_save_.md",
@@ -254,7 +258,8 @@ def current_release_files(value: Mapping[str, Any]) -> dict[str, Any]:
     """Map original RC24 release-file paths to today's tree without editing evidence."""
     historical = value["release_files"]
     ready = historical["ready"]
-    paths = [str(item["path"]) for item in ready]
+    paths = [str(item["path"]) for group in ("ready", "unfinished")
+             for item in historical[group]]
     if len(paths) != len(set(paths)) or set(CURRENT_FILE_PATHS) - set(paths):
         raise EvidenceContractError("RC24-Dateiliste ist unvollständig oder enthält doppelte Pfade")
 
@@ -264,7 +269,11 @@ def current_release_files(value: Mapping[str, Any]) -> dict[str, Any]:
         relocated = CURRENT_FILE_PATHS.get(original, original)
         converted_ready.append({**item, "path": relocated})
 
-    result = {**historical, "ready": converted_ready}
+    converted_unfinished = [
+        {**item, "path": CURRENT_FILE_PATHS.get(str(item["path"]), str(item["path"]))}
+        for item in historical["unfinished"]
+    ]
+    result = {**historical, "ready": converted_ready, "unfinished": converted_unfinished}
     current = [str(item["path"]) for group in ("ready", "unfinished")
                for item in result[group]]
     if len(current) != len(set(current)):
@@ -376,11 +385,11 @@ def json_text(value: Mapping[str, Any]) -> str:
 
 
 def expected_outputs(value: Mapping[str, Any]) -> dict[Path, str]:
-    report_path = ROOT / str(value["approved_quality_report"])
+    report_path = ROOT / CURRENT_FILE_PATHS.get(str(value["approved_quality_report"]), str(value["approved_quality_report"]))
     return {
-        ROOT / "DEVELOPMENT_STATUS.json": json_text(render_development(value)),
-        ROOT / "QUALITY_ENVIRONMENT_STATUS.json": json_text(render_quality(value)),
-        ROOT / "RELEASE_FILE_STATUS.json": json_text(render_release_files(value)),
+        ROOT / "config/status/DEVELOPMENT_STATUS.json": json_text(render_development(value)),
+        ROOT / "config/status/QUALITY_ENVIRONMENT_STATUS.json": json_text(render_quality(value)),
+        ROOT / "config/status/RELEASE_FILE_STATUS.json": json_text(render_release_files(value)),
         report_path: json_text(render_build(value)),
         README_PATH: render_readme(value, README_PATH.read_text(encoding="utf-8")),
     }
