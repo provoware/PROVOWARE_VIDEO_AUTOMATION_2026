@@ -1,0 +1,6 @@
+#!/bin/sh
+# Opt-in: git config core.hooksPath .githooks
+# Staged Git blobs are authoritative; unstaged edits cannot contaminate the index.
+set -eu
+python3 scripts/project_file_index.py --write --git-index
+git add -- registries/PROJECT_FILE_INDEX.json

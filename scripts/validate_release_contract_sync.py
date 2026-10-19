@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
+import subprocess
 import sys
 from typing import Any, Mapping
 
@@ -13,6 +15,8 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "RELEASE_MANIFEST.json"
 PACKAGE_MANIFEST_PATH = ROOT / "manifest.json"
 EVIDENCE_PATH = ROOT / "diagnostics/release_readiness/RELEASE_EVIDENCE.json"
+HISTORICAL_MANIFEST_PATH = ROOT / "diagnostics/release_readiness/HISTORICAL_RC24_RELEASE_MANIFEST.json"
+HISTORICAL_MANIFEST_GIT_BLOB = "c9fd5fe01ce9db899bebf9d7ffd1d7cb8829d6f2"
 QUALITY_PATH = ROOT / "QUALITY_ENVIRONMENT_STATUS.json"
 BUILD_REPORT_PATH = ROOT / f"VideoBatch_Fast_{build_label()}_BUILD_REPORT_save_.json"
 README_PATH = ROOT / "README.md"
@@ -57,8 +61,18 @@ def _sha256_text(value: object) -> bool:
     return len(text) == 64 and all(char in "0123456789abcdefABCDEF" for char in text)
 
 
-def validate() -> dict[str, Any]:
+def validate(*, phase: str = "integration", acceptance_dir: Path | None = None) -> dict[str, Any]:
+    """Integration checks never claim release approval; release checks require real evidence."""
+    if phase not in {"integration", "release"}:
+        raise ContractSyncError(f"Unbekannte Prüfphase: {phase}")
     manifest = _load(MANIFEST_PATH)
+    # The historical release evidence belongs to this pinned RC24 tree, not
+    # to the newer integration candidate. Verify the archived Git blob too.
+    archived_bytes = HISTORICAL_MANIFEST_PATH.read_bytes()
+    object_bytes = b"blob " + str(len(archived_bytes)).encode("ascii") + b"\x00" + archived_bytes
+    if hashlib.sha1(object_bytes).hexdigest() != HISTORICAL_MANIFEST_GIT_BLOB:
+        raise ContractSyncError("Historisches RC24-Manifest wurde verändert")
+    historical_manifest = _load(HISTORICAL_MANIFEST_PATH)
     package_manifest = _load(PACKAGE_MANIFEST_PATH)
     evidence = _load(EVIDENCE_PATH)
     quality = _load(QUALITY_PATH)
@@ -74,9 +88,10 @@ def validate() -> dict[str, Any]:
 
     product = _mapping(evidence.get("product"), "RELEASE_EVIDENCE.product")
     evidence_manifest = _mapping(evidence.get("manifest"), "RELEASE_EVIDENCE.manifest")
-    if evidence_manifest.get("file_count") != count:
+    historical_count = historical_manifest.get("file_count")
+    if evidence_manifest.get("file_count") != historical_count:
         raise ContractSyncError(
-            f"RELEASE_EVIDENCE nennt {evidence_manifest.get('file_count')} statt {count} Manifestdateien"
+            f"Historischer RC24-Nachweis nennt {evidence_manifest.get('file_count')} statt {historical_count} Dateien"
         )
     if evidence_manifest.get("status") != "passed":
         raise ContractSyncError("RELEASE_EVIDENCE.manifest.status muss passed sein")
@@ -101,12 +116,12 @@ def validate() -> dict[str, Any]:
         raise ContractSyncError("manifest.json verweist auf keinen gültigen Einstieg")
 
     internal = _mapping(quality.get("internal_gates"), "QUALITY_ENVIRONMENT_STATUS.internal_gates")
-    if internal.get("release_manifest_files") != count:
-        raise ContractSyncError("QUALITY_ENVIRONMENT_STATUS enthält eine veraltete Manifest-Dateizahl")
-    if build.get("release_manifest_files") != count:
-        raise ContractSyncError("Buildbericht enthält eine veraltete Manifest-Dateizahl")
+    if internal.get("release_manifest_files") != historical_count:
+        raise ContractSyncError("Historischer Qualitätsstatus passt nicht zum RC24-Manifest")
+    if build.get("release_manifest_files") != historical_count:
+        raise ContractSyncError("Historischer Buildbericht passt nicht zum RC24-Manifest")
 
-    expected_line = f"Release-Manifest: {count} Dateien"
+    expected_line = f"Release-Manifest: {historical_count} Dateien"
     for path in (README_PATH, STATUS_PATH):
         try:
             text = path.read_text(encoding="utf-8")
@@ -115,13 +130,67 @@ def validate() -> dict[str, Any]:
         if expected_line not in text:
             raise ContractSyncError(f"{path.name} enthält nicht den aktuellen Status: {expected_line}")
 
+    # A development manifest must match the real current file set; historical
+    # release results never qualify this new tree for Stable.
+    if manifest != historical_manifest:
+        try:
+            check = subprocess.run(
+                [sys.executable, str(ROOT / "scripts/build_release_manifest.py"), "--check"],
+                cwd=ROOT, capture_output=True, text=True, timeout=45, check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise ContractSyncError(f"Kanonische Manifestprüfung nicht ausführbar: {exc}") from exc
+        if check.returncode != 0:
+            raise ContractSyncError(
+                "Aktuelles Entwicklungsmanifest stimmt nicht mit dem Dateibaum überein: "
+                + (check.stdout + check.stderr)[-800:]
+            )
+        # PR240 is an immutable *earlier* candidate snapshot. Check its
+        # provenance, never require its digest or approval flags for this tree.
+        legacy_evidence = _load(ROOT / "diagnostics/release_readiness/CANDIDATE_PR240_CI_EVIDENCE.json")
+        legacy_status = _load(ROOT / "diagnostics/release_readiness/CANDIDATE_PR240_QUALITY_STATUS.json")
+        if legacy_status.get("manifest") != legacy_evidence.get("source_release_manifest"):
+            raise ContractSyncError("Archivierter PR240-Kandidatenbericht passt nicht zu seinem Ursprung")
+        if legacy_status.get("candidate_commit") != legacy_evidence.get("source_commit"):
+            raise ContractSyncError("Archivierter PR240-Kandidatenbericht hat einen fremden Commit")
+        if legacy_status.get("release_approved") is not False:
+            raise ContractSyncError("Historische CI darf keine nachträgliche Stable-Freigabe behaupten")
+
+    if phase == "release":
+        if acceptance_dir is None:
+            raise ContractSyncError("Release-Endabnahme benötigt einen ausdrücklich gewählten Nachweisordner")
+        # Only the final, unchanged candidate may pass this manual gate.
+        from validate_stable_acceptance import AcceptanceBlocked, manifest_sha256, validate_evidence
+
+        try:
+            validate_evidence(
+                acceptance_dir,
+                str(manifest.get("version")),
+                manifest_sha256(MANIFEST_PATH),
+            )
+        except AcceptanceBlocked as exc:
+            raise ContractSyncError(f"Reale Release-Endabnahme fehlt: {exc}") from exc
+
     todo = TODO_PATH.read_text(encoding="utf-8")
     if "P0 – vor Merge von PR #128" in todo or "P0 - vor Merge von PR #128" in todo:
         raise ContractSyncError("TODO.md enthält noch den überholten Vor-Merge-Abschnitt für PR #128")
 
+    # HEAD comes from the actual checkout: no self-referential commit SHA in
+    # tracked release files. CI logs provide an audit trail for this exact tree.
+    try:
+        revision = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=ROOT, capture_output=True, text=True, timeout=10, check=True,
+        ).stdout.strip()
+    except (OSError, subprocess.TimeoutExpired, subprocess.CalledProcessError):
+        revision = None
     return {
         "schema_version": 1,
         "status": "passed",
+        "phase": phase,
+        "checked_commit": revision,
+        "manual_release_acceptance": "verified" if phase == "release" else "not_checked",
+        "release_approved": False,
         "version": manifest.get("version"),
         "channel": manifest.get("channel"),
         "manifest_files": count,
@@ -133,9 +202,11 @@ def validate() -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Prüft Manifest, Release-Evidence und abgeleitete Statusdateien auf Drift.")
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--phase", choices=("integration", "release"), default="integration")
+    parser.add_argument("--acceptance-dir", type=Path)
     args = parser.parse_args()
     try:
-        result = validate()
+        result = validate(phase=args.phase, acceptance_dir=args.acceptance_dir)
     except (ContractSyncError, OSError) as exc:
         if args.json:
             print(json.dumps({"schema_version": 1, "status": "failed", "error": str(exc)}, ensure_ascii=False, indent=2, sort_keys=True))

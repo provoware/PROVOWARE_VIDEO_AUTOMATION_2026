@@ -10,20 +10,20 @@ Dieser Wegweiser ordnet jede aktuelle Anleitung und jeden historischen Nachweis 
 
 | Ziel | Richtige Datei | Pflichtgrad |
 |---|---|---|
-| VideoBatch zum ersten Mal starten | `START_HIER_save_.md` | Pflicht |
+| VideoBatch zum ersten Mal starten | `docs/start/START_HIER_save_.md` | Pflicht |
 | VideoBatch vollständig bedienen | `docs/BENUTZERHANDBUCH.md` | Empfohlen |
-| automatische Installation verstehen | `AUTOINSTALLATION_save_.md` | Pflicht bei Installation |
-| Projektordner und Dateien verstehen | `PROJEKTORDNERSTRUKTUR_save_.md` | Empfohlen |
+| automatische Installation verstehen | `docs/start/AUTOINSTALLATION_save_.md` | Pflicht bei Installation |
+| Projektordner und Dateien verstehen | `docs/start/PROJEKTORDNERSTRUKTUR_save_.md` | Empfohlen |
 | Schnellmodi auswählen | `docs/QUICK_MODES.md` | Optional |
-| Fehler sicher beheben | `ERROR_HANDLING.md` | Pflicht bei Fehlern |
-| Updates und Rückfall verstehen | `UPDATE_SYSTEM.md` | Pflicht bei Updates |
-| aktuelle Änderungen nachlesen | `RELEASE_NOTES_save_.md` | Empfohlen |
+| Fehler sicher beheben | `docs/manuals/ERROR_HANDLING.md` | Pflicht bei Fehlern |
+| Updates und Rückfall verstehen | `docs/manuals/UPDATE_SYSTEM.md` | Pflicht bei Updates |
+| aktuelle Änderungen nachlesen | `docs/archive/rc24/RELEASE_NOTES_save_.md` | Empfohlen |
 
 ## 2. Ich möchte entwickeln oder prüfen
 
 | Ziel | Richtige Datei |
 |---|---|
-| Entwicklungsumgebung und erster Beitrag | `DEVELOPER_GUIDE.md` |
+| Entwicklungsumgebung und erster Beitrag | `docs/manuals/DEVELOPER_GUIDE.md` |
 | Architektur und Arbeitsregeln | `docs/reference/DEVELOPER_HANDBOOK.md`, `docs/ARCHITEKTUR.md`, `AGENTS.md` |
 | Codequalitätsprüfung | `docs/CODE_QUALITY_PIPELINE.md`, `docs/OFFLINE_QUALITY_ENVIRONMENT.md` |
 | reproduzierbare Updates | `docs/REPRODUCIBLE_UPDATE_PIPELINE.md` |
@@ -52,10 +52,10 @@ Technische Referenzdokumente liegen gebündelt unter `docs/reference/`. Diese Da
 Die folgenden Dateien sind Belege eines bestimmten Entwicklungs- oder Prüfstands. Sie dürfen nicht als aktuelle Bedienungsanleitung verwendet werden:
 
 - `CHANGELOG.md`
-- `CODE_QUALITY_REPORT_2.8.3-rc24_save_.md`
-- `FINAL_AUDIT_2.8.3-rc24_save_.md`
-- `FRESH_PACKAGE_REPORT_save_.md`
-- `IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md`
+- `docs/archive/rc24/CODE_QUALITY_REPORT_2.8.3-rc24_save_.md`
+- `docs/archive/rc24/FINAL_AUDIT_2.8.3-rc24_save_.md`
+- `docs/archive/rc24/FRESH_PACKAGE_REPORT_save_.md`
+- `docs/archive/rc24/IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md`
 - `docs/archive/release-history/QUALITY_GATE_REPORT_2.8.3-rc24_save_.md`
 - `docs/LONG_RENDER_2.8.3-rc24.md`
 - `docs/STABLE_ACCEPTANCE_EVIDENCE.md`
@@ -89,7 +89,7 @@ Diese Dateien dokumentieren Prüfverträge. Eine Freigabe darf nur als bestanden
 Bei widersprüchlichen Angaben gilt diese Reihenfolge:
 
 1. Sicherheits- und Integritätsverträge im Code und in maschinenlesbaren Manifesten
-2. `README.md` und `START_HIER_save_.md`
+2. `README.md` und `docs/start/START_HIER_save_.md`
 3. `docs/BENUTZERHANDBUCH.md`
 4. aktive Fachanleitungen
 5. historische Berichte und Archive
@@ -113,4 +113,4 @@ Der verbindliche Schreib- und Prüfstandard steht in `docs/DOKUMENTATIONSSTANDAR
 - `docs/archive/release-history/STABLE_GATE_ITERATION_2.8.3-rc24_2026-09-11.md`
 - `docs/archive/release-history/VISUAL_DESKTOP_APPROVAL.md`
 
-Diese Dateien dienen nur noch der Historie. Für den aktuellen Status gelten `diagnostics/release_readiness/RELEASE_EVIDENCE.json`, `STATUS.md` und `README.md`.
+Diese Dateien dienen nur noch der Historie. `diagnostics/release_readiness/RELEASE_EVIDENCE.json` dokumentiert ausschließlich den historischen RC24-Nachweis (496 Dateien); für PR #240 liegen die getrennten Entwicklungsnachweise in `CANDIDATE_PR240_CI_EVIDENCE.json` und `CANDIDATE_PR240_QUALITY_STATUS.json` im selben Verzeichnis. Einstieg und ausdrückliche Freigabesperren stehen in `README.md` und `STATUS.md`.

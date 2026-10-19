@@ -1,0 +1,46 @@
+{
+  "blocking_checks": [
+    "Physische Kubuntu-/Wayland-Abnahme",
+    "Release contract sync"
+  ],
+  "candidate_commit": "effd1bf838e47c9b7fca61886e6b0eb90f416701",
+  "ci_checks": {
+    "Bounded resumable long-render rehearsal": "success",
+    "CP-09 FFmpeg evidence audit": "success",
+    "Kubuntu 26.04 Wayland preview contract": "success",
+    "PR ancestry guard": "success",
+    "Qt6 Phase 3 orchestrated validation": "success",
+    "Release contract sync": "failure",
+    "Repository merge preflight": "success",
+    "Trusted PR ancestry guard": "success"
+  },
+  "historical_release_evidence_separate": true,
+  "kind": "candidate_only_status",
+  "manifest": {
+    "file_count": 518,
+    "files_sha256": "5241c475459f4d22ce5897f08e718faa6c6d66dcd9e6ac0726ecfd41b2d1be8b"
+  },
+  "measured_source_commit": "effd1bf838e47c9b7fca61886e6b0eb90f416701",
+  "note": "CI records describe the cited candidate snapshot; never extrapolate to later commits.",
+  "physical_ui_acceptance": "open",
+  "quality_tools": {
+    "job_id": 117518205652,
+    "result": "passed",
+    "tools": [
+      "mypy 2.3.0",
+      "bandit 1.9.4",
+      "pip-audit 2.10.1",
+      "ruff 0.16.1"
+    ],
+    "workflow_run_id": 39074316939
+  },
+  "ready_to_merge": false,
+  "release_approved": false,
+  "schema_version": 1,
+  "verified_core_partition": {
+    "failed": 0,
+    "job_id": 117518343957,
+    "passed": 167,
+    "workflow_run_id": 39074316914
+  }
+}

@@ -24,7 +24,7 @@ Jede Änderung folgt strikt diesem Ablauf:
 3. **Minimal korrigieren:** vorhandene Funktionen, Module, Tests und Prüfpfade wiederverwenden.
 4. **Gezielt prüfen:** zuerst nur den betroffenen Vertrag/Test ausführen.
 5. **Lokal integrieren:** erst danach die passende bestehende Sammelprüfung ausführen.
-6. **Real abnehmen:** GUI-, Start-, Datei- und Renderprobleme benötigen einen realen Lauf auf dem Zielsystem.
+6. **Automatisch absichern:** GUI-, Start-, Datei- und Renderänderungen mit fokussierten Simulationen, Smoke- und Regressionstests kontrollieren; reale vollständige Zielsystemabnahme erst am final eingefrorenen Releasekandidaten.
 7. **Finalisieren:** Release-Manifest und Abschlussberichte erst aus dem endgültigen, unveränderten Dateibaum erzeugen.
 
 Nur **reproduzierbare Befunde** werden korrigiert. Vermutete Probleme werden zuerst als Hypothese dokumentiert und nicht durch spekulative Architektur beantwortet.
@@ -80,7 +80,7 @@ Nur **reproduzierbare Befunde** werden korrigiert. Vermutete Probleme werden zue
 - Für die aktuelle reale Zielsystemabnahme gilt `docs/KUBUNTU_26_04_QT_ABNAHME.md`; ältere Bildvergleichschecklisten liegen nur noch im historischen Archiv.
 - Vor dem ersten UI-Patch wird eine vollständige Soll/Ist-Liste erstellt: Struktur, Maße, Proportionen, Typografie, Farben, Abstände, Zustände, Clipping und Überlagerungen.
 - Reihenfolge der UI-Korrektur: **Absturz → Überlagerung/Clipping → unerreichbare Bedienung → falsche Geometrie/Proportion → Typografie → Farbe/Feinschliff**.
-- Ein sichtbarer UI-Punkt gilt erst als erledigt, wenn der reale Zielsystem-Screenshot beziehungsweise die reale Desktopprüfung ihn bestätigt. Ein statischer Vertrag allein reicht nicht.
+- Ein UI-Punkt gilt während der Entwicklung erst als **technisch geprüft**, wenn passende automatisierte Tests beziehungsweise nachvollziehbare Bildvergleiche vorliegen. Als **real abgenommen** gilt er erst nach der gebündelten Sicht- und Bedienprüfung am finalen Releasekandidaten; ein statischer Vertrag allein ersetzt diese nicht.
 - Pixel-, Zonen- und Mindestabstandswerte werden erst nach Messung eines bestätigten Musters festgeschrieben; keine erfundenen Sollwerte.
 - Der geometrische GUI-Wächter wird nach der Bildkorrektur mit den bestätigten Sollbereichen und Mindestabständen erweitert.
 - Das Designmanifest bleibt internes Regelwerk für Tool und Untermodule; es ist **kein eigener GitHub-Merge-Blocker**.
@@ -112,19 +112,15 @@ Zusätzlich gilt:
 - Tests dürfen manifestierte Paketdateien nicht verändern.
 - Schreibende Build-Schritte und lesende Verifikation bleiben strikt getrennt.
 
-## Realabnahme vor Merge
+## Gestaffelte Prüfung: Entwicklung, Integration, finale Release-Abnahme
 
-Ein PR ist nicht allein deshalb freigabefähig, weil GitHub ihn als `mergeable` meldet.
+**Während der Entwicklung:** Jeder PR braucht passende automatisierte Tests, Architektur-/Sicherheits-/Datenvertragsprüfungen und nachgewiesene Integrationsfähigkeit. Betroffene Start-, Qt-/GUI-, Rendering-, Speicher- und Wiederanlaufpfade werden mit bestehenden automatisierten Smoke-, Simulations- und Regressionstests abgesichert. Offene Fehler und fehlende reale Prüfungen werden sichtbar dokumentiert, nicht als PASS ausgegeben.
 
-Vor Merge einer Laufzeit-/GUI-Änderung auf dem Zielpfad **Kubuntu 26.04 · KDE Plasma · natives Wayland** müssen mindestens vorliegen:
+**Bei Integration nach `main`:** Nur passende automatische Pflichtprüfungen für den unveränderten PR-Commit und nachvollziehbare Konfliktprüfung. Ein PR mit bekannten kritischen Laufzeit- oder Datenverlustfehlern bleibt gesperrt. Ein erfolgreiches CI-Ergebnis ist eine *Integrationsentscheidung*, keine Releasefreigabe. Es ist **keine** wiederholte vollständige persönliche Kubuntu-/Sichtabnahme für jeden Entwicklungs-PR erforderlich.
 
-- fokussierte Tests für den konkreten Befund,
-- erfolgreiche passende lokale Sammelprüfung,
-- echter Programmstart auf dem Zielsystem,
-- bei GUI-Änderungen reale Sichtprüfung,
-- bei Crashfixes ein kontrollierter Nachweis, dass Fehlerbericht und regulärer Abschluss unterscheidbar funktionieren.
+**Einmal am Entwicklungsende, kurz vor Release:** Nach Bündelung aller gewünschten Funktionen und Oberflächenänderungen wird der Endkandidat eingefroren. Erst dann erfolgen die vollständige reale Zielsystemabnahme auf **Kubuntu 26.04 · KDE Plasma · natives Wayland** (einschließlich 100/125/150/200 %), echter Programmstart, visuelle Bedienungsprüfung, reale FFmpeg-Ausgabe und der vorgeschriebene Langzeitrender. Danach vollständige finale Prüfkette und Veröffentlichung. Jede anschließende Änderung an abnahmerelevanten Funktionen macht nur die davon betroffenen Belege ungültig; der abschließende Gesamtvertrag muss zum endgültig unveränderten Kandidaten passen.
 
-Nicht ausgeführte Prüfungen werden ausdrücklich als **offen** bezeichnet. Kein simuliertes, statisches oder theoretisches Ergebnis wird als reale Abnahme ausgegeben.
+Nicht ausgeführte Prüfungen heißen ausdrücklich **offen**. Keine Simulation wird als reale Abnahme ausgegeben. Historische RC24-Nachweise bleiben archiviert und werden nicht zur Integration aktueller Entwicklungsstände vorausgesetzt.
 
 ## Release- und Manifestdisziplin
 
@@ -139,7 +135,7 @@ Nicht ausgeführte Prüfungen werden ausdrücklich als **offen** bezeichnet. Kei
 
 - Branch vom aktuellen `main` erstellen; vor PR-Eröffnung `behind_by = 0` anstreben.
 - Kleine, nachvollziehbare Commits; keine Commitserien nur zum Auslösen von Infrastruktur.
-- PR bleibt Draft, solange reale Laufzeit-/Sichtabnahme fehlt.
+- PR bleibt Draft, solange automatisierte Pflichtprüfungen, Review oder relevante Integration unvollständig sind; die persönliche Kubuntu-/Sichtabnahme ist erst am eingefrorenen Releasekandidaten Pflicht.
 - Keine automatische Mergefreigabe aufgrund eines einzelnen grünen Signals.
 - Kein weiterer Workflow, Statuskontext oder Infrastrukturpatch, wenn derselbe Nachweis einfacher lokal oder im bestehenden Prüfpfad möglich ist.
 

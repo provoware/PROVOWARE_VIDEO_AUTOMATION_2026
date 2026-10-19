@@ -4,58 +4,8 @@
     "AGENTS.md": {
       "category": "technical"
     },
-    "AUTOINSTALLATION_save_.md": {
-      "category": "active",
-      "required_sections": [
-        "Ziel",
-        "Pflichtgrad",
-        "Voraussetzungen",
-        "Sicherung und Rückweg",
-        "Schritt-für-Schritt-Anleitung",
-        "Abschlussprüfung",
-        "Nächster Schritt"
-      ]
-    },
     "CHANGELOG.md": {
       "category": "historical"
-    },
-    "CODE_QUALITY_REPORT_2.8.3-rc24_save_.md": {
-      "category": "historical"
-    },
-    "DEVELOPER_GUIDE.md": {
-      "category": "active",
-      "required_sections": [
-        "Ziel",
-        "Pflichtgrad",
-        "Voraussetzungen",
-        "Sicherung und Rückweg",
-        "Schritt-für-Schritt-Anleitung",
-        "Abschlussprüfung",
-        "Nächster Schritt"
-      ]
-    },
-    "ERROR_HANDLING.md": {
-      "category": "active",
-      "required_sections": [
-        "Ziel",
-        "Pflichtgrad",
-        "Voraussetzungen",
-        "Schritt-für-Schritt-Anleitung",
-        "Abschlussprüfung",
-        "Nächster Schritt"
-      ]
-    },
-    "FINAL_AUDIT_2.8.3-rc24_save_.md": {
-      "category": "historical"
-    },
-    "FRESH_PACKAGE_REPORT_save_.md": {
-      "category": "historical"
-    },
-    "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md": {
-      "category": "historical"
-    },
-    "PROJEKTORDNERSTRUKTUR_save_.md": {
-      "category": "technical"
     },
     "README.md": {
       "category": "active",
@@ -65,40 +15,11 @@
         "Abschlussprüfung"
       ]
     },
-    "RELEASE_NOTES_save_.md": {
-      "category": "historical"
-    },
-    "START_HIER_save_.md": {
-      "category": "active",
-      "required_sections": [
-        "Ziel",
-        "Pflichtgrad",
-        "Voraussetzungen",
-        "Schritt-für-Schritt-Anleitung",
-        "Abschlussprüfung",
-        "Nächster Schritt"
-      ]
-    },
     "STATUS.md": {
       "category": "internal"
     },
-    "TEST_REPORT_save_.md": {
-      "category": "technical"
-    },
     "TODO.md": {
       "category": "internal"
-    },
-    "UPDATE_SYSTEM.md": {
-      "category": "active",
-      "required_sections": [
-        "Ziel",
-        "Pflichtgrad",
-        "Voraussetzungen",
-        "Sicherung und Rückweg",
-        "Schritt-für-Schritt-Anleitung",
-        "Abschlussprüfung",
-        "Nächster Schritt"
-      ]
     },
     "docs/ARCHITEKTUR.md": {
       "category": "technical"
@@ -240,6 +161,83 @@
       "category": "technical"
     },
     "docs/reference/VISUAL_APPROVAL_NORMALIZATION.md": {
+      "category": "technical"
+    },
+    "docs/VIDEOBATCH_CP_UX_IMPLEMENTIERUNGSSTAND_2026.md": {
+      "category": "internal"
+    },
+    "docs/VIDEOBATCH_CP_UX_LAIENPRUEFUNG_2026.md": {
+      "category": "internal"
+    },
+    "docs/start/AUTOINSTALLATION_save_.md": {
+      "category": "active",
+      "required_sections": [
+        "Ziel",
+        "Pflichtgrad",
+        "Voraussetzungen",
+        "Sicherung und Rückweg",
+        "Schritt-für-Schritt-Anleitung",
+        "Abschlussprüfung",
+        "Nächster Schritt"
+      ]
+    },
+    "docs/start/START_HIER_save_.md": {
+      "category": "active",
+      "required_sections": [
+        "Ziel",
+        "Pflichtgrad",
+        "Voraussetzungen",
+        "Schritt-für-Schritt-Anleitung",
+        "Abschlussprüfung",
+        "Nächster Schritt"
+      ]
+    },
+    "docs/start/PROJEKTORDNERSTRUKTUR_save_.md": {
+      "category": "technical"
+    },
+    "docs/manuals/DEVELOPER_GUIDE.md": {
+      "category": "active",
+      "required_sections": [
+        "Ziel",
+        "Pflichtgrad",
+        "Voraussetzungen",
+        "Sicherung und Rückweg",
+        "Schritt-für-Schritt-Anleitung",
+        "Abschlussprüfung",
+        "Nächster Schritt"
+      ]
+    },
+    "docs/manuals/ERROR_HANDLING.md": {
+      "category": "active",
+      "required_sections": [
+        "Ziel",
+        "Pflichtgrad",
+        "Voraussetzungen",
+        "Schritt-für-Schritt-Anleitung",
+        "Abschlussprüfung",
+        "Nächster Schritt"
+      ]
+    },
+    "docs/manuals/UPDATE_SYSTEM.md": {
+      "category": "active",
+      "required_sections": [
+        "Ziel",
+        "Pflichtgrad",
+        "Voraussetzungen",
+        "Sicherung und Rückweg",
+        "Schritt-für-Schritt-Anleitung",
+        "Abschlussprüfung",
+        "Nächster Schritt"
+      ]
+    },
+    "01_START_HIER/README.md": {
+      "category": "active",
+      "required_sections": [
+        "Programm starten",
+        "Hilfen"
+      ]
+    },
+    "docs/DATEI_UND_ORDNERINDEX.md": {
       "category": "technical"
     }
   },

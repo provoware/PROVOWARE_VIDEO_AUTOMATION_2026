@@ -35,6 +35,7 @@ EXCLUDE_FILES = frozenset(
     {
         ".gitattributes",
         "RELEASE_MANIFEST.json",
+        "PROJECT_FILE_INDEX.json",  # generated index must not hash the release manifest back
         "STABLE_UPDATE_MANIFEST.json",
         "modern_visual_contact_sheet.png",
         ".coverage",

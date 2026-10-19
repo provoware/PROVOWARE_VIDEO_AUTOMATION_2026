@@ -85,7 +85,7 @@ Beide Varianten verwenden denselben zentralen Starter und umgehen keine Vorprüf
 
 **Erwartetes Ergebnis:** Die VideoBatch-Oberfläche öffnet sich ohne rote Startmeldung.
 
-**Bei einem Fehler:** Nicht mit `sudo`, `chmod -R 777` oder rekursiven Besitzänderungen reagieren. Die vollständige Meldung lesen und direkt [`ERROR_HANDLING.md` – Protokolle für eine Fehlermeldung sammeln](ERROR_HANDLING.md#protokolle-für-eine-fehlermeldung-sammeln) verwenden.
+**Bei einem Fehler:** Nicht mit `sudo`, `chmod -R 777` oder rekursiven Besitzänderungen reagieren. Die vollständige Meldung lesen und direkt [`docs/manuals/ERROR_HANDLING.md` – Protokolle für eine Fehlermeldung sammeln](../manuals/ERROR_HANDLING.md#protokolle-für-eine-fehlermeldung-sammeln) verwenden.
 
 ### Schritt 5: Audiodatei hinzufügen
 
@@ -159,7 +159,7 @@ Gelb bedeutet: Der Vorgang benötigt Aufmerksamkeit, ist aber nicht zwingend end
 
 Rot bedeutet: Der betroffene Vorgang wurde zum Schutz gestoppt. Originalmedien und gespeicherte Projekte bleiben unverändert.
 
-Wenn die Ursache nicht direkt lösbar ist, führt [`ERROR_HANDLING.md` – Protokolle für eine Fehlermeldung sammeln](ERROR_HANDLING.md#protokolle-für-eine-fehlermeldung-sammeln) direkt zu den Angaben, die für eine sichere Diagnose benötigt werden.
+Wenn die Ursache nicht direkt lösbar ist, führt [`docs/manuals/ERROR_HANDLING.md` – Protokolle für eine Fehlermeldung sammeln](../manuals/ERROR_HANDLING.md#protokolle-für-eine-fehlermeldung-sammeln) direkt zu den Angaben, die für eine sichere Diagnose benötigt werden.
 
 ## Mehrere Auswahlrunden
 
@@ -226,4 +226,4 @@ Die Prüfung extrahiert und startet keine Datei.
 
 ## Nächster Schritt
 
-Für die vollständige Bedienung [`docs/BENUTZERHANDBUCH.md`](docs/BENUTZERHANDBUCH.md) öffnen. Für Installation [`AUTOINSTALLATION_save_.md`](AUTOINSTALLATION_save_.md), für Fehler [`ERROR_HANDLING.md`](ERROR_HANDLING.md) und für die Dokumentationsübersicht [`docs/DOKUMENTATIONSINDEX.md`](docs/DOKUMENTATIONSINDEX.md) verwenden.
+Für die vollständige Bedienung [`docs/BENUTZERHANDBUCH.md`](../BENUTZERHANDBUCH.md) öffnen. Für Installation [`AUTOINSTALLATION_save_.md`](AUTOINSTALLATION_save_.md), für Fehler [`docs/manuals/ERROR_HANDLING.md`](../manuals/ERROR_HANDLING.md) und für die Dokumentationsübersicht [`docs/DOKUMENTATIONSINDEX.md`](../DOKUMENTATIONSINDEX.md) verwenden.

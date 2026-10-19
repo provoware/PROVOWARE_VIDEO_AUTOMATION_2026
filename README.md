@@ -17,9 +17,28 @@
 - Physische Kubuntu-26.04-Plasma-Wayland-Abnahme: Der reale 125-%-Screenshot vom 06.10.2026 zeigte abgeschnittene und überladene Arbeitsbereiche. Der daraus abgeleitete seitengetrennte Qt-Stand muss vor Stable erneut real auf Kubuntu 26.04 / KDE Plasma / Wayland bei 100 %, 125 %, 150 % und 200 % geprüft werden.
 <!-- release-status:end -->
 
+> **Nachweisgrenze:** Die vorstehenden RC24-Zahlen (325 Tests, 496 Release-Dateien) stammen aus dem unveränderten historischen Nachweis. Sie sind **keine** Prüfung des Integrationskandidaten PR #240 (Dateiumfang laut aktuellem `RELEASE_MANIFEST.json`). Dessen separate, commitgebundene Ergebnisse stehen unter `diagnostics/release_readiness/CANDIDATE_PR240_CI_EVIDENCE.json` und `CANDIDATE_PR240_QUALITY_STATUS.json`. Es gibt keine neue Stable-Freigabe; eine reale Kubuntu-/Wayland-Sichtabnahme bei 100/125/150/200 % fehlt.
+
+
 ## Überblick
 
 VideoBatch Fast ist die lokale Video-Automation für **Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6**. Der aktuelle Stand ist **2.8.3-rc24**. Der aktuelle Releasekandidat enthält jetzt einen seitengetrennten Qt-Arbeitsbereich als Reaktion auf den realen 125-%-Sichtbefund vom 06.10.2026. Dateien, Ausgabe und Produktion besitzen eigene Arbeitsseiten; Projekt, Hilfe und Diagnose verdrängen den Hauptablauf nicht mehr. Vor Stable ist eine erneute reale Sichtprüfung bei 100 %, 125 %, 150 % und 200 % erforderlich.
+
+## Integrationskandidat #240 – noch nicht als Release freigegeben
+
+In [PR #240](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/240) werden die geprüften Änderungen aus [PR #239](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/239) auf sauberer Entwicklungshistorie integriert: global sichtbare Videoeinstellungen, ein einheitlicher Medienbrowser mit großen Vorschauen und dauerhaften Miniaturbildern sowie ein auf **Videos, Downloads und Bilder** begrenzter SQLite-Medienindex.
+
+Programmdateien und Entwicklungsordner werden nicht als Medien aufgenommen. Eigene Unterordner lassen sich unter **Erweitert** ausschließen. Auf Linux überwacht VideoBatch Änderungen über inotify, mit gelegentlichen Nachprüfungen, falls die Überwachung unvollständig ist. Originaldateien werden nicht verändert.
+
+**Status:** Entwicklungszweig, keine neue Releasefreigabe. Die RC24-Zahlen gelten ausschließlich für den damaligen Stand. **Entwicklungs-PRs dürfen nach aktuellen automatisierten Integrations- und Sicherheitstests übernommen werden; die vollständige persönliche Kubuntu-/Wayland-/Video-Abnahme erfolgt gesammelt erst am unveränderten finalen Releasekandidaten.** Erst danach ist eine neue Stable-Veröffentlichung zulässig.
+
+## Prüfablauf ohne wiederholte Endabnahmen
+
+1. **Entwickeln:** Änderungen mit passenden automatisierten Tests und Sicherheitsprüfungen absichern. Keine persönliche Vollabnahme nach jeder Oberflächenänderung.
+2. **Integrieren:** Mehrere erfolgreich geprüfte Entwicklungs-PRs ohne bekannte kritische Fehler in `main` zusammenführen. Die GitHub-Prüfung `Release contract sync` prüft dabei mit `--phase integration` ausschließlich aktuelle Dateiverträge und hält historische RC24-Belege getrennt.
+3. **Endabnahme kurz vor Release:** Sobald Funktionen und Erscheinungsbild fertig sind, den Releasekandidaten einfrieren und dann *einmal gebündelt* auf Kubuntu 26.04/KDE/Wayland real starten, bei 100/125/150/200 % bedienen, echte Videos/FFmpeg und den Langzeitrender prüfen. Der separate `--phase release --acceptance-dir <Pfad>`-Vertrag bleibt ohne reale Nachweise strikt gesperrt.
+
+Das historische RC24-Archiv wird nicht als neue Qualitätsmessung wiederverwendet. Die jeweils aktuellen GitHub-Prüfläufe sind anhand ihres Commits nachvollziehbar; es werden keine erfundenen PASS-Werte in den Quellbaum geschrieben.
 
 ## Schnellstart
 
@@ -39,14 +58,14 @@ chmod +x videobatch.sh
 
 5. Für den ersten Lauf einen **kurzen Testauftrag** verwenden und das Ergebnis am Anfang, in der Mitte und am Ende abspielen.
 
-**Sicherheitsregel:** Bei einem Fehler nicht mit `sudo`, `chmod -R 777` oder rekursiven Besitzänderungen reagieren. Stattdessen `ERROR_HANDLING.md` verwenden.
+**Sicherheitsregel:** Bei einem Fehler nicht mit `sudo`, `chmod -R 777` oder rekursiven Besitzänderungen reagieren. Stattdessen `docs/manuals/ERROR_HANDLING.md` verwenden.
 
 ## Repository auf einen Blick
 
 | Bereich | Zweck |
 |---|---|
 | `videobatch.sh`, `start.sh`, `STARTEN.sh` | Start- und Launcherpfade |
-| `START_HIER_save_.md`, `AUTOINSTALLATION_save_.md` | Einstieg und Installation |
+| `docs/start/START_HIER_save_.md`, `docs/start/AUTOINSTALLATION_save_.md` | Einstieg und Installation |
 | `src/` | Anwendungscode |
 | `scripts/` | Prüf-, Build-, Release- und Wartungsskripte |
 | `tests/` | automatisierte Funktions- und Vertragsprüfungen |
@@ -54,7 +73,8 @@ chmod +x videobatch.sh
 | `docs/` | aktuelle Fach- und Projektdokumentation |
 | `docs/reference/` | technische Referenzdokumente, bewusst aus dem Hauptverzeichnis ausgelagert |
 | `docs/archive/` | historische interne Nachweise und alte Prüfstände |
-| `diagnostics/release_readiness/` | kanonische Release-Evidence |
+| `diagnostics/release_readiness/RELEASE_EVIDENCE.json` | historischer RC24-Release-Nachweis (496 Dateien) |
+| `diagnostics/release_readiness/CANDIDATE_PR240_QUALITY_STATUS.json` | getrennte Entwicklungsnachweise (keine Freigabe) |
 | `RELEASE_MANIFEST.json` | kompakter reproduzierbarer Release-Vertrag |
 
 **Ordnungskonzept:** Im Hauptverzeichnis bleiben vor allem Startdateien, aktive Release-Unterlagen und maschinenlesbare Verträge. Technische Hintergrunddokumente gehören nach `docs/reference/`; historische interne Nachweise nach `docs/archive/`.
@@ -63,14 +83,14 @@ chmod +x videobatch.sh
 
 | Aufgabe | Datei |
 |---|---|
-| erster Start und erstes Testvideo | `START_HIER_save_.md` |
+| erster Start und erstes Testvideo | `docs/start/START_HIER_save_.md` |
 | vollständige Bedienung | `docs/BENUTZERHANDBUCH.md` |
-| automatische Installation | `AUTOINSTALLATION_save_.md` |
-| Fehler sicher beheben | `ERROR_HANDLING.md` |
-| Update und Rückfall | `UPDATE_SYSTEM.md` |
-| Projektstruktur verstehen | `PROJEKTORDNERSTRUKTUR_save_.md` |
+| automatische Installation | `docs/start/AUTOINSTALLATION_save_.md` |
+| Fehler sicher beheben | `docs/manuals/ERROR_HANDLING.md` |
+| Update und Rückfall | `docs/manuals/UPDATE_SYSTEM.md` |
+| Projektstruktur verstehen | `docs/start/PROJEKTORDNERSTRUKTUR_save_.md` |
 | Dokumente einordnen | `docs/DOKUMENTATIONSINDEX.md` |
-| Entwickler-Einstieg | `DEVELOPER_GUIDE.md` |
+| Entwickler-Einstieg | `docs/manuals/DEVELOPER_GUIDE.md` |
 | technische Referenzen | `docs/reference/` |
 | Dokumentationsstandard | `docs/DOKUMENTATIONSSTANDARD.md` |
 
@@ -102,15 +122,15 @@ Only standalone user and release deliverables receive _save_. Source modules, CI
 
 | Releasefertig (`_save_`) | Noch nicht releasefertig |
 |---|---|
-| `START_HIER_save_.md`<br>Schnellstart: Geprüfter Nutzerstart und sichere erste Schritte | `TODO.md`<br>Offene Arbeitsliste: Automatisierte Gates werden für den seitengetrennten Qt-Stand neu geprüft; danach ist die reale 100/125/150/200-%-Sichtabnahme und anschließend die Stable-Promotion offen. |
-| `AUTOINSTALLATION_save_.md`<br>Installationsanleitung: Benutzerpfade, A/B-Slots und Berechtigungsschutz dokumentiert | `docs/LONG_RENDER_2.8.3-rc24.md`<br>Langzeitrender: Prüfvertrag bleibt als Referenz erhalten; Langzeitrender wurde am 29.09.2026 manuell als in Ordnung bestätigt |
-| `PROJEKTORDNERSTRUKTUR_save_.md`<br>Projektübersicht: Ordner, Start, Sicherheit und Funktionen beschrieben | `docs/STABLE_ACCEPTANCE_EVIDENCE.md`<br>Stable-Abnahmenachweis: Basisfreigaben bleiben dokumentiert; der reale 125-%-Befund vom 06.10.2026 verlangt eine neue 100/125/150/200-%-Sichtabnahme des korrigierten Qt-Stands. |
-| `RELEASE_NOTES_save_.md`<br>Releasehinweise: Aktueller RC24-Funktionsstand dokumentiert | `QUALITY_ENVIRONMENT_STATUS.json`<br>Qualitätsumgebung: Maschinenlesbarer Qualitätsstatus; nach der Layoutkorrektur müssen die automatisierten Gates erneut grün sein und die physische 100/125/150/200-%-UI-Abnahme bleibt offen. |
-| `TEST_REPORT_save_.md`<br>Testbericht: Automatisierte und offene Prüfungen getrennt ausgewiesen | `VISUAL_INSPECTION_MANIFEST.json`<br>Visuelles Prüfmanifest: Automatisierte visuelle Verträge bleiben Referenz; die reale 100/125/150/200-%-Sichtabnahme des seitengetrennten Qt-Stands steht noch aus. |
-| `FRESH_PACKAGE_REPORT_save_.md`<br>Paketbericht: Saubere Paketprüfung für RC24 dokumentiert | — |
-| `CODE_QUALITY_REPORT_2.8.3-rc24_save_.md`<br>Codequalitätsbericht: Interne Qualitätsprüfung ohne Befund | — |
-| `IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md`<br>Implementierungsbericht: Umgesetzte Funktions- und Sicherheitsverträge dokumentiert | — |
-| `FINAL_AUDIT_2.8.3-rc24_save_.md`<br>RC-Abschlussaudit: RC-Gates und offene Stable-Gates ehrlich getrennt | — |
+| `docs/start/START_HIER_save_.md`<br>Schnellstart: Geprüfter Nutzerstart und sichere erste Schritte | `TODO.md`<br>Offene Arbeitsliste: Automatisierte Gates werden für den seitengetrennten Qt-Stand neu geprüft; danach ist die reale 100/125/150/200-%-Sichtabnahme und anschließend die Stable-Promotion offen. |
+| `docs/start/AUTOINSTALLATION_save_.md`<br>Installationsanleitung: Benutzerpfade, A/B-Slots und Berechtigungsschutz dokumentiert | `docs/LONG_RENDER_2.8.3-rc24.md`<br>Langzeitrender: Prüfvertrag bleibt als Referenz erhalten; Langzeitrender wurde am 29.09.2026 manuell als in Ordnung bestätigt |
+| `docs/start/PROJEKTORDNERSTRUKTUR_save_.md`<br>Projektübersicht: Ordner, Start, Sicherheit und Funktionen beschrieben | `docs/STABLE_ACCEPTANCE_EVIDENCE.md`<br>Stable-Abnahmenachweis: Basisfreigaben bleiben dokumentiert; der reale 125-%-Befund vom 06.10.2026 verlangt eine neue 100/125/150/200-%-Sichtabnahme des korrigierten Qt-Stands. |
+| `docs/archive/rc24/RELEASE_NOTES_save_.md`<br>Releasehinweise: Aktueller RC24-Funktionsstand dokumentiert | `QUALITY_ENVIRONMENT_STATUS.json`<br>Qualitätsumgebung: Maschinenlesbarer Qualitätsstatus; nach der Layoutkorrektur müssen die automatisierten Gates erneut grün sein und die physische 100/125/150/200-%-UI-Abnahme bleibt offen. |
+| `docs/archive/rc24/TEST_REPORT_save_.md`<br>Testbericht: Automatisierte und offene Prüfungen getrennt ausgewiesen | `VISUAL_INSPECTION_MANIFEST.json`<br>Visuelles Prüfmanifest: Automatisierte visuelle Verträge bleiben Referenz; die reale 100/125/150/200-%-Sichtabnahme des seitengetrennten Qt-Stands steht noch aus. |
+| `docs/archive/rc24/FRESH_PACKAGE_REPORT_save_.md`<br>Paketbericht: Saubere Paketprüfung für RC24 dokumentiert | — |
+| `docs/archive/rc24/CODE_QUALITY_REPORT_2.8.3-rc24_save_.md`<br>Codequalitätsbericht: Interne Qualitätsprüfung ohne Befund | — |
+| `docs/archive/rc24/IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md`<br>Implementierungsbericht: Umgesetzte Funktions- und Sicherheitsverträge dokumentiert | — |
+| `docs/archive/rc24/FINAL_AUDIT_2.8.3-rc24_save_.md`<br>RC-Abschlussaudit: RC-Gates und offene Stable-Gates ehrlich getrennt | — |
 | `VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json`<br>Maschinenlesbarer Buildbericht: Aus der kanonischen RELEASE_EVIDENCE.json erzeugt | — |
 <!-- release-files:end -->
 
@@ -122,7 +142,7 @@ Ein erster Lauf gilt als erfolgreich, wenn die Oberfläche ohne Fehlermeldung st
 
 ## Nächster Schritt
 
-- **Einsteiger:** `START_HIER_save_.md`
+- **Einsteiger:** `docs/start/START_HIER_save_.md`
 - **Nutzer:** `docs/BENUTZERHANDBUCH.md`
-- **Entwickler:** `DEVELOPER_GUIDE.md`
+- **Entwickler:** `docs/manuals/DEVELOPER_GUIDE.md`
 - **Aktueller Arbeitsplan:** `TODO.md`

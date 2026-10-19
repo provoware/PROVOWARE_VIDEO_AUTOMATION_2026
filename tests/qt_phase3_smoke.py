@@ -3,14 +3,16 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+from unittest.mock import patch
 from pathlib import Path
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QMessageBox
 
 from videobatch_fast.config import load_config
+from videobatch_fast.dashboard_settings import load_settings
 from videobatch_fast.qt_legacy_parity import (
     _archive_last_results,
     _plugin_scan,
@@ -66,6 +68,24 @@ def main() -> int:
             "Medien & Ansicht",
         ]
         assert window.start.isEnabled(), "Start must stay clickable and explain missing preparation."
+
+        # Real Qt widgets -> single settings model -> BatchOptions -> saved JSON.
+        assert window.main_tabs.count() == 4
+        window.resolution.setCurrentIndex(window.resolution.findData("1920×1080"))
+        window.quality.setCurrentIndex(window.quality.findData("maximum"))
+        window.effect.setCurrentIndex(window.effect.findData("vivid"))
+        expected_output = temporary_path / "export"
+        window.output.setText(str(expected_output))
+        actual = window._options()
+        assert actual.resolution == "1920×1080"
+        assert actual.profile == "maximum"
+        assert actual.visual_effect == "vivid"
+        assert actual.output_dir == expected_output
+        stored = load_settings()
+        assert stored.resolution == actual.resolution
+        assert stored.quality == actual.profile
+        assert stored.effect == actual.visual_effect
+        assert stored.output_dir == actual.output_dir
         menu_titles = [action.text().replace("&", "") for action in window.menuBar().actions()]
         assert menu_titles == ["Datei", "Medien", "Ansicht", "Produktion", "Werkzeuge", "Hilfe"]
 
@@ -88,6 +108,30 @@ def main() -> int:
         media_a.write_bytes(b"smoke-image-a")
         window.audio.add_paths([source_z, source_a])
         window.media.add_paths([media_z, media_a])
+
+        # Multi-image slideshow is valid with 2 audios and 3 images.
+        # The shared pairwise banner must not mislabel that as incomplete.
+        from videobatch_fast.slideshow import (
+            SLIDESHOW_MODE_ALL_IMAGES, SLIDESHOW_MODE_PAIRWISE,
+        )
+        slide_extra = temporary_path / "third-cover.png"
+        slide_extra.write_bytes(b"smoke-image-extra")
+        window.media.add_paths([slide_extra])
+        window.slideshow.assignment.setCurrentIndex(
+            window.slideshow.assignment.findData(SLIDESHOW_MODE_ALL_IMAGES)
+        )
+        app.processEvents()
+        assert "Diashow" in window.pairing_summary_label.text()
+        assert window.pairing_summary_label.text().startswith("✓ Diashow bereit:")
+        assert "fehlen" not in window.pairing_summary_label.text()
+        assert not window.probe_button.isEnabled()
+        window.slideshow.assignment.setCurrentIndex(
+            window.slideshow.assignment.findData(SLIDESHOW_MODE_PAIRWISE)
+        )
+        window.media.clear()
+        window.media.add_paths([media_z, media_a])
+        app.processEvents()
+        assert "Bereit für 2 Video" in window.pairing_summary_label.text()
 
         # Sorting changes only the view until the user explicitly accepts it as
         # production order. This restores the old data-safety contract.
@@ -149,6 +193,66 @@ def main() -> int:
         assert payload["calendar_notes"]["2026-09-11"]["note"] == "Parität prüfen"
         assert payload["meta"]["frontend"] == "qt-phase3"
         assert payload["meta"]["qt_active_workspace"] == "queue"
+
+        # Real Qt instance: simulate a full / read-only disk and verify that
+        # Save As, closing, and project switching never discard edits.
+        previous = window._project_file
+        destination = temporary_path / "new-name.vbfast.json"
+        window.project_panel.note.setPlainText("Ungespeicherte Änderungen")
+        window._project_dirty = True
+        with (
+            patch("videobatch_fast.qt_phase3.save_project_state",
+                  side_effect=PermissionError("Disk is read-only")),
+            patch("videobatch_fast.qt_phase3.QFileDialog.getSaveFileName",
+                  return_value=(str(destination), "")),
+            patch("videobatch_fast.qt_phase3.QMessageBox.critical"),
+        ):
+            window._save_project_as()
+            assert window._project_file == previous
+            assert window._project_dirty
+            assert not destination.exists()
+        with (
+            patch("videobatch_fast.qt_phase3.save_project_state",
+                  side_effect=OSError("Disk full")),
+            patch("videobatch_fast.qt_phase3.QMessageBox.warning",
+                  return_value=QMessageBox.StandardButton.Cancel),
+        ):
+            assert window.close() is False
+            assert window.isVisible()
+            assert window._project_dirty
+        # Recovery: a later successful save clears the dirty state.
+        assert window._save_current_project()
+        assert not window._project_dirty
+        assert window._project_file == previous
+
+        # Simulate a Qt widget failure halfway through changing projects.
+        # The previous project and its visible content must be restored.
+        from videobatch_fast.project_state import save_project_state
+        other_file = temporary_path / "unapplied.vbfast.json"
+        save_project_state(other_file, {"project_name": "Unapplied"})
+        old_project = window._project_file
+        old_note = window.project_panel.note.toPlainText()
+        old_audio = window.audio.production_paths()
+        original_apply = window._apply_project_state
+        calls = [0]
+
+        def fail_first_application(state):
+            calls[0] += 1
+            if calls[0] == 1:
+                window.audio.clear()
+                raise RuntimeError("Simulated Qt widget failure")
+            return original_apply(state)
+
+        with patch.object(window, "_apply_project_state", side_effect=fail_first_application):
+            try:
+                window._load_project(other_file)
+            except RuntimeError:
+                pass
+            else:
+                raise AssertionError("Partial project change succeeded unexpectedly")
+        assert window._project_file == old_project
+        assert window.project_panel.note.toPlainText() == old_note
+        assert window.audio.production_paths() == old_audio
 
         for route in window.workspace_navigation.buttons:
             window._route_workspace(route)

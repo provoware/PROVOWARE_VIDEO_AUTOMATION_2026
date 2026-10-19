@@ -115,7 +115,7 @@ Den Testpfad an die tatsächliche Änderung anpassen.
 Bei jeder Funktionsänderung kontrollieren:
 
 1. Muss `README.md` angepasst werden?
-2. Ändert sich `START_HIER_save_.md` oder `docs/BENUTZERHANDBUCH.md`?
+2. Ändert sich `docs/start/START_HIER_save_.md` oder `docs/BENUTZERHANDBUCH.md`?
 3. Benötigt `ERROR_HANDLING.md` eine neue Ursache oder Wiederherstellungsaktion?
 4. Muss eine Entwickler- oder Releasebeschreibung aktualisiert werden?
 5. Entspricht die neue Anleitung `docs/DOKUMENTATIONSSTANDARD.md`?

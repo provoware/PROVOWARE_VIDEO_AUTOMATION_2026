@@ -38,13 +38,15 @@ jobs:
           python-version: '3.12'
 
       - name: Install pinned lightweight test runner
-        run: python -m pip install --disable-pip-version-check --no-input pytest==9.0.2
+        run: python -m pip install --disable-pip-version-check --no-input pytest==9.0.2 cryptography==50.0.0
 
       - name: Compile release-contract guards
         run: |
           set -Eeuo pipefail
           python -m py_compile \
             diagnostics/release_readiness/generate_from_evidence.py \
+            diagnostics/release_readiness/generate_candidate_quality.py \
+            diagnostics/release_readiness/test_candidate_quality.py \
             scripts/export_stable_acceptance_evidence.py \
             scripts/validate_release_contract_sync.py \
             scripts/validate_stable_acceptance.py \
@@ -59,12 +61,19 @@ jobs:
           tests/test_release_finalization_rc9.py
           tests/test_operator_stable_acceptance.py
           tests/test_stable_promotion_guards.py
+          tests/test_release_evidence_separation.py
 
       - name: Verify all generated release evidence is synchronized
         run: python diagnostics/release_readiness/generate_from_evidence.py --check
 
-      - name: Verify manifest, evidence and status files agree
-        run: python scripts/validate_release_contract_sync.py --json
+      - name: Verify independent candidate snapshot without granting release
+        run: |
+          set -Eeuo pipefail
+          python -m pytest -q diagnostics/release_readiness/test_candidate_quality.py
+          python diagnostics/release_readiness/generate_candidate_quality.py --check
+
+      - name: Verify development integration contract without premature manual acceptance
+        run: python scripts/validate_release_contract_sync.py --phase integration --json
 
       - name: Prove release-contract gate remained read-only
         if: always()

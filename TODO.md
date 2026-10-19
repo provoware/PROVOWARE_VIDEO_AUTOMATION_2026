@@ -13,7 +13,8 @@ Der Langzeitrender und die frühere Kubuntu-Basisabnahme sind dokumentiert. **Di
 - [x] Basisabnahme vom 29.09.2026 unter `diagnostics/release_readiness/KUBUNTU_OPERATOR_ACCEPTANCE_2026-09-29.json` erhalten.
 - [x] Realen 125-%-Befund vom 06.10.2026 dokumentiert: abgeschnittene Texte, zu flache Listen und unnötiges Hauptbereich-Scrollen.
 - [x] Hauptablauf in eigene Seiten für Dateien, Ausgabe und Produktion getrennt; Projekt/Hilfe/Diagnose verdrängen den Arbeitsbereich nicht mehr.
-- [ ] PR #230 vollständig durch Repository-, Release-, Qt- und Wayland-Gates bringen.
+- [x] PR #230 ist historisch in `main` übernommen; alte Prüfungen sind keine neue Freigabe für PR #240.
+- [ ] PR #240: aktuelle technische Tests vollständig und auf demselben Commit auswerten; Release- und Realabnahme separat nachweisen.
 - [ ] Korrigierten Stand real bei 100 %, 125 %, 150 % und 200 % prüfen: kein Clipping, keine Überlagerung, alle Hauptschalter sichtbar, Fokus sichtbar, Listen ausreichend hoch, keine Hauptseiten-Scrollleiste.
 - [ ] Sortierung prüfen: reine Ansichtssortierung darf die Produktionspaarung nicht ändern; Übernahme nur nach ausdrücklichem Klick.
 - [ ] Erst nach dieser Sichtabnahme `physical_kubuntu_26_04_wayland` wieder auf `passed` setzen.
@@ -28,7 +29,7 @@ Der Langzeitrender und die frühere Kubuntu-Basisabnahme sind dokumentiert. **Di
 ## Stable-Finalisierung – ein reales UI-Gate offen
 
 - [x] Expliziten Operator-Freigabevertrag als fail-closed Alternative zum klassischen Nachweispfad implementieren; keine Messwerte werden rekonstruiert.
-- [ ] PR #230 auf dem finalen unveränderten Head vollständig grün bestätigen.
+- [ ] PR #240 nach vollständigen aktuellen Pflichtprüfungen und physischer Kubuntu-Abnahme gezielt freigeben (bis dahin Entwurf).
 - [ ] Reale 100/125/150/200-%-Sichtabnahme dokumentieren und Release-Evidence erneut ableiten.
 - [ ] Danach Stable 2.8.3 in getrennter Arbeitskopie erzeugen, deterministisch doppelt paketieren, Stable-Branch/Tag und GitHub-Release veröffentlichen.
 

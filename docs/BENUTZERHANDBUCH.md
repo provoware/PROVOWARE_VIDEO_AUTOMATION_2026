@@ -72,13 +72,16 @@ chmod +x videobatch.sh
 
 ## 4. Erstes Video erstellen
 
-Nach dem Start zeigt **Übersicht** nur Status und den einfachen Drei-Schritt-Ablauf. Die eigentliche Arbeit ist getrennt:
+**Entwicklungshinweis:** Die folgende Bedienung beschreibt den Entwicklungszweig zu PR #239. Sie ist **noch nicht** Teil des freigegebenen Releasekandidaten 2.8.3-rc24.
 
-1. **1 · Dateien** – Audio und Bilder/Videos auswählen.
-2. **2 · Ausgabe** – Zielordner und Verarbeitung festlegen.
-3. **3 · Produktion** – Paarung kontrollieren, starten und Fortschritt beobachten.
+Das VideoBatch-Fenster bietet vier übersichtliche Bereiche:
 
-Dadurch müssen nicht alle Bedienfelder gleichzeitig in eine einzige Fläche passen. Bei großer Schrift bleiben die Hauptschalter auf ihrer jeweiligen Seite sichtbar. Lange Dateilisten dürfen innerhalb ihrer Liste scrollen; die Hauptarbeitsseite soll dafür nicht gescrollt werden müssen.
+1. **1 · Dateien** – Audio, Bilder und Videos auswählen und die Großvorschau nutzen.
+2. **2 · Produktion** – Dateipaare prüfen und fertige Videos erstellen.
+3. **Erweitert** – selten benötigte Prüfung, Sicherheit und ausgeschlossene Programmierordner.
+4. **Hilfe / Werkzeuge** – zusätzliche Funktionen und Diagnose.
+
+**Auflösung, Qualität, Bildeffekt und Ausgabeordner bleiben über allen vier Bereichen sichtbar.** Lange Dateilisten dürfen innerhalb ihrer Liste scrollen, die wichtigsten Schaltflächen sollen dabei erreichbar bleiben.
 
 ### Schritt 1: Audiodateien hinzufügen
 
@@ -110,17 +113,17 @@ Dadurch müssen nicht alle Bedienfelder gleichzeitig in eine einzige Fläche pas
 
 ### Schritt 4: Modus wählen
 
-**Aktion:** `2 · Ausgabe` öffnen und einen Schnellmodus wählen oder die Automatik verwenden.
+**Aktion:** Oben bei **Auflösung** die Größe, bei **Qualität** den gewünschten Kompromiss zwischen Geschwindigkeit und Bildqualität sowie bei **Bildeffekt** den gewünschten Look wählen. Die Vorgaben „Originalgröße“, „Ausgewogen“ und „Kein Effekt“ sind einfache Ausgangspunkte.
 
-**Empfehlung:** Beim ersten Test die Automatik verwenden.
+**Empfehlung:** Beim ersten Test die vorgeschlagenen Einstellungen verwenden und zunächst nur einen kurzen Auftrag starten.
 
-**Warum notwendig?** Der Modus bestimmt, wie Audio, Bilder, Videos, Übergänge und Effekte kombiniert werden.
+**Warum notwendig?** Dadurch bestimmst du, wie groß und aufwendig das Ergebnis werden soll. Die Bildeffekt-Auswahl ändert keine Überblendungen.
 
-**Kann entfallen?** Ja, wenn die Automatik aktiv ist. Dann wählt VideoBatch einen passenden Modus.
+**Kann entfallen?** Ja. Die gespeicherten Grundwerte werden übernommen.
 
 ### Schritt 5: Ausgabeordner prüfen
 
-**Aktion:** Einen eigenen beschreibbaren Zielordner auswählen.
+**Aktion:** Im dauerhaft sichtbaren Feld **Ausgabeordner** auf **Wählen …** klicken und einen beschreibbaren Ordner aussuchen.
 
 **Warum notwendig?** Das fertige Video muss sicher gespeichert werden können.
 
@@ -130,7 +133,7 @@ Dadurch müssen nicht alle Bedienfelder gleichzeitig in eine einzige Fläche pas
 
 ### Schritt 6: Produktion starten
 
-**Aktion:** `3 · Produktion` öffnen, die Paarung kontrollieren und `▶ 3 · Videos erstellen` wählen.
+**Aktion:** `2 · Produktion` öffnen, die Paarung kontrollieren und `▶ Prüfen & Videos erstellen` wählen.
 
 **Warum notwendig?** Vor dem Rendern werden Quellen, Pfade, Modus und benötigte Werkzeuge geprüft.
 
@@ -153,6 +156,24 @@ Dadurch müssen nicht alle Bedienfelder gleichzeitig in eine einzige Fläche pas
 **Warum notwendig?** Ein technisch abgeschlossener Render ersetzt keine inhaltliche Sicht- und Hörprüfung.
 
 **Kann entfallen?** Für unwichtige Tests ja. Vor Veröffentlichung oder Archivierung nein.
+
+## Medienbibliothek im Entwicklungszweig – nur Medien aus drei Ordnern
+
+**Pflichtgrad:** Automatisch erledigt. Die zusätzlichen Ausschlüsse sind optional.
+
+Das Programm merkt sich erkennbare Audio-, Bild- und Videodateien aus **Videos**, **Downloads** und **Bilder** sowie deren Unterordnern. Unter Linux kann der Bilderordner auch `Pictures` heißen. Maßgeblich ist die tatsächliche Linux-Verzeichniskonfiguration. Quellcode, ZIP-Dateien und normale Dokumente werden nicht aufgenommen.
+
+**Beim Start:** Bereits bekannte Medien erscheinen als zuletzt gespeicherter Stand. Die Aktualität wird danach im Hintergrund kontrolliert; ein Cache-Eintrag bedeutet nicht automatisch, dass die Originaldatei noch vorhanden ist.
+
+**Eigene Programmierordner auslassen:** Bereich **Erweitert** öffnen, **Eigene Programmierordner auslassen** aufklappen, über **Projektordner auswählen …** den Ordner wählen und **Ausgeschlossene Ordner speichern** anklicken. Es werden nur Unterordner innerhalb der drei Medien-Hauptordner akzeptiert.
+
+**Erwartetes Ergebnis:** Die gespeicherte Anzahl ausgeschlossener Ordner wird angezeigt. Der Medienindex wird im Hintergrund neu aufgebaut, ohne Originalmedien zu löschen.
+
+**Bei einem Fehler:** Die Meldung unter der Speichern-Schaltfläche lesen. Falsche oder unvollständige Ordnerpfade korrigieren. Wenn der Index beschädigt ist, wird eine Diagnosekopie gesichert und der Index erneut erstellt.
+
+**Abschlussprüfung:** Einen neuen Film oder ein neues Foto in einem der drei Hauptordner ablegen, eine Programmdatei in Downloads danebenlegen und den Medienbrowser öffnen. Nur die Medien dürfen in der Mediensuche erscheinen.
+
+**Hinweis:** Der Entwicklungszweig ist noch nicht freigegeben. Die Freigabe folgt erst nach vollständigen Qt-, Rendering-, Leistungs- und realen Kubuntu-Sichtprüfungen.
 
 ## 5. Ansicht, Zoom und Sortierreihenfolge
 

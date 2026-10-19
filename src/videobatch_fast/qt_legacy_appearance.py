@@ -36,5 +36,5 @@ def apply_theme(window: Any) -> None:
     window.setStyleSheet(_THEME_OVERRIDES.get(theme, ""))
     font = QFont(app.font())
     base = float(getattr(window, "_parity_base_font_size", 10.0) or 10.0)
-    font.setPointSizeF(max(7.0, base * scale / 100.0))
+    font.setPointSizeF(max(12.0, base * scale / 100.0))
     app.setFont(font)
