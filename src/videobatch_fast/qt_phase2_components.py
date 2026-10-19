@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
     QComboBox,
+    QDoubleSpinBox,
     QFrame,
     QHBoxLayout,
     QLabel,
@@ -245,6 +246,15 @@ class SlideshowPanel(QFrame):
         for key, label in TRANSITION_LABELS.items():
             self.transition.addItem(label, key)
         transition_row.addWidget(self.transition, 1)
+        self.custom_transition_seconds = QDoubleSpinBox()
+        self.custom_transition_seconds.setRange(0.0, 5.0)
+        self.custom_transition_seconds.setDecimals(1)
+        self.custom_transition_seconds.setSingleStep(0.1)
+        self.custom_transition_seconds.setValue(1.0)
+        self.custom_transition_seconds.setSuffix(" s")
+        self.custom_transition_seconds.setAccessibleName("Individuelle Diashow-Überblenddauer")
+        self.custom_transition_seconds.setEnabled(False)
+        transition_row.addWidget(self.custom_transition_seconds)
         layout.addLayout(transition_row)
 
         self.scene_sync = QCheckBox("Bildwechsel an erkannten Szenen ausrichten")
@@ -332,7 +342,8 @@ class SlideshowPanel(QFrame):
         layout.addWidget(scroll, 1)
 
         self.assignment.currentIndexChanged.connect(self._state_changed)
-        self.transition.currentIndexChanged.connect(self._state_changed)
+        self.transition.currentIndexChanged.connect(self._transition_changed)
+        self.custom_transition_seconds.valueChanged.connect(self._state_changed)
         self.scene_sync.toggled.connect(self._scene_sync_changed)
         self.audio_select.currentIndexChanged.connect(self._audio_changed)
         self.analyze.clicked.connect(lambda: self.analyze_selected(refresh=True))
@@ -344,6 +355,14 @@ class SlideshowPanel(QFrame):
     @property
     def transition_preset(self) -> str:
         return str(self.transition.currentData() or "auto")
+
+    @property
+    def transition_seconds(self) -> float:
+        return float(self.custom_transition_seconds.value())
+
+    def _transition_changed(self) -> None:
+        self.custom_transition_seconds.setEnabled(self.transition_preset == "custom")
+        self._state_changed()
 
     @property
     def scene_sync_enabled(self) -> bool:
@@ -580,6 +599,7 @@ class SlideshowPanel(QFrame):
                 duration,
                 len(images),
                 self.transition_preset,
+                custom_seconds=self.transition_seconds,
                 scene_sync=self.scene_sync_enabled,
                 marker_count=marker_count,
             )
