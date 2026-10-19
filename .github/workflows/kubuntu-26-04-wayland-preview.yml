@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - .github/workflows/kubuntu-26-04-wayland-preview.yml
-      - PLATFORM_SUPPORT.json
+      - config/PLATFORM_SUPPORT.json
       - docs/KUBUNTU_26_04_WAYLAND.md
       - config/requirements-qt.txt
       - scripts/build_wayland_preview_zip.py
@@ -19,7 +19,7 @@ on:
     branches: [main]
     paths:
       - .github/workflows/kubuntu-26-04-wayland-preview.yml
-      - PLATFORM_SUPPORT.json
+      - config/PLATFORM_SUPPORT.json
       - docs/KUBUNTU_26_04_WAYLAND.md
       - config/requirements-qt.txt
       - scripts/build_wayland_preview_zip.py
@@ -195,7 +195,7 @@ jobs:
           required = {
               'STARTEN.sh',
               'config/VERSION.json',
-              'PLATFORM_SUPPORT.json',
+              'config/PLATFORM_SUPPORT.json',
               'config/requirements-qt.txt',
               'src/videobatch_fast/platform_integration.py',
               'src/videobatch_fast/qt_phase3.py',
