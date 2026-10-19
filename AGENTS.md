@@ -24,7 +24,7 @@ Jede Änderung folgt strikt diesem Ablauf:
 3. **Minimal korrigieren:** vorhandene Funktionen, Module, Tests und Prüfpfade wiederverwenden.
 4. **Gezielt prüfen:** zuerst nur den betroffenen Vertrag/Test ausführen.
 5. **Lokal integrieren:** erst danach die passende bestehende Sammelprüfung ausführen.
-6. **Real abnehmen:** GUI-, Start-, Datei- und Renderprobleme benötigen einen realen Lauf auf dem Zielsystem.
+6. **Automatisch absichern:** GUI-, Start-, Datei- und Renderänderungen mit fokussierten Simulationen, Smoke- und Regressionstests kontrollieren; reale vollständige Zielsystemabnahme erst am final eingefrorenen Releasekandidaten.
 7. **Finalisieren:** Release-Manifest und Abschlussberichte erst aus dem endgültigen, unveränderten Dateibaum erzeugen.
 
 Nur **reproduzierbare Befunde** werden korrigiert. Vermutete Probleme werden zuerst als Hypothese dokumentiert und nicht durch spekulative Architektur beantwortet.
@@ -80,7 +80,7 @@ Nur **reproduzierbare Befunde** werden korrigiert. Vermutete Probleme werden zue
 - Für die aktuelle reale Zielsystemabnahme gilt `docs/KUBUNTU_26_04_QT_ABNAHME.md`; ältere Bildvergleichschecklisten liegen nur noch im historischen Archiv.
 - Vor dem ersten UI-Patch wird eine vollständige Soll/Ist-Liste erstellt: Struktur, Maße, Proportionen, Typografie, Farben, Abstände, Zustände, Clipping und Überlagerungen.
 - Reihenfolge der UI-Korrektur: **Absturz → Überlagerung/Clipping → unerreichbare Bedienung → falsche Geometrie/Proportion → Typografie → Farbe/Feinschliff**.
-- Ein sichtbarer UI-Punkt gilt erst als erledigt, wenn der reale Zielsystem-Screenshot beziehungsweise die reale Desktopprüfung ihn bestätigt. Ein statischer Vertrag allein reicht nicht.
+- Ein UI-Punkt gilt während der Entwicklung erst als **technisch geprüft**, wenn passende automatisierte Tests beziehungsweise nachvollziehbare Bildvergleiche vorliegen. Als **real abgenommen** gilt er erst nach der gebündelten Sicht- und Bedienprüfung am finalen Releasekandidaten; ein statischer Vertrag allein ersetzt diese nicht.
 - Pixel-, Zonen- und Mindestabstandswerte werden erst nach Messung eines bestätigten Musters festgeschrieben; keine erfundenen Sollwerte.
 - Der geometrische GUI-Wächter wird nach der Bildkorrektur mit den bestätigten Sollbereichen und Mindestabständen erweitert.
 - Das Designmanifest bleibt internes Regelwerk für Tool und Untermodule; es ist **kein eigener GitHub-Merge-Blocker**.
