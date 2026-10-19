@@ -25,7 +25,7 @@ def _blocked(message: str) -> RuntimeError:
 
 
 def validate_promotion_source(source: Path) -> tuple[dict[str, object], str]:
-    version = json.loads((source / "VERSION.json").read_text(encoding="utf-8"))
+    version = json.loads((source / "config/VERSION.json").read_text(encoding="utf-8"))
     status = json.loads((source / "DEVELOPMENT_STATUS.json").read_text(encoding="utf-8"))
     build = str(version["build"])
     if version.get("channel") != "rc" or status.get("version") != build:
@@ -85,7 +85,7 @@ def main() -> int:
         raise _blocked(f"Das Ausgabeziel {destination} existiert bereits.")
     shutil.copytree(source, destination, symlinks=False, ignore=ignore)
     evidence_path = copy_canonical_release_evidence(source, destination)
-    version_path = destination / "VERSION.json"
+    version_path = destination / "config/VERSION.json"
     old_build = str(version["build"])
     replace_text(destination, old_build, stable_version)
     version = json.loads(version_path.read_text(encoding="utf-8"))

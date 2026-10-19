@@ -12,16 +12,16 @@ from typing import Any, Mapping
 from videobatch_fast.versioning import build_label
 
 ROOT = Path(__file__).resolve().parents[1]
-MANIFEST_PATH = ROOT / "RELEASE_MANIFEST.json"
-PACKAGE_MANIFEST_PATH = ROOT / "manifest.json"
+MANIFEST_PATH = ROOT / "config/RELEASE_MANIFEST.json"
+PACKAGE_MANIFEST_PATH = ROOT / "config/manifest.json"
 EVIDENCE_PATH = ROOT / "diagnostics/release_readiness/RELEASE_EVIDENCE.json"
 HISTORICAL_MANIFEST_PATH = ROOT / "diagnostics/release_readiness/HISTORICAL_RC24_RELEASE_MANIFEST.json"
 HISTORICAL_MANIFEST_GIT_BLOB = "c9fd5fe01ce9db899bebf9d7ffd1d7cb8829d6f2"
-QUALITY_PATH = ROOT / "QUALITY_ENVIRONMENT_STATUS.json"
-BUILD_REPORT_PATH = ROOT / f"VideoBatch_Fast_{build_label()}_BUILD_REPORT_save_.json"
+QUALITY_PATH = ROOT / "config/QUALITY_ENVIRONMENT_STATUS.json"
+BUILD_REPORT_PATH = ROOT / f"docs/archive/rc24/VideoBatch_Fast_{build_label()}_BUILD_REPORT_save_.json"
 README_PATH = ROOT / "README.md"
-STATUS_PATH = ROOT / "STATUS.md"
-TODO_PATH = ROOT / "TODO.md"
+STATUS_PATH = ROOT / "docs/STATUS.md"
+TODO_PATH = ROOT / "docs/TODO.md"
 
 
 class ContractSyncError(RuntimeError):

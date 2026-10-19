@@ -16,7 +16,7 @@ from videobatch_fast.visual_approval import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
-MANIFEST = ROOT / "RELEASE_MANIFEST.json"
+MANIFEST = ROOT / "config/RELEASE_MANIFEST.json"
 
 
 class ManifestContractError(RuntimeError):
@@ -78,7 +78,7 @@ def files_digest(files: Sequence[Mapping[str, Any]]) -> str:
 
 def build_payload(*, compact: bool = False) -> dict[str, Any]:
     files = expected_files()
-    visual_path = ROOT / "VISUAL_INSPECTION_MANIFEST.json"
+    visual_path = ROOT / "config/VISUAL_INSPECTION_MANIFEST.json"
     visual = _strict_json(visual_path) if visual_path.is_file() else {}
     if visual and not isinstance(visual, dict):
         raise ManifestContractError("VISUAL_INSPECTION_MANIFEST.json muss ein JSON-Objekt sein")

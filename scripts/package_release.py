@@ -24,8 +24,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Erzeugt ein deterministisches Release-ZIP aus RELEASE_MANIFEST.json.")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    version = json.loads((ROOT / "VERSION.json").read_text(encoding="utf-8"))
-    manifest_path = ROOT / "RELEASE_MANIFEST.json"
+    version = json.loads((ROOT / "config/VERSION.json").read_text(encoding="utf-8"))
+    manifest_path = ROOT / "config/RELEASE_MANIFEST.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     prefix = f"VideoBatch_Fast_{version['build']}"
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -35,7 +35,7 @@ def main() -> int:
             path = ROOT.joinpath(*relative.parts)
             mode = int(str(item["mode"]), 8)
             _write(archive, f"{prefix}/{relative.as_posix()}", path.read_bytes(), mode)
-        _write(archive, f"{prefix}/RELEASE_MANIFEST.json", manifest_path.read_bytes(), 0o644)
+        _write(archive, f"{prefix}/config/RELEASE_MANIFEST.json", manifest_path.read_bytes(), 0o644)
     os.chmod(args.output, 0o644)
     print(f"DETERMINISTISCHES RELEASE-ZIP ERZEUGT · {args.output}")
     return 0
