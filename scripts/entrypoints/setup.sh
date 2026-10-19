@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd -P)"
 args=()
 mode="setup"
 for arg in "$@"; do
@@ -11,4 +11,4 @@ for arg in "$@"; do
     *) printf 'Unbekannte Option: %s\n' "$arg" >&2; exit 2 ;;
   esac
 done
-exec "$ROOT_DIR/videobatch.sh" "$mode" "${args[@]}"
+exec "$ROOT_DIR/scripts/entrypoints/videobatch.sh" "$mode" "${args[@]}"

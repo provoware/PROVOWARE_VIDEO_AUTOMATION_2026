@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 SELF="${BASH_SOURCE[0]}"
-ROOT_DIR="$(cd -- "$(dirname -- "$SELF")" && pwd -P)"
+ROOT_DIR="$(cd -- "$(dirname -- "$SELF")/../.." && pwd -P)"
 ACTION="${1:-start}"
 if [[ $# -gt 0 ]]; then shift; fi
 BOOTSTRAP_PYTHON="${VIDEOBATCH_BOOTSTRAP_PYTHON:-python3}"
@@ -45,7 +45,7 @@ fatal() {
 }
 
 require_project() {
-  [[ -f "$ROOT_DIR/VERSION.json" && -f "$ROOT_DIR/scripts/toolchain.py" && -f "$ROOT_DIR/TOOLCHAIN_CONTRACT.json" ]] || \
+  [[ -f "$ROOT_DIR/config/VERSION.json" && -f "$ROOT_DIR/scripts/toolchain.py" && -f "$ROOT_DIR/config/TOOLCHAIN_CONTRACT.json" ]] || \
     fatal "Das Projekt ist unvollständig oder wurde während einer Reparatur beschädigt." 9
   [[ ! -L "$ROOT_DIR" ]] || fatal "Der Projektordner darf kein symbolischer Link sein." 9
 }
@@ -157,14 +157,14 @@ case "$ACTION" in
     "$BOOTSTRAP_PYTHON" "$ROOT_DIR/scripts/user_diagnostics.py" --brief
     ;;
   test)
-    exec "$ROOT_DIR/test.sh" "$@"
+    exec "$ROOT_DIR/scripts/entrypoints/test.sh" "$@"
     ;;
   quality)
     [[ $# -eq 0 ]] || fatal "quality akzeptiert keine Zusatzoptionen." 2
-    exec "$ROOT_DIR/quality.sh"
+    exec "$ROOT_DIR/scripts/entrypoints/quality.sh"
     ;;
   verify)
-    exec "$ROOT_DIR/verify_release.sh" "$@"
+    exec "$ROOT_DIR/scripts/entrypoints/verify_release.sh" "$@"
     ;;
   finalize|finalisieren)
     require_system
@@ -174,7 +174,7 @@ case "$ACTION" in
     exec "$ENV_PYTHON" "$ROOT_DIR/scripts/finalize_release.py" "$@"
     ;;
   stable)
-    exec "$ROOT_DIR/stable_release.sh" "$@"
+    exec "$ROOT_DIR/scripts/entrypoints/stable_release.sh" "$@"
     ;;
   fault-lab)
     require_system

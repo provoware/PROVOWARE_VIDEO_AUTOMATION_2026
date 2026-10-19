@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 MODE="full"
 
 usage() {
@@ -121,7 +121,7 @@ export RUFF_CACHE_DIR="$TMP_ROOT/ruff-cache"
 VERSION="$(
   "$ENV_PYTHON" -c \
     'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["build"])' \
-    "$ROOT_DIR/VERSION.json"
+    "$ROOT_DIR/config/VERSION.json"
 )"
 
 if [[ "$MODE" == "full" && "${VIDEOBATCH_QUALITY_ALREADY_VERIFIED:-0}" != "1" ]]; then
