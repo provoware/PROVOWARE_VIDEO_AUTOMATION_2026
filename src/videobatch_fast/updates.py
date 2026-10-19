@@ -48,7 +48,7 @@ def _atomic_write(path: Path, data: bytes, mode: int) -> None:
 
 
 def _release_manifest_snapshot(root: Path) -> dict[str, str]:
-    manifest_path = root / "RELEASE_MANIFEST.json"
+    manifest_path = root / "config/RELEASE_MANIFEST.json"
     if not manifest_path.is_file():
         raise OSError("Kandidat enthält kein RELEASE_MANIFEST.json.")
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -152,7 +152,7 @@ def apply_update_package(
         progress("integrity", "Release-Manifest und Kandidat werden vor dem Selbsttest verglichen.")
         before = _release_manifest_snapshot(candidate)
         tree_before = _candidate_tree_snapshot(candidate)
-        test_script = candidate / "test.sh"
+        test_script = candidate / "scripts/entrypoints/test.sh"
         if not test_script.is_file():
             return UpdateInstallResult(False, check.version, "Kandidat enthält kein test.sh.", report=str(report_path))
         env = {

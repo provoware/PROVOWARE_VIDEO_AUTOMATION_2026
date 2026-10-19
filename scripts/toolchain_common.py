@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-CONTRACT_PATH = ROOT / "TOOLCHAIN_CONTRACT.json"
+CONTRACT_PATH = ROOT / "config/TOOLCHAIN_CONTRACT.json"
 MANIFEST_NAME = "TOOLCHAIN_WHEELHOUSE_MANIFEST.json"
 RESOLVED_LOCK_NAME = "requirements-toolchain-resolved.lock"
 RUNTIME_RESOLVED_LOCK_NAME = "requirements-runtime-resolved.lock"
@@ -26,7 +26,7 @@ def canonical(value: str) -> str:
 
 
 def current_build(root: Path = ROOT) -> str:
-    data = json.loads((root / "VERSION.json").read_text(encoding="utf-8"))
+    data = json.loads((root / "config/VERSION.json").read_text(encoding="utf-8"))
     return str(data["build"])
 
 
@@ -50,7 +50,7 @@ def read_exact_lock(path: Path) -> dict[str, str]:
 
 
 def load_contract(root: Path = ROOT) -> dict[str, Any]:
-    data = json.loads((root / "TOOLCHAIN_CONTRACT.json").read_text(encoding="utf-8"))
+    data = json.loads((root / "config/TOOLCHAIN_CONTRACT.json").read_text(encoding="utf-8"))
     if data.get("schema_version") != 1:
         raise ValueError("Unbekannte Toolchain-Vertragsversion.")
     build = current_build(root)
@@ -129,7 +129,7 @@ def runtime_identity() -> dict[str, str]:
 
 def toolchain_cache_key(root: Path = ROOT) -> str:
     digest = hashlib.sha256()
-    digest.update((root / "requirements-toolchain.lock").read_bytes())
+    digest.update((root / "config/requirements-toolchain.lock").read_bytes())
     digest.update(json.dumps(runtime_identity(), sort_keys=True).encode("utf-8"))
     return digest.hexdigest()[:20]
 

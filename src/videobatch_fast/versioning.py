@@ -4,7 +4,7 @@ import json
 from functools import lru_cache
 from pathlib import Path
 
-VERSION_FILE = Path(__file__).resolve().parents[2] / "VERSION.json"
+VERSION_FILE = Path(__file__).resolve().parents[2] / "config/VERSION.json"
 
 
 @lru_cache(maxsize=1)
