@@ -161,7 +161,7 @@ jobs:
             libfontconfig1 \
             libwayland-client0 \
             libxkbcommon0
-          python3 -m pip install -r requirements-qt.txt
+          python3 -m pip install -r config/requirements-qt.txt
           python3 -m pip install pytest==8.4.2
 
       - name: Start native headless Wayland compositor
@@ -295,7 +295,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           short_sha="${EXPECTED_HEAD_SHA:0:12}"
-          version="$(python3 -c 'import json; from pathlib import Path; data=json.loads(Path("VERSION.json").read_text(encoding="utf-8")); value=str(data.get("build") or data.get("version") or "").strip(); assert value, "VERSION.json: build/version fehlt"; print(value)')"
+          version="$(python3 -c 'import json; from pathlib import Path; data=json.loads(Path("config/VERSION.json").read_text(encoding="utf-8")); value=str(data.get("build") or data.get("version") or "").strip(); assert value, "config/VERSION.json: build/version fehlt"; print(value)')"
           archive="PROVOWARE_VIDEO_AUTOMATION_2026_${version}_${short_sha}_verified.zip"
           git archive \
             --format=zip \

@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'RELEASE_MANIFEST.json'
+      - 'config/RELEASE_MANIFEST.json'
       - 'src/videobatch_fast/long_render_contract.py'
       - 'scripts/run_long_render_acceptance.py'
       - 'scripts/build_long_render_contract.py'
@@ -18,7 +18,7 @@ on:
     branches:
       - main
     paths:
-      - 'RELEASE_MANIFEST.json'
+      - 'config/RELEASE_MANIFEST.json'
       - 'src/videobatch_fast/long_render_contract.py'
       - 'scripts/run_long_render_acceptance.py'
       - 'scripts/build_long_render_contract.py'
@@ -77,10 +77,10 @@ jobs:
           from pathlib import Path
 
           repository = Path.cwd()
-          version_payload = json.loads((repository / 'VERSION.json').read_text(encoding='utf-8'))
+          version_payload = json.loads((repository / 'config/VERSION.json').read_text(encoding='utf-8'))
           version = str(version_payload.get('build') or version_payload.get('version') or '').strip()
           if not version:
-              raise SystemExit('VERSION.json: build/version fehlt')
+              raise SystemExit('config/VERSION.json: build/version fehlt')
           root = Path('rehearsal').resolve()
           inputs = root / 'inputs'
           jobs = []
