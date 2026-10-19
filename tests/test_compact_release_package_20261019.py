@@ -96,3 +96,34 @@ def test_package_root_budget_is_enforced(tmp_path: Path, monkeypatch: pytest.Mon
     with pytest.raises(ValueError, match="höchstens acht Hauptordnerdateien"):
         package_release.main()
     assert not archive.exists()
+
+
+def test_real_checkout_package_extracts_and_cli_help_runs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Exercise the genuine manifest, files and extracted CLI, not only a fixture."""
+    project = Path(__file__).resolve().parents[1]
+    assert package_release.ROOT == project
+    archive = tmp_path / "checkout-release.zip"
+    monkeypatch.setattr(sys, "argv", ["package_release.py", "--output", str(archive)])
+    assert package_release.main() == 0
+
+    with zipfile.ZipFile(archive) as zf:
+        members = [item.filename for item in zf.infolist() if not item.is_dir()]
+        prefixes = {Path(name).parts[0] for name in members}
+        assert len(prefixes) == 1
+        prefix = next(iter(prefixes))
+        root_paths = {
+            Path(name).parts[1] for name in members if len(Path(name).parts) == 2
+        }
+        assert len(root_paths) <= 8
+        assert {"STARTEN.sh", "README.md", "VERSION.json", "RELEASE_MANIFEST.json"} <= root_paths
+        zf.extractall(tmp_path / "real-unpacked")
+
+    extracted = tmp_path / "real-unpacked" / prefix
+    cli = extracted / "scripts" / "cli" / "videobatch.sh"
+    assert cli.is_file()
+    output = subprocess.run(
+        ["bash", str(cli), "help"],
+        cwd=extracted, text=True, capture_output=True, check=False, timeout=20,
+    )
+    assert output.returncode == 0, output.stderr
+    assert "VideoBatch Fast" in output.stdout
