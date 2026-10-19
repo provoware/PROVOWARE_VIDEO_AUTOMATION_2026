@@ -101,7 +101,9 @@ def test_versioned_export_path_matches_real_acceptance_validator(
 
     monkeypatch.setattr(generator, "ACCEPTANCE_DIR", candidate_root)
     monkeypatch.setattr(generator.subprocess, "run", fake_run)
-    assert generator._physical_acceptance_valid(snapshot["source_release_manifest"])
+    # This synthetic path-contract test uses the CURRENT manifest. The PR240
+    # evidence snapshot deliberately remains bound to its historical 518-file tree.
+    assert generator._physical_acceptance_valid(manifest)
     assert calls[0][calls[0].index("--evidence-dir") + 1] == str(versioned)
 
     wrong = dict(snapshot["source_release_manifest"], files_sha256="0" * 64)

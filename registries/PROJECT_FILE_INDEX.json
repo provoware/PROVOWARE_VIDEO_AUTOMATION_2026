@@ -447,7 +447,7 @@
     {
       "path": "diagnostics/release_readiness/test_candidate_quality.py",
       "mode": "100644",
-      "blob_sha1": "a93977695abd66a90b083bd765286e0d28a9ad25",
+      "blob_sha1": "f03940640a5b4c33a3914e1a977587a85254d072",
       "category": "diagnostics",
       "lifecycle": "active"
     },
