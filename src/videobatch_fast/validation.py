@@ -9,8 +9,8 @@ from .models import BatchOptions, PairJob
 from .command_builder import PROFILES
 from .effects import TRANSITIONS, VISUAL_EFFECTS
 from .ffmpeg_capabilities import encoder_smoke_test, read_ffmpeg_capabilities, required_filter_names
-from .probe import ffmpeg_path, ffprobe_path
-from .quick_modes import QUICK_MODES, validate_quick_modes
+from .probe import ffmpeg_path, ffprobe_path, sampled_audio_peak
+from .quick_modes import QUICK_MODES, processing_options_for_job, validate_quick_modes
 from .resource_estimation import estimate_required_by_filesystem
 
 
@@ -106,7 +106,9 @@ def validate_output_dir(directory: Path) -> list[ValidationIssue]:
     return issues
 
 
-def validate_pairs(jobs: list[PairJob], options: BatchOptions) -> list[ValidationIssue]:
+def validate_pairs(
+    jobs: list[PairJob], options: BatchOptions, *, audio_peak_limit: int = 0
+) -> list[ValidationIssue]:
     issues = validate_runtime() + validate_output_dir(options.output_dir)
     if options.quick_mode not in QUICK_MODES:
         issues.append(ValidationIssue(
@@ -155,7 +157,40 @@ def validate_pairs(jobs: list[PairJob], options: BatchOptions) -> list[Validatio
                 "Wähle einen einfacheren Look oder installiere den vollständigen FFmpeg-Build.",
             ))
     checked_directories: set[Path] = {Path(options.output_dir).expanduser()}
+    peak_checked: set[Path] = set()
+    flash_notice = False
     for job in jobs:
+        selected = processing_options_for_job(job, options)
+        if selected.visual_effect == "strobe_safe" and not flash_notice:
+            issues.append(ValidationIssue(
+                "FLASHING_EFFECT", "Hinweis zu Lichtimpulsen",
+                "Der gewählte Effekt enthält schnelle Helligkeitswechsel.",
+                "Bei Lichtempfindlichkeit einen anderen Bildeffekt wählen. "
+                "Die eingebaute Begrenzung ersetzt keine individuelle Prüfung.",
+                blocking=False,
+            ))
+            flash_notice = True
+        if job.media_info.kind == "video" and job.media_info.variable_frame_rate:
+            issues.append(ValidationIssue(
+                "VIDEO_FRAME_RATE_MAY_VARY", "Bildrate kontrollieren",
+                f"{job.media.name}: FFprobe meldet abweichende Bildraten.",
+                "Die Zeitgenauigkeit im Ergebnis kontrollieren; bei Bedarf "
+                "Video neu codieren. Dies ist ein Verdacht, kein Defektnachweis.",
+                blocking=False,
+            ))
+        if audio_peak_limit > 0 and job.audio not in peak_checked and job.audio.is_file():
+            if len(peak_checked) < audio_peak_limit:
+                peak_checked.add(job.audio)
+                peak = sampled_audio_peak(job.audio)
+                if peak is not None and peak >= -0.5:
+                    issues.append(ValidationIssue(
+                        "AUDIO_NEAR_PEAK", "Audiopegel prüfen",
+                        f"{job.audio.name}: In den ersten 6 Sekunden liegt der "
+                        f"Spitzenpegel bei {peak:.1f} dB.",
+                        "Die Originaldatei bleibt unverändert. Bei hörbaren "
+                        "Verzerrungen die Audioquelle prüfen.",
+                        blocking=False,
+                    ))
         parent = job.output.parent
         if parent not in checked_directories:
             issues.extend(validate_output_dir(parent))
@@ -198,7 +233,13 @@ def validate_pairs(jobs: list[PairJob], options: BatchOptions) -> list[Validatio
         directory = requirement.directories[0]
         try:
             free = shutil.disk_usage(directory).free
-        except OSError:
+        except OSError as exc:
+            issues.append(ValidationIssue(
+                "DISK_CHECK_UNKNOWN", "Freien Speicher nicht überprüfbar",
+                f"{directory}: {exc}",
+                "Ziel-Laufwerk prüfen und genügend freien Speicher bereitstellen.",
+                blocking=False,
+            ))
             continue
         if free < requirement.required_bytes:
             targets = ", ".join(str(path) for path in requirement.directories)
