@@ -12,7 +12,7 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Mapping
 
-from .effects import TRANSITIONS
+from .effects import TRANSITIONS, VISUAL_EFFECTS
 from .quick_modes import QUICK_MODES
 from .safe_io import atomic_write_json
 
@@ -35,6 +35,8 @@ EFFECT_LABELS: dict[str, str] = {"none": "Kein Effekt"}
 for _preset in QUICK_MODES.values():
     if _preset.visual_effect not in EFFECT_LABELS:
         EFFECT_LABELS[_preset.visual_effect] = _preset.label
+for _effect_key, _effect in VISUAL_EFFECTS.items():
+    EFFECT_LABELS.setdefault(_effect_key, _effect.label)
 FIELDS = frozenset({"resolution", "quality", "effect", "output_dir", "effect_intensity", "transition", "transition_duration"})
 _LEGACY_RESOLUTIONS = {"HD": "1280×720", "Full HD": "1920×1080", "QHD": "2560×1440", "UHD": "3840×2160"}
 _LEGACY_QUALITIES = {"Schnell": "turbo", "Ausgewogen": "balanced", "Hoch": "quality", "Maximum": "maximum"}

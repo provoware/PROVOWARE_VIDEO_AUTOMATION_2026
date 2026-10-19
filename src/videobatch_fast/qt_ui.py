@@ -304,10 +304,16 @@ class VideoBatchQtWindow(QMainWindow):
         self.settings_save_timer.setSingleShot(True)
         self.settings_save_timer.setInterval(400)
         self.settings_save_timer.timeout.connect(self._save_dashboard_settings)
-        for field in ("resolution", "quality", "effect"):
+        for field in ("resolution", "quality", "effect", "transition"):
             getattr(self, field).currentIndexChanged.connect(
                 lambda _index, name=field: self._dashboard_changed(name)
             )
+        self.effect_intensity.valueChanged.connect(self._intensity_changed)
+        self.fade_seconds.valueChanged.connect(
+            lambda _value: self._dashboard_changed("transition_duration")
+        )
+        self._intensity_changed(self.effect_intensity.value())
+        self.fade_seconds.setEnabled(self.transition.currentData() != "none")
         self.output.editingFinished.connect(lambda: self._dashboard_changed("output_dir"))
         self.start.clicked.connect(self._start)
         self.probe_button.clicked.connect(self._request_probe)
@@ -343,8 +349,21 @@ class VideoBatchQtWindow(QMainWindow):
         )
         QTimer.singleShot(300, self._refresh_media_index_async)
 
+    def _intensity_changed(self, value: int) -> None:
+        self.intensity_value.setText(f"{value} %")
+        self._dashboard_changed("effect_intensity")
+
     def _dashboard_changed(self, field: str) -> None:
-        value = self.output.text() if field == "output_dir" else getattr(self, field).currentData()
+        if field == "output_dir":
+            value = self.output.text()
+        elif field == "effect_intensity":
+            value = self.effect_intensity.value()
+        elif field == "transition_duration":
+            value = self.fade_seconds.value()
+        else:
+            value = getattr(self, field).currentData()
+        if field == "transition":
+            self.fade_seconds.setEnabled(value != "none")
         try:
             self.dashboard_settings = self.dashboard_settings.set_user_value(field, value)
         except ValueError:
@@ -473,8 +492,16 @@ class VideoBatchQtWindow(QMainWindow):
         """Freeze the *displayed* values into the actual job options."""
         from .command_builder import PROFILES, RESOLUTIONS
         state = self.dashboard_settings
-        for field in ("resolution", "quality", "effect", "output_dir"):
-            value = self.output.text() if field == "output_dir" else getattr(self, field).currentData()
+        for field in ("resolution", "quality", "effect", "transition", "output_dir",
+                      "effect_intensity", "transition_duration"):
+            if field == "output_dir":
+                value = self.output.text()
+            elif field == "effect_intensity":
+                value = self.effect_intensity.value()
+            elif field == "transition_duration":
+                value = self.fade_seconds.value()
+            else:
+                value = getattr(self, field).currentData()
             state = state.set_user_value(field, value)
         if state.resolution not in RESOLUTIONS or state.quality not in PROFILES:
             raise ValueError("Videoauflösung oder Qualität wird nicht unterstützt.")
@@ -486,7 +513,9 @@ class VideoBatchQtWindow(QMainWindow):
             resolution=state.resolution,
             profile=state.quality,
             visual_effect=state.effect,
-            transition="none",
+            effect_intensity=state.effect_intensity,
+            transition=state.transition,
+            transition_duration=state.transition_duration,
             verification=self.verification.currentText(),
             quick_mode="custom",
             assignment_mode="pairwise",
