@@ -10,3 +10,12 @@ def test_autoinstall_is_noninteractive_and_signed():
  root=Path(__file__).resolve().parents[1]; text=(root/'scripts/install/autoinstall.sh').read_text()
  assert '[j/N]' not in text and 'read -p' not in text; assert 'openssl pkeyutl -verify' in text
  assert 'rollback' in text and 'portable-smoke-test' in text
+
+
+def test_multipart_builder_uses_migrated_installer_resources():
+    root = Path(__file__).resolve().parents[1]
+    builder = (root / "scripts/build_multipart_installer.py").read_text(encoding="utf-8")
+    assert (root / "scripts/install/autoinstall.sh").is_file()
+    assert (root / "docs/start/AUTOINSTALLATION_save_.md").is_file()
+    assert 'source_root / "scripts/install" / name' in builder
+    assert 'source_root / "docs/start/AUTOINSTALLATION_save_.md"' in builder
