@@ -60,7 +60,7 @@
   "unfinished": [
     {
       "label": "Offene Arbeitsliste",
-      "path": "TODO.md",
+      "path": "docs/TODO.md",
       "reason": "Automatisierte Gates werden für den seitengetrennten Qt-Stand neu geprüft; danach ist die reale 100/125/150/200-%-Sichtabnahme und anschließend die Stable-Promotion offen."
     },
     {
@@ -80,7 +80,7 @@
     },
     {
       "label": "Visuelles Prüfmanifest",
-      "path": "VISUAL_INSPECTION_MANIFEST.json",
+      "path": "config/VISUAL_INSPECTION_MANIFEST.json",
       "reason": "Automatisierte visuelle Verträge bleiben Referenz; die reale 100/125/150/200-%-Sichtabnahme des seitengetrennten Qt-Stands steht noch aus."
     }
   ]

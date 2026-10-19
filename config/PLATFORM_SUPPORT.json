@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "version_source": "VERSION.json",
+  "version_source": "config/VERSION.json",
   "support_policy": "single-target",
   "target": {
     "id": "kubuntu-26.04-wayland",

@@ -239,9 +239,9 @@ def acquire_lock(wait_seconds: float = 45.0) -> Any:
 
 def verify_project() -> None:
     required = (
-        "VERSION.json",
-        "TOOLCHAIN_CONTRACT.json",
-        "STARTUP_CONTRACT.json",
+        "config/VERSION.json",
+        "config/TOOLCHAIN_CONTRACT.json",
+        "config/STARTUP_CONTRACT.json",
         "scripts/toolchain.py",
         "scripts/startup_check.py",
         "src/videobatch_fast/qt_phase3.py",
