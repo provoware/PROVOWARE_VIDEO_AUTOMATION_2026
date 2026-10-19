@@ -20,7 +20,7 @@
     {
       "path": ".github/workflows/bounded-long-render-rehearsal.yml",
       "mode": "100644",
-      "blob_sha1": "905c9dfca3f5975387c1e9b100b17484462a1c98",
+      "blob_sha1": "c3db8c93de574bee7b039a78c6d29ab56adbab18",
       "category": "automation",
       "lifecycle": "development"
     },
@@ -34,21 +34,21 @@
     {
       "path": ".github/workflows/design-manifest-gate.yml",
       "mode": "100644",
-      "blob_sha1": "c60d67030813211efff6cc8cd9ef95ce53001ce7",
+      "blob_sha1": "b7667de691d4f840e255aaeaeecff5af68d80087",
       "category": "automation",
       "lifecycle": "development"
     },
     {
       "path": ".github/workflows/kubuntu-26-04-wayland-preview.yml",
       "mode": "100644",
-      "blob_sha1": "dd21c8deff588c5d3149a716383708a963761f48",
+      "blob_sha1": "8d75db41922cd604d51575ead5908613d14968c5",
       "category": "automation",
       "lifecycle": "development"
     },
     {
       "path": ".github/workflows/kubuntu-build-matrix.yml",
       "mode": "100644",
-      "blob_sha1": "aaf427cc5b678a5fd0565b229086651ee6c183d5",
+      "blob_sha1": "a0ef4a4ecf07b8545fa9eff15bbfb098941d1bee",
       "category": "automation",
       "lifecycle": "development"
     },
@@ -62,7 +62,7 @@
     {
       "path": ".github/workflows/kubuntu-pr-validation.yml",
       "mode": "100644",
-      "blob_sha1": "d77af353e193134fa8b11be14818d5ca4bfba167",
+      "blob_sha1": "619350d2a8a20759fd49f58007efa6ae3952873e",
       "category": "automation",
       "lifecycle": "development"
     },
@@ -83,7 +83,7 @@
     {
       "path": ".github/workflows/qt6-phase3-smoke.yml",
       "mode": "100644",
-      "blob_sha1": "b4e08bf424ae4ff3c0fde4a244847b94183cb4f2",
+      "blob_sha1": "be79a1dce74470fe26b5cf1c9d3f5532b3a9032a",
       "category": "automation",
       "lifecycle": "development"
     },
@@ -97,7 +97,7 @@
     {
       "path": ".github/workflows/stable-promotion.yml",
       "mode": "100644",
-      "blob_sha1": "74108057dc1066c62ba4fa33146761e8e28f4288",
+      "blob_sha1": "66fb6951b2ec837f138a35b3416d115836492f24",
       "category": "automation",
       "lifecycle": "development"
     },
@@ -116,20 +116,6 @@
       "lifecycle": "historical"
     },
     {
-      "path": "01_START_HIER/README.md",
-      "mode": "100644",
-      "blob_sha1": "9ba7aa498b1e3859881675d7b919cf08eeb24ea3",
-      "category": "documentation",
-      "lifecycle": "active"
-    },
-    {
-      "path": "01_START_HIER/STARTEN.sh",
-      "mode": "100755",
-      "blob_sha1": "553ff88bcee9695beb0d1da99407ec23e414b6e4",
-      "category": "tooling",
-      "lifecycle": "active"
-    },
-    {
       "path": "AGENTS.md",
       "mode": "100644",
       "blob_sha1": "8316a95447d53471ee833dbae2ef425dd20302eb",
@@ -137,115 +123,10 @@
       "lifecycle": "active"
     },
     {
-      "path": "ARCHITECTURE_V1.json",
-      "mode": "100644",
-      "blob_sha1": "c367e8ce457a945cb05dfe6f398d9050b17f36f1",
-      "category": "project_contract",
-      "lifecycle": "active"
-    },
-    {
-      "path": "CHANGELOG.md",
-      "mode": "100644",
-      "blob_sha1": "67f5bea04421dd903852006c7cffb31be5f18931",
-      "category": "documentation",
-      "lifecycle": "active"
-    },
-    {
-      "path": "DEVELOPMENT_STATUS.json",
-      "mode": "100644",
-      "blob_sha1": "594017af444485a4463f0a5a2e49d72e0a502536",
-      "category": "project_contract",
-      "lifecycle": "active"
-    },
-    {
-      "path": "FAULT_LAB_CONTRACT.json",
-      "mode": "100644",
-      "blob_sha1": "3536f1e4d43c96c54010a5de6159931a50cd07bb",
-      "category": "project_contract",
-      "lifecycle": "active"
-    },
-    {
-      "path": "FEHLERLABOR.sh",
-      "mode": "100644",
-      "blob_sha1": "21594d8d2addde8ac14c68413eaca702bc5b89fb",
-      "category": "tooling",
-      "lifecycle": "active"
-    },
-    {
-      "path": "FINALISIEREN.sh",
-      "mode": "100644",
-      "blob_sha1": "ae46d605159d06b8cebafb95e2a6111ddd6ab83f",
-      "category": "tooling",
-      "lifecycle": "active"
-    },
-    {
-      "path": "INSTALLER_SYSTEM_CONTRACT.json",
-      "mode": "100644",
-      "blob_sha1": "bfe83d5e2be6205ef9413b7796f62ea4403e57f6",
-      "category": "project_contract",
-      "lifecycle": "active"
-    },
-    {
-      "path": "KUBUNTU_26_04_QT_ABNAHME.sh",
-      "mode": "100755",
-      "blob_sha1": "8bdc9990bca121a6d2fe9954685ced5a6aaf7fd7",
-      "category": "tooling",
-      "lifecycle": "active"
-    },
-    {
-      "path": "PLATFORM_SUPPORT.json",
-      "mode": "100644",
-      "blob_sha1": "de494aa8c52820239ae8762bbaa851f2d6c41b7b",
-      "category": "project_contract",
-      "lifecycle": "active"
-    },
-    {
-      "path": "PORTABLE_BAUEN.sh",
-      "mode": "100644",
-      "blob_sha1": "8c4f5c539c9dfa284f96f83b1a62f5f542fb4dfa",
-      "category": "tooling",
-      "lifecycle": "active"
-    },
-    {
-      "path": "PORTABLE_RUNTIME_CONTRACT.json",
-      "mode": "100644",
-      "blob_sha1": "d0ccc311db22be83e541092e9f5064eab40a1cbc",
-      "category": "project_contract",
-      "lifecycle": "active"
-    },
-    {
-      "path": "QUALITY_ENVIRONMENT_STATUS.json",
-      "mode": "100644",
-      "blob_sha1": "9ac3a7dcaeb976ac069fef744d4fd3d1889bab27",
-      "category": "project_contract",
-      "lifecycle": "active"
-    },
-    {
-      "path": "QUICK_MODES_MANIFEST.json",
-      "mode": "100644",
-      "blob_sha1": "6abdefb3f9d116912d3b8671d9e52c84257e065f",
-      "category": "project_contract",
-      "lifecycle": "active"
-    },
-    {
       "path": "README.md",
       "mode": "100644",
-      "blob_sha1": "804c66b1f38343b81e9de0b34bff2275a6107791",
+      "blob_sha1": "368c864b8c0279c13ea61ef03b41eb37f46b191f",
       "category": "documentation",
-      "lifecycle": "active"
-    },
-    {
-      "path": "RELEASE_FILE_STATUS.json",
-      "mode": "100644",
-      "blob_sha1": "be49a3d06a89ee183c6359f24e4c74d142c433a0",
-      "category": "project_contract",
-      "lifecycle": "active"
-    },
-    {
-      "path": "RELEASE_MANIFEST.json",
-      "mode": "100644",
-      "blob_sha1": "96a71928b41cf14935a25be70337ee12c7b4534d",
-      "category": "project_contract",
       "lifecycle": "active"
     },
     {
@@ -256,73 +137,143 @@
       "lifecycle": "active"
     },
     {
-      "path": "STARTUP_CONTRACT.json",
+      "path": "config/ARCHITECTURE_V1.json",
+      "mode": "100644",
+      "blob_sha1": "c367e8ce457a945cb05dfe6f398d9050b17f36f1",
+      "category": "project_contract",
+      "lifecycle": "active"
+    },
+    {
+      "path": "config/DEVELOPMENT_STATUS.json",
+      "mode": "100644",
+      "blob_sha1": "594017af444485a4463f0a5a2e49d72e0a502536",
+      "category": "project_contract",
+      "lifecycle": "active"
+    },
+    {
+      "path": "config/FAULT_LAB_CONTRACT.json",
+      "mode": "100644",
+      "blob_sha1": "3536f1e4d43c96c54010a5de6159931a50cd07bb",
+      "category": "project_contract",
+      "lifecycle": "active"
+    },
+    {
+      "path": "config/INSTALLER_SYSTEM_CONTRACT.json",
+      "mode": "100644",
+      "blob_sha1": "bfe83d5e2be6205ef9413b7796f62ea4403e57f6",
+      "category": "project_contract",
+      "lifecycle": "active"
+    },
+    {
+      "path": "config/PLATFORM_SUPPORT.json",
+      "mode": "100644",
+      "blob_sha1": "d508aff9a71774291a490c5bc887d3dc84f5a626",
+      "category": "project_contract",
+      "lifecycle": "active"
+    },
+    {
+      "path": "config/PORTABLE_RUNTIME_CONTRACT.json",
+      "mode": "100644",
+      "blob_sha1": "d0ccc311db22be83e541092e9f5064eab40a1cbc",
+      "category": "project_contract",
+      "lifecycle": "active"
+    },
+    {
+      "path": "config/QUALITY_ENVIRONMENT_STATUS.json",
+      "mode": "100644",
+      "blob_sha1": "9ac3a7dcaeb976ac069fef744d4fd3d1889bab27",
+      "category": "project_contract",
+      "lifecycle": "active"
+    },
+    {
+      "path": "config/QUICK_MODES_MANIFEST.json",
+      "mode": "100644",
+      "blob_sha1": "6abdefb3f9d116912d3b8671d9e52c84257e065f",
+      "category": "project_contract",
+      "lifecycle": "active"
+    },
+    {
+      "path": "config/RELEASE_FILE_STATUS.json",
+      "mode": "100644",
+      "blob_sha1": "d3833da5d6041886923c2350e08bbc87e9f77dd7",
+      "category": "project_contract",
+      "lifecycle": "active"
+    },
+    {
+      "path": "config/RELEASE_MANIFEST.json",
+      "mode": "100644",
+      "blob_sha1": "96a71928b41cf14935a25be70337ee12c7b4534d",
+      "category": "project_contract",
+      "lifecycle": "active"
+    },
+    {
+      "path": "config/STARTUP_CONTRACT.json",
       "mode": "100644",
       "blob_sha1": "c1bd4aab199217db8f2ff2823f59ddeacfb2f0e0",
       "category": "project_contract",
       "lifecycle": "active"
     },
     {
-      "path": "STATUS.md",
+      "path": "config/TOOLCHAIN_CONTRACT.json",
       "mode": "100644",
-      "blob_sha1": "56d0605311824277afd149a2d0c94c0782f76c14",
-      "category": "documentation",
-      "lifecycle": "active"
-    },
-    {
-      "path": "TODO.md",
-      "mode": "100644",
-      "blob_sha1": "1a6e16a2d566e54a9f437408903df976d845c8c7",
-      "category": "documentation",
-      "lifecycle": "active"
-    },
-    {
-      "path": "TOOLCHAIN_CONTRACT.json",
-      "mode": "100644",
-      "blob_sha1": "47c78784366715912d9da3d86076c5e4f44de46e",
+      "blob_sha1": "40784d051aac9f327a5f71a3c67bbda40ef36014",
       "category": "project_contract",
       "lifecycle": "active"
     },
     {
-      "path": "VERSION.json",
+      "path": "config/VERSION.json",
       "mode": "100644",
       "blob_sha1": "5679c3d971fe0ecbf25dea343bc83d3833fb7b17",
       "category": "project_contract",
       "lifecycle": "active"
     },
     {
-      "path": "VISUAL_INSPECTION_MANIFEST.json",
+      "path": "config/VISUAL_INSPECTION_MANIFEST.json",
       "mode": "100644",
       "blob_sha1": "67de062f4cb5afa230a14cd2f8e5a2d0edc6361b",
       "category": "project_contract",
       "lifecycle": "active"
     },
     {
-      "path": "VideoBatch-Fast.desktop",
+      "path": "config/manifest.json",
       "mode": "100644",
-      "blob_sha1": "294e88a0d16f64bd8369c04824a74b2b500871ad",
-      "category": "entrypoint",
-      "lifecycle": "active"
-    },
-    {
-      "path": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
-      "mode": "100644",
-      "blob_sha1": "262f2c38d9ffdd3de800e0eb3c0c48e99e47e4ea",
+      "blob_sha1": "72fe4d4904595ce637f407f6b1e41ce0500fc20d",
       "category": "project_contract",
       "lifecycle": "active"
     },
     {
-      "path": "autoinstall.sh",
+      "path": "config/requirements-qt.txt",
       "mode": "100644",
-      "blob_sha1": "9d93ff5951071d4fd7d8090c4d8d7fbf014f6f01",
-      "category": "tooling",
+      "blob_sha1": "74b2b48f5abefbf482367e7128688235176f8915",
+      "category": "documentation",
       "lifecycle": "active"
     },
     {
-      "path": "build_artifacts.sh",
-      "mode": "100755",
-      "blob_sha1": "13b345638fca781988c39c8356fb5777aee1413f",
-      "category": "tooling",
+      "path": "config/requirements-quality.lock",
+      "mode": "100644",
+      "blob_sha1": "6df66d2792614c9486564430e8b2d83ea0fb10f6",
+      "category": "project_contract",
+      "lifecycle": "active"
+    },
+    {
+      "path": "config/requirements-toolchain.lock",
+      "mode": "100644",
+      "blob_sha1": "7ab6f766dec198a52d3cd4b5229e51afb771f593",
+      "category": "project_contract",
+      "lifecycle": "active"
+    },
+    {
+      "path": "config/requirements.lock",
+      "mode": "100644",
+      "blob_sha1": "b5773c3eb35f3154bce75cf227213343d5414ea6",
+      "category": "project_contract",
+      "lifecycle": "active"
+    },
+    {
+      "path": "config/requirements.txt",
+      "mode": "100644",
+      "blob_sha1": "414d30de6309411d61d6414f776a526934168647",
+      "category": "documentation",
       "lifecycle": "active"
     },
     {
@@ -480,6 +431,13 @@
       "lifecycle": "active"
     },
     {
+      "path": "docs/CHANGELOG.md",
+      "mode": "100644",
+      "blob_sha1": "67f5bea04421dd903852006c7cffb31be5f18931",
+      "category": "documentation",
+      "lifecycle": "active"
+    },
+    {
       "path": "docs/CODE_QUALITY_PIPELINE.md",
       "mode": "100644",
       "blob_sha1": "9052da9fae0617b5bfc518ffb75da14ddb2e3886",
@@ -623,6 +581,27 @@
       "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md",
       "mode": "100644",
       "blob_sha1": "245bb1761b415b3bcc021fe04f319ee77d4f22c1",
+      "category": "documentation",
+      "lifecycle": "active"
+    },
+    {
+      "path": "docs/STATUS.md",
+      "mode": "100644",
+      "blob_sha1": "56d0605311824277afd149a2d0c94c0782f76c14",
+      "category": "documentation",
+      "lifecycle": "active"
+    },
+    {
+      "path": "docs/STRUKTURMIGRATION_2026-10-19.md",
+      "mode": "100644",
+      "blob_sha1": "e235964989395b57001d7764fd83a405aac34aad",
+      "category": "documentation",
+      "lifecycle": "active"
+    },
+    {
+      "path": "docs/TODO.md",
+      "mode": "100644",
+      "blob_sha1": "1a6e16a2d566e54a9f437408903df976d845c8c7",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -805,6 +784,13 @@
       "path": "docs/archive/rc24/TEST_REPORT_save_.md",
       "mode": "100644",
       "blob_sha1": "54616ada673fe785341c5737268ccc1dfa4f866d",
+      "category": "historical",
+      "lifecycle": "historical"
+    },
+    {
+      "path": "docs/archive/rc24/VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
+      "mode": "100644",
+      "blob_sha1": "262f2c38d9ffdd3de800e0eb3c0c48e99e47e4ea",
       "category": "historical",
       "lifecycle": "historical"
     },
@@ -1474,31 +1460,10 @@
       "lifecycle": "active"
     },
     {
-      "path": "manifest.json",
-      "mode": "100644",
-      "blob_sha1": "3e2bbc2b028e8cb9e7b83fbc087fecd505b2dbc1",
-      "category": "project_contract",
-      "lifecycle": "active"
-    },
-    {
       "path": "pyproject.toml",
       "mode": "100644",
       "blob_sha1": "a84ac5f9ab0548c8051a626db92b1c4f4c5097e5",
       "category": "project_contract",
-      "lifecycle": "active"
-    },
-    {
-      "path": "quality-toolchain.sh",
-      "mode": "100644",
-      "blob_sha1": "5de292bad5a942fec18ef9b97d3ddb4d02c2c07b",
-      "category": "tooling",
-      "lifecycle": "active"
-    },
-    {
-      "path": "quality.sh",
-      "mode": "100755",
-      "blob_sha1": "a089a63d9d32a9151be043d6469fa651849c3bf7",
-      "category": "tooling",
       "lifecycle": "active"
     },
     {
@@ -1614,38 +1579,10 @@
       "lifecycle": "active"
     },
     {
-      "path": "requirements-qt.txt",
+      "path": "resources/desktop/VideoBatch-Fast.desktop",
       "mode": "100644",
-      "blob_sha1": "74b2b48f5abefbf482367e7128688235176f8915",
-      "category": "documentation",
-      "lifecycle": "active"
-    },
-    {
-      "path": "requirements-quality.lock",
-      "mode": "100644",
-      "blob_sha1": "6df66d2792614c9486564430e8b2d83ea0fb10f6",
-      "category": "project_contract",
-      "lifecycle": "active"
-    },
-    {
-      "path": "requirements-toolchain.lock",
-      "mode": "100644",
-      "blob_sha1": "7ab6f766dec198a52d3cd4b5229e51afb771f593",
-      "category": "project_contract",
-      "lifecycle": "active"
-    },
-    {
-      "path": "requirements.lock",
-      "mode": "100644",
-      "blob_sha1": "b5773c3eb35f3154bce75cf227213343d5414ea6",
-      "category": "project_contract",
-      "lifecycle": "active"
-    },
-    {
-      "path": "requirements.txt",
-      "mode": "100644",
-      "blob_sha1": "414d30de6309411d61d6414f776a526934168647",
-      "category": "documentation",
+      "blob_sha1": "294e88a0d16f64bd8369c04824a74b2b500871ad",
+      "category": "resources",
       "lifecycle": "active"
     },
     {
@@ -1768,13 +1705,6 @@
       "lifecycle": "active"
     },
     {
-      "path": "runtime-toolchain.sh",
-      "mode": "100644",
-      "blob_sha1": "4d0e548a93ceadd4da95591e5b86632d2868eb86",
-      "category": "tooling",
-      "lifecycle": "active"
-    },
-    {
       "path": "scripts/ab_contract.py",
       "mode": "100644",
       "blob_sha1": "a15e96fd652d8907cdf78cf9ef41ccec3ee199fe",
@@ -1833,7 +1763,7 @@
     {
       "path": "scripts/bootstrap.py",
       "mode": "100644",
-      "blob_sha1": "b15d5be96ac32a741dd087e184e65795aec4a7eb",
+      "blob_sha1": "feaa582612f665de3bb8433f81c0f706455c8db3",
       "category": "development",
       "lifecycle": "development"
     },
@@ -1854,28 +1784,28 @@
     {
       "path": "scripts/build_long_render_contract.py",
       "mode": "100644",
-      "blob_sha1": "ddae200ae4cb422784f92f5e1ec2d1e0a4471cd5",
+      "blob_sha1": "eeeb1f45d28d41b0b360c2e3520e40b0cce54af0",
       "category": "development",
       "lifecycle": "development"
     },
     {
       "path": "scripts/build_multipart_installer.py",
       "mode": "100644",
-      "blob_sha1": "c06cf07cf85a6177c15e465c6859ad9d26dabb45",
+      "blob_sha1": "919e9ce72e80a04242e3abb3799277d89bb52389",
       "category": "development",
       "lifecycle": "development"
     },
     {
       "path": "scripts/build_portable_bundle.py",
       "mode": "100644",
-      "blob_sha1": "b777ed30309d84f3e6504a2bcb6b46efc24dd2a3",
+      "blob_sha1": "0bafb5312536a64bf8bfbf3a4ef529d491065fdd",
       "category": "development",
       "lifecycle": "development"
     },
     {
       "path": "scripts/build_release_manifest.py",
       "mode": "100644",
-      "blob_sha1": "b91348db16ec67405ca44d77a9bce183cbe72ed7",
+      "blob_sha1": "1903f9a58436483d73c4ba522c5464e8d57e47bc",
       "category": "development",
       "lifecycle": "development"
     },
@@ -1910,7 +1840,7 @@
     {
       "path": "scripts/build_wayland_preview_zip.py",
       "mode": "100644",
-      "blob_sha1": "9f514e5fb8c300192d7099d2761b6a3846480eac",
+      "blob_sha1": "63aaa209c54b229006723b9aed817c2424fddc04",
       "category": "development",
       "lifecycle": "development"
     },
@@ -1978,6 +1908,111 @@
       "lifecycle": "development"
     },
     {
+      "path": "scripts/entrypoints/FEHLERLABOR.sh",
+      "mode": "100755",
+      "blob_sha1": "5ce48ccdae7c1e5bd4b67ae69d9adee0998ceb6e",
+      "category": "development",
+      "lifecycle": "development"
+    },
+    {
+      "path": "scripts/entrypoints/FINALISIEREN.sh",
+      "mode": "100755",
+      "blob_sha1": "5bc47320d13a0f64cbe946b64c37965ecf0f08b4",
+      "category": "development",
+      "lifecycle": "development"
+    },
+    {
+      "path": "scripts/entrypoints/KUBUNTU_26_04_QT_ABNAHME.sh",
+      "mode": "100755",
+      "blob_sha1": "cea3065c3578e2252e607b4d029d344bdec55203",
+      "category": "development",
+      "lifecycle": "development"
+    },
+    {
+      "path": "scripts/entrypoints/PORTABLE_BAUEN.sh",
+      "mode": "100755",
+      "blob_sha1": "5ace0c21872e48721d9669f07e55bb23beb452f8",
+      "category": "development",
+      "lifecycle": "development"
+    },
+    {
+      "path": "scripts/entrypoints/autoinstall.sh",
+      "mode": "100755",
+      "blob_sha1": "9f90c408e9df45db165e600ce232d06966a50808",
+      "category": "development",
+      "lifecycle": "development"
+    },
+    {
+      "path": "scripts/entrypoints/build_artifacts.sh",
+      "mode": "100755",
+      "blob_sha1": "f6b2c6159750a691d4f9fddd8add83292542b911",
+      "category": "development",
+      "lifecycle": "development"
+    },
+    {
+      "path": "scripts/entrypoints/quality-toolchain.sh",
+      "mode": "100755",
+      "blob_sha1": "265d7734bda5890e79004d350591de95a9f5093b",
+      "category": "development",
+      "lifecycle": "development"
+    },
+    {
+      "path": "scripts/entrypoints/quality.sh",
+      "mode": "100755",
+      "blob_sha1": "8f414e180cdd8243c70f70da2379cfca02b369fa",
+      "category": "development",
+      "lifecycle": "development"
+    },
+    {
+      "path": "scripts/entrypoints/runtime-toolchain.sh",
+      "mode": "100755",
+      "blob_sha1": "393bed47b7419ba8a5085bd744e1ac0cb872fc88",
+      "category": "development",
+      "lifecycle": "development"
+    },
+    {
+      "path": "scripts/entrypoints/setup.sh",
+      "mode": "100755",
+      "blob_sha1": "512787713dc9b55b27e93b512437b24f45acc3a5",
+      "category": "development",
+      "lifecycle": "development"
+    },
+    {
+      "path": "scripts/entrypoints/stable_release.sh",
+      "mode": "100755",
+      "blob_sha1": "9cb2955a79e65c952cd74b3790f92c66117c1c5a",
+      "category": "development",
+      "lifecycle": "development"
+    },
+    {
+      "path": "scripts/entrypoints/start.sh",
+      "mode": "100755",
+      "blob_sha1": "0efbfc67839ef0d657d38fb818a8fd7437f0d7f0",
+      "category": "development",
+      "lifecycle": "development"
+    },
+    {
+      "path": "scripts/entrypoints/test.sh",
+      "mode": "100755",
+      "blob_sha1": "1a9aa86878eca26691b0554d950069ebaee04b58",
+      "category": "development",
+      "lifecycle": "development"
+    },
+    {
+      "path": "scripts/entrypoints/verify_release.sh",
+      "mode": "100755",
+      "blob_sha1": "25105a7ca88207507846b70ee829a76824638e9d",
+      "category": "development",
+      "lifecycle": "development"
+    },
+    {
+      "path": "scripts/entrypoints/videobatch.sh",
+      "mode": "100755",
+      "blob_sha1": "b449e79e07600e212c4d4c155fb2ad38e02d87d8",
+      "category": "development",
+      "lifecycle": "development"
+    },
+    {
       "path": "scripts/export_stable_acceptance_evidence.py",
       "mode": "100644",
       "blob_sha1": "34e0b303e1394502aceb3663252ec36bdb55c394",
@@ -1986,8 +2021,8 @@
     },
     {
       "path": "scripts/finalize_release.py",
-      "mode": "100755",
-      "blob_sha1": "61848e83e830648666f2362d5e53398c1f57d5a6",
+      "mode": "100644",
+      "blob_sha1": "c8b6685ae2c1451a0cb66e3cea3e4635bfdb39a6",
       "category": "development",
       "lifecycle": "development"
     },
@@ -2021,8 +2056,8 @@
     },
     {
       "path": "scripts/internal_quality_gate.py",
-      "mode": "100755",
-      "blob_sha1": "a1631f2da39ebef736ff0db1727ea2acf5068fd4",
+      "mode": "100644",
+      "blob_sha1": "d093e6ea1611088be9e28e0362ea74516c862cda",
       "category": "development",
       "lifecycle": "development"
     },
@@ -2035,8 +2070,8 @@
     },
     {
       "path": "scripts/kubuntu_matrix_smoke.sh",
-      "mode": "100644",
-      "blob_sha1": "ea7b0757c6c850ce9f9925eb137db70d9167c01b",
+      "mode": "100755",
+      "blob_sha1": "f753966719e092633c2b9f9264a1b64bb015b439",
       "category": "development",
       "lifecycle": "development"
     },
@@ -2050,7 +2085,7 @@
     {
       "path": "scripts/package_release.py",
       "mode": "100644",
-      "blob_sha1": "2d367ab4e463dd37ad07850a454d531201869d8c",
+      "blob_sha1": "5a686fdbc959ac55702dc496c1862c116b0e7285",
       "category": "development",
       "lifecycle": "development"
     },
@@ -2078,14 +2113,14 @@
     {
       "path": "scripts/project_file_index.py",
       "mode": "100644",
-      "blob_sha1": "2d6befc0051551b02bcffa29f3f47a749bc1a502",
+      "blob_sha1": "dc9f37f233b03e9e6548d261162e5d3672bdb842",
       "category": "development",
       "lifecycle": "development"
     },
     {
       "path": "scripts/promote_stable_workspace.py",
-      "mode": "100755",
-      "blob_sha1": "f80b31ef32ff4c39286349196e9ebcb71d66f49c",
+      "mode": "100644",
+      "blob_sha1": "4833f2af0d1cdcf32bfa30816073254ce5b73868",
       "category": "development",
       "lifecycle": "development"
     },
@@ -2112,8 +2147,8 @@
     },
     {
       "path": "scripts/render_release_docs.py",
-      "mode": "100755",
-      "blob_sha1": "5738bf9a4c18dccd53b8e71b6395a288f489fcae",
+      "mode": "100644",
+      "blob_sha1": "c9d8c76bddcc9b8b5142ff2cd485d86682f6d639",
       "category": "development",
       "lifecycle": "development"
     },
@@ -2127,7 +2162,7 @@
     {
       "path": "scripts/run_external_quality.py",
       "mode": "100644",
-      "blob_sha1": "1d87d8b000d42b11bb9724d833a4612c3e64b8cd",
+      "blob_sha1": "b74748b703792c69703f40708aa0efeaf9ce26b0",
       "category": "development",
       "lifecycle": "development"
     },
@@ -2154,8 +2189,8 @@
     },
     {
       "path": "scripts/run_offline_quality_gate.sh",
-      "mode": "100644",
-      "blob_sha1": "6d02f01c6a95b4e845ba3fd185f67458d74d6410",
+      "mode": "100755",
+      "blob_sha1": "cd7309bf421be951662b8b08af4db856b2435360",
       "category": "development",
       "lifecycle": "development"
     },
@@ -2183,7 +2218,7 @@
     {
       "path": "scripts/sign_visual_approval.py",
       "mode": "100644",
-      "blob_sha1": "8281bdff94018fcce73ef89d709bf2ec2365d201",
+      "blob_sha1": "6a0a09f1d97bb3f6399d92bac1203681b3b678c4",
       "category": "development",
       "lifecycle": "development"
     },
@@ -2211,14 +2246,14 @@
     {
       "path": "scripts/toolchain_common.py",
       "mode": "100644",
-      "blob_sha1": "8eba02d8c566b3bedfcb6f029731b6ec1f895038",
+      "blob_sha1": "65e30b096306e565b593f888555c4fc21c595375",
       "category": "development",
       "lifecycle": "development"
     },
     {
       "path": "scripts/user_diagnostics.py",
       "mode": "100644",
-      "blob_sha1": "629b9e281b2e883ee8006c8996c753191225f342",
+      "blob_sha1": "c6cb158961a396195f6b043d955fd322d6d32281",
       "category": "development",
       "lifecycle": "development"
     },
@@ -2239,21 +2274,21 @@
     {
       "path": "scripts/validate_documentation.py",
       "mode": "100644",
-      "blob_sha1": "cfa975c8f871b69bf0cd553cc8435aab198e3cd2",
+      "blob_sha1": "21f24098b45d4cad7d58d6755d2e0f3ec5b98981",
       "category": "development",
       "lifecycle": "development"
     },
     {
       "path": "scripts/validate_operator_stable_acceptance.py",
-      "mode": "100755",
-      "blob_sha1": "32fdeb736d2dacf9b238b3cd977aaaa60d08364f",
+      "mode": "100644",
+      "blob_sha1": "3b9dae0c27b0a7ba6db11157b1be703587cbb7a2",
       "category": "development",
       "lifecycle": "development"
     },
     {
       "path": "scripts/validate_quick_modes.py",
       "mode": "100644",
-      "blob_sha1": "16f6d60280e2f236b129a537c97d73715e0c0c16",
+      "blob_sha1": "66e64fadb636955ae16af9d1e7644ee7ff07ce6f",
       "category": "development",
       "lifecycle": "development"
     },
@@ -2267,14 +2302,14 @@
     {
       "path": "scripts/validate_release_contract_sync.py",
       "mode": "100644",
-      "blob_sha1": "ef1ad8d3d43b4e524b87072bf831708e58a680b9",
+      "blob_sha1": "11f7a899c86e88484cf3c2bb72f83b2bf403afdd",
       "category": "development",
       "lifecycle": "development"
     },
     {
       "path": "scripts/validate_release_file_status.py",
       "mode": "100644",
-      "blob_sha1": "ab281a42771af7249cf45e85d9a08e05b9bbed45",
+      "blob_sha1": "ba114c0f3788388b7887e4a87773dafd66820248",
       "category": "development",
       "lifecycle": "development"
     },
@@ -2282,6 +2317,13 @@
       "path": "scripts/validate_release_manifest.py",
       "mode": "100644",
       "blob_sha1": "f62f9f81e02da7dc18796f8221d1a67b91352f59",
+      "category": "development",
+      "lifecycle": "development"
+    },
+    {
+      "path": "scripts/validate_root_layout.py",
+      "mode": "100755",
+      "blob_sha1": "a044fad62b7537c67015a28fafe6664186553801",
       "category": "development",
       "lifecycle": "development"
     },
@@ -2302,7 +2344,7 @@
     {
       "path": "scripts/validate_version_contract.py",
       "mode": "100644",
-      "blob_sha1": "5ec255542972c105cac70afdc3aa1c9cfdd9e895",
+      "blob_sha1": "870eaefd5c896f68312fdd191543e9bc672fe746",
       "category": "development",
       "lifecycle": "development"
     },
@@ -2361,13 +2403,6 @@
       "blob_sha1": "1f4e8ae4bd84e3d1ca76aeb4e8ced3370bc08a86",
       "category": "development",
       "lifecycle": "development"
-    },
-    {
-      "path": "setup.sh",
-      "mode": "100644",
-      "blob_sha1": "60051d65321e0f46ab92fbf6a14cd287919ea6bb",
-      "category": "tooling",
-      "lifecycle": "active"
     },
     {
       "path": "src/videobatch_fast/__init__.py",
@@ -3065,7 +3100,7 @@
     {
       "path": "src/videobatch_fast/qt_ui.py",
       "mode": "100644",
-      "blob_sha1": "c7b0c1448d21371abcab4cb22e2dc66468dfe8b7",
+      "blob_sha1": "fdc862177f0c0c20735daf01e0485c41e34ffd49",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3380,7 +3415,7 @@
     {
       "path": "src/videobatch_fast/updates.py",
       "mode": "100644",
-      "blob_sha1": "b3748208d1ac83698cab26d8d5f148c65f0d0b4e",
+      "blob_sha1": "f3420f015be0bc0a27bbf669694f0b777e705931",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3401,7 +3436,7 @@
     {
       "path": "src/videobatch_fast/versioning.py",
       "mode": "100644",
-      "blob_sha1": "daaf28708777aab41059e73aee04718b67647f58",
+      "blob_sha1": "fea689ebf6ae27d9d327f2d8d4e313a77495ab09",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3452,27 +3487,6 @@
       "mode": "100644",
       "blob_sha1": "0853e5ffc7c1b575316c49d3da608aced11fad2e",
       "category": "application",
-      "lifecycle": "active"
-    },
-    {
-      "path": "stable_release.sh",
-      "mode": "100755",
-      "blob_sha1": "5139ca682753b6b8f4ff3ea3ebb30253d5e7e2f4",
-      "category": "tooling",
-      "lifecycle": "active"
-    },
-    {
-      "path": "start.sh",
-      "mode": "100644",
-      "blob_sha1": "fe446727719af6741bf02715d0544f5149e1ab72",
-      "category": "tooling",
-      "lifecycle": "active"
-    },
-    {
-      "path": "test.sh",
-      "mode": "100755",
-      "blob_sha1": "f82ca0cb20b3f8f13262242ea66733f72dec2e08",
-      "category": "tooling",
       "lifecycle": "active"
     },
     {
@@ -3695,7 +3709,7 @@
     {
       "path": "tests/test_architecture_v1_collision_contract.py",
       "mode": "100644",
-      "blob_sha1": "599b4e7eb9359cc700c411cb35b10b85fffcc3c3",
+      "blob_sha1": "a39b3b1ea2be94769d6d24beb2d86ff4360cae46",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -3919,7 +3933,7 @@
     {
       "path": "tests/test_operator_stable_acceptance.py",
       "mode": "100644",
-      "blob_sha1": "a3547728d5d768da1c938d8863286109fe950f02",
+      "blob_sha1": "94107a5f031bf45d73d45991bd9d5722c2e482a2",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4059,7 +4073,7 @@
     {
       "path": "tests/test_qt_phase3_contract.py",
       "mode": "100644",
-      "blob_sha1": "66efa88dee1b520b280783d39663b76d1edca39b",
+      "blob_sha1": "47a5e3047f751852ecd1595508a15ae320988516",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4262,7 +4276,7 @@
     {
       "path": "tests/test_release_finalization_rc9.py",
       "mode": "100644",
-      "blob_sha1": "ddbbeb73af68a6beba0c243eb1164d39f448d1c5",
+      "blob_sha1": "dfa7ee5969e7ebe8a771a880102f5977355b6cbe",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4316,6 +4330,13 @@
       "lifecycle": "development"
     },
     {
+      "path": "tests/test_root_layout_contract.py",
+      "mode": "100644",
+      "blob_sha1": "b29ad02e0ecf9741eaf018f4f9ff8169e9ca42ba",
+      "category": "tests",
+      "lifecycle": "development"
+    },
+    {
       "path": "tests/test_runner_app_events.py",
       "mode": "100644",
       "blob_sha1": "b3c6f33cf446cddc7e67ff3ec91c0cafb84e561d",
@@ -4339,7 +4360,7 @@
     {
       "path": "tests/test_stable_promotion_guards.py",
       "mode": "100644",
-      "blob_sha1": "32513003732898d65d0b99561f570554e239c0da",
+      "blob_sha1": "33f898f4c602de65194e567549e9695a8e8ee2c3",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4374,7 +4395,7 @@
     {
       "path": "tests/test_tk_free_core_contract.py",
       "mode": "100644",
-      "blob_sha1": "5578af2c2a91fcb20f3297c8a3af19f426f7c9ad",
+      "blob_sha1": "d82f564c5c7474ad459fe34efca9b992b4a72444",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4456,20 +4477,6 @@
       "lifecycle": "active"
     },
     {
-      "path": "verify_release.sh",
-      "mode": "100644",
-      "blob_sha1": "8cbb0ac7b5ac2a9bff326bb829e9eea1ad06a080",
-      "category": "tooling",
-      "lifecycle": "active"
-    },
-    {
-      "path": "videobatch.sh",
-      "mode": "100644",
-      "blob_sha1": "b3f095b76a2dd8d729b5b8b2d83b9c9ee5ff7d65",
-      "category": "tooling",
-      "lifecycle": "active"
-    },
-    {
       "path": "visual_inspection/index.html",
       "mode": "100644",
       "blob_sha1": "b755a527e9eec7cf4e901c02cf084ba71b0080c9",
@@ -4480,7 +4487,7 @@
   "directories": [
     {
       "path": ".",
-      "file_count_recursive": 639
+      "file_count_recursive": 640
     },
     {
       "path": ".githooks",
@@ -4499,8 +4506,8 @@
       "file_count_recursive": 1
     },
     {
-      "path": "01_START_HIER",
-      "file_count_recursive": 2
+      "path": "config",
+      "file_count_recursive": 20
     },
     {
       "path": "debugging",
@@ -4516,11 +4523,11 @@
     },
     {
       "path": "docs",
-      "file_count_recursive": 146
+      "file_count_recursive": 151
     },
     {
       "path": "docs/archive",
-      "file_count_recursive": 94
+      "file_count_recursive": 95
     },
     {
       "path": "docs/archive/diagnostics-checkpoints",
@@ -4540,7 +4547,7 @@
     },
     {
       "path": "docs/archive/rc24",
-      "file_count_recursive": 6
+      "file_count_recursive": 7
     },
     {
       "path": "docs/archive/reference-layouts",
@@ -4572,7 +4579,11 @@
     },
     {
       "path": "resources",
-      "file_count_recursive": 17
+      "file_count_recursive": 18
+    },
+    {
+      "path": "resources/desktop",
+      "file_count_recursive": 1
     },
     {
       "path": "resources/reference",
@@ -4592,7 +4603,11 @@
     },
     {
       "path": "scripts",
-      "file_count_recursive": 84
+      "file_count_recursive": 100
+    },
+    {
+      "path": "scripts/entrypoints",
+      "file_count_recursive": 15
     },
     {
       "path": "src",
@@ -4604,7 +4619,7 @@
     },
     {
       "path": "tests",
-      "file_count_recursive": 139
+      "file_count_recursive": 140
     },
     {
       "path": "tests/baselines",
@@ -4623,5 +4638,5 @@
       "file_count_recursive": 1
     }
   ],
-  "file_count": 639
+  "file_count": 640
 }
