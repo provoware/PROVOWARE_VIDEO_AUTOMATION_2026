@@ -196,8 +196,8 @@ def main() -> int:
                 )
             )
 
-    findings.extend(_exact_lock(ROOT / "requirements.lock"))
-    findings.extend(_exact_lock(ROOT / "requirements-quality.lock"))
+    findings.extend(_exact_lock(ROOT / "config/requirements.lock"))
+    findings.extend(_exact_lock(ROOT / "config/requirements-quality.lock"))
     errors = [item for item in findings if item.severity == "error"]
     report = {
         "schema_version": 1,

@@ -49,7 +49,7 @@ def main() -> int:
     args = parser.parse_args()
     rc_version, stable_build = validate_promotion_source(ROOT)
     candidate = str(rc_version["build"])
-    candidate_hash = manifest_sha256(ROOT / "RELEASE_MANIFEST.json")
+    candidate_hash = manifest_sha256(ROOT / "config/RELEASE_MANIFEST.json")
     if args.operator_acceptance:
         validate_operator_acceptance(ROOT, candidate, candidate_hash)
     else:
@@ -70,10 +70,10 @@ def main() -> int:
         "PYTHONDONTWRITEBYTECODE": "1",
     }
 
-    run([str(ROOT / "quality.sh")], cwd=ROOT, env=base_env, label="Externe Qualität und Kernprüfung")
+    run([str(ROOT / "scripts/entrypoints/quality.sh")], cwd=ROOT, env=base_env, label="Externe Qualität und Kernprüfung")
     verified_env = {**base_env, "VIDEOBATCH_QUALITY_ALREADY_VERIFIED": "1"}
     run(
-        ["bash", str(ROOT / "verify_release.sh")],
+        ["bash", str(ROOT / "scripts/entrypoints/verify_release.sh")],
         cwd=ROOT,
         env=tk_x11_env(verified_env),
         label="Releasekandidat vollständig verifizieren",
@@ -135,12 +135,12 @@ def main() -> int:
         run([str(env_python), str(stable / "scripts/live_desktop_gate.py")], cwd=stable, env=stable_env, label="Stable-Desktopfreigabe erzeugen")
         run([str(env_python), str(stable / "scripts/build_release_manifest.py")], cwd=stable, env=stable_env, label="Stable-Manifest erzeugen")
         run(
-            [str(stable / "test.sh")],
+            [str(stable / "scripts/entrypoints/test.sh")],
             cwd=stable,
             env=tk_x11_env(stable_env),
             label="Stable vollständig aus Arbeitskopie prüfen",
         )
-        run([str(stable / "stable_release.sh"), str(args.output.resolve())], cwd=stable, env=stable_env, label="Deterministisches Stable-ZIP erzeugen")
+        run([str(stable / "scripts/entrypoints/stable_release.sh"), str(args.output.resolve())], cwd=stable, env=stable_env, label="Deterministisches Stable-ZIP erzeugen")
 
     final = args.output / f"VideoBatch_Fast_{stable_build}.zip"
     if not final.is_file():

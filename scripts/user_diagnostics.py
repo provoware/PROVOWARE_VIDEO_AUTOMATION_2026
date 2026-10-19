@@ -63,13 +63,13 @@ def collect() -> dict[str, Any]:
     ffmpeg_ok, ffmpeg = command_version("ffmpeg")
     ffprobe_ok, ffprobe = command_version("ffprobe")
     disk = shutil.disk_usage(ROOT)
-    scripts = {name: executable(ROOT / name) for name in ("videobatch.sh", "start.sh", "setup.sh", "test.sh", "quality.sh", "verify_release.sh")}
+    scripts = {name: executable(ROOT / name) for name in ("scripts/entrypoints/videobatch.sh", "scripts/entrypoints/start.sh", "scripts/entrypoints/setup.sh", "scripts/entrypoints/test.sh", "scripts/entrypoints/quality.sh", "scripts/entrypoints/verify_release.sh")}
     root_writable = os.access(ROOT, os.W_OK | os.X_OK)
     return {
         "build": contract["release_target"],
         "project": {
             "path": str(ROOT),
-            "complete": all((ROOT / name).is_file() for name in ("VERSION.json", "TOOLCHAIN_CONTRACT.json", "requirements-toolchain.lock")),
+            "complete": all((ROOT / name).is_file() for name in ("config/VERSION.json", "config/TOOLCHAIN_CONTRACT.json", "config/requirements-toolchain.lock")),
             "writable": root_writable,
             "launchers": scripts,
         },

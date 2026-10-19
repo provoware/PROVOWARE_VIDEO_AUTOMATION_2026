@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def _candidate_version() -> str:
     try:
-        payload = json.loads((ROOT / 'VERSION.json').read_text(encoding='utf-8'))
+        payload = json.loads((ROOT / 'config/VERSION.json').read_text(encoding='utf-8'))
     except (OSError, json.JSONDecodeError) as exc:
         raise SystemExit(f'FEHLER: VERSION.json kann nicht gelesen werden: {exc}') from exc
     candidate = str(payload.get('build') or payload.get('version') or '').strip()
