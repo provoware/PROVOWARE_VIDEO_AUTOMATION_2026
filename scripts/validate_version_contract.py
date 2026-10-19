@@ -8,16 +8,16 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 CURRENT_JSON_FILES = (
-    "TOOLCHAIN_CONTRACT.json",
+    "config/contracts/TOOLCHAIN_CONTRACT.json",
     "registries/UI_BLUEPRINT.json",
     "registries/UI_COMPONENT_REGISTRY.json",
     "registries/VISUAL_INSPECTION_REGISTRY.json",
     "registries/PLUGIN_APPROVAL_REGISTRY.json",
     "registries/VISUAL_REGRESSION_REGISTRY.json",
     "registries/VISUAL_APPROVAL_REGISTRY.json",
-    "VISUAL_INSPECTION_MANIFEST.json",
-    "QUALITY_ENVIRONMENT_STATUS.json",
-    "DEVELOPMENT_STATUS.json",
+    "registries/VISUAL_INSPECTION_MANIFEST.json",
+    "config/status/QUALITY_ENVIRONMENT_STATUS.json",
+    "config/status/DEVELOPMENT_STATUS.json",
 )
 
 
@@ -71,7 +71,7 @@ def validate(root: Path = ROOT) -> list[str]:
         if present and any(value != build for value in present):
             errors.append(f"{relative}: Buildbezug weicht ab: {', '.join(present)}; erwartet {build}.")
 
-    contract = root / "TOOLCHAIN_CONTRACT.json"
+    contract = root / "config/contracts/TOOLCHAIN_CONTRACT.json"
     try:
         contract_data = _json(contract)
         contract_id = str(contract_data.get("contract_id", ""))
@@ -80,9 +80,9 @@ def validate(root: Path = ROOT) -> list[str]:
         contract_id = ""
         release_target = ""
     if build not in contract_id:
-        errors.append("TOOLCHAIN_CONTRACT.json: contract_id enthält die Buildidentität nicht.")
+        errors.append("config/contracts/TOOLCHAIN_CONTRACT.json: contract_id enthält die Buildidentität nicht.")
     if release_target != build:
-        errors.append("TOOLCHAIN_CONTRACT.json: release_target weicht vom Build ab.")
+        errors.append("config/contracts/TOOLCHAIN_CONTRACT.json: release_target weicht vom Build ab.")
     return errors
 
 

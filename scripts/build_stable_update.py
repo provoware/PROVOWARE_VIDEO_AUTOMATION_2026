@@ -93,7 +93,7 @@ def main() -> int:
         f"provoware_videoautomation_{target_version['version']}_update_from_{from_version}.zip"
     )
 
-    visual_path = target / "VISUAL_INSPECTION_MANIFEST.json"
+    visual_path = target / "registries/VISUAL_INSPECTION_MANIFEST.json"
     visual = json.loads(visual_path.read_text(encoding="utf-8"))
     approval = verify_visual_approval(visual, target)
     if not approval.valid:
@@ -108,8 +108,8 @@ def main() -> int:
         if previous is None or previous.stat().st_size != path.stat().st_size or _sha256(previous) != _sha256(path):
             changed.append((rel, path, operation))
     deleted = sorted(set(source_files) - set(target_files))
-    if "VISUAL_INSPECTION_MANIFEST.json" not in {rel for rel, _, _ in changed}:
-        changed.append(("VISUAL_INSPECTION_MANIFEST.json", visual_path, "replace" if visual_path.exists() else "add"))
+    if "registries/VISUAL_INSPECTION_MANIFEST.json" not in {rel for rel, _, _ in changed}:
+        changed.append(("registries/VISUAL_INSPECTION_MANIFEST.json", visual_path, "replace" if visual_path.exists() else "add"))
     changed.sort(key=lambda item: item[0])
 
     release_manifest = target / "RELEASE_MANIFEST.json"
