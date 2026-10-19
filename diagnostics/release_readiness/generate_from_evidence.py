@@ -29,6 +29,10 @@ CURRENT_FILE_PATHS = {
     "CODE_QUALITY_REPORT_2.8.3-rc24_save_.md": "docs/archive/rc24/CODE_QUALITY_REPORT_2.8.3-rc24_save_.md",
     "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md": "docs/archive/rc24/IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md",
     "FINAL_AUDIT_2.8.3-rc24_save_.md": "docs/archive/rc24/FINAL_AUDIT_2.8.3-rc24_save_.md",
+    "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json": "docs/archive/rc24/VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json",
+    "TODO.md": "docs/TODO.md",
+    "QUALITY_ENVIRONMENT_STATUS.json": "config/status/QUALITY_ENVIRONMENT_STATUS.json",
+    "VISUAL_INSPECTION_MANIFEST.json": "registries/VISUAL_INSPECTION_MANIFEST.json",
 }
 # Git blob SHA-1 from the original RC24 docs on main. The archive must
 # preserve exact bytes; the two user manuals may legitimately be updated.
@@ -264,7 +268,11 @@ def current_release_files(value: Mapping[str, Any]) -> dict[str, Any]:
         relocated = CURRENT_FILE_PATHS.get(original, original)
         converted_ready.append({**item, "path": relocated})
 
-    result = {**historical, "ready": converted_ready}
+    converted_unfinished = [
+        {**item, "path": CURRENT_FILE_PATHS.get(str(item["path"]), str(item["path"]))}
+        for item in historical["unfinished"]
+    ]
+    result = {**historical, "ready": converted_ready, "unfinished": converted_unfinished}
     current = [str(item["path"]) for group in ("ready", "unfinished")
                for item in result[group]]
     if len(current) != len(set(current)):
@@ -376,11 +384,13 @@ def json_text(value: Mapping[str, Any]) -> str:
 
 
 def expected_outputs(value: Mapping[str, Any]) -> dict[Path, str]:
-    report_path = ROOT / str(value["approved_quality_report"])
+    report_path = ROOT / CURRENT_FILE_PATHS.get(
+        str(value["approved_quality_report"]), str(value["approved_quality_report"])
+    )
     return {
-        ROOT / "DEVELOPMENT_STATUS.json": json_text(render_development(value)),
-        ROOT / "QUALITY_ENVIRONMENT_STATUS.json": json_text(render_quality(value)),
-        ROOT / "RELEASE_FILE_STATUS.json": json_text(render_release_files(value)),
+        ROOT / "config/status/DEVELOPMENT_STATUS.json": json_text(render_development(value)),
+        ROOT / "config/status/QUALITY_ENVIRONMENT_STATUS.json": json_text(render_quality(value)),
+        ROOT / "config/status/RELEASE_FILE_STATUS.json": json_text(render_release_files(value)),
         report_path: json_text(render_build(value)),
         README_PATH: render_readme(value, README_PATH.read_text(encoding="utf-8")),
     }
