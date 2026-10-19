@@ -52,7 +52,7 @@ def render(root: Path = ROOT) -> dict[Path, str]:
     status = release_status_block(value) + "\n\n" + release_files_block(value) + "\n"
     return {
         readme_path: readme,
-        root / "STATUS.md": status,
+        root / "docs/STATUS.md": status,
     }
 
 

@@ -78,10 +78,10 @@ def files_digest(files: Sequence[Mapping[str, Any]]) -> str:
 
 def build_payload(*, compact: bool = False) -> dict[str, Any]:
     files = expected_files()
-    visual_path = ROOT / "VISUAL_INSPECTION_MANIFEST.json"
+    visual_path = ROOT / "registries/VISUAL_INSPECTION_MANIFEST.json"
     visual = _strict_json(visual_path) if visual_path.is_file() else {}
     if visual and not isinstance(visual, dict):
-        raise ManifestContractError("VISUAL_INSPECTION_MANIFEST.json muss ein JSON-Objekt sein")
+        raise ManifestContractError("registries/VISUAL_INSPECTION_MANIFEST.json muss ein JSON-Objekt sein")
     approval = verify_visual_approval(visual, ROOT) if visual else None
     version = version_info()
     payload: dict[str, Any] = {

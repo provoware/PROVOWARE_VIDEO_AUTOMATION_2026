@@ -34,7 +34,7 @@ if CHECK_ONLY:
 STATE = Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state")) / "VideoBatchFast"
 LOG_DIR = STATE / "logs"
 TOOLCHAIN = ROOT / "scripts" / "toolchain.py"
-STARTUP_CONTRACT = ROOT / "STARTUP_CONTRACT.json"
+STARTUP_CONTRACT = ROOT / "config/contracts/STARTUP_CONTRACT.json"
 
 SYSTEM_PACKAGES = (
     "python3",
@@ -240,8 +240,8 @@ def acquire_lock(wait_seconds: float = 45.0) -> Any:
 def verify_project() -> None:
     required = (
         "VERSION.json",
-        "TOOLCHAIN_CONTRACT.json",
-        "STARTUP_CONTRACT.json",
+        "config/contracts/TOOLCHAIN_CONTRACT.json",
+        "config/contracts/STARTUP_CONTRACT.json",
         "scripts/toolchain.py",
         "scripts/startup_check.py",
         "src/videobatch_fast/qt_phase3.py",
@@ -433,7 +433,7 @@ def install_user_launchers(sink: EventSink) -> None:
     """Maintain exactly one XDG menu entry and one stable user launcher."""
     try:
         launcher_value = os.environ.get("VIDEOBATCH_PORTABLE_LAUNCHER", "").strip()
-        launcher = Path(launcher_value).expanduser().resolve() if launcher_value else (ROOT / "start.sh").resolve()
+        launcher = Path(launcher_value).expanduser().resolve() if launcher_value else (ROOT / "scripts/cli/start.sh").resolve()
         report = normalize_linux_installation(project_root=ROOT, launcher=launcher)
         sink.log("INSTALLATION_HYGIENE " + json.dumps(report, ensure_ascii=False, sort_keys=True))
     except (OSError, RuntimeError, ValueError) as exc:

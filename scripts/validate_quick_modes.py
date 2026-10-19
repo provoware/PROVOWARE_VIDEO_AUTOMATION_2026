@@ -51,7 +51,7 @@ def expected_manifest() -> dict:
 
 def main() -> int:
     errors = validate_quick_modes(VISUAL_EFFECTS, TRANSITIONS, PROFILES)
-    manifest_path = ROOT / "QUICK_MODES_MANIFEST.json"
+    manifest_path = ROOT / "config/contracts/QUICK_MODES_MANIFEST.json"
     expected = expected_manifest()
     try:
         actual = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -59,7 +59,7 @@ def main() -> int:
         errors.append(f"Schnellmodus-Manifest ist nicht lesbar: {exc}")
         actual = None
     if actual != expected:
-        errors.append("QUICK_MODES_MANIFEST.json stimmt nicht mit dem aktiven Modusregister überein.")
+        errors.append("config/contracts/QUICK_MODES_MANIFEST.json stimmt nicht mit dem aktiven Modusregister überein.")
     if errors:
         print("SCHNELLMODUS-PRÜFUNG FEHLGESCHLAGEN")
         for item in errors:
