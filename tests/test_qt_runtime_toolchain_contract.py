@@ -115,6 +115,27 @@ def _assert_offline_install_flags() -> None:
         assert token in source, f"Offline-Installationsflag fehlt: {token}"
 
 
+def test_migrated_toolchain_lock_paths() -> None:
+    from toolchain_common import load_contract
+
+    contract = load_contract()
+    for key in ("runtime_lock", "quality_lock", "unified_lock"):
+        relative = Path(contract["paths"][key])
+        assert relative.parent.as_posix() == "config/requirements"
+        assert not relative.is_absolute()
+        assert (ROOT / relative).is_file(), f"Verlagerte Sperrdatei fehlt: {relative}"
+
+
+def test_migrated_toolchain_lock_paths() -> None:
+    from toolchain_common import load_contract
+
+    contract = load_contract()
+    for key in ("runtime_lock", "quality_lock", "unified_lock"):
+        path = ROOT / contract["paths"][key]
+        assert path.is_file(), f"Verlagerte Sperrdatei fehlt: {path}"
+        assert path.parent == ROOT / "config/requirements"
+
+
 def test_runtime_install_is_no_index_and_hash_pinned() -> None:
     _assert_offline_install_flags()
 
