@@ -34,7 +34,7 @@ cp toolchain_wheelhouse/TOOLCHAIN_WHEELHOUSE_MANIFEST.json "$EVIDENCE_DIR/wheelh
 cp toolchain_wheelhouse/requirements-toolchain-resolved.lock "$EVIDENCE_DIR/requirements-toolchain-resolved.lock"
 
 set +e
-"$QUALITY_PYTHON" -m pip_audit --cache-dir "$AUDIT_CACHE" --no-deps --disable-pip --progress-spinner off -r requirements.lock > "$EVIDENCE_DIR/pip-audit-cache-prime.log" 2>&1
+"$QUALITY_PYTHON" -m pip_audit --cache-dir "$AUDIT_CACHE" --no-deps --disable-pip --progress-spinner off -r config/requirements.lock > "$EVIDENCE_DIR/pip-audit-cache-prime.log" 2>&1
 prime_exit=$?
 set -e
 printf '%s\n' "$prime_exit" > "$EVIDENCE_DIR/pip-audit-cache-prime.exit"

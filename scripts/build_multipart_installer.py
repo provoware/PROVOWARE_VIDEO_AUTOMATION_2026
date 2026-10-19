@@ -308,8 +308,8 @@ def main() -> int:
 
     source_root = Path(__file__).resolve().parents[1]
     for name in ("scripts/entrypoints/autoinstall.sh",):
-        shutil.copy2(source_root / name, output / name)
-        os.chmod(output / name, 0o755)
+        shutil.copy2(source_root / name, output / Path(name).name)
+        os.chmod(output / Path(name).name, 0o755)
     for name in ("ab_installer.py", "ab_launcher.py", "ab_contract.py"):
         shutil.copy2(source_root / "scripts" / name, output / name)
         os.chmod(output / name, 0o755)

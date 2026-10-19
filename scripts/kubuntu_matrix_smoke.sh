@@ -5,7 +5,7 @@ export PYTHONPATH="$ROOT/src" PYTHONDONTWRITEBYTECODE=1
 python3 "$ROOT/scripts/check_release_literal_hygiene.py" \
   --report "$ROOT/RELEASE_LITERAL_HYGIENE.json"
 python3 -m pytest -q
-bash "$ROOT/videobatch.sh" fault-lab
+bash "$ROOT/scripts/entrypoints/videobatch.sh" fault-lab
 python3 "$ROOT/scripts/validate_version_contract.py"
 python3 "$ROOT/scripts/validate_text_resources.py"
 python3 "$ROOT/scripts/validate_release_file_status.py"
