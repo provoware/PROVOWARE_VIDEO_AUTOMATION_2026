@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 OUTPUT_DIR="${1:-$ROOT_DIR/dist}"
-VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["version"])' "$ROOT_DIR/VERSION.json")"
-CHANNEL="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["channel"])' "$ROOT_DIR/VERSION.json")"
+VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["version"])' "$ROOT_DIR/config/VERSION.json")"
+CHANNEL="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["channel"])' "$ROOT_DIR/config/VERSION.json")"
 if [[ "$CHANNEL" != "stable" ]]; then
   printf 'STABLE BLOCKIERT: Ursache: Der Kanal ist %s statt stable. Auswirkung: Das Stable-Paket wird nicht erzeugt. Automatische Schutzmaßnahme: Die Paketierung stoppt vor dem Schreiben. Lösung: Den Kandidaten vollständig prüfen und danach in einer getrennten Arbeitskopie auf stable setzen. Alternative: Den Stand als Release Candidate paketieren.\n' "$CHANNEL" >&2
   exit 12
@@ -24,13 +24,13 @@ else
     exit 14
   fi
   CANDIDATE="${VIDEOBATCH_ACCEPTANCE_CANDIDATE:-$VERSION}"
-  MANIFEST_SHA256="${VIDEOBATCH_ACCEPTANCE_MANIFEST_SHA256:-$(sha256sum "$ROOT_DIR/RELEASE_MANIFEST.json" | cut -d' ' -f1)}"
+  MANIFEST_SHA256="${VIDEOBATCH_ACCEPTANCE_MANIFEST_SHA256:-$(sha256sum "$ROOT_DIR/config/RELEASE_MANIFEST.json" | cut -d' ' -f1)}"
   python3 "$ROOT_DIR/scripts/validate_stable_acceptance.py" --evidence-dir "$EVIDENCE_DIR" --candidate "$CANDIDATE" --manifest-sha256 "$MANIFEST_SHA256"
 fi
 python3 "$ROOT_DIR/scripts/toolchain.py" prepare --scope quality --auto-repair --quiet
 python3 "$ROOT_DIR/scripts/toolchain.py" gate --scope quality --run-external --quiet
 export VIDEOBATCH_QUALITY_ALREADY_VERIFIED=1
-"$ROOT_DIR/test.sh"
+"$ROOT_DIR/scripts/entrypoints/test.sh"
 ENV_PYTHON="$(python3 "$ROOT_DIR/scripts/toolchain.py" path --scope quality --quiet)"
 "$ENV_PYTHON" "$ROOT_DIR/scripts/check_visual_approval.py" --require
 "$ENV_PYTHON" "$ROOT_DIR/scripts/build_release_manifest.py"
