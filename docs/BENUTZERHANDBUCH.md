@@ -28,7 +28,7 @@ Das vollständige Projektpaket, FFmpeg und FFprobe müssen vorhanden sein. Für 
 
 **Kann entfallen?** Nein. Ein Start direkt aus dem Archiv kann zu fehlenden Einstellungen, Protokollen oder Ausgaben führen.
 
-**Erwartetes Ergebnis:** Im Zielordner sind unter anderem `videobatch.sh`, `START_HIER_save_.md`, `README.md`, `src` und `scripts` sichtbar.
+**Erwartetes Ergebnis:** Im Zielordner sind unter anderem `STARTEN.sh`, `README.md`, `docs/start/START_HIER_save_.md`, `src` und `scripts` sichtbar.
 
 ### Schritt 2: Originalmedien sichern
 
@@ -51,7 +51,7 @@ Das vollständige Projektpaket, FFmpeg und FFprobe müssen vorhanden sein. Für 
 ### Schritt 2: Starter ausführbar machen
 
 ```bash
-chmod +x videobatch.sh
+chmod +x STARTEN.sh
 ```
 
 **Pflichtgrad:** Beim ersten Start Pflicht, falls die Ausführungsberechtigung fehlt.
@@ -63,7 +63,7 @@ chmod +x videobatch.sh
 ### Schritt 3: Anwendung starten
 
 ```bash
-./videobatch.sh
+./STARTEN.sh
 ```
 
 **Erwartetes Ergebnis:** Die VideoBatch-Oberfläche öffnet sich. Der Starter prüft vorher Laufzeit, FFmpeg, Benutzerordner und Projektzustand.
@@ -311,6 +311,13 @@ Bei einem ungültigen oder nicht mehr verfügbaren Effekt:
 3. Prüfen, ob die letzte Änderung sichtbar bestätigt wurde.
 4. Anwendung normal schließen.
 5. Bei wichtigen Projekten Projektdatei und Medienliste sichern.
+
+
+## Verzeichnisstruktur und aktueller Entwicklungsnachweis
+
+Der zentrale Benutzerstarter ist `STARTEN.sh` im Hauptordner. Kommando-Skripte liegen unter `scripts/cli/`, die Installationsskripte unter `scripts/install/`, die technischen Verträge unter `config/contracts/` und die gesperrten Abhängigkeiten unter `config/requirements/`.
+
+Der Entwicklungs-PR [#246](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/246) enthält den erfolgreichen ZIP-Entpacktest mit sieben Hauptordnerdateien auf Commit `2ae2ae5`. Dieser Test bestätigt noch **keine vollständige Offline-Erstinstallation und keinen grafischen Start aus dem entpackten Paket**. Die historische RC24-Freigabe bleibt unverändert; die persönliche Kubuntu-Endabnahme findet erst zum Entwicklungsabschluss statt.
 
 ## Abschlussprüfung
 

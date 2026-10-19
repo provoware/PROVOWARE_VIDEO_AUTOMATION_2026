@@ -63,7 +63,7 @@ class VisualApprovalTests(unittest.TestCase):
             "links": {"visual_report": "diagnostics/visual_regression_latest.json"},
             "scenarios": [{"id": "one", "baseline": "tests/baselines/one.png", "passed": True}],
         }
-        target = root / "VISUAL_INSPECTION_MANIFEST.json"
+        target = root / "registries/VISUAL_INSPECTION_MANIFEST.json"
         target.write_text(json.dumps(manifest), encoding="utf-8")
         return target
 

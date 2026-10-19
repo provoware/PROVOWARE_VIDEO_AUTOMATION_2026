@@ -5,9 +5,9 @@ on:
     branches: [main]
     paths:
       - .github/workflows/kubuntu-26-04-wayland-preview.yml
-      - PLATFORM_SUPPORT.json
+      - config/contracts/PLATFORM_SUPPORT.json
       - docs/KUBUNTU_26_04_WAYLAND.md
-      - requirements-qt.txt
+      - config/requirements/requirements-qt.txt
       - scripts/build_wayland_preview_zip.py
       - scripts/install_kubuntu_26_04_wayland.sh
       - scripts/kubuntu_26_04_wayland_check.py
@@ -19,9 +19,9 @@ on:
     branches: [main]
     paths:
       - .github/workflows/kubuntu-26-04-wayland-preview.yml
-      - PLATFORM_SUPPORT.json
+      - config/contracts/PLATFORM_SUPPORT.json
       - docs/KUBUNTU_26_04_WAYLAND.md
-      - requirements-qt.txt
+      - config/requirements/requirements-qt.txt
       - scripts/build_wayland_preview_zip.py
       - scripts/install_kubuntu_26_04_wayland.sh
       - scripts/kubuntu_26_04_wayland_check.py
@@ -98,7 +98,7 @@ jobs:
             libfontconfig1 \
             libwayland-client0 \
             libxkbcommon0
-          python3 -m pip install -r requirements-qt.txt
+          python3 -m pip install -r config/requirements/requirements-qt.txt
           python3 -m pip install pytest==8.4.2
 
       - name: Verify Ubuntu 26.04 base and required packages
@@ -195,8 +195,8 @@ jobs:
           required = {
               'STARTEN.sh',
               'VERSION.json',
-              'PLATFORM_SUPPORT.json',
-              'requirements-qt.txt',
+              'config/contracts/PLATFORM_SUPPORT.json',
+              'config/requirements/requirements-qt.txt',
               'src/videobatch_fast/platform_integration.py',
               'src/videobatch_fast/qt_phase3.py',
               'docs/KUBUNTU_26_04_WAYLAND.md',

@@ -8,13 +8,24 @@ Der Langzeitrender und die frühere Kubuntu-Basisabnahme sind dokumentiert. **Di
 
 ## P0 – jetzt
 
+### Konsolidierung und Benutzerpaket
+
+- [x] PR-Bestand bereinigt: #247, #248 und #250 geschlossen; nur #246 bleibt offen.
+- [x] CI auf `2ae2ae5`: 8/8 GitHub-Prüfläufe erfolgreich.
+- [x] Frisch gebautes ZIP entpackt und kontrolliert: **7 Hauptordnerdateien**, Kommando-Hilfe funktioniert.
+- [ ] Offline-Erstinstallation und tatsächlichen grafischen Qt-Start **aus demselben entpackten Paket** automatisiert nachweisen.
+- [ ] Geänderte Dokumentation und Manifest/Index auf einem neuen unveränderten Commit erneut vollständig prüfen.
+- [ ] Danach separate Entscheidung über die Integration von #246 nach `main`. Keine vorzeitige Stable-Freigabe.
+
+
+
 ### 1. Kubuntu-/Wayland-Sichtabnahme — OFFEN
 
 - [x] Basisabnahme vom 29.09.2026 unter `diagnostics/release_readiness/KUBUNTU_OPERATOR_ACCEPTANCE_2026-09-29.json` erhalten.
 - [x] Realen 125-%-Befund vom 06.10.2026 dokumentiert: abgeschnittene Texte, zu flache Listen und unnötiges Hauptbereich-Scrollen.
 - [x] Hauptablauf in eigene Seiten für Dateien, Ausgabe und Produktion getrennt; Projekt/Hilfe/Diagnose verdrängen den Arbeitsbereich nicht mehr.
 - [x] PR #230 ist historisch in `main` übernommen; alte Prüfungen sind keine neue Freigabe für PR #240.
-- [ ] PR #240: aktuelle technische Tests vollständig und auf demselben Commit auswerten; Release- und Realabnahme separat nachweisen.
+- [x] Strukturmigration #246: CI-Prüfungen auf Commit `2ae2ae5` vollständig grün, inklusive entpacktem ZIP mit 7 Hauptordnerdateien.
 - [ ] Korrigierten Stand real bei 100 %, 125 %, 150 % und 200 % prüfen: kein Clipping, keine Überlagerung, alle Hauptschalter sichtbar, Fokus sichtbar, Listen ausreichend hoch, keine Hauptseiten-Scrollleiste.
 - [ ] Sortierung prüfen: reine Ansichtssortierung darf die Produktionspaarung nicht ändern; Übernahme nur nach ausdrücklichem Klick.
 - [ ] Erst nach dieser Sichtabnahme `physical_kubuntu_26_04_wayland` wieder auf `passed` setzen.
@@ -29,7 +40,7 @@ Der Langzeitrender und die frühere Kubuntu-Basisabnahme sind dokumentiert. **Di
 ## Stable-Finalisierung – ein reales UI-Gate offen
 
 - [x] Expliziten Operator-Freigabevertrag als fail-closed Alternative zum klassischen Nachweispfad implementieren; keine Messwerte werden rekonstruiert.
-- [ ] PR #240 nach vollständigen aktuellen Pflichtprüfungen und physischer Kubuntu-Abnahme gezielt freigeben (bis dahin Entwurf).
+- [ ] PR #246 erst nach aktuellem Commit-Gate und gesonderter Integrationsentscheidung nach `main` übernehmen; physische Kubuntu-Abnahme erst am finalen Releasekandidaten.
 - [ ] Reale 100/125/150/200-%-Sichtabnahme dokumentieren und Release-Evidence erneut ableiten.
 - [ ] Danach Stable 2.8.3 in getrennter Arbeitskopie erzeugen, deterministisch doppelt paketieren, Stable-Branch/Tag und GitHub-Release veröffentlichen.
 
@@ -54,7 +65,7 @@ Diese Arbeiten bleiben bis zur realen Zielsystemabnahme zurückgestellt:
 
 - [ ] Neue rein interne historische Nachweise unter `docs/archive/` ablegen; freigegebene Release-Unterlagen im Hauptverzeichnis nicht nachträglich verschieben.
 - [ ] Keine parallele CI-Matrix einführen, solange der Einzielvertrag Kubuntu 26.04 / Wayland gilt.
-- [ ] Nach Plattformänderungen `PLATFORM_SUPPORT.json`, Stable-Abnahmevertrag, Nutzeranleitungen und CI gemeinsam gegen Drift prüfen.
+- [ ] Nach Plattformänderungen `config/contracts/PLATFORM_SUPPORT.json`, Stable-Abnahmevertrag, Nutzeranleitungen und CI gemeinsam gegen Drift prüfen.
 - [ ] Pro Entwicklungsiteration höchstens **zwei Umsetzungsschritte**, danach Kurzabnahme und vollständiges Gate.
 
 ## Abschlussregel

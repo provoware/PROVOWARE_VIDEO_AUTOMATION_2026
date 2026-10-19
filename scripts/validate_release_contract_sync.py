@@ -13,15 +13,15 @@ from videobatch_fast.versioning import build_label
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "RELEASE_MANIFEST.json"
-PACKAGE_MANIFEST_PATH = ROOT / "manifest.json"
+PACKAGE_MANIFEST_PATH = ROOT / "config/contracts/manifest.json"
 EVIDENCE_PATH = ROOT / "diagnostics/release_readiness/RELEASE_EVIDENCE.json"
 HISTORICAL_MANIFEST_PATH = ROOT / "diagnostics/release_readiness/HISTORICAL_RC24_RELEASE_MANIFEST.json"
 HISTORICAL_MANIFEST_GIT_BLOB = "c9fd5fe01ce9db899bebf9d7ffd1d7cb8829d6f2"
-QUALITY_PATH = ROOT / "QUALITY_ENVIRONMENT_STATUS.json"
-BUILD_REPORT_PATH = ROOT / f"VideoBatch_Fast_{build_label()}_BUILD_REPORT_save_.json"
+QUALITY_PATH = ROOT / "config/status/QUALITY_ENVIRONMENT_STATUS.json"
+BUILD_REPORT_PATH = ROOT / "docs/archive/rc24" / f"VideoBatch_Fast_{build_label()}_BUILD_REPORT_save_.json"
 README_PATH = ROOT / "README.md"
-STATUS_PATH = ROOT / "STATUS.md"
-TODO_PATH = ROOT / "TODO.md"
+STATUS_PATH = ROOT / "docs/STATUS.md"
+TODO_PATH = ROOT / "docs/TODO.md"
 
 
 class ContractSyncError(RuntimeError):
@@ -101,19 +101,19 @@ def validate(*, phase: str = "integration", acceptance_dir: Path | None = None) 
         raise ContractSyncError("Release-Kanal in Evidence und Manifest ist nicht synchron")
 
     if package_manifest.get("schema_version") != 1:
-        raise ContractSyncError("manifest.json besitzt eine unbekannte Schema-Version")
+        raise ContractSyncError("config/contracts/manifest.json besitzt eine unbekannte Schema-Version")
     for field in ("name", "version", "channel", "build_date"):
         if package_manifest.get(field) != product.get(field):
             raise ContractSyncError(
-                f"manifest.json Feld {field!r} ist nicht mit RELEASE_EVIDENCE.product synchron"
+                f"config/contracts/manifest.json Feld {field!r} ist nicht mit RELEASE_EVIDENCE.product synchron"
             )
     if package_manifest.get("artifact_policy") != evidence.get("artifact_policy"):
         raise ContractSyncError(
-            "manifest.json artifact_policy ist nicht mit RELEASE_EVIDENCE synchron"
+            "config/contracts/manifest.json artifact_policy ist nicht mit RELEASE_EVIDENCE synchron"
         )
     entrypoint = str(package_manifest.get("entrypoint") or "")
     if not entrypoint or not (ROOT / entrypoint).is_file():
-        raise ContractSyncError("manifest.json verweist auf keinen gültigen Einstieg")
+        raise ContractSyncError("config/contracts/manifest.json verweist auf keinen gültigen Einstieg")
 
     internal = _mapping(quality.get("internal_gates"), "QUALITY_ENVIRONMENT_STATUS.internal_gates")
     if internal.get("release_manifest_files") != historical_count:
@@ -173,7 +173,7 @@ def validate(*, phase: str = "integration", acceptance_dir: Path | None = None) 
 
     todo = TODO_PATH.read_text(encoding="utf-8")
     if "P0 – vor Merge von PR #128" in todo or "P0 - vor Merge von PR #128" in todo:
-        raise ContractSyncError("TODO.md enthält noch den überholten Vor-Merge-Abschnitt für PR #128")
+        raise ContractSyncError("docs/TODO.md enthält noch den überholten Vor-Merge-Abschnitt für PR #128")
 
     # HEAD comes from the actual checkout: no self-referential commit SHA in
     # tracked release files. CI logs provide an audit trail for this exact tree.

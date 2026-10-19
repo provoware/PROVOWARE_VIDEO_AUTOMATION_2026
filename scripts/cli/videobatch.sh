@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 SELF="${BASH_SOURCE[0]}"
-ROOT_DIR="$(cd -- "$(dirname -- "$SELF")" && pwd -P)"
+ROOT_DIR="$(cd -- "$(dirname -- "$SELF")/../.." && pwd -P)"
 ACTION="${1:-start}"
 if [[ $# -gt 0 ]]; then shift; fi
 BOOTSTRAP_PYTHON="${VIDEOBATCH_BOOTSTRAP_PYTHON:-python3}"
@@ -11,29 +11,29 @@ usage() {
   cat <<'EOF'
 VideoBatch Fast – automatischer zentraler Einstieg
 
-  ./videobatch.sh                 automatisch prüfen, reparieren und starten
-  ./videobatch.sh setup           Laufzeitumgebung automatisch vorbereiten
-  ./videobatch.sh repair          Paketbasis und Laufzeitumgebung vollständig erneuern
-  ./videobatch.sh doctor          verständliche Systemdiagnose
-  ./videobatch.sh check           kompakter System- und Toolchainstatus
-  ./videobatch.sh test --docs     schnelle Dokumentationsprüfung
-  ./videobatch.sh test --core     Kernprüfung ohne externe Qualitätswerkzeuge
-  ./videobatch.sh test --local    lokale Qualitätsprüfung ohne Stable-Freigabe
-  ./videobatch.sh test            strenge reproduzierbare Releaseprüfung
-  ./videobatch.sh quality         Ruff, MyPy, Bandit, pip-audit und Tests
-  ./videobatch.sh verify          praktische lokale Qualitätsprüfung
-  ./videobatch.sh verify --strict strenge Prüfung mit Wheelhouse und Signaturen
-  ./videobatch.sh verify --core   Kernprüfung ohne externe Qualitätswerkzeuge
-  ./videobatch.sh finalize        autonom prüfen und Stable-ZIP erzeugen
-  ./videobatch.sh fault-lab       isoliertes Stabilitäts- und Recoverylabor
-  ./videobatch.sh retry-status    Wiederanlaufliste vollständig lesend anzeigen
-  ./videobatch.sh recovery-check  Wiederanlauf und Journale vollständig lesend vergleichen
-  ./videobatch.sh portable-build  portable Offline-Ausgabe erzeugen
-  ./videobatch.sh logs            Bootstrap-, App-, Debug- und Toolchainprotokolle anzeigen
-  ./videobatch.sh help            diese Hilfe anzeigen
+  ./scripts/cli/videobatch.sh                 automatisch prüfen, reparieren und starten
+  ./scripts/cli/videobatch.sh setup           Laufzeitumgebung automatisch vorbereiten
+  ./scripts/cli/videobatch.sh repair          Paketbasis und Laufzeitumgebung vollständig erneuern
+  ./scripts/cli/videobatch.sh doctor          verständliche Systemdiagnose
+  ./scripts/cli/videobatch.sh check           kompakter System- und Toolchainstatus
+  ./scripts/cli/videobatch.sh test --docs     schnelle Dokumentationsprüfung
+  ./scripts/cli/videobatch.sh test --core     Kernprüfung ohne externe Qualitätswerkzeuge
+  ./scripts/cli/videobatch.sh test --local    lokale Qualitätsprüfung ohne Stable-Freigabe
+  ./scripts/cli/videobatch.sh test            strenge reproduzierbare Releaseprüfung
+  ./scripts/cli/videobatch.sh quality         Ruff, MyPy, Bandit, pip-audit und Tests
+  ./scripts/cli/videobatch.sh verify          praktische lokale Qualitätsprüfung
+  ./scripts/cli/videobatch.sh verify --strict strenge Prüfung mit Wheelhouse und Signaturen
+  ./scripts/cli/videobatch.sh verify --core   Kernprüfung ohne externe Qualitätswerkzeuge
+  ./scripts/cli/videobatch.sh finalize        autonom prüfen und Stable-ZIP erzeugen
+  ./scripts/cli/videobatch.sh fault-lab       isoliertes Stabilitäts- und Recoverylabor
+  ./scripts/cli/videobatch.sh retry-status    Wiederanlaufliste vollständig lesend anzeigen
+  ./scripts/cli/videobatch.sh recovery-check  Wiederanlauf und Journale vollständig lesend vergleichen
+  ./scripts/cli/videobatch.sh portable-build  portable Offline-Ausgabe erzeugen
+  ./scripts/cli/videobatch.sh logs            Bootstrap-, App-, Debug- und Toolchainprotokolle anzeigen
+  ./scripts/cli/videobatch.sh help            diese Hilfe anzeigen
 
 Option für vollständig offline:
-  ./videobatch.sh setup --offline-only
+  ./scripts/cli/videobatch.sh setup --offline-only
 EOF
 }
 
@@ -45,16 +45,13 @@ fatal() {
 }
 
 require_project() {
-  [[ -f "$ROOT_DIR/VERSION.json" && -f "$ROOT_DIR/scripts/toolchain.py" && -f "$ROOT_DIR/TOOLCHAIN_CONTRACT.json" ]] || \
+  [[ -f "$ROOT_DIR/VERSION.json" && -f "$ROOT_DIR/scripts/toolchain.py" && -f "$ROOT_DIR/config/contracts/TOOLCHAIN_CONTRACT.json" ]] || \
     fatal "Das Projekt ist unvollständig oder wurde während einer Reparatur beschädigt." 9
   [[ ! -L "$ROOT_DIR" ]] || fatal "Der Projektordner darf kein symbolischer Link sein." 9
 }
 
 require_system() {
-  command -v "$BOOTSTRAP_PYTHON" >/dev/null 2>&1 || fatal "Python 3 fehlt. Kubuntu: sudo apt install python3 python3-venv python3-pip python3-tk" 10
-  "$BOOTSTRAP_PYTHON" - <<'PY' >/dev/null 2>&1 || fatal "Tk fehlt. Kubuntu: sudo apt install python3-tk" 11
-import tkinter
-PY
+  command -v "$BOOTSTRAP_PYTHON" >/dev/null 2>&1 || fatal "Python 3 fehlt. Kubuntu: sudo apt install python3 python3-venv python3-pip" 10
   "$BOOTSTRAP_PYTHON" -m venv --help >/dev/null 2>&1 || fatal "python3-venv fehlt. Kubuntu: sudo apt install python3-venv" 12
 }
 
@@ -157,14 +154,14 @@ case "$ACTION" in
     "$BOOTSTRAP_PYTHON" "$ROOT_DIR/scripts/user_diagnostics.py" --brief
     ;;
   test)
-    exec "$ROOT_DIR/test.sh" "$@"
+    exec "$ROOT_DIR/scripts/dev/test.sh" "$@"
     ;;
   quality)
     [[ $# -eq 0 ]] || fatal "quality akzeptiert keine Zusatzoptionen." 2
-    exec "$ROOT_DIR/quality.sh"
+    exec "$ROOT_DIR/scripts/dev/quality.sh"
     ;;
   verify)
-    exec "$ROOT_DIR/verify_release.sh" "$@"
+    exec "$ROOT_DIR/scripts/dev/verify_release.sh" "$@"
     ;;
   finalize|finalisieren)
     require_system
@@ -174,7 +171,7 @@ case "$ACTION" in
     exec "$ENV_PYTHON" "$ROOT_DIR/scripts/finalize_release.py" "$@"
     ;;
   stable)
-    exec "$ROOT_DIR/stable_release.sh" "$@"
+    exec "$ROOT_DIR/scripts/release/stable_release.sh" "$@"
     ;;
   fault-lab)
     require_system

@@ -171,3 +171,10 @@ Dieser globale Kern gilt zusätzlich zu den projektspezifischen Regeln. Bei Sich
 
 Leitsatz: **Kein Agent muss sich erinnern. Kein Agent darf raten. Keine Änderung verliert ihren Ursprung. Kein PASS existiert ohne Evidence.**
 
+
+## Benutzer-Hauptordner (8-Dateien-Vertrag)
+
+- Im Git-Repository und im unverpackten Benutzerpaket liegen höchstens acht direkte Dateien im Hauptordner. Versteckte Dateien zählen mit; Ordner zählen nicht.
+- `STARTEN.sh` und `README.md` bleiben direkt sichtbar; technische Start-/Prüf-/Installationsskripte liegen unter `scripts/`.
+- Die Pfade in `config/`, `registries/`, `scripts/`, `resources/` und `docs/` sind Teil des Versions-, Installer-, CI- und Paketvertrags. Beim Umzug Referenzen und Tests gemeinsam aktualisieren.
+- Historische RC24-Freigaben bleiben unverändert; reine Entwicklungsläufe bedeuten keine Stable-Freigabe.

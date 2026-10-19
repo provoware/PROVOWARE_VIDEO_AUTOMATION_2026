@@ -180,6 +180,13 @@ Zuerst werden nur Channel-Index und Manifest geladen. Danach lädt VideoBatch au
 
 Die typisierte Ereignisarchitektur, Auswahlvorschau und das Ereignisregister ändern den signierten Channel-, A/B- und Rollbackvertrag nicht. Sie verbessern interne Zustandsübertragung und Vollständigkeitsprüfung, ersetzen aber keinen der oben beschriebenen Update-Sicherheitschecks.
 
+
+## Verzeichnisstruktur und aktueller Entwicklungsnachweis
+
+Der zentrale Benutzerstarter ist `STARTEN.sh` im Hauptordner. Kommando-Skripte liegen unter `scripts/cli/`, die Installationsskripte unter `scripts/install/`, die technischen Verträge unter `config/contracts/` und die gesperrten Abhängigkeiten unter `config/requirements/`.
+
+Der Entwicklungs-PR [#246](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/246) enthält den erfolgreichen ZIP-Entpacktest mit sieben Hauptordnerdateien auf Commit `2ae2ae5`. Dieser Test bestätigt noch **keine vollständige Offline-Erstinstallation und keinen grafischen Start aus dem entpackten Paket**. Die historische RC24-Freigabe bleibt unverändert; die persönliche Kubuntu-Endabnahme findet erst zum Entwicklungsabschluss statt.
+
 ## Abschlussprüfung
 
 - richtiger Kanal ausgewählt
@@ -195,4 +202,4 @@ Die typisierte Ereignisarchitektur, Auswahlvorschau und das Ereignisregister än
 
 ## Nächster Schritt
 
-Nach einem erfolgreichen Update `RELEASE_NOTES_save_.md` lesen und anschließend einen kleinen Testauftrag nach `START_HIER_save_.md` ausführen.
+Nach einem erfolgreichen Update `docs/archive/rc24/RELEASE_NOTES_save_.md` lesen und anschließend einen kleinen Testauftrag nach `docs/start/START_HIER_save_.md` ausführen.

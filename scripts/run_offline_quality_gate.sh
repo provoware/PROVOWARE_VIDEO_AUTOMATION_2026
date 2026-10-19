@@ -12,9 +12,9 @@ export VIDEOBATCH_PIP_AUDIT_CACHE="$AUDIT_CACHE"
 mkdir -p "$EVIDENCE_DIR" "$AUDIT_CACHE"
 cd "$ROOT"
 
-bash ./quality-toolchain.sh build 2>&1 | tee "$EVIDENCE_DIR/wheelhouse-build.log"
-bash ./quality-toolchain.sh verify 2>&1 | tee "$EVIDENCE_DIR/wheelhouse-verify.log"
-bash ./quality-toolchain.sh prepare --offline-only --replace 2>&1 | tee "$EVIDENCE_DIR/offline-install-first.log"
+bash ./scripts/dev/quality-toolchain.sh build 2>&1 | tee "$EVIDENCE_DIR/wheelhouse-build.log"
+bash ./scripts/dev/quality-toolchain.sh verify 2>&1 | tee "$EVIDENCE_DIR/wheelhouse-verify.log"
+bash ./scripts/dev/quality-toolchain.sh prepare --offline-only --replace 2>&1 | tee "$EVIDENCE_DIR/offline-install-first.log"
 python3 scripts/toolchain.py gate --scope quality 2>&1 | tee "$EVIDENCE_DIR/environment-gate.log"
 
 QUALITY_PYTHON="$(python3 scripts/toolchain.py path --scope quality --quiet)"
@@ -34,15 +34,15 @@ cp toolchain_wheelhouse/TOOLCHAIN_WHEELHOUSE_MANIFEST.json "$EVIDENCE_DIR/wheelh
 cp toolchain_wheelhouse/requirements-toolchain-resolved.lock "$EVIDENCE_DIR/requirements-toolchain-resolved.lock"
 
 set +e
-"$QUALITY_PYTHON" -m pip_audit --cache-dir "$AUDIT_CACHE" --no-deps --disable-pip --progress-spinner off -r requirements.lock > "$EVIDENCE_DIR/pip-audit-cache-prime.log" 2>&1
+"$QUALITY_PYTHON" -m pip_audit --cache-dir "$AUDIT_CACHE" --no-deps --disable-pip --progress-spinner off -r config/requirements/requirements.lock > "$EVIDENCE_DIR/pip-audit-cache-prime.log" 2>&1
 prime_exit=$?
 set -e
 printf '%s\n' "$prime_exit" > "$EVIDENCE_DIR/pip-audit-cache-prime.exit"
 find "$AUDIT_CACHE" -type f -printf '%P\t%s\n' | sort > "$EVIDENCE_DIR/pip-audit-cache-inventory.tsv"
 test -s "$EVIDENCE_DIR/pip-audit-cache-inventory.tsv"
 
-bash ./quality-toolchain.sh prepare --offline-only --replace 2>&1 | tee "$EVIDENCE_DIR/offline-install-final.log"
-bash ./quality-toolchain.sh verify 2>&1 | tee "$EVIDENCE_DIR/wheelhouse-final-verify.log"
+bash ./scripts/dev/quality-toolchain.sh prepare --offline-only --replace 2>&1 | tee "$EVIDENCE_DIR/offline-install-final.log"
+bash ./scripts/dev/quality-toolchain.sh verify 2>&1 | tee "$EVIDENCE_DIR/wheelhouse-final-verify.log"
 
 QUALITY_PYTHON="$(python3 scripts/toolchain.py path --scope quality --quiet)"
 export PATH="$(dirname "$QUALITY_PYTHON"):$PATH"

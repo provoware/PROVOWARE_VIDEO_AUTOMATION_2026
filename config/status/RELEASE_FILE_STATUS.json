@@ -54,13 +54,13 @@
     {
       "evidence": "Aus der kanonischen RELEASE_EVIDENCE.json erzeugt",
       "label": "Maschinenlesbarer Buildbericht",
-      "path": "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json"
+      "path": "docs/archive/rc24/VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json"
     }
   ],
   "unfinished": [
     {
       "label": "Offene Arbeitsliste",
-      "path": "TODO.md",
+      "path": "docs/TODO.md",
       "reason": "Automatisierte Gates werden für den seitengetrennten Qt-Stand neu geprüft; danach ist die reale 100/125/150/200-%-Sichtabnahme und anschließend die Stable-Promotion offen."
     },
     {
@@ -75,12 +75,12 @@
     },
     {
       "label": "Qualitätsumgebung",
-      "path": "QUALITY_ENVIRONMENT_STATUS.json",
+      "path": "config/status/QUALITY_ENVIRONMENT_STATUS.json",
       "reason": "Maschinenlesbarer Qualitätsstatus; nach der Layoutkorrektur müssen die automatisierten Gates erneut grün sein und die physische 100/125/150/200-%-UI-Abnahme bleibt offen."
     },
     {
       "label": "Visuelles Prüfmanifest",
-      "path": "VISUAL_INSPECTION_MANIFEST.json",
+      "path": "registries/VISUAL_INSPECTION_MANIFEST.json",
       "reason": "Automatisierte visuelle Verträge bleiben Referenz; die reale 100/125/150/200-%-Sichtabnahme des seitengetrennten Qt-Stands steht noch aus."
     }
   ]

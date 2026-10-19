@@ -46,7 +46,7 @@ def test_release_docs_use_canonical_evidence_and_keep_marker_api(tmp_path: Path)
             ],
             "unfinished": [
                 {
-                    "path": "TODO.md",
+                    "path": "docs/TODO.md",
                     "label": "Aufgaben",
                     "reason": "offen",
                 }
@@ -72,15 +72,15 @@ def test_release_docs_use_canonical_evidence_and_keep_marker_api(tmp_path: Path)
         f"{FILES_START}\nalt\n{FILES_END}\n\nNutzung\n",
         encoding="utf-8",
     )
-    (tmp_path / "STATUS.md").write_text("alt\n", encoding="utf-8")
+    (tmp_path / "docs/STATUS.md").write_text("alt\n", encoding="utf-8")
 
     documents = render(tmp_path)
-    status = documents[tmp_path / "STATUS.md"]
+    status = documents[tmp_path / "docs/STATUS.md"]
 
     assert "1.2.3-rc4" in status
     assert "12/12 automatisierte Tests" in status
     assert "Guide_save_.md" in status
-    assert "TODO.md" in status
+    assert "docs/TODO.md" in status
     assert documents[tmp_path / "README.md"].endswith("\n\nNutzung\n")
 
 def test_release_status_block_reports_stable_ready_without_empty_open_section() -> None:

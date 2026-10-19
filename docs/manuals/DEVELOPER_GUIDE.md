@@ -205,8 +205,10 @@ Ausgangsstand belegen
 
 ## Abhängigkeiten
 
-- Laufzeit: `requirements.lock`
-- Entwicklerwerkzeuge: `requirements-quality.lock`
+- Laufzeit: `config/requirements/requirements.lock`
+- Entwicklerwerkzeuge: `config/requirements/requirements-quality.lock`
+- Gemeinsame Sperrdatei: `config/requirements/requirements-toolchain.lock`
+- Der verbindliche Toolchain-Vertrag liegt unter `config/contracts/TOOLCHAIN_CONTRACT.json`.
 
 Lockdateien verwenden keine Versionsbereiche. Jede Abhängigkeitsänderung benötigt:
 
@@ -237,6 +239,13 @@ Lockdateien verwenden keine Versionsbereiche. Jede Abhängigkeitsänderung benö
 ### Änderung soll verworfen werden
 
 Uncommittete Dateien nur gezielt zurücksetzen. Keine pauschalen Löschbefehle verwenden, solange unbekannte Dateien vorhanden sind.
+
+
+## Verzeichnisstruktur und aktueller Entwicklungsnachweis
+
+Der zentrale Benutzerstarter ist `STARTEN.sh` im Hauptordner. Kommando-Skripte liegen unter `scripts/cli/`, die Installationsskripte unter `scripts/install/`, die technischen Verträge unter `config/contracts/` und die gesperrten Abhängigkeiten unter `config/requirements/`.
+
+Der Entwicklungs-PR [#246](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/246) enthält den erfolgreichen ZIP-Entpacktest mit sieben Hauptordnerdateien auf Commit `2ae2ae5`. Dieser Test bestätigt noch **keine vollständige Offline-Erstinstallation und keinen grafischen Start aus dem entpackten Paket**. Die historische RC24-Freigabe bleibt unverändert; die persönliche Kubuntu-Endabnahme findet erst zum Entwicklungsabschluss statt.
 
 ## Abschlussprüfung
 

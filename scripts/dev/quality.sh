@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 TMP_ROOT="$(mktemp -d -t videobatch-quality-XXXXXX)"
 trap 'rm -rf "$TMP_ROOT"' EXIT
 python3 "$ROOT_DIR/scripts/toolchain.py" prepare --scope quality --auto-repair --quiet

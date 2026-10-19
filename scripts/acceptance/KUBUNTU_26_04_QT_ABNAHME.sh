@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd -P)"
 PYTHON_BOOTSTRAP="${VIDEOBATCH_BOOTSTRAP_PYTHON:-python3}"
 REAL_HOME="${HOME:?HOME ist nicht gesetzt}"
 REAL_STATE_ROOT="${XDG_STATE_HOME:-$REAL_HOME/.local/state}/VideoBatchFast"

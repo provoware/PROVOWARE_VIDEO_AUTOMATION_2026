@@ -1,0 +1,89 @@
+name: Fresh extracted development package smoke
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package-smoke:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 12
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONPATH: src
+    steps:
+      - name: Checkout exact revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Install pinned release manifest dependency
+        run: python -m pip install --disable-pip-version-check --no-input cryptography==50.0.0
+      - name: Build and extract deterministic user package
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          python scripts/build_release_manifest.py --check
+          mkdir -p "$RUNNER_TEMP/video-package"
+          python scripts/package_release.py --output "$RUNNER_TEMP/video-package/user.zip"
+          python - "$RUNNER_TEMP/video-package/user.zip" "$RUNNER_TEMP/video-package/unpacked" <<'PY'
+          import pathlib, sys, zipfile
+          archive, destination = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2])
+          with zipfile.ZipFile(archive) as z:
+              if z.testzip() is not None:
+                  raise SystemExit("ZIP CRC failure")
+              for item in z.infolist():
+                  p = pathlib.PurePosixPath(item.filename)
+                  if p.is_absolute() or ".." in p.parts:
+                      raise SystemExit(f"Unsafe ZIP member: {item.filename}")
+              z.extractall(destination)
+          roots = [p for p in destination.iterdir() if p.is_dir()]
+          if len(roots) != 1:
+              raise SystemExit(f"Expected one package root, got {len(roots)}")
+          project = roots[0]
+          entries = sorted(x.name for x in project.iterdir() if x.is_file() or x.is_symlink())
+          essential = {"STARTEN.sh", "README.md", "VERSION.json", "RELEASE_MANIFEST.json"}
+          if len(entries) > 8 or not essential.issubset(entries):
+              raise SystemExit(f"Root budget failed: {len(entries)}: {entries}")
+          print(f"FRESH_EXTRACT_ROOT_OK count={len(entries)} names={entries}")
+          (destination / "package_root.txt").write_text(str(project))
+          PY
+      - name: Exercise actual extracted entrypoints without network or GUI
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          project="$(cat "$RUNNER_TEMP/video-package/unpacked/package_root.txt")"
+          cd "$project"
+          bash -n STARTEN.sh
+          bash -n scripts/cli/videobatch.sh
+          env -u DISPLAY -u WAYLAND_DISPLAY bash scripts/cli/videobatch.sh help > "$RUNNER_TEMP/video-package/entrypoint-help.txt"
+          grep -q 'automatischer zentraler Einstieg' "$RUNNER_TEMP/video-package/entrypoint-help.txt"
+          python - <<'PY'
+          import pathlib
+          import json
+          from subprocess import run
+          root = pathlib.Path.cwd()
+          contract = json.loads((root / "config/contracts/manifest.json").read_text())
+          launcher = root / contract["entrypoint"]
+          assert launcher.is_file(), launcher
+          assert (root / "STARTEN.sh").is_file(), "Primary launcher missing"
+          # The auxiliary CLI is supported via explicit bash invocation above.
+          print("FRESH_EXTRACT_LAUNCHER_OK", launcher.relative_to(root))
+          PY
+      - name: Preserve extracted-package evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: fresh-extract-evidence-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/video-package/entrypoint-help.txt
+            ${{ runner.temp }}/video-package/unpacked/package_root.txt
+          if-no-files-found: warn

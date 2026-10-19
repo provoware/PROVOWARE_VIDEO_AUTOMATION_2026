@@ -898,7 +898,7 @@ def _archive_last_results(window: object) -> None:
 
 
 def _visual_approval(window: object) -> None:
-    manifest_path = Path(__file__).resolve().parents[2] / "VISUAL_INSPECTION_MANIFEST.json"
+    manifest_path = Path(__file__).resolve().parents[2] / "registries/VISUAL_INSPECTION_MANIFEST.json"
     if not manifest_path.is_file():
         QMessageBox.warning(
             window,

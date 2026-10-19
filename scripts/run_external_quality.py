@@ -12,7 +12,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-LOCK = ROOT / "requirements-quality.lock"
+LOCK = ROOT / "config/requirements/requirements-quality.lock"
 
 COMMANDS = {
     "ruff": ["ruff", "check", "src", "scripts", "tests"],
@@ -44,7 +44,7 @@ COMMANDS = {
         "--progress-spinner",
         "off",
         "-r",
-        "requirements.lock",
+        "config/requirements/requirements.lock",
     ],
 }
 

@@ -152,6 +152,13 @@ chown -R …
 
 **Warum?** Diese Befehle können Sicherheitsgrenzen zerstören und fremde Dateien verändern.
 
+
+## Verzeichnisstruktur und aktueller Entwicklungsnachweis
+
+Der zentrale Benutzerstarter ist `STARTEN.sh` im Hauptordner. Kommando-Skripte liegen unter `scripts/cli/`, die Installationsskripte unter `scripts/install/`, die technischen Verträge unter `config/contracts/` und die gesperrten Abhängigkeiten unter `config/requirements/`.
+
+Der Entwicklungs-PR [#246](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/246) enthält den erfolgreichen ZIP-Entpacktest mit sieben Hauptordnerdateien auf Commit `2ae2ae5`. Dieser Test bestätigt noch **keine vollständige Offline-Erstinstallation und keinen grafischen Start aus dem entpackten Paket**. Die historische RC24-Freigabe bleibt unverändert; die persönliche Kubuntu-Endabnahme findet erst zum Entwicklungsabschluss statt.
+
 ## Abschlussprüfung
 
 - unterstützte Plattform bestätigt
@@ -169,4 +176,4 @@ Ja, wenn VideoBatch ausschließlich aus einem vollständig geprüften, portablen
 
 ## Nächster Schritt
 
-Nach erfolgreicher Installation `START_HIER_save_.md` öffnen und das erste Testvideo erstellen.
+Nach erfolgreicher Installation `docs/start/START_HIER_save_.md` öffnen und das erste Testvideo erstellen.

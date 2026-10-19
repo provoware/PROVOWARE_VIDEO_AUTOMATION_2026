@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 OUTPUT_DIR="${1:-$ROOT_DIR/dist}"
 VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["version"])' "$ROOT_DIR/VERSION.json")"
 CHANNEL="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["channel"])' "$ROOT_DIR/VERSION.json")"
@@ -30,7 +30,7 @@ fi
 python3 "$ROOT_DIR/scripts/toolchain.py" prepare --scope quality --auto-repair --quiet
 python3 "$ROOT_DIR/scripts/toolchain.py" gate --scope quality --run-external --quiet
 export VIDEOBATCH_QUALITY_ALREADY_VERIFIED=1
-"$ROOT_DIR/test.sh"
+"$ROOT_DIR/scripts/dev/test.sh"
 ENV_PYTHON="$(python3 "$ROOT_DIR/scripts/toolchain.py" path --scope quality --quiet)"
 "$ENV_PYTHON" "$ROOT_DIR/scripts/check_visual_approval.py" --require
 "$ENV_PYTHON" "$ROOT_DIR/scripts/build_release_manifest.py"

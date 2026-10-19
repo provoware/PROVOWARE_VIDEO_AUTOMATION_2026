@@ -17,20 +17,20 @@
 - Physische Kubuntu-26.04-Plasma-Wayland-Abnahme: Der reale 125-%-Screenshot vom 06.10.2026 zeigte abgeschnittene und überladene Arbeitsbereiche. Der daraus abgeleitete seitengetrennte Qt-Stand muss vor Stable erneut real auf Kubuntu 26.04 / KDE Plasma / Wayland bei 100 %, 125 %, 150 % und 200 % geprüft werden.
 <!-- release-status:end -->
 
-> **Nachweisgrenze:** Die vorstehenden RC24-Zahlen (325 Tests, 496 Release-Dateien) stammen aus dem unveränderten historischen Nachweis. Sie sind **keine** Prüfung des Integrationskandidaten PR #240 (Dateiumfang laut aktuellem `RELEASE_MANIFEST.json`). Dessen separate, commitgebundene Ergebnisse stehen unter `diagnostics/release_readiness/CANDIDATE_PR240_CI_EVIDENCE.json` und `CANDIDATE_PR240_QUALITY_STATUS.json`. Es gibt keine neue Stable-Freigabe; eine reale Kubuntu-/Wayland-Sichtabnahme bei 100/125/150/200 % fehlt.
+> **Nachweisgrenze:** Die vorstehenden RC24-Zahlen (325 Tests, 496 Release-Dateien) stammen aus dem unveränderten historischen Nachweis. Sie sind **keine** Prüfung des aktuellen Strukturmigrationszweigs PR #246. Historische Entwicklungsbelege für PR #240 sind separat archiviert; neue CI-Ergebnisse werden ausschließlich über den geprüften Commit nachgewiesen. Es gibt keine neue Stable-Freigabe; eine reale Kubuntu-/Wayland-Sichtabnahme bei 100/125/150/200 % fehlt.
 
 
 ## Überblick
 
 VideoBatch Fast ist die lokale Video-Automation für **Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6**. Der aktuelle Stand ist **2.8.3-rc24**. Der aktuelle Releasekandidat enthält jetzt einen seitengetrennten Qt-Arbeitsbereich als Reaktion auf den realen 125-%-Sichtbefund vom 06.10.2026. Dateien, Ausgabe und Produktion besitzen eigene Arbeitsseiten; Projekt, Hilfe und Diagnose verdrängen den Hauptablauf nicht mehr. Vor Stable ist eine erneute reale Sichtprüfung bei 100 %, 125 %, 150 % und 200 % erforderlich.
 
-## Integrationskandidat #240 – noch nicht als Release freigegeben
+## Aktueller Entwicklungsstand – PR #246 (nicht Stable)
 
-In [PR #240](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/240) werden die geprüften Änderungen aus [PR #239](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/239) auf sauberer Entwicklungshistorie integriert: global sichtbare Videoeinstellungen, ein einheitlicher Medienbrowser mit großen Vorschauen und dauerhaften Miniaturbildern sowie ein auf **Videos, Downloads und Bilder** begrenzter SQLite-Medienindex.
+**Einziger offener Entwicklungs-PR zum Prüfzeitpunkt:** [#246 – Benutzer-Hauptordner und sichere Strukturmigration](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/246). Die früheren parallelen PRs #247, #248 und #250 wurden geschlossen; **#250 wurde ohne Merge** abgelöst und seine benötigten Änderungen wurden geprüft in #246 übernommen.
 
-Programmdateien und Entwicklungsordner werden nicht als Medien aufgenommen. Eigene Unterordner lassen sich unter **Erweitert** ausschließen. Auf Linux überwacht VideoBatch Änderungen über inotify, mit gelegentlichen Nachprüfungen, falls die Überwachung unvollständig ist. Originaldateien werden nicht verändert.
+**Nachweisstand vor dieser Dokumentationsaktualisierung:** Commit [`2ae2ae5`](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/commit/2ae2ae51fb1147b46150fe107b97a53e4a65495f), **acht von acht GitHub-Prüfläufen erfolgreich**. Die Prüfungen enthalten Qt6 mit Wayland-Lebenszyklus, Offline-Runtime, Integrations- und Sicherheitswerkzeuge, FFmpeg, Langrender sowie Release-Verträge. Der reale ZIP-Bau und Entpacktest [GitHub-Lauf 39339430217](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39339430217) bestätigte **sieben Hauptordnerdateien** und den Aufruf des entpackten Kommando-Einstiegs. Dieser konkrete Nachweis ist auf `2ae2ae5` begrenzt; nach weiteren Änderungen gelten dessen Ergebnisse nicht automatisch für neue Commits.
 
-**Status:** Entwicklungszweig, keine neue Releasefreigabe. Die RC24-Zahlen gelten ausschließlich für den damaligen Stand. **Entwicklungs-PRs dürfen nach aktuellen automatisierten Integrations- und Sicherheitstests übernommen werden; die vollständige persönliche Kubuntu-/Wayland-/Video-Abnahme erfolgt gesammelt erst am unveränderten finalen Releasekandidaten.** Erst danach ist eine neue Stable-Veröffentlichung zulässig.
+**Noch nicht bewiesen:** Vollständige Offline-Erstinstallation und grafischer Qt-Start aus dem frisch entpackten Paket. Ebenso offen bleiben die persönliche Kubuntu-Sichtabnahme bei 100/125/150/200 % sowie die Stable-Freigabe. Die 325 historischen RC24-Tests sind kein Entwicklungs- oder Stable-Nachweis für #246.
 
 ## Prüfablauf ohne wiederholte Endabnahmen
 
@@ -47,13 +47,13 @@ Das historische RC24-Archiv wird nicht als neue Qualitätsmessung wiederverwende
 3. Falls nötig den Starter ausführbar machen:
 
 ```bash
-chmod +x videobatch.sh
+chmod +x STARTEN.sh
 ```
 
 4. VideoBatch starten:
 
 ```bash
-./videobatch.sh
+./STARTEN.sh
 ```
 
 5. Für den ersten Lauf einen **kurzen Testauftrag** verwenden und das Ergebnis am Anfang, in der Mitte und am Ende abspielen.
@@ -64,7 +64,7 @@ chmod +x videobatch.sh
 
 | Bereich | Zweck |
 |---|---|
-| `videobatch.sh`, `start.sh`, `STARTEN.sh` | Start- und Launcherpfade |
+| `STARTEN.sh` | einziger kanonischer Hauptstarter; interne Kommandoaufrufe unter `scripts/cli/` |
 | `docs/start/START_HIER_save_.md`, `docs/start/AUTOINSTALLATION_save_.md` | Einstieg und Installation |
 | `src/` | Anwendungscode |
 | `scripts/` | Prüf-, Build-, Release- und Wartungsskripte |
@@ -77,7 +77,7 @@ chmod +x videobatch.sh
 | `diagnostics/release_readiness/CANDIDATE_PR240_QUALITY_STATUS.json` | getrennte Entwicklungsnachweise (keine Freigabe) |
 | `RELEASE_MANIFEST.json` | kompakter reproduzierbarer Release-Vertrag |
 
-**Ordnungskonzept:** Im Hauptverzeichnis bleiben vor allem Startdateien, aktive Release-Unterlagen und maschinenlesbare Verträge. Technische Hintergrunddokumente gehören nach `docs/reference/`; historische interne Nachweise nach `docs/archive/`.
+**Ordnungskonzept:** Im Hauptverzeichnis bleiben höchstens acht Dateien; der aktuelle Pakettest zählt sieben. Interne Start- und Installationsskripte liegen unter `scripts/`, Verträge unter `config/`. Technische Hintergrunddokumente gehören nach `docs/reference/`; historische interne Nachweise nach `docs/archive/`.
 
 ## Dokumentation
 
@@ -88,6 +88,8 @@ chmod +x videobatch.sh
 | automatische Installation | `docs/start/AUTOINSTALLATION_save_.md` |
 | Fehler sicher beheben | `docs/manuals/ERROR_HANDLING.md` |
 | Update und Rückfall | `docs/manuals/UPDATE_SYSTEM.md` |
+| aktuelle Entwicklung und offene Nachweise | `docs/STATUS.md`, `docs/TODO.md` |
+| chronologische Änderungen | `docs/CHANGELOG.md` |
 | Projektstruktur verstehen | `docs/start/PROJEKTORDNERSTRUKTUR_save_.md` |
 | Dokumente einordnen | `docs/DOKUMENTATIONSINDEX.md` |
 | Entwickler-Einstieg | `docs/manuals/DEVELOPER_GUIDE.md` |
@@ -122,16 +124,16 @@ Only standalone user and release deliverables receive _save_. Source modules, CI
 
 | Releasefertig (`_save_`) | Noch nicht releasefertig |
 |---|---|
-| `docs/start/START_HIER_save_.md`<br>Schnellstart: Geprüfter Nutzerstart und sichere erste Schritte | `TODO.md`<br>Offene Arbeitsliste: Automatisierte Gates werden für den seitengetrennten Qt-Stand neu geprüft; danach ist die reale 100/125/150/200-%-Sichtabnahme und anschließend die Stable-Promotion offen. |
+| `docs/start/START_HIER_save_.md`<br>Schnellstart: Geprüfter Nutzerstart und sichere erste Schritte | `docs/TODO.md`<br>Offene Arbeitsliste: Automatisierte Gates werden für den seitengetrennten Qt-Stand neu geprüft; danach ist die reale 100/125/150/200-%-Sichtabnahme und anschließend die Stable-Promotion offen. |
 | `docs/start/AUTOINSTALLATION_save_.md`<br>Installationsanleitung: Benutzerpfade, A/B-Slots und Berechtigungsschutz dokumentiert | `docs/LONG_RENDER_2.8.3-rc24.md`<br>Langzeitrender: Prüfvertrag bleibt als Referenz erhalten; Langzeitrender wurde am 29.09.2026 manuell als in Ordnung bestätigt |
 | `docs/start/PROJEKTORDNERSTRUKTUR_save_.md`<br>Projektübersicht: Ordner, Start, Sicherheit und Funktionen beschrieben | `docs/STABLE_ACCEPTANCE_EVIDENCE.md`<br>Stable-Abnahmenachweis: Basisfreigaben bleiben dokumentiert; der reale 125-%-Befund vom 06.10.2026 verlangt eine neue 100/125/150/200-%-Sichtabnahme des korrigierten Qt-Stands. |
-| `docs/archive/rc24/RELEASE_NOTES_save_.md`<br>Releasehinweise: Aktueller RC24-Funktionsstand dokumentiert | `QUALITY_ENVIRONMENT_STATUS.json`<br>Qualitätsumgebung: Maschinenlesbarer Qualitätsstatus; nach der Layoutkorrektur müssen die automatisierten Gates erneut grün sein und die physische 100/125/150/200-%-UI-Abnahme bleibt offen. |
-| `docs/archive/rc24/TEST_REPORT_save_.md`<br>Testbericht: Automatisierte und offene Prüfungen getrennt ausgewiesen | `VISUAL_INSPECTION_MANIFEST.json`<br>Visuelles Prüfmanifest: Automatisierte visuelle Verträge bleiben Referenz; die reale 100/125/150/200-%-Sichtabnahme des seitengetrennten Qt-Stands steht noch aus. |
+| `docs/archive/rc24/RELEASE_NOTES_save_.md`<br>Releasehinweise: Aktueller RC24-Funktionsstand dokumentiert | `config/status/QUALITY_ENVIRONMENT_STATUS.json`<br>Qualitätsumgebung: Maschinenlesbarer Qualitätsstatus; nach der Layoutkorrektur müssen die automatisierten Gates erneut grün sein und die physische 100/125/150/200-%-UI-Abnahme bleibt offen. |
+| `docs/archive/rc24/TEST_REPORT_save_.md`<br>Testbericht: Automatisierte und offene Prüfungen getrennt ausgewiesen | `registries/VISUAL_INSPECTION_MANIFEST.json`<br>Visuelles Prüfmanifest: Automatisierte visuelle Verträge bleiben Referenz; die reale 100/125/150/200-%-Sichtabnahme des seitengetrennten Qt-Stands steht noch aus. |
 | `docs/archive/rc24/FRESH_PACKAGE_REPORT_save_.md`<br>Paketbericht: Saubere Paketprüfung für RC24 dokumentiert | — |
 | `docs/archive/rc24/CODE_QUALITY_REPORT_2.8.3-rc24_save_.md`<br>Codequalitätsbericht: Interne Qualitätsprüfung ohne Befund | — |
 | `docs/archive/rc24/IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md`<br>Implementierungsbericht: Umgesetzte Funktions- und Sicherheitsverträge dokumentiert | — |
 | `docs/archive/rc24/FINAL_AUDIT_2.8.3-rc24_save_.md`<br>RC-Abschlussaudit: RC-Gates und offene Stable-Gates ehrlich getrennt | — |
-| `VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json`<br>Maschinenlesbarer Buildbericht: Aus der kanonischen RELEASE_EVIDENCE.json erzeugt | — |
+| `docs/archive/rc24/VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json`<br>Maschinenlesbarer Buildbericht: Aus der kanonischen RELEASE_EVIDENCE.json erzeugt | — |
 <!-- release-files:end -->
 
 **Vor Stable gilt:** Auslieferung als vollständiges Projekt-ZIP. Teil- und Onlineupdates bleiben bis nach der Stable-Freigabe deaktiviert.
@@ -145,4 +147,4 @@ Ein erster Lauf gilt als erfolgreich, wenn die Oberfläche ohne Fehlermeldung st
 - **Einsteiger:** `docs/start/START_HIER_save_.md`
 - **Nutzer:** `docs/BENUTZERHANDBUCH.md`
 - **Entwickler:** `docs/manuals/DEVELOPER_GUIDE.md`
-- **Aktueller Arbeitsplan:** `TODO.md`
+- **Aktueller Arbeitsplan:** `docs/TODO.md`

@@ -81,8 +81,8 @@ def test_canonical_module_entrypoint_routes_to_qt_wayland() -> None:
 
 def test_supported_launchers_converge_on_one_canonical_entrypoint() -> None:
     starten = (ROOT / "STARTEN.sh").read_text(encoding="utf-8")
-    start = (ROOT / "start.sh").read_text(encoding="utf-8")
-    videobatch = (ROOT / "videobatch.sh").read_text(encoding="utf-8")
+    start = (ROOT / "scripts/cli/start.sh").read_text(encoding="utf-8")
+    videobatch = (ROOT / "scripts/cli/videobatch.sh").read_text(encoding="utf-8")
     debug_launcher = (ROOT / "scripts" / "debug_launcher.py").read_text(encoding="utf-8")
     bootstrap = (ROOT / "scripts" / "bootstrap.py").read_text(encoding="utf-8")
 
@@ -99,7 +99,7 @@ def test_supported_launchers_converge_on_one_canonical_entrypoint() -> None:
 
 
 def test_default_videobatch_start_has_no_tk_preflight() -> None:
-    source = (ROOT / "videobatch.sh").read_text(encoding="utf-8")
+    source = (ROOT / "scripts/cli/videobatch.sh").read_text(encoding="utf-8")
     start_function = source.split("start_application() {", 1)[1].split("}", 1)[0]
     assert "require_system" not in start_function
     assert "tkinter" not in start_function
