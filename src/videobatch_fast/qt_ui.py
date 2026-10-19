@@ -312,7 +312,6 @@ class VideoBatchQtWindow(QMainWindow):
         self.fade_seconds.valueChanged.connect(
             lambda _value: self._dashboard_changed("transition_duration")
         )
-        self._intensity_changed(self.effect_intensity.value())
         self.fade_seconds.setEnabled(self.transition.currentData() != "none")
         self.output.editingFinished.connect(lambda: self._dashboard_changed("output_dir"))
         self.start.clicked.connect(self._start)

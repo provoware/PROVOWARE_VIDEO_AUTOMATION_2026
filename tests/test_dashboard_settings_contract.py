@@ -77,6 +77,26 @@ class DashboardSettingsTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             DashboardSettings.from_dict({"explicit_fields": "resolution"})
 
+    def test_strength_and_fade_roundtrip_and_invalid_numbers(self):
+        state = DashboardSettings().set_user_value("effect_intensity", 75)
+        state = state.set_user_value("transition", "cinema")
+        state = state.set_user_value("transition_duration", 4.2)
+        self.assertEqual((state.effect_intensity, state.transition, state.transition_duration),
+                         (75, "cinema", 4.2))
+        self.assertEqual(DashboardSettings.from_dict(state.to_dict()), state)
+        old = DashboardSettings.from_dict({"schema_version": 1, "quality": "Hoch"})
+        self.assertEqual(old.effect_intensity, 100)
+        self.assertEqual(old.transition, "none")
+        for field, value in (
+            ("effect_intensity", -1), ("effect_intensity", 101),
+            ("effect_intensity", True), ("effect_intensity", 50.5),
+            ("transition_duration", -0.1), ("transition_duration", 6),
+            ("transition_duration", float("nan")),
+        ):
+            with self.subTest(field=field, value=value):
+                with self.assertRaises(ValueError):
+                    state.set_user_value(field, value)
+
 
 if __name__ == "__main__":
     unittest.main()

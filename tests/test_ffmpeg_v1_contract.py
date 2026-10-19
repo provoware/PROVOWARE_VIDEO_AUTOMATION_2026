@@ -152,7 +152,7 @@ def test_probe_boundary_is_read_only_bounded_and_not_a_render_engine() -> None:
     names = [_call_name(node) for node in calls]
     run_calls = [node for node in calls if _call_name(node) == "subprocess.run"]
 
-    assert len(run_calls) == 2
+    assert len(run_calls) == 3  # ffprobe, version, and bounded read-only audio peak
     assert "subprocess.Popen" not in names
     assert "QProcess" not in names
     assert "build_command" not in source
@@ -167,7 +167,8 @@ def test_probe_boundary_is_read_only_bounded_and_not_a_render_engine() -> None:
         assert isinstance(timeout, ast.Constant)
         assert isinstance(timeout.value, int)
         timeouts.add(timeout.value)
-    assert timeouts == {5, 20}
+    assert timeouts == {5, 12, 20}
+    assert "\"-f\", \"null\", \"-\"" in source or "\"null\", \"-\"" in source
 
     forbidden_exact_writes = {"atomic_write_json", "os.replace"}
     forbidden_write_methods = {"write_text", "write_bytes", "unlink", "rename"}
