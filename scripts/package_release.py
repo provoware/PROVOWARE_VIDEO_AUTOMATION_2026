@@ -6,12 +6,13 @@ import hashlib
 import json
 import os
 import stat
+import sys
 import zipfile
 from pathlib import Path, PurePosixPath
 
-from release_file_contract import selected_release_files
-
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+from release_file_contract import selected_release_files
 FIXED_ZIP_TIME = (2026, 1, 1, 0, 0, 0)
 
 
