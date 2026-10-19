@@ -79,3 +79,20 @@ def test_stale_compact_manifest_fails_without_creating_zip(tmp_path: Path, monke
     with pytest.raises(ValueError, match="nicht mit den Paketdateien"):
         package_release.main()
     assert not archive.exists()
+
+
+def test_package_root_budget_is_enforced(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    project = tmp_path / "source"
+    project.mkdir()
+    monkeypatch.setattr(package_release, "ROOT", project)
+    for number in range(7):
+        (project / f"extra-{number}.txt").write_text("x", encoding="utf-8")
+    manifest = _fixture_project(project)
+    (project / "RELEASE_MANIFEST.json").write_text(
+        json.dumps(manifest) + "\n", encoding="utf-8"
+    )
+    archive = tmp_path / "overfull.zip"
+    monkeypatch.setattr(sys, "argv", ["package_release.py", "--output", str(archive)])
+    with pytest.raises(ValueError, match="höchstens acht Hauptordnerdateien"):
+        package_release.main()
+    assert not archive.exists()
