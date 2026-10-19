@@ -4,7 +4,7 @@
     "AGENTS.md": {
       "category": "technical"
     },
-    "CHANGELOG.md": {
+    "docs/CHANGELOG.md": {
       "category": "historical"
     },
     "README.md": {
@@ -15,10 +15,10 @@
         "Abschlussprüfung"
       ]
     },
-    "STATUS.md": {
+    "docs/STATUS.md": {
       "category": "internal"
     },
-    "TODO.md": {
+    "docs/TODO.md": {
       "category": "internal"
     },
     "docs/ARCHITEKTUR.md": {
@@ -228,13 +228,6 @@
         "Schritt-für-Schritt-Anleitung",
         "Abschlussprüfung",
         "Nächster Schritt"
-      ]
-    },
-    "01_START_HIER/README.md": {
-      "category": "active",
-      "required_sections": [
-        "Programm starten",
-        "Hilfen"
       ]
     },
     "docs/DATEI_UND_ORDNERINDEX.md": {

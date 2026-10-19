@@ -189,7 +189,7 @@ def test_json_cli_and_shell_entrypoint(tmp_path: Path) -> None:
     )
     assert completed.returncode == 0
     assert json.loads(completed.stdout)["status"] == "green"
-    shell = (ROOT / "videobatch.sh").read_text(encoding="utf-8")
+    shell = (ROOT / "scripts/cli/videobatch.sh").read_text(encoding="utf-8")
     assert "recovery-check|wiederanlauf-konsistenz)" in shell
     assert "-m videobatch_fast.recovery_consistency" in shell
 
