@@ -64,3 +64,17 @@ def test_symlink_is_not_followed(tmp_path: Path) -> None:
 def test_categories_do_not_claim_release_approval() -> None:
     assert module.category("docs/archive/old.md") == "historical"
     assert module.lifecycle("tests/test_a.py") == "development"
+
+
+def test_generated_index_is_excluded_from_release_payload(tmp_path: Path) -> None:
+    """Avoid RELEASE_MANIFEST -> PROJECT_FILE_INDEX -> RELEASE_MANIFEST cycles."""
+    from scripts.release_file_contract import included_release_file
+
+    registry = tmp_path / "registries"
+    registry.mkdir()
+    generated = registry / "PROJECT_FILE_INDEX.json"
+    generated.write_text("{}", encoding="utf-8")
+    ordinary = registry / "STABLE_REGISTRY.json"
+    ordinary.write_text("{}", encoding="utf-8")
+    assert not included_release_file(tmp_path, generated)
+    assert included_release_file(tmp_path, ordinary)

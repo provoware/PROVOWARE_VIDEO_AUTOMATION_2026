@@ -2106,7 +2106,7 @@
     {
       "path": "scripts/release_file_contract.py",
       "mode": "100644",
-      "blob_sha1": "a9301d3aceb289cdc5636203aa82d07fc2600e86",
+      "blob_sha1": "b6e13d88ee75c021d97e02226f17a4a261a1ff2f",
       "category": "development",
       "lifecycle": "development"
     },
@@ -3996,7 +3996,7 @@
     {
       "path": "tests/test_project_file_index_20261018.py",
       "mode": "100644",
-      "blob_sha1": "1a6f01ab1f80418c7e9bc7ada3b2dbc37cd3ffe7",
+      "blob_sha1": "b467ec27a5dfd68bd10f920825353cc097635e3d",
       "category": "tests",
       "lifecycle": "development"
     },
