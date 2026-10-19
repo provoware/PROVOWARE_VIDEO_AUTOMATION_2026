@@ -170,6 +170,7 @@ jobs:
             tests/test_debug_runtime_contract.py \
             tests/test_ui_ready_handshake_contract.py \
             tests/test_multipart_installer.py \
+            tests/test_compact_release_package_20261019.py \
             tests/test_autonomous_reliability_rc25.py
 
       - name: Benchmark media-only SQLite index with 100000 mixed files
