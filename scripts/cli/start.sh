@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd -P)"
 case "${1:-}" in
   --repair) shift; exec "$ROOT_DIR/videobatch.sh" repair "$@" ;;
   --prepare) shift; exec "$ROOT_DIR/videobatch.sh" setup "$@" ;;

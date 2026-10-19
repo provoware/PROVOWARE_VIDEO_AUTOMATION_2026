@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 SELF="${BASH_SOURCE[0]}"
-ROOT_DIR="$(cd -- "$(dirname -- "$SELF")" && pwd -P)"
+ROOT_DIR="$(cd -- "$(dirname -- "$SELF")/../.." && pwd -P)"
 ACTION="${1:-start}"
 if [[ $# -gt 0 ]]; then shift; fi
 BOOTSTRAP_PYTHON="${VIDEOBATCH_BOOTSTRAP_PYTHON:-python3}"
