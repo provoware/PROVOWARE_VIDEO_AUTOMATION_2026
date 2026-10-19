@@ -44,7 +44,7 @@ COMMANDS = {
         "--progress-spinner",
         "off",
         "-r",
-        "requirements.lock",
+        "config/requirements/requirements.lock",
     ],
 }
 
