@@ -132,7 +132,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "96a71928b41cf14935a25be70337ee12c7b4534d",
+      "blob_sha1": "059c38064371c502318862a2d578b0ec7249416c",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -3758,7 +3758,7 @@
     {
       "path": "tests/test_compact_release_package_20261019.py",
       "mode": "100644",
-      "blob_sha1": "6bc3ab8d38bac2a37bd35ae4ccfcf63b4cc89f57",
+      "blob_sha1": "c713f7e2bc72a93081e8b466dcda9d810adccab4",
       "category": "tests",
       "lifecycle": "development"
     },
