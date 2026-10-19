@@ -53,6 +53,23 @@ def verified_records(manifest: dict) -> list[dict[str, object]]:
     return records
 
 
+
+def validate_package_root(records: list[dict[str, object]]) -> None:
+    """Check the actual ZIP root independently of the repository layout."""
+    roots = {
+        str(item["path"])
+        for item in records
+        if "/" not in str(item["path"])
+    }
+    roots.add("RELEASE_MANIFEST.json")  # Added separately to the ZIP.
+    required = {"STARTEN.sh", "README.md", "VERSION.json", "RELEASE_MANIFEST.json"}
+    if len(roots) > 8:
+        raise ValueError(f"Entpacktes Benutzerpaket enthält {len(roots)} statt höchstens acht Hauptordnerdateien.")
+    missing = required - roots
+    if missing:
+        raise ValueError("Pflichtdateien im Benutzerpaket fehlen: " + ", ".join(sorted(missing)))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Erzeugt ein deterministisches Release-ZIP aus RELEASE_MANIFEST.json.")
     parser.add_argument("--output", type=Path, required=True)
@@ -61,6 +78,7 @@ def main() -> int:
     manifest_path = ROOT / "RELEASE_MANIFEST.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     records = verified_records(manifest)
+    validate_package_root(records)
     prefix = f"VideoBatch_Fast_{version['build']}"
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(args.output, "w") as archive:
