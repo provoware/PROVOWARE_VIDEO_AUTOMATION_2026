@@ -45,7 +45,7 @@ Spätestens direkt vor Schritt 4 müssen diese vier Punkte stimmen:
 
 **Kann entfallen?** Nein. Ein Start direkt aus dem Archiv ist nicht zuverlässig.
 
-**Erwartetes Ergebnis:** Im Ordner sind `videobatch.sh`, `README.md`, `src`, `scripts` und diese Anleitung sichtbar.
+**Erwartetes Ergebnis:** Im Ordner sind `STARTEN.sh`, `README.md` sowie die Unterordner `src` und `scripts` vorhanden. Diese Anleitung liegt unter `docs/start/`.
 
 ### Schritt 2: Terminal im Projektordner öffnen
 
@@ -56,10 +56,10 @@ Spätestens direkt vor Schritt 4 müssen diese vier Punkte stimmen:
 ### Schritt 3: Optional – Starter direkt ausführbar machen
 
 ```bash
-chmod +x videobatch.sh
+chmod +x STARTEN.sh
 ```
 
-**Warum notwendig?** Linux benötigt die Ausführungsberechtigung für einen direkten Skriptstart mit `./videobatch.sh`.
+**Warum notwendig?** Linux benötigt die Ausführungsberechtigung für einen direkten Skriptstart mit `./STARTEN.sh`.
 
 **Kann entfallen?** Ja. Wenn die Dateiberechtigung nicht geändert werden soll, in Schritt 4 die dort gezeigte Bash-Alternative verwenden.
 
@@ -68,13 +68,13 @@ chmod +x videobatch.sh
 Direkter Start bei ausführbarer Datei:
 
 ```bash
-./videobatch.sh
+./STARTEN.sh
 ```
 
 Alternativ ohne Änderung der Dateiberechtigung:
 
 ```bash
-bash ./videobatch.sh
+bash ./STARTEN.sh
 ```
 
 Beide Varianten verwenden denselben zentralen Starter und umgehen keine Vorprüfung.

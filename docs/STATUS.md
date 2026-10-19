@@ -38,3 +38,14 @@ Only standalone user and release deliverables receive _save_. Source modules, CI
 | `docs/archive/rc24/FINAL_AUDIT_2.8.3-rc24_save_.md`<br>RC-Abschlussaudit: RC-Gates und offene Stable-Gates ehrlich getrennt | — |
 | `VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json`<br>Maschinenlesbarer Buildbericht: Aus der kanonischen RELEASE_EVIDENCE.json erzeugt | — |
 <!-- release-files:end -->
+
+
+## Entwicklungsprüfung (separat vom historischen RC24-Nachweis)
+
+- **Kanonischer offener PR:** [#246](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/246). Die Parallel-PRs #247, #248 und #250 sind geschlossen; #250 wurde nicht gemergt.
+- **Letzter vollständig geprüfter Commit vor diesem Dokumentationsupdate:** `2ae2ae51fb1147b46150fe107b97a53e4a65495f` – alle acht GitHub-Prüfläufe erfolgreich.
+- **Entpacktes Benutzerpaket:** ZIP erstellt, Integrität geprüft, **7 Hauptordnerdateien**, interner Kommando-Einstieg über Bash erfolgreich getestet; [Paketprüflauf](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39339430217).
+- **Offen:** vollständige Offline-Erstinstallation und Qt-GUI-Start *aus dem entpackten Paket*, anschließende reale Kubuntu-Endabnahme; keinerlei neue Stable-Freigabe.
+- **Pfadstandard:** `STARTEN.sh` im Hauptordner, interne Startskripte unter `scripts/cli/`, Installationsskripte unter `scripts/install/`, Verträge unter `config/contracts/`, Sperrdateien unter `config/requirements/`.
+
+Diese Entwicklungsnotiz ist bewusst **nicht** Teil des automatisch aus historischen RC24-Belegen erzeugten Statusblocks.

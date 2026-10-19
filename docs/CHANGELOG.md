@@ -2,6 +2,17 @@
 
 Alle wichtigen Änderungen dieses Projekts werden hier in zusammengefasster, chronologischer Form dokumentiert. Die vollständige frühere Detailhistorie liegt unter `docs/archive/release-history/CHANGELOG_FULL_PRE_FINALIZATION.md`.
 
+## Unveröffentlicht · Strukturmigration und Informationspflege (20.10.2026)
+
+- Benutzer-Hauptordner auf höchstens acht Dateien reduziert; reales Entwicklungs-ZIP mit sieben Hauptordnerdateien entpackt und den Kommando-Einstieg geprüft.
+- Hauptstarter auf `STARTEN.sh` vereinheitlicht; interne Skripte und Verträge nach `scripts/` beziehungsweise `config/` ausgelagert.
+- Installations-, Qualitäts-, Release- und Qt-Pfade nach Migration korrigiert; Sperrdateien und `pip-audit` wieder synchronisiert.
+- Sichere Paket-/Wurzelverzeichnis-Regressionen und zusätzlichen GitHub-Entpacktest ergänzt.
+- Auf Commit `2ae2ae5` alle acht GitHub-Prüfläufe erfolgreich; keine reale GUI-Erstinstallation oder Stable-Endabnahme behauptet.
+- Parallele PRs #247, #248 und #250 geschlossen und benötigte Änderungen in #246 konsolidiert; #250 ohne Merge geschlossen.
+- README, Status, TODO, Dokumentationswegweiser und Schnellstart auf die neue Struktur und die verbleibenden Freigabesperren aktualisiert.
+- Historische RC24-Nachweise unverändert belassen.
+
 ## Unveröffentlicht · RC24-Finalbereinigung
 
 - realen 125-%-Sichtbefund behoben: Dateien, Ausgabe und Produktion liegen nicht mehr gleichzeitig in drei gequetschten Spalten, sondern auf getrennten Arbeitsseiten

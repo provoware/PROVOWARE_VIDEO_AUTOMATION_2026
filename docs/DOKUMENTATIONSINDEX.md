@@ -10,6 +10,7 @@ Dieser Wegweiser ordnet jede aktuelle Anleitung und jeden historischen Nachweis 
 
 | Ziel | Richtige Datei | Pflichtgrad |
 |---|---|---|
+| aktuelle Entwicklungsprüfungen, PR-Bestand und offene Freigaben | `docs/STATUS.md`, `docs/TODO.md` | Pflicht für Entwicklung |
 | VideoBatch zum ersten Mal starten | `docs/start/START_HIER_save_.md` | Pflicht |
 | VideoBatch vollständig bedienen | `docs/BENUTZERHANDBUCH.md` | Empfohlen |
 | automatische Installation verstehen | `docs/start/AUTOINSTALLATION_save_.md` | Pflicht bei Installation |
@@ -51,7 +52,7 @@ Technische Referenzdokumente liegen gebündelt unter `docs/reference/`. Diese Da
 
 Die folgenden Dateien sind Belege eines bestimmten Entwicklungs- oder Prüfstands. Sie dürfen nicht als aktuelle Bedienungsanleitung verwendet werden:
 
-- `CHANGELOG.md`
+- `docs/CHANGELOG.md`
 - `docs/archive/rc24/CODE_QUALITY_REPORT_2.8.3-rc24_save_.md`
 - `docs/archive/rc24/FINAL_AUDIT_2.8.3-rc24_save_.md`
 - `docs/archive/rc24/FRESH_PACKAGE_REPORT_save_.md`
@@ -114,3 +115,13 @@ Der verbindliche Schreib- und Prüfstandard steht in `docs/DOKUMENTATIONSSTANDAR
 - `docs/archive/release-history/VISUAL_DESKTOP_APPROVAL.md`
 
 Diese Dateien dienen nur noch der Historie. `diagnostics/release_readiness/RELEASE_EVIDENCE.json` dokumentiert ausschließlich den historischen RC24-Nachweis (496 Dateien); für PR #240 liegen die getrennten Entwicklungsnachweise in `CANDIDATE_PR240_CI_EVIDENCE.json` und `CANDIDATE_PR240_QUALITY_STATUS.json` im selben Verzeichnis. Einstieg und ausdrückliche Freigabesperren stehen in `README.md` und `STATUS.md`.
+
+
+## Aktuelle Strukturmigration und PR-Status
+
+- **Start:** `STARTEN.sh`; technische Kommandos unter `scripts/cli/`, Installation unter `scripts/install/`.
+- **Aktueller PR:** [#246](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/246); #247, #248 und #250 sind geschlossen (letzterer ohne Merge).
+- **Prüfgrundlage:** Commit `2ae2ae5`, 8/8 GitHub-Workflows bestanden; Benutzer-ZIP entpackt und sieben Hauptordnerdateien gezählt.
+- **Grenze:** Der vollständige grafische Offline-Erststart aus diesem ZIP und die persönliche Kubuntu-Endabnahme stehen aus. Ein neuer Release ist nicht freigegeben.
+
+Die jeweils aktuellen Arbeitspunkte werden in `docs/TODO.md` geführt; die Projektübersicht steht in `README.md`.
