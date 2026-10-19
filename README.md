@@ -30,7 +30,15 @@ In [PR #240](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/2
 
 Programmdateien und Entwicklungsordner werden nicht als Medien aufgenommen. Eigene Unterordner lassen sich unter **Erweitert** ausschließen. Auf Linux überwacht VideoBatch Änderungen über inotify, mit gelegentlichen Nachprüfungen, falls die Überwachung unvollständig ist. Originaldateien werden nicht verändert.
 
-**Status:** Entwicklungszweig, keine neue Releasefreigabe. Die oben angegebenen RC24-Zahlen gelten ausdrücklich nur für den damaligen, separat dokumentierten Stand. Ein Merge und eine neue Stable-Version setzen neue Release-Nachweise sowie eine reale Kubuntu-Sichtprüfung voraus.
+**Status:** Entwicklungszweig, keine neue Releasefreigabe. Die RC24-Zahlen gelten ausschließlich für den damaligen Stand. **Entwicklungs-PRs dürfen nach aktuellen automatisierten Integrations- und Sicherheitstests übernommen werden; die vollständige persönliche Kubuntu-/Wayland-/Video-Abnahme erfolgt gesammelt erst am unveränderten finalen Releasekandidaten.** Erst danach ist eine neue Stable-Veröffentlichung zulässig.
+
+## Prüfablauf ohne wiederholte Endabnahmen
+
+1. **Entwickeln:** Änderungen mit passenden automatisierten Tests und Sicherheitsprüfungen absichern. Keine persönliche Vollabnahme nach jeder Oberflächenänderung.
+2. **Integrieren:** Mehrere erfolgreich geprüfte Entwicklungs-PRs ohne bekannte kritische Fehler in `main` zusammenführen. Die GitHub-Prüfung `Release contract sync` prüft dabei mit `--phase integration` ausschließlich aktuelle Dateiverträge und hält historische RC24-Belege getrennt.
+3. **Endabnahme kurz vor Release:** Sobald Funktionen und Erscheinungsbild fertig sind, den Releasekandidaten einfrieren und dann *einmal gebündelt* auf Kubuntu 26.04/KDE/Wayland real starten, bei 100/125/150/200 % bedienen, echte Videos/FFmpeg und den Langzeitrender prüfen. Der separate `--phase release --acceptance-dir <Pfad>`-Vertrag bleibt ohne reale Nachweise strikt gesperrt.
+
+Das historische RC24-Archiv wird nicht als neue Qualitätsmessung wiederverwendet. Die jeweils aktuellen GitHub-Prüfläufe sind anhand ihres Commits nachvollziehbar; es werden keine erfundenen PASS-Werte in den Quellbaum geschrieben.
 
 ## Schnellstart
 

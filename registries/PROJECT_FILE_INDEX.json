@@ -90,7 +90,7 @@
     {
       "path": ".github/workflows/release-contract-sync.yml",
       "mode": "100644",
-      "blob_sha1": "775315afa33ae9690a4101010da951046be0afd7",
+      "blob_sha1": "d7b005c20b26a8089d98b4ba5a6eaab5598abffa",
       "category": "automation",
       "lifecycle": "development"
     },
@@ -132,7 +132,7 @@
     {
       "path": "AGENTS.md",
       "mode": "100644",
-      "blob_sha1": "8f04e03fe7f28005871a1e2eee0e46c5bf699ac2",
+      "blob_sha1": "4952def8b2992ccd1e5f9adf5fc86e7fdeee5aeb",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -230,7 +230,7 @@
     {
       "path": "README.md",
       "mode": "100644",
-      "blob_sha1": "f9ebc201f012859345a284d18189a7042bf59684",
+      "blob_sha1": "804c66b1f38343b81e9de0b34bff2275a6107791",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -2267,7 +2267,7 @@
     {
       "path": "scripts/validate_release_contract_sync.py",
       "mode": "100644",
-      "blob_sha1": "d8dd441aa2364755312c00015a99dd0d57daa616",
+      "blob_sha1": "ef1ad8d3d43b4e524b87072bf831708e58a680b9",
       "category": "development",
       "lifecycle": "development"
     },
@@ -4220,7 +4220,7 @@
     {
       "path": "tests/test_release_evidence_separation.py",
       "mode": "100644",
-      "blob_sha1": "ec9580a9a29ed8771e20323f477bc52557533bc8",
+      "blob_sha1": "de6a29b1edc511268386951bb28be100fc6e4732",
       "category": "tests",
       "lifecycle": "development"
     },

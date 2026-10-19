@@ -72,8 +72,8 @@ jobs:
           python -m pytest -q diagnostics/release_readiness/test_candidate_quality.py
           python diagnostics/release_readiness/generate_candidate_quality.py --check
 
-      - name: Verify manifest, evidence and status files agree
-        run: python scripts/validate_release_contract_sync.py --json
+      - name: Verify development integration contract without premature manual acceptance
+        run: python scripts/validate_release_contract_sync.py --phase integration --json
 
       - name: Prove release-contract gate remained read-only
         if: always()

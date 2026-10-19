@@ -61,7 +61,10 @@ def _sha256_text(value: object) -> bool:
     return len(text) == 64 and all(char in "0123456789abcdefABCDEF" for char in text)
 
 
-def validate() -> dict[str, Any]:
+def validate(*, phase: str = "integration", acceptance_dir: Path | None = None) -> dict[str, Any]:
+    """Integration checks never claim release approval; release checks require real evidence."""
+    if phase not in {"integration", "release"}:
+        raise ContractSyncError(f"Unbekannte Prüfphase: {phase}")
     manifest = _load(MANIFEST_PATH)
     # The historical release evidence belongs to this pinned RC24 tree, not
     # to the newer integration candidate. Verify the archived Git blob too.
@@ -142,26 +145,23 @@ def validate() -> dict[str, Any]:
                 "Aktuelles Entwicklungsmanifest stimmt nicht mit dem Dateibaum überein: "
                 + (check.stdout + check.stderr)[-800:]
             )
-        candidate = _load(ROOT / "diagnostics/release_readiness/CANDIDATE_PR240_QUALITY_STATUS.json")
-        candidate_manifest = _mapping(candidate.get("manifest"), "Kandidatenstatus.manifest")
-        if candidate_manifest.get("file_count") != count:
-            raise ContractSyncError("Der Kandidatenstatus hat eine fremde Manifest-Dateizahl")
-        if candidate_manifest.get("files_sha256") != manifest.get("files_sha256"):
-            raise ContractSyncError("Kandidaten-Nachweis gehört nicht zum aktuellen Dateibaum")
-        if candidate.get("release_approved") is not False:
-            raise ContractSyncError("Stable-Freigabe darf nicht aus CI-Nachweisen abgeleitet werden")
-        if candidate.get("ready_to_merge") is not True:
-            raise ContractSyncError(
-                "RC24-Historie geprüft; neuer Kandidat ohne bestätigte Merge-Freigabe"
-            )
-        # Actual acceptance is never inferred from CI or prior release files.
-        from validate_stable_acceptance import (
-            AcceptanceBlocked,
-            manifest_sha256,
-            validate_evidence,
-        )
+        # PR240 is an immutable *earlier* candidate snapshot. Check its
+        # provenance, never require its digest or approval flags for this tree.
+        legacy_evidence = _load(ROOT / "diagnostics/release_readiness/CANDIDATE_PR240_CI_EVIDENCE.json")
+        legacy_status = _load(ROOT / "diagnostics/release_readiness/CANDIDATE_PR240_QUALITY_STATUS.json")
+        if legacy_status.get("manifest") != legacy_evidence.get("source_release_manifest"):
+            raise ContractSyncError("Archivierter PR240-Kandidatenbericht passt nicht zu seinem Ursprung")
+        if legacy_status.get("candidate_commit") != legacy_evidence.get("source_commit"):
+            raise ContractSyncError("Archivierter PR240-Kandidatenbericht hat einen fremden Commit")
+        if legacy_status.get("release_approved") is not False:
+            raise ContractSyncError("Historische CI darf keine nachträgliche Stable-Freigabe behaupten")
 
-        acceptance_dir = (ROOT / "diagnostics/release_readiness/CANDIDATE_PR240_ACCEPTANCE" / str(manifest.get("version")))
+    if phase == "release":
+        if acceptance_dir is None:
+            raise ContractSyncError("Release-Endabnahme benötigt einen ausdrücklich gewählten Nachweisordner")
+        # Only the final, unchanged candidate may pass this manual gate.
+        from validate_stable_acceptance import AcceptanceBlocked, manifest_sha256, validate_evidence
+
         try:
             validate_evidence(
                 acceptance_dir,
@@ -169,15 +169,28 @@ def validate() -> dict[str, Any]:
                 manifest_sha256(MANIFEST_PATH),
             )
         except AcceptanceBlocked as exc:
-            raise ContractSyncError(f"Reale Zielsystemabnahme fehlt: {exc}") from exc
+            raise ContractSyncError(f"Reale Release-Endabnahme fehlt: {exc}") from exc
 
     todo = TODO_PATH.read_text(encoding="utf-8")
     if "P0 – vor Merge von PR #128" in todo or "P0 - vor Merge von PR #128" in todo:
         raise ContractSyncError("TODO.md enthält noch den überholten Vor-Merge-Abschnitt für PR #128")
 
+    # HEAD comes from the actual checkout: no self-referential commit SHA in
+    # tracked release files. CI logs provide an audit trail for this exact tree.
+    try:
+        revision = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=ROOT, capture_output=True, text=True, timeout=10, check=True,
+        ).stdout.strip()
+    except (OSError, subprocess.TimeoutExpired, subprocess.CalledProcessError):
+        revision = None
     return {
         "schema_version": 1,
         "status": "passed",
+        "phase": phase,
+        "checked_commit": revision,
+        "manual_release_acceptance": "verified" if phase == "release" else "not_checked",
+        "release_approved": False,
         "version": manifest.get("version"),
         "channel": manifest.get("channel"),
         "manifest_files": count,
@@ -189,9 +202,11 @@ def validate() -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Prüft Manifest, Release-Evidence und abgeleitete Statusdateien auf Drift.")
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--phase", choices=("integration", "release"), default="integration")
+    parser.add_argument("--acceptance-dir", type=Path)
     args = parser.parse_args()
     try:
-        result = validate()
+        result = validate(phase=args.phase, acceptance_dir=args.acceptance_dir)
     except (ContractSyncError, OSError) as exc:
         if args.json:
             print(json.dumps({"schema_version": 1, "status": "failed", "error": str(exc)}, ensure_ascii=False, indent=2, sort_keys=True))
