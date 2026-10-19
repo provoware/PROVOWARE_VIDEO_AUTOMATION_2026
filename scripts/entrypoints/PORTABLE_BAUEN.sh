@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
-exec "$ROOT_DIR/videobatch.sh" portable-build "$@"
+ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd -P)"
+exec "$ROOT_DIR/scripts/entrypoints/videobatch.sh" portable-build "$@"
