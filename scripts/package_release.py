@@ -12,7 +12,7 @@ from pathlib import Path, PurePosixPath
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from release_file_contract import selected_release_files
+from release_file_contract import selected_release_files  # noqa: E402
 FIXED_ZIP_TIME = (2026, 1, 1, 0, 0, 0)
 
 
