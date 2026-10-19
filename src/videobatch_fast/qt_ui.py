@@ -278,8 +278,8 @@ class VideoBatchQtWindow(QMainWindow):
         self.details_toggle.setCheckable(True)
         layout.addWidget(self.details_toggle)
         self.safety_details = QLabel(
-            "Originaldateien bleiben unverändert.\\n"
-            "Ausgaben erhalten eindeutige Dateinamen.\\n"
+            "Originaldateien bleiben unverändert.\n"
+            "Ausgaben erhalten eindeutige Dateinamen.\n"
             "VideoBatch kann die Verarbeitung kontrolliert abbrechen."
         )
         self.safety_details.setObjectName("subtitle")
@@ -353,6 +353,9 @@ class VideoBatchQtWindow(QMainWindow):
         self._dashboard_changed("effect_intensity")
 
     def _dashboard_changed(self, field: str) -> None:
+        if getattr(self, "_loading_project", False):
+            # Project restoration is not a new user preference.
+            return
         if field == "output_dir":
             value = self.output.text()
         elif field == "effect_intensity":
@@ -561,7 +564,7 @@ class VideoBatchQtWindow(QMainWindow):
                 issues = validate_pairs(jobs, options, audio_peak_limit=2)
                 blocking = [item for item in issues if item.blocking]
                 if blocking:
-                    raise ValueError("\\n".join(
+                    raise ValueError("\n".join(
                         f"{item.title}: {item.message} Lösung: {item.solution}"
                         for item in blocking[:6]
                     ))
@@ -644,15 +647,15 @@ class VideoBatchQtWindow(QMainWindow):
                     options = rest[0]
                     notices = rest[1] if len(rest) > 1 else []
                     if notices:
-                        details = "\\n\\n".join(
-                            f"• {notice.title}: {notice.message}\\n{notice.solution}"
+                        details = "\n\n".join(
+                            f"• {notice.title}: {notice.message}\n{notice.solution}"
                             for notice in notices[:5]
                         )
                         if len(notices) > 5:
-                            details += f"\\n\\nWeitere Hinweise: {len(notices) - 5}"
+                            details += f"\n\nWeitere Hinweise: {len(notices) - 5}"
                         response = QMessageBox.question(
                             self, "Hinweise vor der Videoerstellung",
-                            details + "\\n\\nTrotz dieser Hinweise fortfahren?",
+                            details + "\n\nTrotz dieser Hinweise fortfahren?",
                             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                             QMessageBox.StandardButton.No,
                         )
@@ -814,10 +817,10 @@ class VideoBatchQtWindow(QMainWindow):
             duration = job.audio_info.duration
             duration_text = f"{duration:.1f} Sekunden" if duration else "unbekannt"
             self.table.item(row, 1).setToolTip(
-                f"Audio: {job.audio}\\nAudiodauer: {duration_text}"
+                f"Audio: {job.audio}\nAudiodauer: {duration_text}"
             )
             self.table.item(row, 2).setToolTip(
-                f"Medium: {job.media}\\nAusgabe: {job.output.name}\\nZiel: {job.output.parent}"
+                f"Medium: {job.media}\nAusgabe: {job.output.name}\nZiel: {job.output.parent}"
             )
         if self.jobs:
             first = self.jobs[0]

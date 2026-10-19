@@ -120,7 +120,7 @@ class DropList(QListWidget):
                 continue
             item = QListWidgetItem(path.name)
             item.setData(Qt.ItemDataRole.UserRole, resolved)
-            item.setToolTip(f"{resolved}\\n{media_path_display_text(path)}")
+            item.setToolTip(f"{resolved}\n{media_path_display_text(path)}")
             if path.suffix.lower() in IMAGE_THUMBNAIL_EXTS:
                 pixmap = QPixmap(resolved)
                 if not pixmap.isNull():

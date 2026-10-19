@@ -281,7 +281,7 @@ class VideoBatchQtPhase2Window(SelectionPreviewMixin, VideoBatchQtWindow):
                 issues = validate_pairs(jobs, options, audio_peak_limit=2)
                 blocking = [item for item in issues if item.blocking]
                 if blocking:
-                    raise ValueError("\\n".join(
+                    raise ValueError("\n".join(
                         f"{item.title}: {item.message} Lösung: {item.solution}"
                         for item in blocking[:6]
                     ))
