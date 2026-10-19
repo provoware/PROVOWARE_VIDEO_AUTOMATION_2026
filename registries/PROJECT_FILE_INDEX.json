@@ -41,7 +41,7 @@
     {
       "path": ".github/workflows/fresh-extract-package-smoke.yml",
       "mode": "100644",
-      "blob_sha1": "f0c8b49cc41f8b19789ca2a3764ef867e9a5ed83",
+      "blob_sha1": "afbc2b67d308ecc8fbdc645e80962a6bc7d8f617",
       "category": "automation",
       "lifecycle": "development"
     },
@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "51290aee872cb26f4e12f6f736b01e52f72b5c45",
+      "blob_sha1": "3b9e1555b94b15a0d3e4c739f11543e4c07db5a3",
       "category": "project_contract",
       "lifecycle": "active"
     },
