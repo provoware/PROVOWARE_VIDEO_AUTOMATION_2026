@@ -132,7 +132,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "70c9890ce0981669c6d3d0a4e4658b2a2aeab3b0",
+      "blob_sha1": "213a791f1b763f041638235390ce71b2ced4dfce",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -363,7 +363,7 @@
     {
       "path": "diagnostics/release_readiness/generate_from_evidence.py",
       "mode": "100644",
-      "blob_sha1": "6c63c3645afaec9c67fa49b6f6742ce17803dc83",
+      "blob_sha1": "2c442600d577ab162e1fcf82977f5b78508bf3b8",
       "category": "diagnostics",
       "lifecycle": "active"
     },
@@ -2064,7 +2064,7 @@
     {
       "path": "scripts/package_release.py",
       "mode": "100644",
-      "blob_sha1": "2d367ab4e463dd37ad07850a454d531201869d8c",
+      "blob_sha1": "f27774303f01993a7d6788f3176e18266548a1f4",
       "category": "development",
       "lifecycle": "development"
     },
@@ -4325,7 +4325,7 @@
     {
       "path": "tests/test_root_layout_contract_20261019.py",
       "mode": "100644",
-      "blob_sha1": "e6aaa9a208502c9b74975104f088546df6741896",
+      "blob_sha1": "9de2d3c2d1b17108c9064d1d353205e7761b825f",
       "category": "tests",
       "lifecycle": "development"
     },
