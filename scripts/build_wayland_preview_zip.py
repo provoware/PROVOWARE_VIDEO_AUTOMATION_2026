@@ -93,10 +93,13 @@ def main() -> int:
             info.external_attr = (mode or 0o644) << 16
             archive.writestr(info, path.read_bytes())
 
+    from validate_root_layout import archive_root_files, validate
+    validate(archive_root_files(output))
+
     manifest = {
         "schema_version": 1,
         "product_version": version,
-        "version_source": VERSION_FILE.name,
+        "version_source": VERSION_FILE.relative_to(ROOT).as_posix(),
         "archive": output.name,
         "files": len(files),
         "bytes": output.stat().st_size,

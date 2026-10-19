@@ -19,7 +19,8 @@ def _write_candidate(root: Path, *, ready: bool) -> None:
         "version": version["build"], "status": "passed", "stable_ready": ready,
         "stable_blockers": [] if ready else ["Langzeitrender"],
     }
-    for name, value in (("VERSION.json", version), ("DEVELOPMENT_STATUS.json", status), ("report.json", report)):
+    for name, value in (("config/VERSION.json", version), ("config/DEVELOPMENT_STATUS.json", status), ("docs/archive/rc24/report.json", report)):
+        (root / name).parent.mkdir(parents=True, exist_ok=True)
         (root / name).write_text(json.dumps(value), encoding="utf-8")
 
 

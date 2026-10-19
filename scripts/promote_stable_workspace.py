@@ -26,14 +26,14 @@ def _blocked(message: str) -> RuntimeError:
 
 def validate_promotion_source(source: Path) -> tuple[dict[str, object], str]:
     version = json.loads((source / "config/VERSION.json").read_text(encoding="utf-8"))
-    status = json.loads((source / "DEVELOPMENT_STATUS.json").read_text(encoding="utf-8"))
+    status = json.loads((source / "config/DEVELOPMENT_STATUS.json").read_text(encoding="utf-8"))
     build = str(version["build"])
     if version.get("channel") != "rc" or status.get("version") != build:
         raise _blocked("Versionsvertrag und Freigabestatus bezeichnen nicht denselben RC-Kandidaten.")
     report_name = status.get("approved_quality_report")
     if not isinstance(report_name, str) or Path(report_name).name != report_name:
         raise _blocked("Der freigegebene Qualitätsbericht ist nicht eindeutig benannt.")
-    report = json.loads((source / report_name).read_text(encoding="utf-8"))
+    report = json.loads((source / "docs/archive/rc24" / report_name).read_text(encoding="utf-8"))
     blockers = [*status.get("stable_blockers", []), *report.get("stable_blockers", [])]
     if not status.get("stable_ready") or not report.get("stable_ready") or blockers:
         raise _blocked(f"Stable-Nachweise für {build} sind offen: {', '.join(blockers) or 'Freigabe fehlt'}.")
