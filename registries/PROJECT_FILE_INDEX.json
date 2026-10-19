@@ -125,14 +125,14 @@
     {
       "path": "README.md",
       "mode": "100644",
-      "blob_sha1": "804c66b1f38343b81e9de0b34bff2275a6107791",
+      "blob_sha1": "ef83e80a1b93fdcd768517aa53230ddeb35bc212",
       "category": "documentation",
       "lifecycle": "active"
     },
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "957a0bd7b709dc3cdd38955c69fe2059a19f0ce2",
+      "blob_sha1": "9f9568312aab350c927c968104f0fc194544c87d",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -265,7 +265,7 @@
     {
       "path": "config/status/RELEASE_FILE_STATUS.json",
       "mode": "100644",
-      "blob_sha1": "be49a3d06a89ee183c6359f24e4c74d142c433a0",
+      "blob_sha1": "f25abf762b1ed591ec123874dea329a305a3e231",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -363,7 +363,7 @@
     {
       "path": "diagnostics/release_readiness/generate_from_evidence.py",
       "mode": "100644",
-      "blob_sha1": "6c63c3645afaec9c67fa49b6f6742ce17803dc83",
+      "blob_sha1": "4a38f4a084ad168c58dde29146bfcb595a9aa842",
       "category": "diagnostics",
       "lifecycle": "active"
     },
@@ -1798,7 +1798,7 @@
     {
       "path": "scripts/build_multipart_installer.py",
       "mode": "100644",
-      "blob_sha1": "c06cf07cf85a6177c15e465c6859ad9d26dabb45",
+      "blob_sha1": "38236c684db1424839647f5b63161ba8d2d9d5e4",
       "category": "development",
       "lifecycle": "development"
     },
@@ -3926,7 +3926,7 @@
     {
       "path": "tests/test_multipart_installer.py",
       "mode": "100644",
-      "blob_sha1": "952cbe3bdc03fa2112b72f205f3f9248b267f850",
+      "blob_sha1": "7b04c4547882d663a88abfe717c07862063ef718",
       "category": "tests",
       "lifecycle": "development"
     },
