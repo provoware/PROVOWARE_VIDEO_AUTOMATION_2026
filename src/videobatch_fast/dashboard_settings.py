@@ -6,11 +6,13 @@ German labels are presentation-only. Original media are never modified here.
 from __future__ import annotations
 
 import json
+import math
 import os
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Mapping
 
+from .effects import TRANSITIONS
 from .quick_modes import QUICK_MODES
 from .safe_io import atomic_write_json
 
@@ -33,7 +35,7 @@ EFFECT_LABELS: dict[str, str] = {"none": "Kein Effekt"}
 for _preset in QUICK_MODES.values():
     if _preset.visual_effect not in EFFECT_LABELS:
         EFFECT_LABELS[_preset.visual_effect] = _preset.label
-FIELDS = frozenset({"resolution", "quality", "effect", "output_dir"})
+FIELDS = frozenset({"resolution", "quality", "effect", "output_dir", "effect_intensity", "transition", "transition_duration"})
 _LEGACY_RESOLUTIONS = {"HD": "1280×720", "Full HD": "1920×1080", "QHD": "2560×1440", "UHD": "3840×2160"}
 _LEGACY_QUALITIES = {"Schnell": "turbo", "Ausgewogen": "balanced", "Hoch": "quality", "Maximum": "maximum"}
 
@@ -50,6 +52,9 @@ class DashboardSettings:
     resolution: str = "Original"
     quality: str = "balanced"
     effect: str = "none"
+    effect_intensity: int = 100  # 100 = prior unmodified effect, 0 = disabled
+    transition: str = "none"
+    transition_duration: float = 0.8
     output_dir: Path = field(default_factory=lambda: Path.home() / "Videos" / "VideoBatch")
     explicit_fields: frozenset[str] = frozenset()
     schema_version: int = SCHEMA_VERSION
@@ -63,6 +68,12 @@ class DashboardSettings:
             raise ValueError("Unbekannte Qualitätsstufe")
         if self.effect not in EFFECT_LABELS:
             raise ValueError("Unbekannter Bildeffekt")
+        if type(self.effect_intensity) is not int or not 0 <= self.effect_intensity <= 100:
+            raise ValueError("Effektstärke muss zwischen 0 und 100 liegen")
+        if self.transition not in TRANSITIONS:
+            raise ValueError("Unbekannte Videoblende")
+        if not math.isfinite(float(self.transition_duration)) or not 0 <= self.transition_duration <= 5:
+            raise ValueError("Blenddauer muss zwischen 0 und 5 Sekunden liegen")
         if not isinstance(self.output_dir, Path) or not str(self.output_dir).strip():
             raise ValueError("Ausgabeordner fehlt")
         if not self.explicit_fields <= FIELDS:
@@ -76,6 +87,22 @@ class DashboardSettings:
 
     @staticmethod
     def _normalize(field: str, value: object) -> object:
+        if field in {"effect_intensity", "transition_duration"}:
+            if isinstance(value, bool):
+                raise ValueError(f"Ungültiger Wert für {field}")
+            try:
+                number = float(value)
+            except (TypeError, ValueError, OverflowError) as exc:
+                raise ValueError(f"Ungültiger Zahlenwert für {field}") from exc
+            if not math.isfinite(number):
+                raise ValueError(f"Ungültige Zahl für {field}")
+            if field == "effect_intensity":
+                if number != int(number) or not 0 <= number <= 100:
+                    raise ValueError("Effektstärke: nur ganze Prozent von 0 bis 100")
+                return int(number)
+            if not 0 <= number <= 5:
+                raise ValueError("Blenddauer muss zwischen 0 und 5 Sekunden liegen")
+            return round(number, 1)
         if not isinstance(value, (str, Path)):
             raise ValueError(f"Ungültiger Wert für {field}")
         text = str(value).strip()
@@ -104,6 +131,9 @@ class DashboardSettings:
             "resolution": self.resolution,
             "quality": self.quality,
             "effect": self.effect,
+            "effect_intensity": self.effect_intensity,
+            "transition": self.transition,
+            "transition_duration": self.transition_duration,
             "output_dir": str(self.output_dir),
             "explicit_fields": sorted(self.explicit_fields),
         }

@@ -4,10 +4,11 @@ from pathlib import Path
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeySequence, QShortcut
-from PySide6.QtWidgets import QApplication, QComboBox, QFrame, QHBoxLayout, QGridLayout, QLabel, QVBoxLayout, QWidget, QLineEdit, QPushButton, QTabBar
+from PySide6.QtWidgets import QApplication, QComboBox, QDoubleSpinBox, QSlider, QFrame, QHBoxLayout, QGridLayout, QLabel, QVBoxLayout, QWidget, QLineEdit, QPushButton, QTabBar
 
 from .qt_theme import SCALE_LEVELS, scaled_style
 from .dashboard_settings import RESOLUTION_LABELS, QUALITY_LABELS, EFFECT_LABELS
+from .effects import TRANSITIONS
 from .qt_workspace_layout import build_footer, build_workflow_stack, set_workflow_route
 
 
@@ -103,6 +104,39 @@ def build_main_ui(window) -> None:
         grid.addWidget(widget, row, col + 1)
     grid.addWidget(QLabel("Ausgabeordner"), 1, 2)
     grid.addLayout(output_row, 1, 3)
+
+    # The original compact everyday controls remain; one additional row
+    # exposes real rendering values without hiding them in legacy dialogs.
+    window.effect_intensity = QSlider(Qt.Orientation.Horizontal)
+    window.effect_intensity.setRange(0, 100)
+    window.effect_intensity.setValue(state.effect_intensity)
+    window.effect_intensity.setAccessibleName("Effektstärke von 0 bis 100 Prozent")
+    window.effect_intensity.setToolTip("100 % = bisheriger Effekt, 0 % = kein Effekt.")
+    window.intensity_value = QLabel(f"{state.effect_intensity} %")
+    strength_row = QHBoxLayout()
+    strength_row.addWidget(window.effect_intensity, 1)
+    strength_row.addWidget(window.intensity_value)
+    grid.addWidget(QLabel("Effektstärke"), 2, 0)
+    grid.addLayout(strength_row, 2, 1)
+
+    window.transition = QComboBox()
+    for key, transition in TRANSITIONS.items():
+        window.transition.addItem(transition.label, key)
+    idx = window.transition.findData(state.transition)
+    window.transition.setCurrentIndex(max(0, idx))
+    window.transition.setAccessibleName("Videoblende: Ein- und Ausblendung")
+    window.fade_seconds = QDoubleSpinBox()
+    window.fade_seconds.setRange(0.0, 5.0)
+    window.fade_seconds.setSingleStep(0.1)
+    window.fade_seconds.setDecimals(1)
+    window.fade_seconds.setSuffix(" s")
+    window.fade_seconds.setValue(state.transition_duration)
+    window.fade_seconds.setAccessibleName("Videoblenddauer in Sekunden")
+    fade_row = QHBoxLayout()
+    fade_row.addWidget(window.transition, 1)
+    fade_row.addWidget(window.fade_seconds)
+    grid.addWidget(QLabel("Videoblende"), 2, 2)
+    grid.addLayout(fade_row, 2, 3)
     outer.addWidget(controls)
 
     # Permanent, novice-readable workspace navigation.
