@@ -259,7 +259,8 @@ def current_release_files(value: Mapping[str, Any]) -> dict[str, Any]:
     historical = value["release_files"]
     ready = historical["ready"]
     paths = [str(item["path"]) for item in ready]
-    if len(paths) != len(set(paths)) or set(CURRENT_FILE_PATHS) - set(paths):
+    historical_paths = paths + [str(item["path"]) for item in historical["unfinished"]]
+    if len(historical_paths) != len(set(historical_paths)) or set(CURRENT_FILE_PATHS) - set(historical_paths):
         raise EvidenceContractError("RC24-Dateiliste ist unvollständig oder enthält doppelte Pfade")
 
     converted_ready: list[dict[str, Any]] = []

@@ -363,7 +363,7 @@
     {
       "path": "diagnostics/release_readiness/generate_from_evidence.py",
       "mode": "100644",
-      "blob_sha1": "2c442600d577ab162e1fcf82977f5b78508bf3b8",
+      "blob_sha1": "0c8df321367a78d0e0ad7aec479e22eabeb50b72",
       "category": "diagnostics",
       "lifecycle": "active"
     },
@@ -1727,7 +1727,7 @@
     },
     {
       "path": "scripts/acceptance/KUBUNTU_26_04_QT_ABNAHME.sh",
-      "mode": "100755",
+      "mode": "100644",
       "blob_sha1": "cea3065c3578e2252e607b4d029d344bdec55203",
       "category": "development",
       "lifecycle": "development"
@@ -1937,7 +1937,7 @@
     },
     {
       "path": "scripts/dev/build_artifacts.sh",
-      "mode": "100755",
+      "mode": "100644",
       "blob_sha1": "f6b2c6159750a691d4f9fddd8add83292542b911",
       "category": "development",
       "lifecycle": "development"
@@ -1951,7 +1951,7 @@
     },
     {
       "path": "scripts/dev/quality.sh",
-      "mode": "100755",
+      "mode": "100644",
       "blob_sha1": "8f414e180cdd8243c70f70da2379cfca02b369fa",
       "category": "development",
       "lifecycle": "development"
@@ -1965,7 +1965,7 @@
     },
     {
       "path": "scripts/dev/test.sh",
-      "mode": "100755",
+      "mode": "100644",
       "blob_sha1": "4a2d71a01d06fd901710ac47b683f89da09f7805",
       "category": "development",
       "lifecycle": "development"
@@ -2014,7 +2014,7 @@
     },
     {
       "path": "scripts/install/autoinstall.sh",
-      "mode": "100644",
+      "mode": "100755",
       "blob_sha1": "679cac5d9510d1494ddba7f47634def9244a0c21",
       "category": "development",
       "lifecycle": "development"
@@ -2133,7 +2133,7 @@
     },
     {
       "path": "scripts/release/stable_release.sh",
-      "mode": "100755",
+      "mode": "100644",
       "blob_sha1": "74e8348195d8d2e27e6058179c6250ffd565359f",
       "category": "development",
       "lifecycle": "development"
@@ -2147,7 +2147,7 @@
     },
     {
       "path": "scripts/render_release_docs.py",
-      "mode": "100755",
+      "mode": "100644",
       "blob_sha1": "c9d8c76bddcc9b8b5142ff2cd485d86682f6d639",
       "category": "development",
       "lifecycle": "development"
