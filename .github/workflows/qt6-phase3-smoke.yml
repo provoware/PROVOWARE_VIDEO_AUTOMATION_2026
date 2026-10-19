@@ -389,6 +389,28 @@ jobs:
           PIP_NO_INDEX=1 python scripts/toolchain.py install --scope runtime --replace
           python scripts/toolchain.py gate --scope runtime
 
+      - name: Build fresh package and extract for real offline Qt UI startup
+        run: |
+          set -Eeuo pipefail
+          python -m pip install --disable-pip-version-check --no-input cryptography==50.0.0
+          python scripts/build_release_manifest.py --check
+          python scripts/package_release.py --output "$RUNNER_TEMP/qt-fresh-package.zip"
+          python - <<'PY'
+          import os
+          import pathlib
+          import zipfile
+          destination = pathlib.Path(os.environ["RUNNER_TEMP"]) / "qt-fresh-extract"
+          with zipfile.ZipFile(pathlib.Path(os.environ["RUNNER_TEMP"]) / "qt-fresh-package.zip") as archive:
+              assert archive.testzip() is None
+              archive.extractall(destination)
+          packages = list(destination.iterdir())
+          assert len(packages) == 1 and packages[0].is_dir(), packages
+          root_files = [x for x in packages[0].iterdir() if x.is_file()]
+          assert len(root_files) <= 8, root_files
+          assert (packages[0] / "STARTEN.sh").is_file()
+          print(f"EXTRACTED_QT_PACKAGE_READY root_files={len(root_files)}")
+          PY
+
       - name: Prove STARTEN.sh to Qt UI-ready, isolated user paths and clean shutdown
         env:
           HOME: ${{ runner.temp }}/videobatch-start-normal/home
@@ -403,8 +425,11 @@ jobs:
           mkdir -p "$HOME" "$XDG_DATA_HOME" "$XDG_STATE_HOME" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME"
           unset VIDEOBATCH_INSTALL_ROOT VIDEOBATCH_PORTABLE_LAUNCHER VIDEOBATCH_PORTABLE \
             VIDEOBATCH_RUNTIME_PYTHON VIDEOBATCH_QUALITY_PYTHON VIDEOBATCH_TOOLCHAIN_PYTHON
+          project="$RUNNER_TEMP/qt-fresh-extract/VideoBatch_Fast_2.8.3-rc24"
+          test -d "$project"
+          cd "$project"
           chmod +x STARTEN.sh scripts/cli/start.sh scripts/validate_acceptance_isolation.py
-          dbus-run-session -- timeout 90s ./STARTEN.sh --check-only \
+          PIP_NO_INDEX=1 PIP_DISABLE_PIP_VERSION_CHECK=1 dbus-run-session -- timeout 90s ./STARTEN.sh --check-only \
             2>&1 | tee "$RUNNER_TEMP/starten-normal.log"
           grep -E 'BOOTSTRAP_READY pid=[0-9]+ mode=normal' "$RUNNER_TEMP/starten-normal.log"
           grep -F 'Die Anwendung wurde regulär beendet.' "$RUNNER_TEMP/starten-normal.log"
