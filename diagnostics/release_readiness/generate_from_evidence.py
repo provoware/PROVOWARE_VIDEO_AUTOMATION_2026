@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import tempfile
@@ -15,6 +16,31 @@ STATUS_BEGIN = "<!-- release-status:start -->"
 STATUS_END = "<!-- release-status:end -->"
 FILES_BEGIN = "<!-- release-files:start -->"
 FILES_END = "<!-- release-files:end -->"
+
+# Historical RC24 RELEASE_EVIDENCE stays immutable. The development tree
+# relocates only delivery paths; no historical approvals are reissued.
+CURRENT_FILE_PATHS = {
+    "START_HIER_save_.md": "docs/start/START_HIER_save_.md",
+    "AUTOINSTALLATION_save_.md": "docs/start/AUTOINSTALLATION_save_.md",
+    "PROJEKTORDNERSTRUKTUR_save_.md": "docs/start/PROJEKTORDNERSTRUKTUR_save_.md",
+    "RELEASE_NOTES_save_.md": "docs/archive/rc24/RELEASE_NOTES_save_.md",
+    "TEST_REPORT_save_.md": "docs/archive/rc24/TEST_REPORT_save_.md",
+    "FRESH_PACKAGE_REPORT_save_.md": "docs/archive/rc24/FRESH_PACKAGE_REPORT_save_.md",
+    "CODE_QUALITY_REPORT_2.8.3-rc24_save_.md": "docs/archive/rc24/CODE_QUALITY_REPORT_2.8.3-rc24_save_.md",
+    "IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md": "docs/archive/rc24/IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md",
+    "FINAL_AUDIT_2.8.3-rc24_save_.md": "docs/archive/rc24/FINAL_AUDIT_2.8.3-rc24_save_.md",
+}
+# Git blob SHA-1 from the original RC24 docs on main. The archive must
+# preserve exact bytes; the two user manuals may legitimately be updated.
+FROZEN_RC24_REPORT_BLOBS = {
+    "docs/archive/rc24/RELEASE_NOTES_save_.md": "04aa0c6989481dbee8781860d14a5c9af178eb0b",
+    "docs/archive/rc24/TEST_REPORT_save_.md": "54616ada673fe785341c5737268ccc1dfa4f866d",
+    "docs/archive/rc24/FRESH_PACKAGE_REPORT_save_.md": "5ad1a2eb7859b2cd3426c1facf9f99f338b90f8d",
+    "docs/archive/rc24/CODE_QUALITY_REPORT_2.8.3-rc24_save_.md": "009243f481b63e95ab369a58cd8b78a6bb39279e",
+    "docs/archive/rc24/IMPLEMENTATION_REPORT_2.8.3-rc24_save_.md": "a1fe8a7a82f3fa068e9bfba328fa267ffa226743",
+    "docs/archive/rc24/FINAL_AUDIT_2.8.3-rc24_save_.md": "f76b84842371f5869739bd30c79b19e6179e4475",
+}
+
 
 
 class EvidenceContractError(RuntimeError):
@@ -224,9 +250,44 @@ def render_build(value: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def current_release_files(value: Mapping[str, Any]) -> dict[str, Any]:
+    """Map original RC24 release-file paths to today's tree without editing evidence."""
+    historical = value["release_files"]
+    ready = historical["ready"]
+    paths = [str(item["path"]) for item in ready]
+    if len(paths) != len(set(paths)) or set(CURRENT_FILE_PATHS) - set(paths):
+        raise EvidenceContractError("RC24-Dateiliste ist unvollständig oder enthält doppelte Pfade")
+
+    converted_ready: list[dict[str, Any]] = []
+    for item in ready:
+        original = str(item["path"])
+        relocated = CURRENT_FILE_PATHS.get(original, original)
+        converted_ready.append({**item, "path": relocated})
+
+    result = {**historical, "ready": converted_ready}
+    current = [str(item["path"]) for group in ("ready", "unfinished")
+               for item in result[group]]
+    if len(current) != len(set(current)):
+        raise EvidenceContractError("Doppelter Pfad nach Migration")
+    for relative in current:
+        path = Path(relative)
+        if path.is_absolute() or ".." in path.parts:
+            raise EvidenceContractError(f"Ungültiger Dateipfad nach Migration: {relative}")
+        actual = ROOT / path
+        if not actual.is_file() or actual.is_symlink():
+            raise EvidenceContractError(f"Verschobene Release-Datei fehlt: {relative}")
+
+    for relative, expected_blob in FROZEN_RC24_REPORT_BLOBS.items():
+        raw = (ROOT / relative).read_bytes()
+        blob = hashlib.sha1(b"blob " + str(len(raw)).encode("ascii") + b"\\0" + raw).hexdigest()
+        if blob != expected_blob:
+            raise EvidenceContractError(f"RC24-Archivdatei wurde nachträglich verändert: {relative}")
+    return result
+
+
 def render_release_files(value: Mapping[str, Any]) -> dict[str, Any]:
     product = value["product"]
-    files = value["release_files"]
+    files = current_release_files(value)
     return {
         "schema_version": 2,
         "generated_from": str(EVIDENCE_PATH.relative_to(ROOT)),
@@ -273,7 +334,7 @@ def release_status_block(value: Mapping[str, Any]) -> str:
 
 
 def release_files_block(value: Mapping[str, Any]) -> str:
-    files = value["release_files"]
+    files = current_release_files(value)
     ready = list(files["ready"])
     unfinished = list(files["unfinished"])
     rows = max(len(ready), len(unfinished))

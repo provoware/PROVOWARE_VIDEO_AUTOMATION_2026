@@ -419,7 +419,7 @@
     {
       "path": "diagnostics/release_readiness/generate_from_evidence.py",
       "mode": "100644",
-      "blob_sha1": "a9c0370d1590324eb908ae362734e13ebaeceda6",
+      "blob_sha1": "11bae74c5157bcfcae4c2f774f22ac8285c4fe38",
       "category": "diagnostics",
       "lifecycle": "active"
     },
@@ -4227,7 +4227,7 @@
     {
       "path": "tests/test_release_file_status.py",
       "mode": "100644",
-      "blob_sha1": "a4ef66114f864fa58ad215bd51f322c4342bd17b",
+      "blob_sha1": "b4b5c0002144a34912f5fedbbb4bd14480124a6c",
       "category": "tests",
       "lifecycle": "development"
     },
