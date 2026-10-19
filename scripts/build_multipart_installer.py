@@ -307,7 +307,7 @@ def main() -> int:
     json_sign(manifest_path, options.private_key, output / "INSTALLER_MANIFEST.json.sig.json")
 
     source_root = Path(__file__).resolve().parents[1]
-    for name in ("autoinstall.sh",):
+    for name in ("scripts/entrypoints/autoinstall.sh",):
         shutil.copy2(source_root / name, output / name)
         os.chmod(output / name, 0o755)
     for name in ("ab_installer.py", "ab_launcher.py", "ab_contract.py"):

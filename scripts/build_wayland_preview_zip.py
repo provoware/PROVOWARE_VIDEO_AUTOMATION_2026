@@ -9,7 +9,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION_FILE = ROOT / "VERSION.json"
+VERSION_FILE = ROOT / "config/VERSION.json"
 PREVIEW_SUFFIX = "Kubuntu-26.04_Wayland_Preview1"
 EXCLUDED_DIRS = {
     ".git", ".venv", "venv", "__pycache__", ".pytest_cache", ".ruff_cache",

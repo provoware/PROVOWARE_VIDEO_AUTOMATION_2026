@@ -51,7 +51,7 @@ def category(path: str) -> str:
         if path.startswith(prefix):
             return name
     if path.endswith((".sh", ".desktop")):
-        return "entrypoint" if path in {"STARTEN.sh", "VideoBatch-Fast.desktop"} else "tooling"
+        return "entrypoint" if path in {"STARTEN.sh", "resources/desktop/VideoBatch-Fast.desktop"} else "tooling"
     return "project_contract" if path.endswith((".json", ".lock", ".toml")) else "documentation"
 
 

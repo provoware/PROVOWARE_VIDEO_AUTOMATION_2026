@@ -13,7 +13,7 @@ from videobatch_fast.visual_inspection import write_inspection_html
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Signiert oder prüft die manuelle visuelle Desktop-Abnahme.")
-    parser.add_argument("--manifest", type=Path, default=PROJECT_ROOT / "VISUAL_INSPECTION_MANIFEST.json")
+    parser.add_argument("--manifest", type=Path, default=PROJECT_ROOT / "config/VISUAL_INSPECTION_MANIFEST.json")
     parser.add_argument("--reviewer", default="")
     parser.add_argument("--verify", action="store_true")
     args = parser.parse_args()

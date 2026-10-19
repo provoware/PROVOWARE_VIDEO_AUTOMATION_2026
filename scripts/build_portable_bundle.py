@@ -246,7 +246,7 @@ def build_appdir(output: Path, python: Path, static_media_dir: Path | None = Non
     (output / ".DirIcon").write_text(svg, encoding="utf-8")
     host_ffmpeg = shutil.which("ffmpeg") or ""
     metadata: dict[str, object] = {
-        "release_target": json.loads((ROOT / "VERSION.json").read_text(encoding="utf-8"))["build"],
+        "release_target": json.loads((ROOT / "config/VERSION.json").read_text(encoding="utf-8"))["build"],
         "python_version": run([str(python), "--version"], timeout=30).stdout.strip(),
         "media_runtime_mode": "pinned-static-preferred-clean-environment" if static_media else "host-compatible-clean-environment",
         "build_host_ffmpeg": run([host_ffmpeg, "-version"], timeout=30).stdout.splitlines()[0] if host_ffmpeg else "not-found",
@@ -307,7 +307,7 @@ def main() -> int:
     if not args.python.is_file(): raise SystemExit("Python fehlt.")
     args.output_dir = args.output_dir.expanduser().resolve()
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    release = json.loads((ROOT / "VERSION.json").read_text(encoding="utf-8"))["build"]
+    release = json.loads((ROOT / "config/VERSION.json").read_text(encoding="utf-8"))["build"]
     appdir = args.output_dir / f"VideoBatch_Fast_{release}.AppDir"
     metadata = build_appdir(appdir, args.python, args.static_media_dir)
     ok, detail = runtime_smoke_test(appdir)
