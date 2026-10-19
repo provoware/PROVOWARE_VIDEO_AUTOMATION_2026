@@ -419,7 +419,7 @@
     {
       "path": "docs/BENUTZERHANDBUCH.md",
       "mode": "100644",
-      "blob_sha1": "0032fc093d19f26b9eba5ef7b506bbd305f1ac53",
+      "blob_sha1": "e65314aadea0c861a156d897c63c71fc4dbdce21",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -1364,7 +1364,7 @@
     {
       "path": "docs/manuals/DEVELOPER_GUIDE.md",
       "mode": "100644",
-      "blob_sha1": "f50c84525be6e5f07e79d36cc0d3ecf276c7b084",
+      "blob_sha1": "633a718645dac26fe65971a7651e1a2e1a51aae6",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -1378,7 +1378,7 @@
     {
       "path": "docs/manuals/UPDATE_SYSTEM.md",
       "mode": "100644",
-      "blob_sha1": "33c034fd153732d9af4c7e0a3bf944ea39545363",
+      "blob_sha1": "ac569e1de1479d44b213be1c16ee8d453e448b39",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -1441,7 +1441,7 @@
     {
       "path": "docs/start/AUTOINSTALLATION_save_.md",
       "mode": "100644",
-      "blob_sha1": "2c625b975f921458de6719cfed4d0bd0e6883369",
+      "blob_sha1": "52e87fde50e0ad32ef3bba1cedeb4859281d0155",
       "category": "documentation",
       "lifecycle": "active"
     },
