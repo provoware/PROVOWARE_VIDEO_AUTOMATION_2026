@@ -11,4 +11,4 @@ for arg in "$@"; do
     *) printf 'Unbekannte Option: %s\n' "$arg" >&2; exit 2 ;;
   esac
 done
-exec "$ROOT_DIR/videobatch.sh" "$mode" "${args[@]}"
+exec "$ROOT_DIR/scripts/cli/videobatch.sh" "$mode" "${args[@]}"

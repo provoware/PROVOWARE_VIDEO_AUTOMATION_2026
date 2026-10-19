@@ -6,7 +6,7 @@ MODE="full"
 
 usage() {
   cat <<'EOF'
-Verwendung: ./test.sh [--docs | --core | --local | --help]
+Verwendung: ./scripts/dev/test.sh [--docs | --core | --local | --help]
 
   --docs  Schnelle Dokumentationsprüfung ohne Toolchain, Coverage, GUI oder Releasefreigabe.
   --core  Kernprüfung ohne externe Qualitätswerkzeuge; nicht releasefreigebend.
