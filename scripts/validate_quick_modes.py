@@ -51,7 +51,7 @@ def expected_manifest() -> dict:
 
 def main() -> int:
     errors = validate_quick_modes(VISUAL_EFFECTS, TRANSITIONS, PROFILES)
-    manifest_path = ROOT / "QUICK_MODES_MANIFEST.json"
+    manifest_path = ROOT / "config/QUICK_MODES_MANIFEST.json"
     expected = expected_manifest()
     try:
         actual = json.loads(manifest_path.read_text(encoding="utf-8"))

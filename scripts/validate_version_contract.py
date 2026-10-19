@@ -8,16 +8,16 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 CURRENT_JSON_FILES = (
-    "TOOLCHAIN_CONTRACT.json",
+    "config/TOOLCHAIN_CONTRACT.json",
     "registries/UI_BLUEPRINT.json",
     "registries/UI_COMPONENT_REGISTRY.json",
     "registries/VISUAL_INSPECTION_REGISTRY.json",
     "registries/PLUGIN_APPROVAL_REGISTRY.json",
     "registries/VISUAL_REGRESSION_REGISTRY.json",
     "registries/VISUAL_APPROVAL_REGISTRY.json",
-    "VISUAL_INSPECTION_MANIFEST.json",
-    "QUALITY_ENVIRONMENT_STATUS.json",
-    "DEVELOPMENT_STATUS.json",
+    "config/VISUAL_INSPECTION_MANIFEST.json",
+    "config/QUALITY_ENVIRONMENT_STATUS.json",
+    "config/DEVELOPMENT_STATUS.json",
 )
 
 
@@ -41,7 +41,7 @@ def _pep440(build: str) -> str:
 def validate(root: Path = ROOT) -> list[str]:
     errors: list[str] = []
     try:
-        version = _json(root / "VERSION.json")
+        version = _json(root / "config/VERSION.json")
         build = str(version.get("build", ""))
         if version.get("version") != build:
             errors.append("VERSION.json: version und build unterscheiden sich.")
@@ -71,7 +71,7 @@ def validate(root: Path = ROOT) -> list[str]:
         if present and any(value != build for value in present):
             errors.append(f"{relative}: Buildbezug weicht ab: {', '.join(present)}; erwartet {build}.")
 
-    contract = root / "TOOLCHAIN_CONTRACT.json"
+    contract = root / "config/TOOLCHAIN_CONTRACT.json"
     try:
         contract_data = _json(contract)
         contract_id = str(contract_data.get("contract_id", ""))

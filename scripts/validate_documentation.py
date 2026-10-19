@@ -12,7 +12,7 @@ from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
 CLASSIFICATION = ROOT / "docs" / "DOCUMENTATION_CLASSIFICATION.json"
-MANIFEST = ROOT / "RELEASE_MANIFEST.json"
+MANIFEST = ROOT / "config/RELEASE_MANIFEST.json"
 
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")
 LINK_RE = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")

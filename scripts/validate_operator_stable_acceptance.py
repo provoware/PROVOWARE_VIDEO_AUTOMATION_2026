@@ -92,11 +92,11 @@ def validate_operator_acceptance(
     root = Path(source_root).resolve(strict=True)
     current = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
 
-    version = _load(root / "VERSION.json")
+    version = _load(root / "config/VERSION.json")
     if version.get("channel") != "rc" or version.get("build") != candidate:
         raise _blocked("VERSION.json bezeichnet nicht den freigegebenen RC-Kandidaten.")
 
-    actual_digest = manifest_sha256(root / "RELEASE_MANIFEST.json")
+    actual_digest = manifest_sha256(root / "config/RELEASE_MANIFEST.json")
     if actual_digest != digest:
         raise _blocked("RELEASE_MANIFEST.json hat sich seit der Freigabebindung geändert.")
 
@@ -119,7 +119,7 @@ def validate_operator_acceptance(
     if open_gates:
         raise _blocked("Nicht alle kanonischen Stable-Gates sind bestanden: " + ", ".join(sorted(set(open_gates))))
 
-    development = _load(root / "DEVELOPMENT_STATUS.json")
+    development = _load(root / "config/DEVELOPMENT_STATUS.json")
     if development.get("version") != candidate or development.get("stable_ready") is not True:
         raise _blocked("DEVELOPMENT_STATUS ist nicht vollständig stable_ready.")
     if list(development.get("stable_blockers") or []):

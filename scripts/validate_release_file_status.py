@@ -19,7 +19,7 @@ def _object(path: Path) -> dict[str, Any]:
 
 
 def validate(root: Path = ROOT) -> dict[str, Any]:
-    contract = _object(root / "RELEASE_FILE_STATUS.json")
+    contract = _object(root / "config/RELEASE_FILE_STATUS.json")
     if contract.get("scope") != "standalone_release_deliverables" or contract.get("ready_suffix") != READY_MARKER:
         raise ValueError("Release-Dateivertrag besitzt einen unbekannten Geltungsbereich")
     seen: set[str] = set()
@@ -65,7 +65,7 @@ def validate(root: Path = ROOT) -> dict[str, Any]:
         raise ValueError("Veraltete doppelte visuelle Baselines existieren noch")
     if not ARCHIVE.is_dir():
         raise ValueError("Historisches Releasearchiv fehlt")
-    for document_name in ("README.md", "STATUS.md"):
+    for document_name in ("README.md", "docs/STATUS.md"):
         document = (root / document_name).read_text(encoding="utf-8")
         if "<!-- release-files:start -->" not in document or "<!-- release-files:end -->" not in document:
             raise ValueError(f"{document_name}: Release-Dateitabelle fehlt")
