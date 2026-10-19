@@ -119,3 +119,35 @@ def test_qt_custom_mode_controls_follow_video_options(tmp_path, monkeypatch) -> 
         assert selected.visual_effect == "industrial"
     finally:
         window.close()
+
+
+def test_project_restoration_keeps_global_default_settings(tmp_path, monkeypatch) -> None:
+    """Project values must not silently replace the global settings file."""
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    pytest.importorskip("PySide6")
+    from PySide6.QtWidgets import QApplication
+    from videobatch_fast.qt_phase3 import VideoBatchQtPhase3Window
+
+    app = QApplication.instance() or QApplication([])
+    window = VideoBatchQtPhase3Window(autoload_project=False)
+    try:
+        original = window.dashboard_settings
+        window._apply_project_state({
+            "project_name": "Test-Projekt", "resolution": "3840×2160",
+            "profile": "maximum", "visual_effect": "industrial",
+            "effect_intensity": 61, "transition_duration": 2.5,
+        })
+        assert window.dashboard_settings == original
+        assert window.resolution.currentData() == "3840×2160"
+        assert window.effect_intensity.value() == 61
+        assert window.fade_seconds.value() == 2.5
+        assert not window._settings_dirty
+    finally:
+        window.close()
+
+def test_user_notices_use_real_newline_escapes() -> None:
+    from pathlib import Path
+    package = Path(__file__).resolve().parents[1] / "src" / "videobatch_fast"
+    for source in ("qt_ui.py", "qt_phase2.py", "qt_media_list.py"):
+        assert r"\\n" not in (package / source).read_text(encoding="utf-8")
