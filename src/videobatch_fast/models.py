@@ -16,6 +16,9 @@ class MediaInfo:
     width: int | None = None
     height: int | None = None
     size_bytes: int = 0
+    # The flag is advisory: differences between FFprobe rates can also be caused
+    # by containers or time-base rounding. Never silently recode on this flag.
+    variable_frame_rate: bool = False
 
 
 @dataclass(frozen=True, slots=True)
