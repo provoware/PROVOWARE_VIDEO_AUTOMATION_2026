@@ -125,14 +125,14 @@
     {
       "path": "README.md",
       "mode": "100644",
-      "blob_sha1": "804c66b1f38343b81e9de0b34bff2275a6107791",
+      "blob_sha1": "ef83e80a1b93fdcd768517aa53230ddeb35bc212",
       "category": "documentation",
       "lifecycle": "active"
     },
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "210468fca805107fe5f2810f7febe5cf92fb7dec",
+      "blob_sha1": "9849fb4fde2a8d95b09a6a3ea85a5e4ad400c93c",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -2162,7 +2162,7 @@
     {
       "path": "scripts/run_external_quality.py",
       "mode": "100644",
-      "blob_sha1": "bc2d8685649892133809c04c34df0eaee3419ded",
+      "blob_sha1": "a74d7025f4ed8aabc06c1c7551df2e08dff167f9",
       "category": "development",
       "lifecycle": "development"
     },
