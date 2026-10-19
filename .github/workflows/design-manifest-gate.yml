@@ -45,7 +45,7 @@ jobs:
       - name: Install pinned repository toolchain
         run: |
           set -Eeuo pipefail
-          python -m pip install --disable-pip-version-check --no-input -r requirements-toolchain.lock
+          python -m pip install --disable-pip-version-check --no-input -r config/requirements/requirements-toolchain.lock
 
       - name: Compile and run documentation contracts
         run: |
@@ -101,7 +101,7 @@ jobs:
           python-version: '3.12'
 
       - name: Verify repository pin
-        run: test "$(grep -cx 'ruff==0.16.1' requirements-toolchain.lock)" = "1"
+        run: test "$(grep -cx 'ruff==0.16.1' config/requirements/requirements-toolchain.lock)" = "1"
 
       - name: Download and attest exact Ruff wheel
         run: |

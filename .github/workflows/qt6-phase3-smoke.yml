@@ -8,17 +8,17 @@ on:
     branches: [main]
     paths:
       - "STARTEN.sh"
-      - "KUBUNTU_26_04_QT_ABNAHME.sh"
-      - "start.sh"
+      - "scripts/acceptance/KUBUNTU_26_04_QT_ABNAHME.sh"
+      - "scripts/cli/start.sh"
       - "pyproject.toml"
       - "VERSION.json"
-      - "requirements.lock"
-      - "requirements-toolchain.lock"
-      - "requirements-qt.txt"
-      - "TOOLCHAIN_CONTRACT.json"
-      - "STARTUP_CONTRACT.json"
-      - "PLATFORM_SUPPORT.json"
-      - "ARCHITECTURE_V1.json"
+      - "config/requirements/requirements.lock"
+      - "config/requirements/requirements-toolchain.lock"
+      - "config/requirements/requirements-qt.txt"
+      - "config/contracts/TOOLCHAIN_CONTRACT.json"
+      - "config/contracts/STARTUP_CONTRACT.json"
+      - "config/contracts/PLATFORM_SUPPORT.json"
+      - "config/contracts/ARCHITECTURE_V1.json"
       - "docs/KUBUNTU_26_04_QT_ABNAHME.md"
       - "RELEASE_MANIFEST.json"
       - "scripts/ab_installer.py"
@@ -299,7 +299,7 @@ jobs:
             libwayland-client0 \
             libxkbcommon0
           python -m pip install --upgrade pip
-          python -m pip install -r requirements-qt.txt
+          python -m pip install -r config/requirements/requirements-qt.txt
           python -m pip install pytest==8.4.2
 
       - name: Verify real Ubuntu 26.04 flavour base identity
@@ -402,7 +402,7 @@ jobs:
           mkdir -p "$HOME" "$XDG_DATA_HOME" "$XDG_STATE_HOME" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME"
           unset VIDEOBATCH_INSTALL_ROOT VIDEOBATCH_PORTABLE_LAUNCHER VIDEOBATCH_PORTABLE \
             VIDEOBATCH_RUNTIME_PYTHON VIDEOBATCH_QUALITY_PYTHON VIDEOBATCH_TOOLCHAIN_PYTHON
-          chmod +x STARTEN.sh start.sh scripts/validate_acceptance_isolation.py
+          chmod +x STARTEN.sh scripts/cli/start.sh scripts/validate_acceptance_isolation.py
           dbus-run-session -- timeout 90s ./STARTEN.sh --check-only \
             2>&1 | tee "$RUNNER_TEMP/starten-normal.log"
           grep -E 'BOOTSTRAP_READY pid=[0-9]+ mode=normal' "$RUNNER_TEMP/starten-normal.log"

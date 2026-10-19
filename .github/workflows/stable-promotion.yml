@@ -80,7 +80,7 @@ jobs:
             dbus-daemon ffmpeg gh kdialog python3-tk rsync weston wl-clipboard xauth xvfb \
             xdg-desktop-portal xdg-desktop-portal-kde libegl1 libgl1 libfontconfig1 \
             libwayland-client0 libxkbcommon0
-          python -m pip install -r requirements-toolchain.lock
+          python -m pip install -r config/requirements/requirements-toolchain.lock
 
       - name: Start isolated X11 and native Wayland displays
         run: |
