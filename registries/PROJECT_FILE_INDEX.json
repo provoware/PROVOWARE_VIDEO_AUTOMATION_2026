@@ -39,6 +39,13 @@
       "lifecycle": "development"
     },
     {
+      "path": ".github/workflows/fresh-extract-package-smoke.yml",
+      "mode": "100644",
+      "blob_sha1": "afbc2b67d308ecc8fbdc645e80962a6bc7d8f617",
+      "category": "automation",
+      "lifecycle": "development"
+    },
+    {
       "path": ".github/workflows/kubuntu-26-04-wayland-preview.yml",
       "mode": "100644",
       "blob_sha1": "13904f4465e23c3d9ba3c0dcb6a1f04ec1b3eba8",
@@ -4487,7 +4494,7 @@
   "directories": [
     {
       "path": ".",
-      "file_count_recursive": 640
+      "file_count_recursive": 641
     },
     {
       "path": ".githooks",
@@ -4495,11 +4502,11 @@
     },
     {
       "path": ".github",
-      "file_count_recursive": 12
+      "file_count_recursive": 13
     },
     {
       "path": ".github/workflows",
-      "file_count_recursive": 12
+      "file_count_recursive": 13
     },
     {
       "path": ".release",
@@ -4670,5 +4677,5 @@
       "file_count_recursive": 1
     }
   ],
-  "file_count": 640
+  "file_count": 641
 }
