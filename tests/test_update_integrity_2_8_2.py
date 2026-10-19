@@ -33,7 +33,7 @@ def _release_manifest(files: dict[str, tuple[bytes, int]]) -> bytes:
 def _write_update(package: Path, version_data: bytes, release_data: bytes) -> None:
     entries = {
         "version.txt": (version_data, 0o644),
-        "RELEASE_MANIFEST.json": (release_data, 0o644),
+        "config/RELEASE_MANIFEST.json": (release_data, 0o644),
     }
     manifest = {
         "schema_version": 3,

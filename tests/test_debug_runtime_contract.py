@@ -125,9 +125,9 @@ def test_interactive_dialog_supports_solution_and_action_selection() -> None:
 
 def test_launchers_route_normal_start_through_debug_wrapper() -> None:
     start_here = (ROOT / "STARTEN.sh").read_text(encoding="utf-8")
-    start = (ROOT / "start.sh").read_text(encoding="utf-8")
+    start = (ROOT / "scripts/entrypoints/start.sh").read_text(encoding="utf-8")
     launcher = (ROOT / "scripts/debug_launcher.py").read_text(encoding="utf-8")
-    videobatch = (ROOT / "videobatch.sh").read_text(encoding="utf-8")
+    videobatch = (ROOT / "scripts/entrypoints/videobatch.sh").read_text(encoding="utf-8")
     assert "scripts/debug_launcher.py" in start_here
     assert 'exec "$ROOT_DIR/STARTEN.sh"' in start
     assert "_monitor_application" in launcher

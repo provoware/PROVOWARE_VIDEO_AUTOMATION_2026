@@ -190,6 +190,6 @@ def test_diagnostic_module_contains_no_mutating_file_calls() -> None:
 
 
 def test_main_shell_exposes_read_only_retry_diagnostic_command() -> None:
-    shell = (ROOT / "videobatch.sh").read_text(encoding="utf-8")
+    shell = (ROOT / "scripts/entrypoints/videobatch.sh").read_text(encoding="utf-8")
     assert "retry-status|wiederanlauf-diagnose)" in shell
     assert "-m videobatch_fast.retry_diagnostics" in shell

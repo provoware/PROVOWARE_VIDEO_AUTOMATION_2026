@@ -35,6 +35,7 @@ def _write_evidence(directory: Path, candidate: str = "2.8.3-rc24", digest: str 
 
 def _bind_exporter_manifest(tmp_path: Path, monkeypatch) -> tuple[Path, str]:
     manifest = tmp_path / "config/RELEASE_MANIFEST.json"
+    manifest.parent.mkdir(parents=True, exist_ok=True)
     manifest.write_text(
         json.dumps({"version": "2.8.3-rc24", "schema_version": 3, "representation": "compact"}) + "\n",
         encoding="utf-8",
