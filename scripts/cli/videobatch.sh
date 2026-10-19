@@ -51,10 +51,7 @@ require_project() {
 }
 
 require_system() {
-  command -v "$BOOTSTRAP_PYTHON" >/dev/null 2>&1 || fatal "Python 3 fehlt. Kubuntu: sudo apt install python3 python3-venv python3-pip python3-tk" 10
-  "$BOOTSTRAP_PYTHON" - <<'PY' >/dev/null 2>&1 || fatal "Tk fehlt. Kubuntu: sudo apt install python3-tk" 11
-import tkinter
-PY
+  command -v "$BOOTSTRAP_PYTHON" >/dev/null 2>&1 || fatal "Python 3 fehlt. Kubuntu: sudo apt install python3 python3-venv python3-pip" 10
   "$BOOTSTRAP_PYTHON" -m venv --help >/dev/null 2>&1 || fatal "python3-venv fehlt. Kubuntu: sudo apt install python3-venv" 12
 }
 
