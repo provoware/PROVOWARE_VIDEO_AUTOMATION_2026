@@ -48,15 +48,62 @@ TRANSITIONS: dict[str, TransitionSpec] = {
 }
 
 
-def effect_filter(effect_key: str) -> str | None:
-    return VISUAL_EFFECTS.get(effect_key, VISUAL_EFFECTS["none"]).filter_expression
+def effect_filter(effect_key: str, intensity: int = 100) -> str | None:
+    """Render the existing look at 0..100 percent without changing legacy 100% filters."""
+    spec = VISUAL_EFFECTS.get(effect_key, VISUAL_EFFECTS["none"])
+    if not spec.filter_expression:
+        return None
+    strength = max(0.0, min(1.0, float(intensity) / 100.0))
+    if strength <= 0.0:
+        return None
+    if strength >= 1.0:
+        return spec.filter_expression
+
+    def n(value: float) -> str:
+        return f"{value:.4f}"
+
+    if effect_key == "vivid":
+        return f"eq=contrast={n(1 + .06*strength)}:saturation={n(1 + .08*strength)}"
+    if effect_key == "mono":
+        return f"hue=s={n(1-strength)},eq=contrast={n(1+.10*strength)}"
+    if effect_key == "sharpen":
+        return f"unsharp=5:5:{n(.45*strength)}:5:5:0.0"
+    if effect_key == "vignette":
+        return f"vignette=PI/{n(5.0/strength)}"
+    if effect_key == "hardtechno":
+        return (f"eq=contrast={n(1+.18*strength)}:saturation={n(1-.18*strength)}:"
+                f"brightness={n(-.025*strength)},unsharp=3:3:{n(.25*strength)}:3:3:0.0")
+    if effect_key == "industrial":
+        return (f"eq=contrast={n(1+.16*strength)}:saturation={n(1-.35*strength)}:"
+                f"brightness={n(-.045*strength)}")
+    if effect_key == "acid":
+        return f"hue=h={n(18*strength)}:s={n(1+.35*strength)},eq=contrast={n(1+.08*strength)}"
+    if effect_key == "pulse":
+        return (f"eq=contrast='1+{n(.10*strength)}+{n(.05*strength)}*sin(2*PI*t*2)':"
+                f"saturation={n(1+.12*strength)}:eval=frame")
+    if effect_key == "strobe_safe":
+        return f"eq=brightness='{n(.025*strength)}*sin(2*PI*t*4)':contrast={n(1+.10*strength)}:eval=frame"
+    if effect_key == "glitch_light":
+        return (f"hue=h={n(6*strength)}:s={n(1+.20*strength)},"
+                f"eq=contrast={n(1+.10*strength)},unsharp=3:3:{n(.20*strength)}:3:3:0.0")
+    if effect_key == "cold":
+        return f"colorbalance=bs={n(.10*strength)}:rs={n(-.04*strength)},eq=contrast={n(1+.08*strength)}"
+    if effect_key == "red_alert":
+        return f"colorbalance=rs={n(.10*strength)}:bs={n(-.05*strength)},eq=contrast={n(1+.12*strength)}"
+    return spec.filter_expression
 
 
-def transition_filters(transition_key: str, duration: float | None) -> list[str]:
+def transition_filters(
+    transition_key: str, duration: float | None, requested_seconds: float | None = None
+) -> list[str]:
     spec = TRANSITIONS.get(transition_key, TRANSITIONS["none"])
     if spec.duration <= 0:
         return []
-    fade_duration = spec.duration
+    fade_duration = spec.duration if requested_seconds is None else max(0.0, min(5.0, float(requested_seconds)))
+    if duration is not None and duration > 0 and requested_seconds is not None:
+        fade_duration = min(fade_duration, duration / 2.0)
+    if fade_duration <= 0:
+        return []
     filters = [f"fade=t=in:st=0:d={fade_duration:.3f}:color={spec.color}"]
     if duration and duration > fade_duration:
         start = max(0.0, duration - fade_duration)

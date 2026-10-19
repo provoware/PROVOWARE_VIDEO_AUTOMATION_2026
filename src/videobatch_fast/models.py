@@ -16,6 +16,9 @@ class MediaInfo:
     width: int | None = None
     height: int | None = None
     size_bytes: int = 0
+    # The flag is advisory: differences between FFprobe rates can also be caused
+    # by containers or time-base rounding. Never silently recode on this flag.
+    variable_frame_rate: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,10 +70,13 @@ class BatchOptions:
     fps: int = 25
     max_threads: int = 0
     visual_effect: str = "none"
+    effect_intensity: int = 100
     transition: str = "none"
+    transition_duration: float | None = None
     quick_mode: str = "custom"
     assignment_mode: str = "pairwise"
     slideshow_transition: str = "auto"
+    slideshow_transition_seconds: float = 1.0
     slideshow_scene_sync: bool = False
 
 

@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
 )
 
 from .event_buffer import EventBuffer
+from .error_handling import explain_runtime_problem
 from .display_formatting import format_clock, format_eta, format_size
 from .jobs import build_jobs
 from .models import BatchOptions, PairJob
@@ -28,6 +29,8 @@ from .qt_main_layout import build_main_ui
 from .qt_theme import APP_STYLE
 from .dashboard_settings import DashboardSettings, load_settings, save_settings
 from .runner import BatchRunner
+from .validation import validate_pairs
+from .resource_estimation import estimate_job_output_bytes
 from .qt_source_panel import build_sources_panel
 from .qt_system_load_dashboard import SystemLoadDashboard
 from .qt_ui_polish import (
@@ -301,10 +304,15 @@ class VideoBatchQtWindow(QMainWindow):
         self.settings_save_timer.setSingleShot(True)
         self.settings_save_timer.setInterval(400)
         self.settings_save_timer.timeout.connect(self._save_dashboard_settings)
-        for field in ("resolution", "quality", "effect"):
+        for field in ("resolution", "quality", "effect", "transition"):
             getattr(self, field).currentIndexChanged.connect(
                 lambda _index, name=field: self._dashboard_changed(name)
             )
+        self.effect_intensity.valueChanged.connect(self._intensity_changed)
+        self.fade_seconds.valueChanged.connect(
+            lambda _value: self._dashboard_changed("transition_duration")
+        )
+        self.fade_seconds.setEnabled(self.transition.currentData() != "none")
         self.output.editingFinished.connect(lambda: self._dashboard_changed("output_dir"))
         self.start.clicked.connect(self._start)
         self.probe_button.clicked.connect(self._request_probe)
@@ -340,8 +348,21 @@ class VideoBatchQtWindow(QMainWindow):
         )
         QTimer.singleShot(300, self._refresh_media_index_async)
 
+    def _intensity_changed(self, value: int) -> None:
+        self.intensity_value.setText(f"{value} %")
+        self._dashboard_changed("effect_intensity")
+
     def _dashboard_changed(self, field: str) -> None:
-        value = self.output.text() if field == "output_dir" else getattr(self, field).currentData()
+        if field == "output_dir":
+            value = self.output.text()
+        elif field == "effect_intensity":
+            value = self.effect_intensity.value()
+        elif field == "transition_duration":
+            value = self.fade_seconds.value()
+        else:
+            value = getattr(self, field).currentData()
+        if field == "transition":
+            self.fade_seconds.setEnabled(value != "none")
         try:
             self.dashboard_settings = self.dashboard_settings.set_user_value(field, value)
         except ValueError:
@@ -470,8 +491,16 @@ class VideoBatchQtWindow(QMainWindow):
         """Freeze the *displayed* values into the actual job options."""
         from .command_builder import PROFILES, RESOLUTIONS
         state = self.dashboard_settings
-        for field in ("resolution", "quality", "effect", "output_dir"):
-            value = self.output.text() if field == "output_dir" else getattr(self, field).currentData()
+        for field in ("resolution", "quality", "effect", "transition", "output_dir",
+                      "effect_intensity", "transition_duration"):
+            if field == "output_dir":
+                value = self.output.text()
+            elif field == "effect_intensity":
+                value = self.effect_intensity.value()
+            elif field == "transition_duration":
+                value = self.fade_seconds.value()
+            else:
+                value = getattr(self, field).currentData()
             state = state.set_user_value(field, value)
         if state.resolution not in RESOLUTIONS or state.quality not in PROFILES:
             raise ValueError("Videoauflösung oder Qualität wird nicht unterstützt.")
@@ -483,7 +512,9 @@ class VideoBatchQtWindow(QMainWindow):
             resolution=state.resolution,
             profile=state.quality,
             visual_effect=state.effect,
-            transition="none",
+            effect_intensity=state.effect_intensity,
+            transition=state.transition,
+            transition_duration=state.transition_duration,
             verification=self.verification.currentText(),
             quick_mode="custom",
             assignment_mode="pairwise",
@@ -527,7 +558,15 @@ class VideoBatchQtWindow(QMainWindow):
         def prepare() -> None:
             try:
                 jobs = build_jobs(audios, media, options)
-                self.prepare_queue.put(("ok", (generation, jobs, options)))
+                issues = validate_pairs(jobs, options, audio_peak_limit=2)
+                blocking = [item for item in issues if item.blocking]
+                if blocking:
+                    raise ValueError("\\n".join(
+                        f"{item.title}: {item.message} Lösung: {item.solution}"
+                        for item in blocking[:6]
+                    ))
+                self.prepare_queue.put(("ok", (generation, jobs, options,
+                                                [item for item in issues if not item.blocking])))
             except Exception as exc:
                 self.prepare_queue.put(("error", (generation, f"{type(exc).__name__}: {exc}")))
 
@@ -603,6 +642,32 @@ class VideoBatchQtWindow(QMainWindow):
                 else:
                     self.jobs = list(data)
                     options = rest[0]
+                    notices = rest[1] if len(rest) > 1 else []
+                    if notices:
+                        details = "\\n\\n".join(
+                            f"• {notice.title}: {notice.message}\\n{notice.solution}"
+                            for notice in notices[:5]
+                        )
+                        if len(notices) > 5:
+                            details += f"\\n\\nWeitere Hinweise: {len(notices) - 5}"
+                        response = QMessageBox.question(
+                            self, "Hinweise vor der Videoerstellung",
+                            details + "\\n\\nTrotz dieser Hinweise fortfahren?",
+                            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                            QMessageBox.StandardButton.No,
+                        )
+                        if response != QMessageBox.StandardButton.Yes:
+                            self._probe_pending = False
+                            self._status("ABGEBROCHEN")
+                            self._write_log("Produktion nach Hinweisen nicht gestartet.")
+                            self._refresh()
+                            return
+                    if not self._probe_pending:
+                        estimated = sum(estimate_job_output_bytes(j, options) for j in self.jobs)
+                        self._write_log(
+                            f"Grobe Dateigrößenschätzung: {estimated / 1024**2:.0f} MiB "
+                            "einschließlich Auftragsreserve; keine Größen- oder Laufzeitgarantie."
+                        )
                     if self._probe_pending:
                         self._probe_pending = False
                         try:
@@ -640,6 +705,9 @@ class VideoBatchQtWindow(QMainWindow):
         self.kpi_values["active"].setText("Nein")
         self.cancel.setEnabled(False)
         self._refresh()
+        reason, solution = explain_runtime_problem(message)
+        self.next_step.setText(f"{reason} Nächster Schritt: {solution}")
+        self.activity_detail.setText(f"{phase}: {reason}")
 
     def _drain_events(self) -> None:
         for _ in range(200):
@@ -743,7 +811,21 @@ class VideoBatchQtWindow(QMainWindow):
         for row, job in enumerate(self.jobs):
             for col, text in enumerate((str(job.index), job.audio.name, job.media.name, "Geprüft", "0 %")):
                 self.table.setItem(row, col, job_table_item(text, col))
-            self.table.item(row, 2).setToolTip(f"Ausgabe: {job.output}")
+            duration = job.audio_info.duration
+            duration_text = f"{duration:.1f} Sekunden" if duration else "unbekannt"
+            self.table.item(row, 1).setToolTip(
+                f"Audio: {job.audio}\\nAudiodauer: {duration_text}"
+            )
+            self.table.item(row, 2).setToolTip(
+                f"Medium: {job.media}\\nAusgabe: {job.output.name}\\nZiel: {job.output.parent}"
+            )
+        if self.jobs:
+            first = self.jobs[0]
+            self.pairing_summary_label.setText(
+                f"✓ {len(self.jobs)} Auftrag/Aufträge geprüft. "
+                f"Beispiel: {first.audio.name} + {first.media.name} → {first.output.name}. "
+                "Dateidetails stehen in den beiden Spalten als Hinweis bereit."
+            )
 
     def _row_status(self, row: int, text: str, progress: str | None = None, *, failed: bool = False) -> None:
         if 0 <= row < self.table.rowCount():

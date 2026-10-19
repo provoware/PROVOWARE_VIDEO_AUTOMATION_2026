@@ -34,9 +34,9 @@ def can_use_fast_copy(job: PairJob, options: BatchOptions) -> tuple[bool, str]:
     selected = resolved_options(job, options)
     if job.is_slideshow:
         return False, "Diashows werden als ein synchronisierter Video-Stream erzeugt."
-    if selected.visual_effect != "none":
+    if selected.visual_effect != "none" and selected.effect_intensity > 0:
         return False, "Der gewählte Bildeffekt im Automatik-Look benötigt eine schnelle Einpass-Neucodierung."
-    if selected.transition != "none":
+    if selected.transition != "none" and selected.transition_duration != 0:
         return False, "Die gewählte Ein-/Ausblendung benötigt eine schnelle Einpass-Neucodierung."
     if job.media_info.kind != "video":
         return False, "Bilder müssen einmal zu Video codiert werden."
@@ -64,10 +64,10 @@ def _video_filter(job: PairJob, options: BatchOptions) -> str | None:
     scale_filter = _scale_filter(options.resolution)
     if scale_filter:
         filters.append(scale_filter)
-    selected_effect = effect_filter(options.visual_effect)
+    selected_effect = effect_filter(options.visual_effect, options.effect_intensity)
     if selected_effect:
         filters.append(selected_effect)
-    filters.extend(transition_filters(options.transition, job.audio_info.duration))
+    filters.extend(transition_filters(options.transition, job.audio_info.duration, options.transition_duration))
     return ",".join(filters) if filters else None
 
 
@@ -98,7 +98,7 @@ def _slideshow_filter(job: PairJob, options: BatchOptions) -> tuple[str, str]:
         raise ValueError("Diashowplan ist unvollständig: Audiodauer oder Bildzeiten fehlen.")
     width, height = _slideshow_canvas(job, options)
     crossfade = max(0.0, float(job.slide_transition))
-    effect = effect_filter(options.visual_effect)
+    effect = effect_filter(options.visual_effect, options.effect_intensity)
     chains: list[str] = []
     labels: list[str] = []
     for index, (_path, duration) in enumerate(zip(job.media_sequence, durations)):
@@ -138,7 +138,7 @@ def _slideshow_filter(job: PairJob, options: BatchOptions) -> tuple[str, str]:
         inputs = "".join(f"[{label}]" for label in labels)
         chains.append(f"{inputs}concat=n={len(labels)}:v=1:a=0[{current}]")
 
-    finishing = transition_filters(options.transition, job.audio_info.duration)
+    finishing = transition_filters(options.transition, job.audio_info.duration, options.transition_duration)
     if finishing:
         output = "slideshow_out"
         chains.append(f"[{current}]{','.join(finishing)},format=yuv420p[{output}]")
@@ -177,6 +177,11 @@ def build_command(job: PairJob, options: BatchOptions, *, force_encode: bool = F
     duration = job.audio_info.duration
     video_filter = _video_filter(job, selected)
     use_copy = job.fast_path and not force_encode and video_filter is None
+    if not use_copy and selected.resolution == "Original":
+        # libx264/libx265 with yuv420p reject odd dimensions. Pad the last
+        # pixel instead of cropping a photo or changing its proportions.
+        pad_even = "pad=ceil(iw/2)*2:ceil(ih/2)*2"
+        video_filter = f"{pad_even},{video_filter}" if video_filter else pad_even
 
     if job.media_info.kind == "image":
         command += ["-loop", "1", "-framerate", str(selected.fps), "-i", str(job.media), "-i", str(job.audio)]

@@ -81,7 +81,7 @@ Das VideoBatch-Fenster bietet vier übersichtliche Bereiche:
 3. **Erweitert** – selten benötigte Prüfung, Sicherheit und ausgeschlossene Programmierordner.
 4. **Hilfe / Werkzeuge** – zusätzliche Funktionen und Diagnose.
 
-**Auflösung, Qualität, Bildeffekt und Ausgabeordner bleiben über allen vier Bereichen sichtbar.** Lange Dateilisten dürfen innerhalb ihrer Liste scrollen, die wichtigsten Schaltflächen sollen dabei erreichbar bleiben.
+**Auflösung, Qualität, Bildeffekt, Effektstärke, Videoblende und Ausgabeordner sind in der aktuellen Entwicklungsoberfläche unmittelbar erreichbar.** Die separate Diashow-Überblendung findest du im Diashow-Bereich. Lange Dateilisten dürfen innerhalb ihrer Liste scrollen; die wichtigsten Schaltflächen müssen erreichbar bleiben.
 
 ### Schritt 1: Audiodateien hinzufügen
 
@@ -117,7 +117,9 @@ Das VideoBatch-Fenster bietet vier übersichtliche Bereiche:
 
 **Empfehlung:** Beim ersten Test die vorgeschlagenen Einstellungen verwenden und zunächst nur einen kurzen Auftrag starten.
 
-**Warum notwendig?** Dadurch bestimmst du, wie groß und aufwendig das Ergebnis werden soll. Die Bildeffekt-Auswahl ändert keine Überblendungen.
+**Warum notwendig?** Dadurch bestimmst du, wie groß und aufwendig das Ergebnis werden soll. Die Effektstärke ist von 0 bis 100 % regelbar: **0 % = aus, 100 % = bisherige unveränderte Wirkung**. Die Videoblende bestimmt unabhängig davon die Ein-/Ausblendung von 0 bis 5 Sekunden; bei zu kurzen Videos kann die tatsächliche Dauer technisch gekürzt werden. Diashow-Überblendungen sind getrennt einstellbar, ebenfalls von 0 bis 5 Sekunden. Beide Regler verändern keine Originaldateien.
+
+**Hinweise vor der Produktion:** VideoBatch kann auf stark schwankende Bildraten, auffällige Audiopegel (kurze Stichprobe) und Lichtimpulse hinweisen. Diese Hinweise sind keine automatische Qualitätsfreigabe und keine Diagnose einer gesamten Audiodatei. Unlesbare Quelldateien oder unsichere Ausgaben sollen vor dem Rendern gemeldet werden.
 
 **Kann entfallen?** Ja. Die gespeicherten Grundwerte werden übernommen.
 

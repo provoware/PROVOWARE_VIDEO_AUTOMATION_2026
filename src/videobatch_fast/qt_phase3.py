@@ -104,6 +104,10 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         self.audio.changed.connect(self._mark_project_dirty)
         self.media.changed.connect(self._mark_project_dirty)
         self.output.textChanged.connect(self._mark_project_dirty)
+        for widget in (self.resolution, self.quality, self.effect, self.transition):
+            widget.currentIndexChanged.connect(self._mark_project_dirty)
+        self.effect_intensity.valueChanged.connect(self._mark_project_dirty)
+        self.fade_seconds.valueChanged.connect(self._mark_project_dirty)
         self.mode.currentIndexChanged.connect(self._mark_project_dirty)
         self.verification.currentIndexChanged.connect(self._mark_project_dirty)
         self.slideshow.stateChanged.connect(self._mark_project_dirty)
@@ -170,6 +174,14 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
                 "playlist_paths": list(state.get("playlist_paths", [])),
                 "output_dir": self.output.text().strip(),
                 "quick_mode": str(self.mode.currentData() or "smart_auto"),
+                "resolution": str(self.resolution.currentData() or "Original"),
+                "profile": str(self.quality.currentData() or "balanced"),
+                "visual_effect": str(self.effect.currentData() or "none"),
+                "effect_intensity": int(self.effect_intensity.value()),
+                "transition": str(self.transition.currentData() or "none"),
+                "transition_duration": float(self.fade_seconds.value()),
+                "verification": self.verification.currentText(),
+                "slideshow_transition_seconds": self.slideshow.transition_seconds,
                 "assignment_mode": self.slideshow.assignment_mode,
                 "slideshow_transition": self.slideshow.transition_preset,
                 "slideshow_scene_sync": self.slideshow.scene_sync_enabled,
@@ -195,6 +207,40 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
             self.media.add_paths(requested_media)
 
             self.output.setText(str(state.get("output_dir", self.output.text()) or self.output.text()))
+            for key, widget in (
+                ("resolution", self.resolution),
+                ("profile", self.quality),
+                ("visual_effect", self.effect),
+                ("transition", self.transition),
+            ):
+                if key in state:
+                    index = widget.findData(str(state[key]))
+                    if index >= 0:
+                        widget.setCurrentIndex(index)
+            if "effect_intensity" in state:
+                try:
+                    strength = float(state["effect_intensity"])
+                    if strength.is_integer() and 0 <= strength <= 100:
+                        self.effect_intensity.setValue(int(strength))
+                except (TypeError, ValueError, OverflowError):
+                    pass
+            if "transition_duration" in state:
+                try:
+                    duration = float(state["transition_duration"])
+                    if 0 <= duration <= 5:
+                        self.fade_seconds.setValue(duration)
+                except (TypeError, ValueError, OverflowError):
+                    pass
+            if "slideshow_transition_seconds" in state:
+                try:
+                    seconds = float(state["slideshow_transition_seconds"])
+                    if 0 <= seconds <= 5:
+                        self.slideshow.custom_transition_seconds.setValue(seconds)
+                except (TypeError, ValueError, OverflowError):
+                    pass
+            verification_index = self.verification.findText(str(state.get("verification", "Vollständig")))
+            if verification_index >= 0:
+                self.verification.setCurrentIndex(verification_index)
             mode_index = self.mode.findData(str(state.get("quick_mode", "smart_auto")))
             if mode_index >= 0:
                 self.mode.setCurrentIndex(mode_index)

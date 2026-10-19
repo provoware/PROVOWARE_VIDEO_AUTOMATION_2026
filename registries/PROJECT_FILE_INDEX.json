@@ -244,7 +244,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "305f94093de476dd11006a1323d469766cfaf69a",
+      "blob_sha1": "96a71928b41cf14935a25be70337ee12c7b4534d",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -461,7 +461,7 @@
     {
       "path": "docs/BENUTZERHANDBUCH.md",
       "mode": "100644",
-      "blob_sha1": "2aedd2d9919e0ff3e82f29a65133f7789d18f510",
+      "blob_sha1": "0032fc093d19f26b9eba5ef7b506bbd305f1ac53",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -2547,21 +2547,21 @@
     {
       "path": "src/videobatch_fast/command_builder.py",
       "mode": "100644",
-      "blob_sha1": "a021f8b80c142befc2f475d2336fa300b5c32940",
+      "blob_sha1": "64592f3de7a6f9540b51a45f45b557ea01cb64f7",
       "category": "application",
       "lifecycle": "active"
     },
     {
       "path": "src/videobatch_fast/config.py",
       "mode": "100644",
-      "blob_sha1": "f31985057e6f9218dc655b0b74f92ad4828b318e",
+      "blob_sha1": "b0d3be3646f539f72b1dd6f44121512a51bcaf2a",
       "category": "application",
       "lifecycle": "active"
     },
     {
       "path": "src/videobatch_fast/dashboard_settings.py",
       "mode": "100644",
-      "blob_sha1": "02cf48eb876be494c2c22ba8acd393d739d70512",
+      "blob_sha1": "6b2983da2cecee274c681af65ec7d35402a20322",
       "category": "application",
       "lifecycle": "active"
     },
@@ -2589,14 +2589,14 @@
     {
       "path": "src/videobatch_fast/effects.py",
       "mode": "100644",
-      "blob_sha1": "1e1f81bba899ce8d59d61002c4fb295c4f9ef408",
+      "blob_sha1": "04133930657bbb59ef7f14d85c27f9fda08daf2a",
       "category": "application",
       "lifecycle": "active"
     },
     {
       "path": "src/videobatch_fast/error_handling.py",
       "mode": "100644",
-      "blob_sha1": "9c564e27b7502f77d0cd08b779c30147d42d9126",
+      "blob_sha1": "5363b10f783a4e26fe2cfd74fb5120e05b495f89",
       "category": "application",
       "lifecycle": "active"
     },
@@ -2666,7 +2666,7 @@
     {
       "path": "src/videobatch_fast/jobs.py",
       "mode": "100644",
-      "blob_sha1": "41ef54d835e8afe0403654248439ff483feee237",
+      "blob_sha1": "a588f5b97c4e48529dc01c02a8573526dcb2bfba",
       "category": "application",
       "lifecycle": "active"
     },
@@ -2785,7 +2785,7 @@
     {
       "path": "src/videobatch_fast/models.py",
       "mode": "100644",
-      "blob_sha1": "e30d3b11aaaf4c366a6e62e189335bcce53eaaaf",
+      "blob_sha1": "c4e9ba89736f613afb4431861ed7f4be439f1f5f",
       "category": "application",
       "lifecycle": "active"
     },
@@ -2904,7 +2904,7 @@
     {
       "path": "src/videobatch_fast/probe.py",
       "mode": "100644",
-      "blob_sha1": "0498a4b5842617b684e5d16feaf77623522e3bfc",
+      "blob_sha1": "be24f5d028d9b7c7dda75390c36757dadceff841",
       "category": "application",
       "lifecycle": "active"
     },
@@ -2918,7 +2918,7 @@
     {
       "path": "src/videobatch_fast/project_state.py",
       "mode": "100644",
-      "blob_sha1": "a6b97205fa7a99c805eb85c0d9caf26c529134bf",
+      "blob_sha1": "19b58cb6fb41fa8bfe1a1f4562ebd30f6a521b99",
       "category": "application",
       "lifecycle": "active"
     },
@@ -2974,7 +2974,7 @@
     {
       "path": "src/videobatch_fast/qt_main_layout.py",
       "mode": "100644",
-      "blob_sha1": "ec061916eaa7cd57edef76d544178d3271e67068",
+      "blob_sha1": "4ddcb65e5d9fef26f1b1c55f2a2d7344967a5d58",
       "category": "application",
       "lifecycle": "active"
     },
@@ -2995,14 +2995,14 @@
     {
       "path": "src/videobatch_fast/qt_phase2.py",
       "mode": "100644",
-      "blob_sha1": "abacc0a45fa5476156c83e74f439998b1ab30b64",
+      "blob_sha1": "690854a4a26c16b25a843540c02ef6601ce0672d",
       "category": "application",
       "lifecycle": "active"
     },
     {
       "path": "src/videobatch_fast/qt_phase2_components.py",
       "mode": "100644",
-      "blob_sha1": "abf43b35e0eb63cced38827ae2c108986996671e",
+      "blob_sha1": "d792ae03b479ec7ada3295a62199db3f414670c5",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3016,7 +3016,7 @@
     {
       "path": "src/videobatch_fast/qt_phase3.py",
       "mode": "100644",
-      "blob_sha1": "94732a8f3c2bfc37f5ec6552800c256b6c0f07bf",
+      "blob_sha1": "f2903ea757e8ed88a806bff9fcb6e8d2928b01e0",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3065,7 +3065,7 @@
     {
       "path": "src/videobatch_fast/qt_ui.py",
       "mode": "100644",
-      "blob_sha1": "d0471fb71a0b99272247668e1f801eea8394f729",
+      "blob_sha1": "c7b0c1448d21371abcab4cb22e2dc66468dfe8b7",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3086,7 +3086,7 @@
     {
       "path": "src/videobatch_fast/qt_workspace_layout.py",
       "mode": "100644",
-      "blob_sha1": "705826b1581090e7d739fc3fe61587ac710fb3b0",
+      "blob_sha1": "313eb19c430502fae10e5f95a204cf14625cf249",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3198,7 +3198,7 @@
     {
       "path": "src/videobatch_fast/slideshow.py",
       "mode": "100644",
-      "blob_sha1": "d5100bb0877ee22281e6797a1a9e1c40685ee6d5",
+      "blob_sha1": "dbb1f1bf5c8e589c5ddef3407be477e4102b0aa3",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3387,7 +3387,7 @@
     {
       "path": "src/videobatch_fast/validation.py",
       "mode": "100644",
-      "blob_sha1": "3e45d6fe5f00a2d869808d2f2a335278ce2e68a7",
+      "blob_sha1": "d8e698c91a8c60bca66b14b63d311a84925602e6",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3779,7 +3779,7 @@
     {
       "path": "tests/test_dashboard_settings_contract.py",
       "mode": "100644",
-      "blob_sha1": "a4f9bc596a9d43c827240523b4acde5f3371588a",
+      "blob_sha1": "413e386a0824650cb21a9d6087ddd4f778ec487c",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -3828,7 +3828,7 @@
     {
       "path": "tests/test_ffmpeg_v1_contract.py",
       "mode": "100644",
-      "blob_sha1": "6ddc131230fb448d24953b7c449aafc8aea4d3f4",
+      "blob_sha1": "7d5625a3c9f503e11c718f89e66ee2309c745d00",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -3850,6 +3850,13 @@
       "path": "tests/test_hardening_2_8_2.py",
       "mode": "100644",
       "blob_sha1": "5281058efebf548a49b11a28b575f6cc65f75177",
+      "category": "tests",
+      "lifecycle": "development"
+    },
+    {
+      "path": "tests/test_human_error_explanation_20261018.py",
+      "mode": "100644",
+      "blob_sha1": "e5f1ee56ca1218df6c243b3b6e668c6ae26fc652",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -3885,6 +3892,13 @@
       "path": "tests/test_media_index_preferences.py",
       "mode": "100644",
       "blob_sha1": "aa7a8d29c61e045a5b2ffdc29093a6cb958f4d75",
+      "category": "tests",
+      "lifecycle": "development"
+    },
+    {
+      "path": "tests/test_media_preflight_advisories_20261018.py",
+      "mode": "100644",
+      "blob_sha1": "a0d309ad05bcef03406ba934b1f8a1a55be09cce",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -3973,6 +3987,13 @@
       "lifecycle": "development"
     },
     {
+      "path": "tests/test_preflight_media_safety_20261018.py",
+      "mode": "100644",
+      "blob_sha1": "184a39b2bfdb9601ee37bbe3108a27d2ffb8c812",
+      "category": "tests",
+      "lifecycle": "development"
+    },
+    {
       "path": "tests/test_probe_render.py",
       "mode": "100644",
       "blob_sha1": "7cd7d553c81c077b775072cc206eec5bac6ef598",
@@ -4018,6 +4039,13 @@
       "path": "tests/test_qt_media_browser_pagination.py",
       "mode": "100644",
       "blob_sha1": "6b30c4b1ec8b4e3340b0520eae80dd55ed4641da",
+      "category": "tests",
+      "lifecycle": "development"
+    },
+    {
+      "path": "tests/test_qt_output_controls_20261018.py",
+      "mode": "100644",
+      "blob_sha1": "3550f4428f4ad3ae8262fb17cdae1ac63ccd45b4",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4452,7 +4480,7 @@
   "directories": [
     {
       "path": ".",
-      "file_count_recursive": 635
+      "file_count_recursive": 639
     },
     {
       "path": ".githooks",
@@ -4576,7 +4604,7 @@
     },
     {
       "path": "tests",
-      "file_count_recursive": 135
+      "file_count_recursive": 139
     },
     {
       "path": "tests/baselines",
@@ -4595,5 +4623,5 @@
       "file_count_recursive": 1
     }
   ],
-  "file_count": 635
+  "file_count": 639
 }

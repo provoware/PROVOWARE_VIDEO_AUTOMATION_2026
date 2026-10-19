@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
 )
 
 from .jobs import build_jobs
+from .validation import validate_pairs
 from .qt_media_import_dialog import MediaImportDialog
 from .qt_phase2_components import PreviewPanel, SlideshowPanel
 from .qt_phase2_selection_preview import SelectionPreviewMixin
@@ -137,6 +138,7 @@ class VideoBatchQtPhase2Window(SelectionPreviewMixin, VideoBatchQtWindow):
             options,
             assignment_mode=self.slideshow.assignment_mode,
             slideshow_transition=self.slideshow.transition_preset,
+            slideshow_transition_seconds=self.slideshow.transition_seconds,
             slideshow_scene_sync=self.slideshow.scene_sync_enabled,
         )
 
@@ -276,7 +278,15 @@ class VideoBatchQtPhase2Window(SelectionPreviewMixin, VideoBatchQtWindow):
                 )
                 if not jobs:
                     raise RuntimeError("Es konnten keine Diashow-Aufträge erzeugt werden.")
-                self.prepare_queue.put(("ok", (generation, jobs, options)))
+                issues = validate_pairs(jobs, options, audio_peak_limit=2)
+                blocking = [item for item in issues if item.blocking]
+                if blocking:
+                    raise ValueError("\\n".join(
+                        f"{item.title}: {item.message} Lösung: {item.solution}"
+                        for item in blocking[:6]
+                    ))
+                self.prepare_queue.put(("ok", (generation, jobs, options,
+                                                [item for item in issues if not item.blocking])))
             except Exception as exc:
                 self.prepare_queue.put(("error", (generation, f"{type(exc).__name__}: {exc}")))
 
