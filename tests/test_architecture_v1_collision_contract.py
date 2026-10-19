@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-RULES = ROOT / "ARCHITECTURE_V1.json"
+RULES = ROOT / "config/ARCHITECTURE_V1.json"
 
 
 def _source(relative: str) -> str:

@@ -34,7 +34,7 @@ def _write_evidence(directory: Path, candidate: str = "2.8.3-rc24", digest: str 
 
 
 def _bind_exporter_manifest(tmp_path: Path, monkeypatch) -> tuple[Path, str]:
-    manifest = tmp_path / "RELEASE_MANIFEST.json"
+    manifest = tmp_path / "config/RELEASE_MANIFEST.json"
     manifest.write_text(
         json.dumps({"version": "2.8.3-rc24", "schema_version": 3, "representation": "compact"}) + "\n",
         encoding="utf-8",
@@ -155,13 +155,13 @@ def test_long_render_export_requires_full_physical_completion(tmp_path: Path, mo
 
 
 def test_stable_version_contract_is_supported(tmp_path: Path) -> None:
-    current = json.loads((ROOT / "VERSION.json").read_text(encoding="utf-8"))
+    current = json.loads((ROOT / "config/VERSION.json").read_text(encoding="utf-8"))
     pyproject_text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
     current_pep = re.search(r'(?m)^version\s*=\s*"([^"]+)"', pyproject_text).group(1)
     for relative in (
-        "VERSION.json", "pyproject.toml", "TOOLCHAIN_CONTRACT.json", "VISUAL_INSPECTION_MANIFEST.json",
-        "DEVELOPMENT_STATUS.json",
-        "QUALITY_ENVIRONMENT_STATUS.json", "registries/UI_BLUEPRINT.json", "registries/UI_COMPONENT_REGISTRY.json",
+        "config/VERSION.json", "pyproject.toml", "config/TOOLCHAIN_CONTRACT.json", "config/VISUAL_INSPECTION_MANIFEST.json",
+        "config/DEVELOPMENT_STATUS.json",
+        "config/QUALITY_ENVIRONMENT_STATUS.json", "registries/UI_BLUEPRINT.json", "registries/UI_COMPONENT_REGISTRY.json",
         "registries/VISUAL_INSPECTION_REGISTRY.json", "registries/PLUGIN_APPROVAL_REGISTRY.json",
         "registries/VISUAL_REGRESSION_REGISTRY.json", "registries/VISUAL_APPROVAL_REGISTRY.json",
     ):
@@ -170,9 +170,9 @@ def test_stable_version_contract_is_supported(tmp_path: Path) -> None:
         target.parent.mkdir(parents=True, exist_ok=True)
         text = source.read_text(encoding="utf-8").replace(current["build"], "2.8.3").replace(current_pep, "2.8.3")
         target.write_text(text, encoding="utf-8")
-    version = json.loads((tmp_path / "VERSION.json").read_text(encoding="utf-8"))
+    version = json.loads((tmp_path / "config/VERSION.json").read_text(encoding="utf-8"))
     version.update({"version": "2.8.3", "build": "2.8.3", "channel": "stable"})
-    (tmp_path / "VERSION.json").write_text(json.dumps(version), encoding="utf-8")
+    (tmp_path / "config/VERSION.json").write_text(json.dumps(version), encoding="utf-8")
     assert validate(tmp_path) == []
 
 
@@ -200,9 +200,9 @@ def test_automated_desktop_approval_detects_tampering(tmp_path: Path, monkeypatc
 
 
 def test_finalization_entrypoints_are_bound() -> None:
-    entry = (ROOT / "videobatch.sh").read_text(encoding="utf-8")
-    stable = (ROOT / "stable_release.sh").read_text(encoding="utf-8")
-    wrapper = (ROOT / "FINALISIEREN.sh").read_text(encoding="utf-8")
+    entry = (ROOT / "scripts/entrypoints/videobatch.sh").read_text(encoding="utf-8")
+    stable = (ROOT / "scripts/entrypoints/stable_release.sh").read_text(encoding="utf-8")
+    wrapper = (ROOT / "scripts/entrypoints/FINALISIEREN.sh").read_text(encoding="utf-8")
     assert "finalize|finalisieren" in entry
     assert "scripts/finalize_release.py" in entry
     assert "check_visual_approval.py\" --require" in stable

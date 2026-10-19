@@ -103,7 +103,7 @@ def _load_acceptance_isolation_module():
 
 
 def test_one_click_acceptance_isolates_all_persistent_user_paths_before_runtime_prepare() -> None:
-    source = _text(ROOT / "KUBUNTU_26_04_QT_ABNAHME.sh")
+    source = _text(ROOT / "scripts/entrypoints/KUBUNTU_26_04_QT_ABNAHME.sh")
     required = (
         'export HOME="$TEST_HOME"',
         'export XDG_DATA_HOME="$TEST_HOME/.local/share"',

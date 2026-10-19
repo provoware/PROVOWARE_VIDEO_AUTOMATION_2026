@@ -20,8 +20,9 @@ def _write(root: Path, relative: str, value: dict) -> None:
 
 def _fixture(root: Path) -> tuple[str, str]:
     candidate = "2.8.3-rc24"
-    _write(root, "VERSION.json", {"build": candidate, "version": candidate, "channel": "rc"})
-    manifest = root / "RELEASE_MANIFEST.json"
+    _write(root, "config/VERSION.json", {"build": candidate, "version": candidate, "channel": "rc"})
+    manifest = root / "config/RELEASE_MANIFEST.json"
+    manifest.parent.mkdir(parents=True, exist_ok=True)
     manifest.write_text('{"schema_version":3,"representation":"compact"}\n', encoding="utf-8")
     digest = hashlib.sha256(manifest.read_bytes()).hexdigest()
     _write(root, "diagnostics/release_readiness/RELEASE_EVIDENCE.json", {
@@ -32,7 +33,7 @@ def _fixture(root: Path) -> tuple[str, str]:
             {"id": "large_media_soak", "status": "passed"},
         ],
     })
-    _write(root, "DEVELOPMENT_STATUS.json", {
+    _write(root, "config/DEVELOPMENT_STATUS.json", {
         "version": candidate, "stable_ready": True, "stable_blockers": [], "approved_quality_report": "report.json",
     })
     _write(root, "report.json", {
@@ -62,7 +63,7 @@ def test_operator_acceptance_accepts_explicit_green_contract(tmp_path: Path) -> 
 
 def test_operator_acceptance_rejects_manifest_drift(tmp_path: Path) -> None:
     candidate, digest = _fixture(tmp_path)
-    (tmp_path / "RELEASE_MANIFEST.json").write_text("{}\n", encoding="utf-8")
+    (tmp_path / "config/RELEASE_MANIFEST.json").write_text("{}\n", encoding="utf-8")
     with pytest.raises(OperatorAcceptanceBlocked, match="geändert"):
         validate_operator_acceptance(tmp_path, candidate, digest, now=NOW)
 
