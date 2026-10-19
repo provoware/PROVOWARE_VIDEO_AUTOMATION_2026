@@ -279,7 +279,7 @@ def current_release_files(value: Mapping[str, Any]) -> dict[str, Any]:
 
     for relative, expected_blob in FROZEN_RC24_REPORT_BLOBS.items():
         raw = (ROOT / relative).read_bytes()
-        blob = hashlib.sha1(b"blob " + str(len(raw)).encode("ascii") + b"\\0" + raw).hexdigest()
+        blob = hashlib.sha1(b"blob " + str(len(raw)).encode("ascii") + b"\0" + raw).hexdigest()
         if blob != expected_blob:
             raise EvidenceContractError(f"RC24-Archivdatei wurde nachträglich verändert: {relative}")
     return result

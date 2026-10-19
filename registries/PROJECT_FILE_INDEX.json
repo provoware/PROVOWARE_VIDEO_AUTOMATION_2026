@@ -419,7 +419,7 @@
     {
       "path": "diagnostics/release_readiness/generate_from_evidence.py",
       "mode": "100644",
-      "blob_sha1": "11bae74c5157bcfcae4c2f774f22ac8285c4fe38",
+      "blob_sha1": "6c63c3645afaec9c67fa49b6f6742ce17803dc83",
       "category": "diagnostics",
       "lifecycle": "active"
     },
