@@ -83,7 +83,7 @@
     {
       "path": ".github/workflows/qt6-phase3-smoke.yml",
       "mode": "100644",
-      "blob_sha1": "65613888beb9da4d201acde0056db6eba62d106c",
+      "blob_sha1": "4c82257d68a7ef2f38699b5384d74ed6a79da5c0",
       "category": "automation",
       "lifecycle": "development"
     },
@@ -132,7 +132,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "9f9568312aab350c927c968104f0fc194544c87d",
+      "blob_sha1": "0d8ee3a96bf45e869a8765f7134c6cca4d7fa51d",
       "category": "project_contract",
       "lifecycle": "active"
     },
