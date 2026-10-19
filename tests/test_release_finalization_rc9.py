@@ -159,9 +159,9 @@ def test_stable_version_contract_is_supported(tmp_path: Path) -> None:
     pyproject_text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
     current_pep = re.search(r'(?m)^version\s*=\s*"([^"]+)"', pyproject_text).group(1)
     for relative in (
-        "VERSION.json", "pyproject.toml", "TOOLCHAIN_CONTRACT.json", "VISUAL_INSPECTION_MANIFEST.json",
-        "DEVELOPMENT_STATUS.json",
-        "QUALITY_ENVIRONMENT_STATUS.json", "registries/UI_BLUEPRINT.json", "registries/UI_COMPONENT_REGISTRY.json",
+        "VERSION.json", "pyproject.toml", "config/contracts/TOOLCHAIN_CONTRACT.json", "registries/VISUAL_INSPECTION_MANIFEST.json",
+        "config/status/DEVELOPMENT_STATUS.json",
+        "config/status/QUALITY_ENVIRONMENT_STATUS.json", "registries/UI_BLUEPRINT.json", "registries/UI_COMPONENT_REGISTRY.json",
         "registries/VISUAL_INSPECTION_REGISTRY.json", "registries/PLUGIN_APPROVAL_REGISTRY.json",
         "registries/VISUAL_REGRESSION_REGISTRY.json", "registries/VISUAL_APPROVAL_REGISTRY.json",
     ):
@@ -200,16 +200,16 @@ def test_automated_desktop_approval_detects_tampering(tmp_path: Path, monkeypatc
 
 
 def test_finalization_entrypoints_are_bound() -> None:
-    entry = (ROOT / "videobatch.sh").read_text(encoding="utf-8")
-    stable = (ROOT / "stable_release.sh").read_text(encoding="utf-8")
-    wrapper = (ROOT / "FINALISIEREN.sh").read_text(encoding="utf-8")
+    entry = (ROOT / "scripts/cli/videobatch.sh").read_text(encoding="utf-8")
+    stable = (ROOT / "scripts/release/stable_release.sh").read_text(encoding="utf-8")
+    wrapper = (ROOT / "scripts/release/FINALISIEREN.sh").read_text(encoding="utf-8")
     assert "finalize|finalisieren" in entry
     assert "scripts/finalize_release.py" in entry
     assert "check_visual_approval.py\" --require" in stable
     assert "validate_stable_acceptance.py" in stable
     assert "stable-evidence" in stable
     assert "--acceptance-evidence" in (ROOT / "scripts/finalize_release.py").read_text(encoding="utf-8")
-    assert "videobatch.sh\" finalize" in wrapper
+    assert "scripts/cli/videobatch.sh\" finalize" in wrapper
 
 
 def test_tk_x11_env_isolates_only_legacy_gui_regression() -> None:

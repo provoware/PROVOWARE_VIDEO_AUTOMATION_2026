@@ -22,14 +22,14 @@ def test_release_file_contract_is_complete_and_consistent() -> None:
 
     assert "docs/start/START_HIER_save_.md" in ready
     assert "docs/archive/rc24/RELEASE_NOTES_save_.md" in ready
-    assert "VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json" in ready
-    assert "TODO.md" in unfinished
+    assert "docs/archive/rc24/VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json" in ready
+    assert "docs/TODO.md" in unfinished
     assert "docs/STABLE_ACCEPTANCE_EVIDENCE.md" in unfinished
-    assert "VISUAL_INSPECTION_MANIFEST.json" in unfinished
+    assert "registries/VISUAL_INSPECTION_MANIFEST.json" in unfinished
 
 
 def test_ready_files_use_save_marker_and_unfinished_files_do_not() -> None:
-    contract = json.loads((ROOT / "RELEASE_FILE_STATUS.json").read_text(encoding="utf-8"))
+    contract = json.loads((ROOT / "config/status/RELEASE_FILE_STATUS.json").read_text(encoding="utf-8"))
     assert all("_save_" in Path(item["path"]).stem for item in contract["ready"])
     assert all("_save_" not in Path(item["path"]).stem for item in contract["unfinished"])
 
@@ -44,7 +44,7 @@ def test_historical_reports_are_archived_and_duplicate_visual_tree_is_removed() 
 
 
 def test_all_root_save_files_are_declared_release_deliverables() -> None:
-    contract = json.loads((ROOT / "RELEASE_FILE_STATUS.json").read_text(encoding="utf-8"))
+    contract = json.loads((ROOT / "config/status/RELEASE_FILE_STATUS.json").read_text(encoding="utf-8"))
     declared = {item["path"] for item in contract["ready"]} | {
         item["path"] for item in contract["unfinished"]
     }
@@ -57,7 +57,7 @@ def test_all_root_save_files_are_declared_release_deliverables() -> None:
 
 def test_release_metadata_contract_is_synchronized() -> None:
     result = validate_release_contract()
-    package_manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+    package_manifest = json.loads((ROOT / "config/contracts/manifest.json").read_text(encoding="utf-8"))
     assert result["version"] == package_manifest["version"]
     assert result["channel"] == package_manifest["channel"]
     assert (ROOT / package_manifest["entrypoint"]).is_file()
