@@ -62,6 +62,7 @@ def _slideshow_jobs(
             audio_info.duration,
             len(image_paths),
             options.slideshow_transition,
+            custom_seconds=options.slideshow_transition_seconds,
             scene_markers=markers,
             scene_sync=scene_sync,
         )

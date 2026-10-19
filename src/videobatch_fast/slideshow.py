@@ -15,6 +15,7 @@ TRANSITION_PRESETS: dict[str, float | None] = {
     "none": 0.0,
     "soft": 0.5,
     "clear": 1.0,
+    "custom": 1.0,
 }
 
 TRANSITION_LABELS = {
@@ -22,6 +23,7 @@ TRANSITION_LABELS = {
     "none": "Ohne Überblendung",
     "soft": "Sanft · 0,5 Sekunden",
     "clear": "Deutlich · 1,0 Sekunde",
+    "custom": "Individuell · 0 bis 5 Sekunden",
 }
 
 
@@ -51,10 +53,12 @@ class SlideshowPlan:
         return (self.visible_duration,) * self.image_count
 
 
-def transition_seconds(preset: str, *, audio_duration: float, image_count: int) -> float:
+def transition_seconds(
+    preset: str, *, audio_duration: float, image_count: int, custom_seconds: float = 1.0
+) -> float:
     if image_count <= 1 or audio_duration <= 0:
         return 0.0
-    selected = TRANSITION_PRESETS.get(preset, None)
+    selected = max(0.0, min(5.0, float(custom_seconds))) if preset == "custom" else TRANSITION_PRESETS.get(preset, None)
     if selected is None:
         base = audio_duration / image_count
         selected = min(0.75, max(0.20, base * 0.12))
@@ -79,11 +83,12 @@ def build_slideshow_plan(
     *,
     scene_markers: Iterable[SceneMarker] = (),
     scene_sync: bool = False,
+    custom_seconds: float = 1.0,
 ) -> SlideshowPlan | None:
     if audio_duration is None or audio_duration <= 0 or image_count <= 0:
         return None
     duration = float(audio_duration)
-    fade = transition_seconds(preset, audio_duration=duration, image_count=image_count)
+    fade = transition_seconds(preset, audio_duration=duration, image_count=image_count, custom_seconds=custom_seconds)
     markers = tuple(scene_markers)
     if scene_sync and markers and image_count > 1:
         points = scene_change_points(duration, image_count, markers)
@@ -127,8 +132,9 @@ def slideshow_summary(
     *,
     scene_sync: bool = False,
     marker_count: int = 0,
+    custom_seconds: float = 1.0,
 ) -> str:
-    plan = build_slideshow_plan(audio_duration, image_count, preset)
+    plan = build_slideshow_plan(audio_duration, image_count, preset, custom_seconds=custom_seconds)
     if image_count <= 0:
         return "Noch keine Bilder ausgewählt."
     if plan is None:
@@ -136,6 +142,8 @@ def slideshow_summary(
     minutes, seconds = divmod(round(plan.audio_duration), 60)
     fade = "ohne Überblendung" if plan.crossfade_duration <= 0 else f"{plan.crossfade_duration:.2f}s Überblendung"
     rhythm = f" · {marker_count} Szenenmarken" if scene_sync else " · gleichmäßig"
+    if preset == "custom" and abs(plan.crossfade_duration - custom_seconds) > 0.001:
+        rhythm += f" · Wunsch {custom_seconds:.1f}s gekürzt (Bild-/Audiolänge)"
     return (
         f"Audio {minutes}:{seconds:02d} · {plan.image_count} Bilder · "
         f"Ø {plan.visible_duration:.2f}s je Bild · {fade}{rhythm}"
