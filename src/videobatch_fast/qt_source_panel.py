@@ -50,6 +50,13 @@ def _source_card(window, label: str, widget: DropList, add_text: str) -> QFrame:
     window._source_action_labels.append((add, add_text, short))
     remove = QPushButton("Entfernen")
     configure_file_buttons(add, remove, label)
+    # The full accessible text remains available while 200%-zoom screens
+    # receive a short visible action label instead of clipped letters.
+    remove.setAccessibleName("Ausgewählte Dateien aus der Liste entfernen")
+    remove.setToolTip(
+        "Markierte Dateien nur aus der Liste entfernen; Originalmedien bleiben erhalten."
+    )
+    window._source_action_labels.append((remove, "Entfernen", "Entf."))
     add.clicked.connect(window._choose_audio if widget is window.audio else window._choose_media)
     remove.clicked.connect(widget.remove_selected)
     actions = ResponsiveControlRow((add, remove))
