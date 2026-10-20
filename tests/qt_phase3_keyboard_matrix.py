@@ -63,10 +63,10 @@ def run() -> int:
                     # Controls hidden by design (e.g. advanced tool docks)
                     # are not part of the currently offered beginner workflow.
                     controls = [
-                        w for w in window.findChildren((
+                        w for cls in (
                             QAbstractButton, QAbstractSpinBox, QComboBox,
                             QLineEdit, QPlainTextEdit, QTextEdit, QSlider,
-                        ))
+                        ) for w in window.findChildren(cls)
                         if w.isVisibleTo(window) and w.isEnabled()
                         and w.focusPolicy() != Qt.FocusPolicy.NoFocus
                         and (not isinstance(w, QAbstractButton) or bool(w.text().strip()))
