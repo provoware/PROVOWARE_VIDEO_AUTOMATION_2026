@@ -125,7 +125,7 @@ def test_action_controls_wrap_and_preserve_buttons(monkeypatch, zoom: int) -> No
     )
     bar = ResponsiveControlRow(buttons)
     try:
-        bar.resize(320, 450)
+        bar.resize(160, 450)
         bar.show()
         bar.set_zoom_percent(zoom)
         app.processEvents()
