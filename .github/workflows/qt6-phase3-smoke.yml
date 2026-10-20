@@ -340,6 +340,9 @@ jobs:
             tests/test_qt_runtime_toolchain_contract.py \
             tests/test_tk_free_core_contract.py
 
+      - name: Verify adaptive column geometry and font scaling
+        run: python -m pytest -q tests/test_qt_responsive_20261020.py
+
       - name: Prove native Wayland QPA backend
         run: |
           set -Eeuo pipefail
