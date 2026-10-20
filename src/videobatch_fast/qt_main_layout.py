@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QKeySequence, QShortcut
-from PySide6.QtWidgets import QApplication, QComboBox, QDoubleSpinBox, QSlider, QFrame, QHBoxLayout, QGridLayout, QLabel, QVBoxLayout, QWidget, QLineEdit, QPushButton, QTabBar, QScrollArea
+from PySide6.QtWidgets import QApplication, QComboBox, QDoubleSpinBox, QSlider, QFrame, QHBoxLayout, QGridLayout, QLabel, QVBoxLayout, QWidget, QLineEdit, QPushButton, QTabBar, QScrollArea, QMenu
 
 from .qt_theme import SCALE_LEVELS, scaled_style
 from .qt_adaptive_settings import ResponsiveSettingsPanel
@@ -58,6 +58,18 @@ def build_main_ui(window) -> None:
     header.addWidget(view_label, 1, 2)
     header.addWidget(window.view_scale, 1, 3)
 
+    # Große Schrift: Alle Menüs bleiben über eine einzige Schaltfläche erreichbar.
+    window.compact_menu = QPushButton("Menü")
+    window.compact_menu.setAccessibleName("Alle Programmmenüs öffnen")
+    def open_compact_menu() -> None:
+        menu = QMenu(window)
+        for action in window.menuBar().actions():
+            menu.addAction(action)
+        menu.exec(window.compact_menu.mapToGlobal(QPoint(0, window.compact_menu.height())))
+    window.compact_menu.clicked.connect(open_compact_menu)
+    header.addWidget(window.compact_menu, 1, 1)
+    window.compact_menu.hide()
+
     dashboard = QFrame()
     dashboard.setObjectName("compactStatusDashboard")
     dashboard_row = QVBoxLayout(dashboard)
@@ -88,6 +100,7 @@ def build_main_ui(window) -> None:
     settings_view.setMinimumHeight(92)
     settings_view.setMaximumHeight(140)
     settings_view.setWidget(window.settings_grid)
+    window.settings_view = settings_view
 
     window.resolution = QComboBox()
     for value, label in RESOLUTION_LABELS.items():
@@ -161,7 +174,7 @@ def build_main_ui(window) -> None:
     fade_row.addWidget(window.transition, 1)
     fade_row.addWidget(window.fade_seconds)
     window.settings_grid.add_field("Videoblende", fade_box, buddy=window.transition)
-    outer.addWidget(settings_view)
+    # Einstellungen stehen in Schritt 2, nicht auf jeder Hauptseite.
 
     # Permanent, novice-readable workspace navigation.
     tabs = QTabBar()
@@ -236,6 +249,13 @@ def build_main_ui(window) -> None:
         if app is not None:
             app.setStyleSheet(scaled_style(value))
         window.table.verticalHeader().setDefaultSectionSize(round(38 * value / 100))
+        compact = value >= 150
+        window.menuBar().setVisible(not compact)
+        window.compact_menu.setVisible(compact)
+        subtitle.setVisible(not compact)
+        window.load_dashboard.frame.setVisible(not compact)
+        route = getattr(window, "_active_workflow_route", "media")
+        dashboard.setVisible(not compact or route == "queue")
         window.settings_grid.set_zoom_percent(value)
         window.source_columns.set_zoom_percent(value)
         for control_row in window._responsive_control_rows:
