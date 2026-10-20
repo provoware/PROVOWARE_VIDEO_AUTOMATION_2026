@@ -46,7 +46,7 @@ class VideoBatchQtWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("PROVOWARE VideoBatch 2026 · Qt 6")
-        self.setMinimumSize(980, 640)
+        self.setMinimumSize(800, 600)
         self.resize(1360, 820)
         self.events = EventBuffer()
         self.runner = BatchRunner(self.events.put)
