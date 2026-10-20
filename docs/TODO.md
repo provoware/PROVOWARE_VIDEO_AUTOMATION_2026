@@ -1,6 +1,58 @@
 # TODO – Stable-Finalisierung 2.8.3-rc24
 
-## Fokus
+## Verbindlicher Entwicklungsplan ab 20.10.2026 – nach dem QA-Audit
+
+**Arbeitsstand:** PR [#253](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/253), aufbauend auf Raster-PR [#252](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/252). Historische RC24- und PR-#240/#246-Nachweise sind keine neue Freigabe. #246 und #251 sind inzwischen in `main` übernommen; die früheren Hinweise „#246 offen“ in der nachfolgenden historischen Arbeitsliste sind überholt.
+
+**Arbeitsweise:** Entwicklung und Prüfungen auf getrennten Zweigen, kein direktes Stable-Merge. Zuerst echte Funktion und Sicherheit, danach optische Verfeinerung. Kein Punkt erhält ein Häkchen, bevor ein aktueller Commit und reproduzierbare Belege vorliegen.
+
+### P0 – grafische Vollprüfung (Issue [#254](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/issues/254))
+
+- [x] Echtes Qt-Phase-3-Fenster in einer automatisierten **42-Fälle-Schleife** erfassen: sechs Größen (800×600, 1024×768, 1280×720, 1366×768, 1920×1080, 2560×1440) × sieben Schriftstufen (80/100/110/125/150/175/200 %).
+- [x] **Drei Arbeitsseiten pro Fall** (Dateien, Ausgabe, Produktion) fotografieren; erwartete Gesamtzahl: **126 Bilder**. `tests/qt_phase3_42_matrix.py` und `.github/workflows/qt6-phase3-smoke.yml` sind als neue Entwicklungsprüfungen eingebunden.
+- [ ] Tatsächlichen Prüflauf am finalen unveränderten Commit vollständig grün nachweisen, Bericht und Bilder als CI-Artefakt archivieren; fehlgeschlagene Fälle mit Bildname und Ursache dokumentieren.
+- [ ] Alle Hauptregister, Texte, Schaltflächen, Überläufe, Scrollbereiche, Fokusringe und Tastaturwege bei 800×600 und 200 % **sichtbar** prüfen und gefundene Fehler korrigieren. Die erste automatisierte Geometrieprüfung ersetzt keine qualifizierte Sichtauswertung.
+- [ ] Farbkontrast und Barrierefreiheit inklusive Touch-/Maus-Zielgrößen ergänzen; mindestens drei Schritte immer verständlich beschriften.
+- [ ] Physische Kubuntu-26.04-/KDE-Plasma-/Wayland-Abnahme bei 100/125/150/200 % **erst nach Kandidaten-Freeze** ausführen; kein CI-Offscreen-Ergebnis als physische Freigabe ausgeben.
+
+### P0 – stromausfallfeste Aktualisierung (Issue [#255](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/issues/255))
+
+- [x] Update-Sicherungen gegen versehentliches Überschreiben geschützt, abgefangene Aktivierungsfehler mit Rollback-Tests geprüft (PR #253).
+- [x] Bereits vorhandenen A/B-Slotstarter als geeigneten Referenzweg identifiziert: `scripts/ab_launcher.py` mit persistiertem `pending_transaction.json` und atomarer `current`-Umschaltung.
+- [ ] **Zweiten lokalen Updateweg** in `src/videobatch_fast/updates.py` auf A/B umstellen oder mit gleichwertiger außerhalb des austauschbaren Installationsordners erreichbarer Transaktionssteuerung absichern. Zwischen zwei Ordnerumbenennungen darf die Anwendung nicht dauerhaft unstartbar bleiben.
+- [ ] Prozessabbruch/KILL vor und nach jeder kritischen Schreiboperation; beschädigte Startverweise, gesperrte/volle Platte, verlorene Bestätigung und unerwarteten Neustart mit Unterprozessprüfungen reproduzieren.
+- [ ] Immer letzte bestätigte Installation und alle Benutzerprojekte erhalten; Diagnosebericht und sicheren Rückfall automatisch nachweisen.
+
+### P1 – funktionstreues Qt-/Tk-Refactoring (Issue [#256](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/issues/256))
+
+- [ ] Produktiv verwendete Tk-/Legacy-Aufrufketten und alle Speicher-/Menü-/Dialogverträge maschinenprüfbar inventarisieren.
+- [ ] Nachträgliche Klassen-Methodenersetzung in `qt_phase3_components.py` und `qt_legacy_parity_completion.py` schrittweise durch direkte Qt-Methoden und testbare Dienste ersetzen.
+- [ ] Zwei oder mehr Zustandsquellen für Sortierung/Ansicht, globale und bereichsspezifische Schriftgröße, Projekteinstellungen und Dialoge prüfen; nur fachlich identische Pfade zusammenführen.
+- [ ] Paritätstests vor **jeder** Entfernung; danach reale Qt-GUI, Projekt-Roundtrip, FFmpeg-Erstellung, Plugin-Schutz, Update und Benutzerpaket prüfen.
+
+### P1 – Freigabebelege und Dokumentation (Issue [#257](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/issues/257))
+
+- [ ] Alle relevanten **auch früheren** Tests auf einem einzigen unveränderten Commit ausführen, veraltete Annahmen reparieren und Resultate eindeutig speichern.
+- [ ] `RELEASE_MANIFEST.json` und `registries/PROJECT_FILE_INDEX.json` nach der **letzten** Änderung erzeugen, Driftprüfungen erfolgreich durchführen. Nachträgliche Schreibänderungen verlangen einen neuen Nachweis.
+- [ ] Frisch entpacktes Benutzerpaket mit höchstens acht Hauptordnerdateien, echte Qt-Bereitschaft, Offline-Start, reale FFmpeg-Ausgabe und Unterbrechungs-Rückfall miteinander prüfen.
+- [ ] `docs/STATUS.md`, Dokumentationswegweiser, Bedienungsanleitung, Update-Anleitung und Entwicklungsbericht am geprüften Stand synchronisieren, historische RC24-Werte unverändert lassen.
+- [ ] Stable nur nach explizitem Freeze, sauberer automatisierter Gesamtabnahme und danach gebündelter persönlicher Kubuntu-Endprüfung.
+
+### P2 – Einsteigerführung und Barrierefreiheit (Issue [#258](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/issues/258))
+
+- [ ] Hauptnavigation, Schritt-Hinweise und Hilfe einheitlich **1 Dateien → 2 Ausgabe/Einstellungen → 3 Produktion** benennen.
+- [ ] Kurze, gut lesbare Bedienelemente; flexible Umbrüche und bedarfsweise vertikales Scrollen ohne versteckte horizontale Inhalte; vollständige Tastaturbedienung.
+- [ ] Nicht benötigte erweiterte Werkzeuge standardmäßig ausblenden, doppelte Schaltflächen/Sortierwege vermeiden.
+- [ ] Drei geeignete Erscheinungsbilder (dunkel, hell, hoher Kontrast) mit tatsächlichem Kontrast-, Schrift- und Fokusnachweis prüfen; optische Kosmetik bleibt bis zum Abschluss von P0 nachrangig.
+
+### Freigabegrenze
+
+- [ ] PR #253 und der darauf folgende Entwicklungsstand sind nur **Entwürfe**; bestandene Teilprüfungen sind nicht gleichbedeutend mit bestandenem Gesamtrelease.
+- [ ] Die einmalige **physische** Kubuntu-Endabnahme bleibt ausdrücklich bis zum Abschluss aller Entwicklungsarbeiten aufgeschoben.
+
+---
+
+## Fokus (ältere Arbeitsnotizen – zeitlich einordnen)
 
 **Zielplattform:** Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6.
 
