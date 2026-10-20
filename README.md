@@ -32,6 +32,14 @@ VideoBatch Fast ist die lokale Video-Automation für **Kubuntu 26.04 LTS · KDE 
 
 **Noch nicht bewiesen:** Vollständige Offline-Erstinstallation und grafischer Qt-Start aus dem frisch entpackten Paket. Ebenso offen bleiben die persönliche Kubuntu-Sichtabnahme bei 100/125/150/200 % sowie die Stable-Freigabe. Die 325 historischen RC24-Tests sind kein Entwicklungs- oder Stable-Nachweis für #246.
 
+## In Entwicklung: Platzsparende Qt-Oberfläche (20.10.2026)
+
+Die nächste Oberflächenrunde prüft eine gleichmäßige Dateiauswahl auf breiten Bildschirmen. Auf schmalen Fenstern beziehungsweise bei großer Schrift werden die Bereiche automatisch untereinander angeordnet und können **vertikal** gescrollt werden. So bleiben Listen und Schaltflächen lesbar, ohne horizontalen Bildlauf zu erzwingen.
+
+Die CPU-/RAM-/SWAP-Anzeigen und der Video-Fortschritt erhalten einen gemeinsamen, deutlich kompakteren Statusbereich. Die Schrift- und Ansichtsgröße kann von **80 % bis 200 %** eingestellt werden; der neue Ausgangswert ist **110 %**. Kompakte Abstände sollen Platz gewinnen, ohne die Bedienfunktionen zu entfernen.
+
+**Freigabegrenze:** Dies ist eine laufende Entwicklungsänderung. Erst nach vollständigen Qt6-/Wayland- und Größenprüfungen einschließlich kleiner Fenster und 100/125/150/200-%-Sichtprüfung gilt die neue Aufteilung als freigegeben. Die persönliche physische Kubuntu-Endabnahme bleibt separat offen.
+
 ## Prüfablauf ohne wiederholte Endabnahmen
 
 1. **Entwickeln:** Änderungen mit passenden automatisierten Tests und Sicherheitsprüfungen absichern. Keine persönliche Vollabnahme nach jeder Oberflächenänderung.

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from PySide6.QtCore import QTimer, Qt
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QProgressBar, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QProgressBar, QWidget
 
 from .system_load import SystemLoadSampler
 
@@ -15,26 +15,23 @@ class SystemLoadDashboard:
         self.frame = QFrame(parent)
         self.frame.setObjectName("loadDashboard")
         row = QHBoxLayout(self.frame)
-        row.setContentsMargins(9, 6, 9, 6)
-        row.setSpacing(8)
+        row.setContentsMargins(4, 2, 4, 2)
+        row.setSpacing(5)
         for key, label in (("cpu", "CPU"), ("ram", "RAM"), ("swap", "SWAP")):
-            meter = QVBoxLayout()
-            meter.setSpacing(2)
             caption = QLabel(label)
             caption.setObjectName("loadLabel")
-            caption.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            caption.setAlignment(Qt.AlignmentFlag.AlignVCenter)
             bar = QProgressBar()
             bar.setObjectName("loadMeter")
             bar.setRange(0, 100)
             bar.setValue(0)
             bar.setFormat("—")
             bar.setTextVisible(True)
-            bar.setMinimumWidth(82)
+            bar.setFixedWidth(58)
             bar.setAccessibleName(f"{label}-Auslastung")
             self.bars[key] = bar
-            meter.addWidget(caption)
-            meter.addWidget(bar)
-            row.addLayout(meter)
+            row.addWidget(caption)
+            row.addWidget(bar)
         self.timer = QTimer(parent)
         self.timer.setInterval(1000)
         self.timer.timeout.connect(self.refresh)

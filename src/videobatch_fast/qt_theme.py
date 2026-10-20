@@ -16,6 +16,11 @@ QFrame#panel, QFrame#card, QFrame#workflowGuide, QFrame#actionFooter, QFrame#das
     border-radius: 12px;
 }
 QFrame#card { min-height: 56px; }
+QFrame#compactStatusDashboard {
+    background: #101822;
+    border: 1px solid #405c7a;
+    border-radius: 8px;
+}
 QFrame#loadDashboard {
     background: #101822;
     border: 2px solid #7f98b8;
@@ -23,13 +28,13 @@ QFrame#loadDashboard {
 }
 QLabel#loadLabel {
     color: #e2eaf5;
-    font-size: 12pt;
+    font-size: 10pt;
     font-weight: 750;
 }
 QProgressBar#loadMeter {
-    min-height: 15px;
-    max-height: 15px;
-    font-size: 11pt;
+    min-height: 16px;
+    max-height: 16px;
+    font-size: 9pt;
     font-weight: 700;
 }
 QLabel#title { font-size: 22pt; font-weight: 800; }
@@ -209,6 +214,7 @@ QProgressBar {
 }
 QProgressBar::chunk { background: #00c8e8; border-radius: 6px; }
 QProgressBar#jobProgress::chunk { background: #ffbf3f; }
+QWidget#progressDashboard QProgressBar { min-height: 18px; max-height: 18px; font-size: 10pt; }
 QSplitter::handle { background: #0b1017; width: 7px; }
 QScrollBar:vertical {
     width: 16px;
@@ -238,7 +244,7 @@ QToolTip {
 
 APP_STYLE += VISUAL_HIERARCHY_STYLE
 
-SCALE_LEVELS = (100, 125, 150, 175, 200)
+SCALE_LEVELS = (80, 100, 110, 125, 150, 175, 200)
 
 
 def scaled_style(percent: int) -> str:
@@ -250,11 +256,12 @@ QLabel#section {{ font-size: {13 * scale:.1f}pt; }}
 QLabel#kpiValue {{ font-size: {16 * scale:.1f}pt; }}
 QLabel#kpiLabel {{ font-size: {12 * scale:.1f}pt; }}
 QLabel#nextStep {{ font-size: {11.5 * scale:.1f}pt; }}
-QLabel#loadLabel {{ font-size: {12 * scale:.1f}pt; }}
+QLabel#loadLabel {{ font-size: {10 * scale:.1f}pt; }}
 QPushButton, QToolButton, QLineEdit, QComboBox {{ min-height: {round(34 * scale)}px; }}
 QCheckBox::indicator {{ width: {round(22 * scale)}px; height: {round(22 * scale)}px; }}
 QProgressBar {{ min-height: {round(18 * scale)}px; }}
-QProgressBar#loadMeter {{ min-height: {round(15 * scale)}px; max-height: {round(15 * scale)}px; }}
+QProgressBar#loadMeter {{ min-height: {round(16 * scale)}px; max-height: {round(16 * scale)}px; font-size: {9 * scale:.1f}pt; }}
+QWidget#progressDashboard QProgressBar {{ min-height: {round(18 * scale)}px; max-height: {round(18 * scale)}px; font-size: {10 * scale:.1f}pt; }}
 QScrollBar:vertical {{ width: {round(16 * scale)}px; }}
 QScrollBar:horizontal {{ height: {round(16 * scale)}px; }}
 """

@@ -90,7 +90,7 @@
     {
       "path": ".github/workflows/qt6-phase3-smoke.yml",
       "mode": "100644",
-      "blob_sha1": "86f893c9e652dcefb52ac394662dcba344407193",
+      "blob_sha1": "ca75ee10b44f6d777bd55d298aafebf57d4c5b40",
       "category": "automation",
       "lifecycle": "development"
     },
@@ -132,14 +132,14 @@
     {
       "path": "README.md",
       "mode": "100644",
-      "blob_sha1": "c4ff05413ac83dcba6e583d529a4813fcfa7e915",
+      "blob_sha1": "36d4a93784e928209784075520340779f4215471",
       "category": "documentation",
       "lifecycle": "active"
     },
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "3185e0c9648dd5da495bc7a626a604d28ee14118",
+      "blob_sha1": "ad093d5c9e4f8120a1296969edf284fa84831312",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -3009,7 +3009,7 @@
     {
       "path": "src/videobatch_fast/qt_main_layout.py",
       "mode": "100644",
-      "blob_sha1": "4ddcb65e5d9fef26f1b1c55f2a2d7344967a5d58",
+      "blob_sha1": "0bb2a03b930037707dfe95415adfa81726bdb377",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3072,21 +3072,21 @@
     {
       "path": "src/videobatch_fast/qt_source_panel.py",
       "mode": "100644",
-      "blob_sha1": "5c6d1ff075f54ec54fae71a2c5e81d2ef96a7d26",
+      "blob_sha1": "6b3209bae1dadd0cf68c3da01716c35d40cbbf38",
       "category": "application",
       "lifecycle": "active"
     },
     {
       "path": "src/videobatch_fast/qt_system_load_dashboard.py",
       "mode": "100644",
-      "blob_sha1": "9f4cec199fe03195a418249ac64fd9f3ba686031",
+      "blob_sha1": "721628c769fdb5ba1b2d09806b2a866461c9a0fb",
       "category": "application",
       "lifecycle": "active"
     },
     {
       "path": "src/videobatch_fast/qt_theme.py",
       "mode": "100644",
-      "blob_sha1": "36847ef14d11b391ceaf4fdab77440fa20908f53",
+      "blob_sha1": "e5bf9d387a4321349b1b63be3fb0ed7b0e72049a",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3121,7 +3121,7 @@
     {
       "path": "src/videobatch_fast/qt_workspace_layout.py",
       "mode": "100644",
-      "blob_sha1": "313eb19c430502fae10e5f95a204cf14625cf249",
+      "blob_sha1": "46da22931db1e3d98547d8579821299a739e8226",
       "category": "application",
       "lifecycle": "active"
     },
@@ -4085,6 +4085,13 @@
       "lifecycle": "development"
     },
     {
+      "path": "tests/test_qt_responsive_20261020.py",
+      "mode": "100644",
+      "blob_sha1": "979d444ada9f91ee370a5baffe5b10f436115c02",
+      "category": "tests",
+      "lifecycle": "development"
+    },
+    {
       "path": "tests/test_qt_runtime_toolchain_contract.py",
       "mode": "100644",
       "blob_sha1": "cb9a4383be47032ace33d9ea5225201ada54abb6",
@@ -4108,7 +4115,7 @@
     {
       "path": "tests/test_qt_ui_contract.py",
       "mode": "100644",
-      "blob_sha1": "d8728c5af1b8902cbf5f33dcb23547a6ec4881fd",
+      "blob_sha1": "d4fbe7b285ce2731f959aa492aa4892f6c88176a",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4494,7 +4501,7 @@
   "directories": [
     {
       "path": ".",
-      "file_count_recursive": 641
+      "file_count_recursive": 642
     },
     {
       "path": ".githooks",
@@ -4658,7 +4665,7 @@
     },
     {
       "path": "tests",
-      "file_count_recursive": 141
+      "file_count_recursive": 142
     },
     {
       "path": "tests/baselines",
@@ -4677,5 +4684,5 @@
       "file_count_recursive": 1
     }
   ],
-  "file_count": 641
+  "file_count": 642
 }
