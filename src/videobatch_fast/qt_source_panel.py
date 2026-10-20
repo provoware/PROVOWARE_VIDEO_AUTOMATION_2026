@@ -71,8 +71,8 @@ class ResponsiveSourceColumns(QWidget):
     def _reflow(self) -> None:
         # Measured widget minimums supplement the portable 120×80 grid rules.
         intrinsic = (
-            self.audio_card.minimumSizeHint().width(),
-            self.media_card.minimumSizeHint().width(),
+            max(0, self.audio_card.minimumSizeHint().width()),
+            max(0, self.media_card.minimumSizeHint().width()),
         )
         columns = choose_columns(
             max(1, self.width()),
