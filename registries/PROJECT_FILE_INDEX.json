@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "e9598893e1ae097fb0c39f9c24e70f4a83e86771",
+      "blob_sha1": "c9ddd14593ff14f8db737f9961b27219dde70f31",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -608,7 +608,7 @@
     {
       "path": "docs/TODO.md",
       "mode": "100644",
-      "blob_sha1": "407ef0ae2a3b6f978e559b9fb713cb5896c1c38f",
+      "blob_sha1": "d0d6fa9ab87ebc495d69008d7f2d2105d68c2c0b",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -3044,14 +3044,14 @@
     {
       "path": "src/videobatch_fast/qt_legacy_parity.py",
       "mode": "100644",
-      "blob_sha1": "50bd948aecbf75ce22290acaed9dcf69704b86d6",
+      "blob_sha1": "47f9dffd2be4d5fa76910382fc21f73201865ba2",
       "category": "application",
       "lifecycle": "active"
     },
     {
       "path": "src/videobatch_fast/qt_legacy_parity_completion.py",
       "mode": "100644",
-      "blob_sha1": "097536dc3fb6107a7a54f5702b13f7789f51cf9e",
+      "blob_sha1": "81a6bb0e8bf4ac5f4e3d223e5a6a20b76cfef4fb",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3114,7 +3114,7 @@
     {
       "path": "src/videobatch_fast/qt_phase3.py",
       "mode": "100644",
-      "blob_sha1": "3c092593323196b57b5756a53f2f348e1d34a73f",
+      "blob_sha1": "23a8aed2ecb9937f3e76a9d988e17c41eba38a29",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3758,14 +3758,14 @@
     {
       "path": "tests/qt_phase3_keyboard_matrix.py",
       "mode": "100644",
-      "blob_sha1": "8e241c1dc156d9f659879eae1bd4f36cbfc7ba4c",
+      "blob_sha1": "4e2d895db18a2a2ee79d85ae439c5e3cea667898",
       "category": "tests",
       "lifecycle": "development"
     },
     {
       "path": "tests/qt_phase3_smoke.py",
       "mode": "100644",
-      "blob_sha1": "16d2282ad905062737152d35263a77f05862fcd0",
+      "blob_sha1": "c175c389e16fd23b801fca65b2d57f811598731f",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4542,7 +4542,7 @@
     {
       "path": "tests/test_update_integrity_2_8_2.py",
       "mode": "100644",
-      "blob_sha1": "d1ecf643e7a3bf311d180add8c5682d2b4a0b92e",
+      "blob_sha1": "98eb0e7e687a75aa8420578e066d9c09962ea79d",
       "category": "tests",
       "lifecycle": "development"
     },
