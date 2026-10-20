@@ -13,7 +13,7 @@ from pathlib import Path
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6.QtWidgets import QApplication, QPushButton, QToolButton
+from PySide6.QtWidgets import QApplication, QLabel, QPushButton, QToolButton
 
 from videobatch_fast.qt_phase3 import VideoBatchQtPhase3Window
 
@@ -26,6 +26,27 @@ def findings(window: VideoBatchQtPhase3Window, width: int, height: int) -> list[
     problems: list[str] = []
     if (window.width(), window.height()) != (width, height):
         problems.append(f"Fenster {window.width()}x{window.height()} statt {width}x{height}")
+    # Nicht nur Widgets zählen: ein Qt-Label kann als "sichtbar" gelten,
+    # obwohl es kleiner als eine einzige Textzeile zusammengedrückt wird.
+    for label in window.findChildren(QLabel):
+        if label.objectName() not in {"title", "statusChip", "section"}:
+            continue
+        if not label.isVisibleTo(window) or not label.text().strip():
+            continue
+        needed_height = label.fontMetrics().height()
+        if label.height() + 2 < needed_height:
+            problems.append(
+                f"Textzeile abgeschnitten: {label.text()[:35]!r}, "
+                f"{label.height()}px statt {needed_height}px"
+            )
+        if label.objectName() == "title":
+            needed_width = label.fontMetrics().horizontalAdvance(label.text())
+            if label.width() + 2 < needed_width:
+                problems.append("Programmtitel horizontal abgeschnitten")
+    if window.workflow_stack.height() < 60:
+        problems.append(f"Arbeitsseite zu flach: {window.workflow_stack.height()}px")
+    if getattr(window, "_active_workflow_route", "") != "effects" and window.settings_view.isVisibleTo(window):
+        problems.append("Ausgabeeinstellungen verdecken eine andere Arbeitsseite")
     tabs = window.main_tabs
     if not tabs.isVisible():
         problems.append("Dreistufige Hauptnavigation unsichtbar")
