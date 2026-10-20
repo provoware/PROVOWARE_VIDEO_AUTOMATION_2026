@@ -8,6 +8,7 @@ import subprocess
 import tempfile
 import time
 import zipfile
+import uuid
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable
@@ -126,7 +127,7 @@ def apply_update_package(
 
     report_dir = state_dir() / "updates"
     report_path = report_dir / f"update_{time.strftime('%Y%m%d_%H%M%S')}.json"
-    backup = parent / f"{install_root.name}.backup_{time.strftime('%Y%m%d_%H%M%S')}"
+    backup = parent / f"{install_root.name}.backup_{time.strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex}"
     activated = False
     try:
         progress("prepare", "Kandidat wird aus der bestehenden Installation erzeugt.")
@@ -210,16 +211,26 @@ def apply_update_package(
             return UpdateInstallResult(False, check.version, "Selbsttest hat manifestierte Kandidatendateien verändert.", report=str(report_path))
 
         progress("activate", "Unveränderter geprüfter Kandidat wird atomisch aktiviert.")
-        if backup.exists():
-            shutil.rmtree(backup)
-        os.replace(install_root, backup)
+        # An earlier backup is user data. Never delete or overwrite one for a
+        # timestamp collision; a fresh opaque name is reserved for each update.
+        if backup.exists() or backup.is_symlink():
+            raise FileExistsError(f"Update-Sicherung bereits vorhanden: {backup}")
+        moved_old = False
         try:
+            os.replace(install_root, backup)
+            moved_old = True
+            _fsync_directory(parent)
             os.replace(candidate, install_root)
             _fsync_directory(parent)
             activated = True
         except Exception:
-            os.replace(backup, install_root)
-            _fsync_directory(parent)
+            if moved_old and backup.exists():
+                # Also handle a failure *after* the candidate was activated,
+                # e.g. fsync errors. Keep the candidate in the temporary tree.
+                if install_root.exists() or install_root.is_symlink():
+                    os.replace(install_root, work / "failed_candidate")
+                os.replace(backup, install_root)
+                _fsync_directory(parent)
             raise
         return UpdateInstallResult(
             True,
