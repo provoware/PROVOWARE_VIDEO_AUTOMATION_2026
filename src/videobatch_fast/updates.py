@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import hashlib
+import ctypes
+import errno
 import json
 import os
 import shutil
@@ -103,6 +105,29 @@ def _fsync_directory(path: Path) -> None:
             os.close(fd)
     except OSError:
         pass
+
+
+def _atomic_exchange_dirs(first: Path, second: Path) -> None:
+    """Atomisch zwei vorhandene Verzeichnisse auf demselben Linux-Dateisystem tauschen.
+
+    Anders als zwei aufeinanderfolgende os.replace-Aufrufe lässt RENAME_EXCHANGE
+    den Installationsnamen auch bei abruptem Prozessende niemals unbesetzt.
+    Auf nicht unterstützten Dateisystemen wird die Aktualisierung blockiert.
+    """
+    renameat2 = getattr(ctypes.CDLL(None, use_errno=True), "renameat2", None)
+    if renameat2 is None:
+        raise OSError(errno.ENOSYS, "Atomarer Linux-Verzeichnistausch nicht verfügbar")
+    renameat2.argtypes = [
+        ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_uint,
+    ]
+    renameat2.restype = ctypes.c_int
+    at_fdcwd = -100
+    rename_exchange = 2
+    if renameat2(
+        at_fdcwd, os.fsencode(first), at_fdcwd, os.fsencode(second), rename_exchange
+    ) != 0:
+        code = ctypes.get_errno()
+        raise OSError(code, os.strerror(code), str(first))
 
 
 def apply_update_package(
@@ -215,22 +240,29 @@ def apply_update_package(
         # timestamp collision; a fresh opaque name is reserved for each update.
         if backup.exists() or backup.is_symlink():
             raise FileExistsError(f"Update-Sicherung bereits vorhanden: {backup}")
-        moved_old = False
+        exchanged = False
         try:
-            os.replace(install_root, backup)
-            moved_old = True
+            # Der alte Programmordner bleibt während des gesamten Wechsels
+            # jederzeit unter einem Namen erreichbar. Beide Seiten liegen
+            # auf demselben Datenträger; kein nicht-atomarer Zwischenzustand.
+            _atomic_exchange_dirs(install_root, candidate)
+            exchanged = True
             _fsync_directory(parent)
-            os.replace(candidate, install_root)
+            # Erst nach dem Austausch wird die alte Version gesichert.
+            # Bei SIGKILL davor liegt sie weiterhin im Arbeitsordner.
+            os.replace(candidate, backup)
             _fsync_directory(parent)
             activated = True
         except Exception:
-            if moved_old and backup.exists():
-                # Also handle a failure *after* the candidate was activated,
-                # e.g. fsync errors. Keep the candidate in the temporary tree.
-                if install_root.exists() or install_root.is_symlink():
-                    os.replace(install_root, work / "failed_candidate")
-                os.replace(backup, install_root)
-                _fsync_directory(parent)
+            if exchanged:
+                old_location = backup if backup.exists() else candidate
+                if old_location.exists() and not old_location.is_symlink():
+                    _atomic_exchange_dirs(install_root, old_location)
+                    if old_location == backup:
+                        # Hier liegt nach dem Rücktausch der fehlgeschlagene
+                        # neue Kandidat, nicht die frühere Sicherung.
+                        os.replace(backup, work / "failed_candidate")
+                    _fsync_directory(parent)
             raise
         return UpdateInstallResult(
             True,
