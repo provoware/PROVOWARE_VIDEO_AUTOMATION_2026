@@ -525,11 +525,10 @@ def _wrap_project_methods(window: object) -> None:
 
     def route(route_name: str):
         original_route(route_name)
-        if route_name == "effects":
-            window.parity_dock.show()
-            window.parity_dock.raise_()
-            window.parity_tabs.setCurrentIndex(0)
-        elif route_name in {"dashboard", "media", "queue"}:
+        # Im Drei-Schritt-Ablauf wird die breite historische Expertenleiste
+        # niemals automatisch geöffnet; bei 800×600 verdrängte sie den Inhalt.
+        # Über Ansicht → Einstellungen & Werkzeuge (Strg+,) bleibt sie erreichbar.
+        if route_name in {"dashboard", "media", "effects", "queue"}:
             window.parity_dock.hide()
 
     window._collect_project_state = collect
