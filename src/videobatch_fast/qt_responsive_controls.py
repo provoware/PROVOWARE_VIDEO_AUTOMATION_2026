@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QGridLayout, QSizePolicy, QWidget
+from PySide6.QtWidgets import QGridLayout, QLayout, QSizePolicy, QWidget
 
 
 class ResponsiveControlRow(QWidget):
@@ -20,6 +20,9 @@ class ResponsiveControlRow(QWidget):
         self.zoom_percent = 110
         self.columns = 0
         self.grid = QGridLayout(self)
+        # Otherwise Qt keeps the old multi-column minimum and cannot shrink
+        # far enough to trigger a resize event that would stack the controls.
+        self.grid.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
         self.grid.setContentsMargins(0, 0, 0, 0)
         self.grid.setHorizontalSpacing(8)
         self.grid.setVerticalSpacing(5)
