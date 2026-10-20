@@ -443,16 +443,6 @@ def _browse(window: object, *, audio: bool) -> None:
     _remember_directory(window, key, paths)
 
 
-def _patch_media_browsers() -> None:
-    from .qt_phase2 import VideoBatchQtPhase2Window
-
-    # All visible import buttons must use the SAME preview-capable browser.
-    VideoBatchQtWindow._choose_audio = lambda self: _browse(self, audio=True)
-    VideoBatchQtWindow._choose_media = lambda self: _browse(self, audio=False)
-    VideoBatchQtPhase2Window._browse_audio = lambda self: _browse(self, audio=True)
-    VideoBatchQtPhase2Window._browse_media = lambda self: _browse(self, audio=False)
-
-
 def _select_combo_data(combo: QComboBox, value: object) -> None:
     index = combo.findData(str(value))
     if index >= 0:
@@ -827,4 +817,3 @@ def install_parity_completion() -> None:
     """Keep still-needed widget compatibility adapters; never patch Qt lifecycle."""
     _patch_drop_list()
     _patch_preview_panel()
-    _patch_media_browsers()
