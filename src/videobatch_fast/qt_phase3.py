@@ -22,6 +22,9 @@ from .paths import state_dir
 from .platform_integration import PlatformCompatibilityError, prepare_gui_environment
 from .project_state import default_project_file, load_project_state, projects_dir, save_project_state
 from .qt_phase2 import VideoBatchQtPhase2Window
+from .config import DEFAULT_CONFIG, load_config
+from .qt_legacy_parity import _finish_parity_init
+from .qt_legacy_parity_completion import _finish_completion, persist_parity_on_close
 from .qt_workspace_layout import HelpPanel, set_workflow_route
 from .qt_phase3_components import DiagnosticsPanel, ProjectPanel, WorkspaceNavigationPanel
 from .qt_theme import APP_STYLE
@@ -34,12 +37,22 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
     AUTOSAVE_INTERVAL_MS = 300_000
 
     def __init__(self, *, autoload_project: bool = True) -> None:
+        # Formerly installed by two import-time __init__ monkeypatches.
+        # Keep boot geometry available before the parent creates Qt widgets.
+        boot = load_config()
+        self._parity_boot_window_geometry = str(
+            boot.get("window_geometry", DEFAULT_CONFIG["window_geometry"])
+        )
         self._project_file = default_project_file()
         self._project_state: dict[str, object] = {}
         self._project_dirty = False
         self._loading_project = False
         self._session_id = f"qt-phase3-{os.getpid()}-{int(time.time())}"
         super().__init__()
+        # Ordering is intentional: legacy parity builds the Qt controls before
+        # the completion service adds sorting and view zoom controls.
+        QTimer.singleShot(0, lambda: _finish_parity_init(self))
+        QTimer.singleShot(0, lambda: _finish_completion(self))
         self.setWindowTitle("PROVOWARE VideoBatch 2026 · Qt 6 · Wayland")
         self._build_phase3_workspace()
         self._connect_phase3()
@@ -467,6 +480,8 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
                     else:
                         event.ignore()
                         return
+        # Only save view settings after the project may safely close.
+        persist_parity_on_close(self)
         super().closeEvent(event)
 
 
