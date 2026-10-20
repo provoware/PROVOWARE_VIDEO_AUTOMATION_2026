@@ -27,7 +27,13 @@ from .qt_phase2_components import PreviewPanel, SlideshowPanel
 from .qt_phase2_selection_preview import SelectionPreviewMixin
 from .qt_theme import APP_STYLE
 from .qt_ui import VideoBatchQtWindow
-from .qt_legacy_parity import _plugin_scan
+from .qt_legacy_parity import (
+    _archive_last_results,
+    _offer_recovery,
+    _plugin_scan,
+    _update_package,
+    _visual_approval,
+)
 from .qt_workflow_dialogs import (
     PluginPermissionDecisionDialog,
     VisualApprovalSignDialog,
@@ -46,6 +52,12 @@ class VideoBatchQtPhase2Window(SelectionPreviewMixin, VideoBatchQtWindow):
     # gebunden. Ein späteres Austauschen der Methoden beim Import entfällt.
     _show_plugin_dialog = _plugin_scan
     _show_plugin_decision = _plugin_scan
+    _show_update_dialog = _update_package
+    _show_archive_dialog = _archive_last_results
+    _show_visual_approval = _visual_approval
+
+    def _show_recovery_dialog(self) -> None:
+        _offer_recovery(self, manual=True)
 
     def __init__(self) -> None:
         super().__init__()
@@ -324,30 +336,6 @@ class VideoBatchQtPhase2Window(SelectionPreviewMixin, VideoBatchQtWindow):
         paths = dialog.wait()
         if paths:
             self.media.add_paths(list(paths))
-
-    def _show_update_dialog(self) -> None:
-        dialog = update_assistant_dialog(self, "Qt-Phase-2", 0)
-        self._write_log(f"Qt Update-Dialog: {'bestätigt' if dialog.wait() else 'abgebrochen'}.")
-
-    def _show_recovery_dialog(self) -> None:
-        dialog = recovery_dialog(self, "QT-PHASE2-DEMO")
-        self._write_log(f"Qt Recovery-Dialog: {'bestätigt' if dialog.wait() else 'abgebrochen'}.")
-
-    def _show_archive_dialog(self) -> None:
-        dialog = archive_preview_dialog(
-            self,
-            len(self.audio.paths()) + len(self.media.paths()),
-            self.output.text().strip(),
-            "_verwendet",
-        )
-        self._write_log(f"Qt Ablageprüfung: {'bestätigt' if dialog.wait() else 'abgebrochen'}.")
-
-    def _show_visual_approval(self) -> None:
-        dialog = VisualApprovalSignDialog(self, "qt-phase2", default_reviewer="")
-        reviewer = dialog.wait()
-        self._write_log(
-            f"Qt visuelle Freigabe: {reviewer}" if reviewer else "Qt visuelle Freigabe abgebrochen."
-        )
 
     def closeEvent(self, event) -> None:
         super().closeEvent(event)
