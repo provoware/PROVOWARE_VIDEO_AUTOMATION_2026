@@ -1082,17 +1082,8 @@ def _finish_parity_init(window: object) -> None:
 
 
 def install_legacy_parity() -> None:
-    """Install a temporary migration adapter until Qt has full native parity."""
+    """Register remaining compatibility services without modifying Qt constructors.
+
+    The Phase-3 constructor schedules _finish_parity_init explicitly.
+    """
     _patch_phase2_class()
-
-    from .qt_phase2 import VideoBatchQtPhase2Window
-    original_init = VideoBatchQtPhase2Window.__init__
-    if getattr(original_init, "_tk_parity_wrapped", False):
-        return
-
-    def init(self) -> None:
-        original_init(self)
-        QTimer.singleShot(0, lambda: _finish_parity_init(self))
-
-    init._tk_parity_wrapped = True
-    VideoBatchQtPhase2Window.__init__ = init
