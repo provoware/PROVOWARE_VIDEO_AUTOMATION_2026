@@ -139,14 +139,14 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "c9ddd14593ff14f8db737f9961b27219dde70f31",
+      "blob_sha1": "86b2784dcdfd04130209048634cc15581d4d83a8",
       "category": "project_contract",
       "lifecycle": "active"
     },
     {
       "path": "STARTEN.sh",
       "mode": "100644",
-      "blob_sha1": "cff186f9cc78f564028c89b17135a91dd8404af7",
+      "blob_sha1": "073dd38900e900db9e15519d3724e79d00f2d16a",
       "category": "entrypoint",
       "lifecycle": "active"
     },
@@ -2090,6 +2090,13 @@
       "lifecycle": "development"
     },
     {
+      "path": "scripts/local_update_rescue.py",
+      "mode": "100644",
+      "blob_sha1": "fa9b2ddf0001f1b56210c9de76cdc25a3c271e14",
+      "category": "development",
+      "lifecycle": "development"
+    },
+    {
       "path": "scripts/package_release.py",
       "mode": "100644",
       "blob_sha1": "a75fc94064fc0d3901d29c74db680de03ae5be92",
@@ -3044,7 +3051,7 @@
     {
       "path": "src/videobatch_fast/qt_legacy_parity.py",
       "mode": "100644",
-      "blob_sha1": "47f9dffd2be4d5fa76910382fc21f73201865ba2",
+      "blob_sha1": "829c8a5fb5d167163543a03da9b5505dbfb96fc9",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3072,7 +3079,7 @@
     {
       "path": "src/videobatch_fast/qt_main_layout.py",
       "mode": "100644",
-      "blob_sha1": "59210866ff235834a015494a27f3119b375c524d",
+      "blob_sha1": "12542b3959df8a8b5c3eabdb82e4e4835c1c33bd",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3100,7 +3107,7 @@
     {
       "path": "src/videobatch_fast/qt_phase2_components.py",
       "mode": "100644",
-      "blob_sha1": "d792ae03b479ec7ada3295a62199db3f414670c5",
+      "blob_sha1": "63d1b47db52ac89cf8ff0847df964071e8700cbb",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3114,14 +3121,14 @@
     {
       "path": "src/videobatch_fast/qt_phase3.py",
       "mode": "100644",
-      "blob_sha1": "23a8aed2ecb9937f3e76a9d988e17c41eba38a29",
+      "blob_sha1": "2289e68a90576606f65ce274e6854267e445b3ef",
       "category": "application",
       "lifecycle": "active"
     },
     {
       "path": "src/videobatch_fast/qt_phase3_components.py",
       "mode": "100644",
-      "blob_sha1": "9b29c9a46731114d9bb62d333dd5bcce4b99568a",
+      "blob_sha1": "741da8ca624e151fcb6996659eaa55394cdb625c",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3142,7 +3149,7 @@
     {
       "path": "src/videobatch_fast/qt_source_panel.py",
       "mode": "100644",
-      "blob_sha1": "c082ac0881baee38f6ce8605c6051b261648a6ce",
+      "blob_sha1": "54d551cb30dacca93efd6b0f3d948c885197dadd",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3485,7 +3492,7 @@
     {
       "path": "src/videobatch_fast/updates.py",
       "mode": "100644",
-      "blob_sha1": "498c9ab96d9fa9201a125b793ff5d0a3b94b6f7c",
+      "blob_sha1": "af93f2b77dab14c60026b212758961a8f626dcef",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3751,7 +3758,7 @@
     {
       "path": "tests/qt_phase3_42_matrix.py",
       "mode": "100644",
-      "blob_sha1": "fe769b909c4d26ceee6ef273f5cecef280940193",
+      "blob_sha1": "32d11dd473e5309ce11c3bc929f75537fb783a9f",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -3765,7 +3772,7 @@
     {
       "path": "tests/qt_phase3_smoke.py",
       "mode": "100644",
-      "blob_sha1": "c175c389e16fd23b801fca65b2d57f811598731f",
+      "blob_sha1": "49bc033e2f3525fa45bfaff82443ece13ba8ae99",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4542,7 +4549,7 @@
     {
       "path": "tests/test_update_integrity_2_8_2.py",
       "mode": "100644",
-      "blob_sha1": "98eb0e7e687a75aa8420578e066d9c09962ea79d",
+      "blob_sha1": "d727685a5c8023aa85257b2c6493030e3661f7de",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4745,7 +4752,7 @@
     },
     {
       "path": "scripts",
-      "file_count_recursive": 99
+      "file_count_recursive": 100
     },
     {
       "path": "scripts/acceptance",
@@ -4800,5 +4807,5 @@
       "file_count_recursive": 2
     }
   ],
-  "file_count": 658
+  "file_count": 659
 }
