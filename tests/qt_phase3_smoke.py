@@ -37,6 +37,12 @@ def main() -> int:
 
         # The special-tool callbacks must already be replaced before construction,
         # otherwise Qt would retain references to the historical demo handlers.
+        # Constructors and the close event must remain defined on their Qt
+        # classes, not replaced at import time by legacy adapter closures.
+        assert VideoBatchQtPhase2Window.__init__.__qualname__ == "VideoBatchQtPhase2Window.__init__"
+        assert VideoBatchQtPhase2Window.closeEvent.__qualname__ == "VideoBatchQtPhase2Window.closeEvent"
+        assert VideoBatchQtPhase3Window.__init__.__qualname__ == "VideoBatchQtPhase3Window.__init__"
+        assert VideoBatchQtPhase3Window.closeEvent.__qualname__ == "VideoBatchQtPhase3Window.closeEvent"
         assert VideoBatchQtPhase2Window._show_plugin_dialog is _plugin_scan
         assert VideoBatchQtPhase2Window._show_plugin_decision is _plugin_scan
         assert VideoBatchQtPhase2Window._show_update_dialog is _update_package
