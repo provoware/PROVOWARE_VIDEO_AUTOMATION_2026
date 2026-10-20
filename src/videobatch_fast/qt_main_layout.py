@@ -33,14 +33,14 @@ def build_main_ui(window) -> None:
     subtitle.setWordWrap(True)
     brand.addWidget(title)
     brand.addWidget(subtitle)
-    header.addLayout(brand, 0, 0, 2, 1)
+    header.addLayout(brand, 0, 0, 1, 4)
 
     window.status = QLabel("BEREIT")
     window.status.setObjectName("statusChip")
     window.status.setAccessibleDescription(
         "Aktueller Programmstatus. Der sichtbare Text nennt den momentanen Zustand."
     )
-    header.addWidget(window.status, 0, 1, alignment=Qt.AlignmentFlag.AlignRight)
+    header.addWidget(window.status, 1, 0, alignment=Qt.AlignmentFlag.AlignLeft)
 
     view_label = QLabel("Schrift")
     window.view_scale = QComboBox()
@@ -55,12 +55,12 @@ def build_main_ui(window) -> None:
     for value in SCALE_LEVELS:
         window.view_scale.addItem(f"{value} %", value)
     window.view_scale.setCurrentIndex(window.view_scale.findData(110))
-    header.addWidget(view_label, 0, 2)
-    header.addWidget(window.view_scale, 0, 3)
+    header.addWidget(view_label, 1, 2)
+    header.addWidget(window.view_scale, 1, 3)
 
     dashboard = QFrame()
     dashboard.setObjectName("compactStatusDashboard")
-    dashboard_row = QHBoxLayout(dashboard)
+    dashboard_row = QVBoxLayout(dashboard)
     dashboard_row.setContentsMargins(4, 2, 4, 2)
     dashboard_row.setSpacing(8)
     dashboard_row.addWidget(window.load_dashboard.frame)
@@ -74,8 +74,8 @@ def build_main_ui(window) -> None:
     window.progress_dashboard_layout.setHorizontalSpacing(5)
     window.progress_dashboard_layout.setVerticalSpacing(2)
     window.progress_dashboard_layout.setColumnStretch(1, 1)
-    dashboard_row.addWidget(window.progress_dashboard, 1)
-    header.addWidget(dashboard, 1, 1, 1, 3)
+    dashboard_row.addWidget(window.progress_dashboard)
+    header.addWidget(dashboard, 2, 0, 1, 4)
     outer.addLayout(header)
 
     # Responsive settings follow the same 120×80 reference logic as the lists.
@@ -86,7 +86,7 @@ def build_main_ui(window) -> None:
     settings_view.setWidgetResizable(True)
     settings_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
     settings_view.setMinimumHeight(92)
-    settings_view.setMaximumHeight(180)
+    settings_view.setMaximumHeight(140)
     settings_view.setWidget(window.settings_grid)
 
     window.resolution = QComboBox()
