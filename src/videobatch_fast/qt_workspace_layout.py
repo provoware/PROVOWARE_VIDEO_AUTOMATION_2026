@@ -94,8 +94,8 @@ def _overview_page(window) -> QFrame:
 
     for label, description, route in (
         ("1 · Dateien", "Audio und Bilder/Videos auswählen und die Paarung prüfen.", "media"),
-        ("Erweiterte Einstellungen", "Selten benötigte Prüf- und Sicherheitsoptionen.", "effects"),
-        ("2 · Produktion", "Aufträge kontrollieren, starten und Fortschritt sehen.", "queue"),
+        ("2 · Ausgabe", "Einstellungen und Ausgabeziel auswählen.", "effects"),
+        ("3 · Produktion", "Aufträge kontrollieren, starten und Fortschritt sehen.", "queue"),
     ):
         row = QFrame()
         row.setObjectName("overviewStep")
@@ -173,7 +173,7 @@ def set_workflow_route(window, route: str) -> None:
         window.workflow_stack.setCurrentWidget(pages[page_key])
     window._active_workflow_route = route
     tabs = getattr(window, "main_tabs", None)
-    positions = {"media": 0, "queue": 1, "effects": 2, "dashboard": 3}
+    positions = {"media": 0, "effects": 1, "queue": 2, "dashboard": 3}
     if tabs is not None and page_key in positions and tabs.currentIndex() != positions[page_key]:
         tabs.blockSignals(True)
         try:
