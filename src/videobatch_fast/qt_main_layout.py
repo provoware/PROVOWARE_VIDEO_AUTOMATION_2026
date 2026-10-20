@@ -255,7 +255,7 @@ def build_main_ui(window) -> None:
         window.menuBar().setVisible(not compact)
         window.compact_menu.setVisible(compact)
         window.main_tabs.setTabText(3, "Hilfe" if compact else "Hilfe / Werkzeuge")
-        subtitle.setVisible(not compact)
+        subtitle.setVisible(value <= 110)
         window.load_dashboard.frame.setVisible(not compact)
         route = getattr(window, "_active_workflow_route", "media")
         dashboard.setVisible(not compact or route == "queue")
