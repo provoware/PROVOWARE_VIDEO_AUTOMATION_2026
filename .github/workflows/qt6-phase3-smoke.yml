@@ -58,6 +58,7 @@ on:
       - "tests/qt_phase2_smoke.py"
       - "tests/qt_phase3_smoke.py"
       - "tests/qt_phase3_42_matrix.py"
+      - "tests/qt_phase3_keyboard_matrix.py"
       - ".github/workflows/qt6-phase3-smoke.yml"
   workflow_dispatch:
 
@@ -380,6 +381,11 @@ jobs:
           path: ${{ runner.temp }}/videobatch-42-matrix/
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Verify keyboard reachability at 800x600 with 175 and 200 percent
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python tests/qt_phase3_keyboard_matrix.py
 
       - name: Verify persistent Qt thumbnails
         run: python -m pytest -q tests/test_qt_thumbnail_cache.py tests/test_qt_media_browser_pagination.py
