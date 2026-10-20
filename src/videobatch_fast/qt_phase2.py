@@ -27,6 +27,7 @@ from .qt_phase2_components import PreviewPanel, SlideshowPanel
 from .qt_phase2_selection_preview import SelectionPreviewMixin
 from .qt_theme import APP_STYLE
 from .qt_ui import VideoBatchQtWindow
+from .qt_legacy_parity import _plugin_scan
 from .qt_workflow_dialogs import (
     PluginPermissionDecisionDialog,
     VisualApprovalSignDialog,
@@ -40,6 +41,11 @@ from .slideshow import SLIDESHOW_MODE_ALL_IMAGES
 
 class VideoBatchQtPhase2Window(SelectionPreviewMixin, VideoBatchQtWindow):
     """Phase-2 Qt frontend: preview, slideshow, waveform and special dialogs."""
+
+    # Die geprüfte Qt-Pluginfunktion wird bereits bei Klassendefinition
+    # gebunden. Ein späteres Austauschen der Methoden beim Import entfällt.
+    _show_plugin_dialog = _plugin_scan
+    _show_plugin_decision = _plugin_scan
 
     def __init__(self) -> None:
         super().__init__()
@@ -318,23 +324,6 @@ class VideoBatchQtPhase2Window(SelectionPreviewMixin, VideoBatchQtWindow):
         paths = dialog.wait()
         if paths:
             self.media.add_paths(list(paths))
-
-    def _show_plugin_dialog(self) -> None:
-        dialog = plugin_permission_dialog(
-            self,
-            "Beispielansicht der Qt-Migration. Reale Berechtigungen werden vom Plugin-Service geliefert.",
-            "missing",
-        )
-        approved = dialog.wait()
-        self._write_log(f"Qt Plugin-Freigabedialog: {'freigegeben' if approved else 'abgebrochen'}.")
-
-    def _show_plugin_decision(self) -> None:
-        dialog = PluginPermissionDecisionDialog(
-            self,
-            "Berechtigungsübersicht der Qt-Migration.",
-            "active",
-        )
-        self._write_log(f"Qt Plugin-Entscheidung: {dialog.wait()}.")
 
     def _show_update_dialog(self) -> None:
         dialog = update_assistant_dialog(self, "Qt-Phase-2", 0)
