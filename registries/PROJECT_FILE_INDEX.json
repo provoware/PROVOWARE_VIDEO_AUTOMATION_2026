@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "ba2a7767c0d8a38325f2af407d021122e45805bf",
+      "blob_sha1": "5c069a3cbeb9e452417efd9250b9ed4c3922ec5e",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -3751,7 +3751,7 @@
     {
       "path": "tests/qt_phase3_42_matrix.py",
       "mode": "100644",
-      "blob_sha1": "e8e5100a721dd71fdb6df9ac7ef509eb5c78ec5b",
+      "blob_sha1": "55480f698d3eda1720ecd83bc5a9bacebd1a47ed",
       "category": "tests",
       "lifecycle": "development"
     },
