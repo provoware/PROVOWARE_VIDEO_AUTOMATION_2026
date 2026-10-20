@@ -52,6 +52,14 @@
 
 ---
 
+### Aktuelle Zwischenbilanz der drei Arbeitsschritte
+
+- [x] 42 technische Fälle mit 126 Aufnahmen auf Commit `3144447` grün. **Visuell nicht bestanden:** bei 800×600 und 200 % überlappen und verschwinden Titel, Ressourcenfelder und Arbeitsinhalte.
+- [x] Ausgabe-Einstellungen in die zweite Arbeitsseite verschoben; kompakte Menütaste und geringere Kopflast bei >=150 % eingebaut. Der verschärfte Qt-Test sucht jetzt auch abgeschnittene Titel und zu flache Arbeitsseiten. **Neue Sichtprüfung erforderlich.**
+- [x] Zwei Plugin-Dialogroutinen aus Import-Zeit-Methodenersetzung in direkte Qt-Klassenbindungen überführt. **Weitere Legacy-Doppelstrukturen offen.**
+- [x] Lokalen Linux-Update-Ordnerwechsel atomar gemacht; drei Testfälle beenden echte Unterprozesse vor/nach dem Wechsel und nach der Sicherung. **Persistenter Wiederanlauf und Rückfall nach später fehlschlagendem Qt-Start noch offen.**
+- [ ] Nach jedem Quellcode-Update 42er-Sichtprüfung, Gesamtregression, Release-Manifest und Git-Dateiindex auf exakt einem Commit wiederholen.
+
 ## Fokus (ältere Arbeitsnotizen – zeitlich einordnen)
 
 **Zielplattform:** Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6.
