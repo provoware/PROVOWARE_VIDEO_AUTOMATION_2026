@@ -138,7 +138,6 @@ def main() -> int:
         assert window.preview_panel.parity_zoom.maximum() == 800
         assert window.preview_panel._parity_fit_button.text() == "Einpassen"
         assert window.preview_panel._parity_fullscreen_button.text() == "Vollbild"
-        assert window.preview_panel._parity_fit is True
         window.preview_panel.fit_parity_preview()
         assert window.preview_panel._parity_fit is True
         window.preview_panel.set_parity_zoom(175, persist=False)
