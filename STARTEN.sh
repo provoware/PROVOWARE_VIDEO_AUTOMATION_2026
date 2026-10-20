@@ -4,6 +4,17 @@ ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 BOOTSTRAP_PYTHON="${VIDEOBATCH_BOOTSTRAP_PYTHON:-python3}"
 DEBUG_LAUNCHER="$ROOT_DIR/scripts/debug_launcher.py"
 
+# Der außerhalb des austauschbaren Programmordners liegende Starter bleibt
+# verwendbar, auch wenn ein Update scripts/debug_launcher.py beschädigt.
+EXTERNAL_STARTER="$(dirname -- "$ROOT_DIR")/.$(basename -- "$ROOT_DIR").independent_start.py"
+if [[ -f "$EXTERNAL_STARTER" && ! -L "$EXTERNAL_STARTER" ]]; then
+    if ! command -v "$BOOTSTRAP_PYTHON" >/dev/null 2>&1; then
+        printf 'Python 3 fehlt: %s\\n' "$BOOTSTRAP_PYTHON" >&2
+        exit 127
+    fi
+    exec "$BOOTSTRAP_PYTHON" "$EXTERNAL_STARTER" "$ROOT_DIR" "$@"
+fi
+
 if ! command -v "$BOOTSTRAP_PYTHON" >/dev/null 2>&1; then
     printf '%s\n' \
         'VideoBatch konnte nicht gestartet werden.' \
