@@ -54,6 +54,28 @@ def main() -> int:
         assert VideoBatchQtPhase2Window._show_archive_dialog is _archive_last_results
         assert VideoBatchQtPhase2Window._show_visual_approval is _visual_approval
 
+        # These widget methods must be native. No legacy installer may rewrite
+        # the classes when the phase-3 module gets imported.
+        from videobatch_fast.qt_media_list import DropList
+        from videobatch_fast.qt_preview_panel import PreviewPanel
+        from videobatch_fast.qt_legacy_parity_completion import install_parity_completion
+
+        for name in ("paths", "production_paths", "add_paths", "remove_selected",
+                     "clear", "sort_by", "render_view"):
+            assert getattr(DropList, name).__qualname__.startswith("DropList."), name
+        for name in ("__init__", "_render_pixmap", "set_parity_zoom",
+                     "fit_parity_preview", "open_parity_fullscreen"):
+            assert getattr(PreviewPanel, name).__qualname__.startswith("PreviewPanel."), name
+        previous_methods = (
+            DropList.add_paths, DropList.sort_by,
+            PreviewPanel.__init__, PreviewPanel._render_pixmap,
+        )
+        install_parity_completion()
+        assert previous_methods == (
+            DropList.add_paths, DropList.sort_by,
+            PreviewPanel.__init__, PreviewPanel._render_pixmap,
+        )
+
         window = VideoBatchQtPhase3Window(autoload_project=False)
         window.show()
         app.processEvents()
@@ -116,6 +138,9 @@ def main() -> int:
         assert window.preview_panel.parity_zoom.maximum() == 800
         assert window.preview_panel._parity_fit_button.text() == "Einpassen"
         assert window.preview_panel._parity_fullscreen_button.text() == "Vollbild"
+        assert window.preview_panel._parity_fit is True
+        window.preview_panel.fit_parity_preview()
+        assert window.preview_panel._parity_fit is True
         window.preview_panel.set_parity_zoom(175, persist=False)
         assert window.preview_panel._parity_zoom == 175
         assert window.preview_panel.parity_zoom.value() == 175
