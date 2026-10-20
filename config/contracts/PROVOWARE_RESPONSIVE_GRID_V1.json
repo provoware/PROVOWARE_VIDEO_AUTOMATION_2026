@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "id": "PROVOWARE-RESPONSIVE-GRID-V1",
+  "status": "development_reference_not_release_approval",
+  "reference_viewport_css_px": {
+    "width": 800,
+    "height": 600,
+    "meaning": "client_area_not_monitor_resolution"
+  },
+  "reference_grid": {
+    "columns": 120,
+    "rows": 80,
+    "cell_is_positioning_unit_not_widget_size": true,
+    "coordinate_policy": "proportional_not_absolute",
+    "coordinates_are_normalized": true
+  },
+  "layout": {
+    "mode": "intrinsic_responsive_containers",
+    "column_count": {
+      "minimum": 1,
+      "maximum": 2,
+      "decided_by": "available_container_width_and_content_minimums"
+    },
+    "panels": {
+      "minimum_readable_width_css_px": 320,
+      "preferred_minimum_width_css_px": 360,
+      "gap_css_px": 12
+    },
+    "horizontal_overflow": "forbidden_for_primary_application_layout",
+    "vertical_overflow": "allow_in_content_region",
+    "fixed_absolute_widget_coordinates": false,
+    "preserve_essential_controls": true,
+    "body_or_section_scroll_at_high_zoom": true
+  },
+  "typography": {
+    "zoom_percent": [
+      80,
+      100,
+      110,
+      125,
+      150,
+      175,
+      200
+    ],
+    "default_percent": 110,
+    "scale_typography_and_controls_together": true,
+    "wrapping_for_descriptions": true,
+    "text_clipping_allowed_only_for_nonessential_truncatable_data": true,
+    "minimum_hit_target_css_px_recommended": 40
+  },
+  "verification": {
+    "width_height_css_px": [
+      [
+        800,
+        600
+      ],
+      [
+        1024,
+        768
+      ],
+      [
+        1280,
+        720
+      ],
+      [
+        1366,
+        768
+      ],
+      [
+        1920,
+        1080
+      ],
+      [
+        2560,
+        1440
+      ]
+    ],
+    "zoom_percent": [
+      80,
+      100,
+      110,
+      125,
+      150,
+      175,
+      200
+    ],
+    "assertions": [
+      "primary_layout_no_horizontal_overflow",
+      "essential_actions_reachable_by_keyboard",
+      "text_labels_not_clipped",
+      "panels_reflow_before_minimum_width_violation",
+      "vertical_scroll_when_required",
+      "no_unintended_overlap",
+      "original_rendering_and_storage_unmodified"
+    ],
+    "html_prototype_is_not_qt_release_evidence": true,
+    "physical_kubuntu_acceptance_separate": true
+  },
+  "existing_systems": {
+    "historical_design_tokens": "docs/design/VIDEOBATCH_DESIGN_TOKENS.json",
+    "historical_minimum_supported_css_px": 1024,
+    "qt_current_scale_levels": [
+      80,
+      100,
+      110,
+      125,
+      150,
+      175,
+      200
+    ],
+    "no_implicit_replacement_of_old_legacy_contracts": true
+  }
+}

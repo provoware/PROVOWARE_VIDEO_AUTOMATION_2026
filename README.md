@@ -17,20 +17,31 @@
 - Physische Kubuntu-26.04-Plasma-Wayland-Abnahme: Der reale 125-%-Screenshot vom 06.10.2026 zeigte abgeschnittene und überladene Arbeitsbereiche. Der daraus abgeleitete seitengetrennte Qt-Stand muss vor Stable erneut real auf Kubuntu 26.04 / KDE Plasma / Wayland bei 100 %, 125 %, 150 % und 200 % geprüft werden.
 <!-- release-status:end -->
 
-> **Nachweisgrenze:** Die vorstehenden RC24-Zahlen (325 Tests, 496 Release-Dateien) stammen aus dem unveränderten historischen Nachweis. Sie sind **keine** Prüfung des aktuellen Strukturmigrationszweigs PR #246. Historische Entwicklungsbelege für PR #240 sind separat archiviert; neue CI-Ergebnisse werden ausschließlich über den geprüften Commit nachgewiesen. Es gibt keine neue Stable-Freigabe; eine reale Kubuntu-/Wayland-Sichtabnahme bei 100/125/150/200 % fehlt.
+> **Nachweisgrenze:** Die vorstehenden RC24-Zahlen (325 Tests, 496 Release-Dateien) stammen aus dem unveränderten historischen Nachweis. Sie sind **keine** Prüfung der späteren Entwicklungs- und Integrationsstände nach RC24. Historische Entwicklungsbelege für PR #240 sind separat archiviert; neue CI-Ergebnisse werden ausschließlich über den geprüften Commit nachgewiesen. Es gibt keine neue Stable-Freigabe; eine reale Kubuntu-/Wayland-Sichtabnahme bei 100/125/150/200 % fehlt.
 
 
 ## Überblick
 
 VideoBatch Fast ist die lokale Video-Automation für **Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6**. Der aktuelle Stand ist **2.8.3-rc24**. Der aktuelle Releasekandidat enthält jetzt einen seitengetrennten Qt-Arbeitsbereich als Reaktion auf den realen 125-%-Sichtbefund vom 06.10.2026. Dateien, Ausgabe und Produktion besitzen eigene Arbeitsseiten; Projekt, Hilfe und Diagnose verdrängen den Hauptablauf nicht mehr. Vor Stable ist eine erneute reale Sichtprüfung bei 100 %, 125 %, 150 % und 200 % erforderlich.
 
-## Aktueller Entwicklungsstand – PR #246 (nicht Stable)
+## Historischer Entwicklungsnachweis – PR #246 (bereits integriert)
 
-**Einziger offener Entwicklungs-PR zum Prüfzeitpunkt:** [#246 – Benutzer-Hauptordner und sichere Strukturmigration](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/246). Die früheren parallelen PRs #247, #248 und #250 wurden geschlossen; **#250 wurde ohne Merge** abgelöst und seine benötigten Änderungen wurden geprüft in #246 übernommen.
+**Damals geprüfter Entwicklungs-PR (inzwischen nach main integriert):** [#246 – Benutzer-Hauptordner und sichere Strukturmigration](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/246). Die früheren parallelen PRs #247, #248 und #250 wurden geschlossen; **#250 wurde ohne Merge** abgelöst und seine benötigten Änderungen wurden geprüft in #246 übernommen.
 
 **Nachweisstand vor dieser Dokumentationsaktualisierung:** Commit [`2ae2ae5`](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/commit/2ae2ae51fb1147b46150fe107b97a53e4a65495f), **acht von acht GitHub-Prüfläufen erfolgreich**. Die Prüfungen enthalten Qt6 mit Wayland-Lebenszyklus, Offline-Runtime, Integrations- und Sicherheitswerkzeuge, FFmpeg, Langrender sowie Release-Verträge. Der reale ZIP-Bau und Entpacktest [GitHub-Lauf 39339430217](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39339430217) bestätigte **sieben Hauptordnerdateien** und den Aufruf des entpackten Kommando-Einstiegs. Dieser konkrete Nachweis ist auf `2ae2ae5` begrenzt; nach weiteren Änderungen gelten dessen Ergebnisse nicht automatisch für neue Commits.
 
 **Noch nicht bewiesen:** Vollständige Offline-Erstinstallation und grafischer Qt-Start aus dem frisch entpackten Paket. Ebenso offen bleiben die persönliche Kubuntu-Sichtabnahme bei 100/125/150/200 % sowie die Stable-Freigabe. Die 325 historischen RC24-Tests sind kein Entwicklungs- oder Stable-Nachweis für #246.
+
+## Neuer Rastervertrag V1 – 800 × 600 / 120 × 80 (Entwicklung)
+
+Der verbindlich vorgeschlagene PROVOWARE-Oberflächenstandard verwendet **800 × 600 CSS-Pixel nutzbare Fensterfläche** als minimale Referenz und **120 × 80 (9.600) relative Rasterzellen** als feine Orientierung. **Kein** Element wird dauerhaft auf feste X-/Y-Koordinaten gelegt: Gruppen reagieren auf verfügbare Breite, Schriftgröße und Mindestmaße. Bei Platzmangel erfolgt **automatischer Umbruch und vertikales Scrollen**, statt Beschriftungen oder Schaltflächen abzuschneiden.
+
+- [Fachstandard mit Migrationsplan](docs/design/PROVOWARE_RESPONSIVE_GRID_V1.md)
+- [Maschinenlesbarer Layoutvertrag](config/contracts/PROVOWARE_RESPONSIVE_GRID_V1.json)
+- [Offline-HTML-Layoutreferenz](visual_inspection/provoware_grid_reference.html)
+- [Automatische Vertragsprüfungen](tests/test_provoware_responsive_grid_contract.py)
+
+**Nachweisgrenze:** Die HTML-Seite ist ein optischer Layout-Demonstrator, **kein Ersatz** der Qt-Anwendung. Der Vertrag ist zunächst eine Entwicklungsbasis; real vermessene Browser-Screenshots, Abgleich der Qt-Oberfläche und physische Kubuntu-Abnahme bleiben eigene Prüfschritte. Der bisherige 1024-Pixel-Altvertrag wird nicht unbemerkt überschrieben.
 
 ## In Entwicklung: Platzsparende Qt-Oberfläche (20.10.2026)
 

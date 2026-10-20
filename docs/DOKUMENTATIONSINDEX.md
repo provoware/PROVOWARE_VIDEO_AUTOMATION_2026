@@ -30,7 +30,8 @@ Dieser Wegweiser ordnet jede aktuelle Anleitung und jeden historischen Nachweis 
 | reproduzierbare Updates | `docs/REPRODUCIBLE_UPDATE_PIPELINE.md` |
 | Plugins prüfen | `docs/reference/PLUGIN_SYSTEM.md`, `docs/PLUGIN_PERMISSIONS.md`, `docs/PLUGIN_SIGNING.md`, `docs/PLUGIN_APPROVALS.md`, `docs/PLUGIN_APPROVAL_MANAGEMENT.md`, `docs/PLUGIN_OS_ISOLATION.md` |
 | visuelle Prüfung | `docs/VISUAL_INSPECTION_HTML.md`, `docs/VISUAL_REGRESSION.md`, `docs/WORKSPACE_VISUAL_REGRESSION.md` |
-| Designvertrag | `docs/design/VIDEOBATCH_GRAPHICS_MANIFEST.md`, `docs/design/VIDEOBATCH_DESIGN_IMPLEMENTATION_PLAN.md` |
+| Neues responsives Raster V1 (800×600, 120×80) | `docs/design/PROVOWARE_RESPONSIVE_GRID_V1.md`, `config/contracts/PROVOWARE_RESPONSIVE_GRID_V1.json`, `visual_inspection/provoware_grid_reference.html` |
+| Historischer VideoBatch-Grafikvertrag | `docs/design/VIDEOBATCH_GRAPHICS_MANIFEST.md`, `docs/design/VIDEOBATCH_DESIGN_IMPLEMENTATION_PLAN.md` |
 
 ## Technische Fachanleitungen
 
