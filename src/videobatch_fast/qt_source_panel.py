@@ -30,7 +30,7 @@ def _source_card(window, label: str, widget: DropList, add_text: str) -> QFrame:
     header.addStretch()
     sorter = QComboBox()
     sorter.setAccessibleName(f"{label} sortieren")
-    sorter.setMinimumWidth(115)
+    # At 200% the previous hard minimum expanded the entire scroll page.\n    sorter.setMinimumWidth(0)\n    sorter.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
     for sort_label, sort_mode in SORT_MODES:
         sorter.addItem(sort_label, sort_mode)
     sorter.currentIndexChanged.connect(
@@ -80,7 +80,7 @@ class ResponsiveSourceColumns(QWidget):
         # reflow at high zoom and force the scroll page past its right edge.
         self.grid.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
         self.setMinimumWidth(0)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
         self.grid.setContentsMargins(0, 0, 0, 0)
         self.grid.setSpacing(12)
         self.grid.setColumnStretch(0, 1)
@@ -140,7 +140,7 @@ def build_sources_panel(window) -> QWidget:
         _source_card(window, "Audiodateien", window.audio, "Audio auswählen …"),
         _source_card(window, "Bilder / Videos", window.media, "Bilder/Videos auswählen …"),
     )
-    layout.addWidget(window.source_columns, 1)
+    layout.addWidget(window.source_columns, 1)\n    panel.setMinimumWidth(0)\n    layout.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
 
     adopt = QPushButton("Ansicht als Produktionsreihenfolge übernehmen")
     adopt.setObjectName("secondary")
