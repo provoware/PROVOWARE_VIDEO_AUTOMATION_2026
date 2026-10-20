@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import os
+import json
 import re
+import signal
 import subprocess
 import sys
 import time
@@ -234,6 +236,50 @@ def _monitor_application(
         )
 
 
+def _finish_local_update_boot(bootstrap_log: Path | None, *, started: bool) -> int | None:
+    """Confirm an updated version or restart the preserved version on failure.
+
+    Does nothing when there is no pending local update. The process that has
+    already reported UI_READY is stopped before restoring the old installation.
+    """
+    from videobatch_fast.updates import finish_local_update_first_start
+
+    source = _tail(bootstrap_log)
+    safe_mode = "Qt im sicheren Startmodus öffnen" in source
+    normal_ready = started and not safe_mode and _ready_pid(bootstrap_log) is not None
+    if started and not normal_ready:
+        # A failed normal boot followed by a safe-mode window is NOT a
+        # successful first production start of the newly installed version.
+        pid = _ready_pid(bootstrap_log)
+        if pid is not None and _process_exists(pid):
+            os.kill(pid, signal.SIGTERM)
+            for _ in range(30):
+                if not _process_exists(pid):
+                    break
+                time.sleep(0.1)
+            if _process_exists(pid):
+                os.kill(pid, signal.SIGKILL)
+    status = finish_local_update_first_start(ROOT, normal_ui_ready=normal_ready)
+    if status == "confirmed":
+        print("VideoBatch: Update-Erststart bestätigt; vorherige Sicherung bleibt vorhanden.", flush=True)
+    if status != "restored":
+        return None
+    print("VideoBatch: Neuer Erststart fehlgeschlagen. Die bestätigte vorherige Version wurde wiederhergestellt.", flush=True)
+    if os.environ.get("VIDEOBATCH_UPDATE_ROLLBACK_RETRY") == "1":
+        print("VideoBatch: Zweiter Rückfallstart wird zur Sicherheit nicht wiederholt.", file=sys.stderr)
+        return 79
+    env = {**os.environ, "VIDEOBATCH_UPDATE_ROLLBACK_RETRY": "1"}
+    # A fresh process imports the restored previous version instead of keeping
+    # modules from the failed candidate loaded in memory.
+    previous = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "debug_launcher.py"), *sys.argv[1:]],
+        cwd=ROOT,
+        env=env,
+        check=False,
+    )
+    return int(previous.returncode)
+
+
 def main() -> int:
     # Vor Qt/Bootstrap unterbrochene lokale Updates anhand eines außerhalb
     # des getauschten Programmordners gespeicherten Journals zurückholen.
@@ -317,6 +363,14 @@ def main() -> int:
         time.sleep(0.15)
     _stream_file(bootstrap_log, bootstrap_offset, prefix="BOOTSTRAP")
     returncode = int(process.returncode or 0)
+
+    try:
+        rollback_result = _finish_local_update_boot(bootstrap_log, started=(returncode == 0))
+    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
+        print(f"VideoBatch: Update-Erststart nicht sicher abschließbar: {exc}", file=sys.stderr, flush=True)
+        return 78
+    if rollback_result is not None:
+        return rollback_result
 
     if returncode != 0:
         context = _failure_context(returncode)
