@@ -70,6 +70,16 @@ def findings(window: VideoBatchQtPhase3Window, width: int, height: int) -> list[
     route = getattr(window, "_active_workflow_route", "")
     if route != "effects" and window.settings_view.isVisibleTo(window):
         problems.append("Ausgabeeinstellungen verdecken eine andere Arbeitsseite")
+    if route == "queue" and int(window.view_scale.currentData() or 100) >= 175:
+        if window._workflow_pages["queue"].verticalScrollBar().value() > 2:
+            problems.append("Produktion zeigt beim Öffnen nicht den Anfang der Anleitung")
+    if route == "media" and width <= 900 and int(window.view_scale.currentData() or 100) >= 175:
+        remove_buttons = [
+            button for button, full, _short in window._source_action_labels
+            if full == "Entfernen" and button.isVisibleTo(window)
+        ]
+        if not remove_buttons or any(button.text() != "Entf." for button in remove_buttons):
+            problems.append("Dateiauswahl: kurze sichtbare Entfernen-Beschriftung fehlt")
     if route == "effects":
         output_scroll = window._workflow_pages["effects"]
         if output_scroll.verticalScrollBar().value() > 2:
