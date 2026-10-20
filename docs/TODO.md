@@ -54,10 +54,12 @@
 
 ### Aktuelle Zwischenbilanz der drei Arbeitsschritte
 
+- [x] Visueller 200-%-Befund: Historische Expertenleiste überdeckte den Ausgabebereich. Automatische Öffnung abgestellt, manuelle Menüfunktion erhalten. Produktionsseite scrollbar; neue vollständige Screenshot-Abnahme offen.
+
 - [x] 42 technische Fälle mit 126 Aufnahmen auf Commit `3144447` grün. **Visuell nicht bestanden:** bei 800×600 und 200 % überlappen und verschwinden Titel, Ressourcenfelder und Arbeitsinhalte.
 - [x] Ausgabe-Einstellungen in die zweite Arbeitsseite verschoben; kompakte Menütaste und geringere Kopflast bei >=150 % eingebaut. Der verschärfte Qt-Test sucht jetzt auch abgeschnittene Titel und zu flache Arbeitsseiten. **Neue Sichtprüfung erforderlich.**
 - [x] Zwei Plugin-Dialogroutinen aus Import-Zeit-Methodenersetzung in direkte Qt-Klassenbindungen überführt. **Weitere Legacy-Doppelstrukturen offen.**
-- [x] Lokalen Linux-Update-Ordnerwechsel atomar gemacht; drei Testfälle beenden echte Unterprozesse vor/nach dem Wechsel und nach der Sicherung. **Persistenter Wiederanlauf und Rückfall nach später fehlschlagendem Qt-Start noch offen.**
+- [x] Lokalen Linux-Update-Ordnerwechsel atomar gemacht; drei Testfälle beenden echte Unterprozesse vor/nach dem Wechsel und nach der Sicherung. **Persistenter Wiederanlauf vor dem GUI-Start umgesetzt; Erststart-Rückfall nach einem späteren Programmfehler noch offen. CI-Nachweis für den neuen Stand ausstehend.**
 - [ ] Nach jedem Quellcode-Update 42er-Sichtprüfung, Gesamtregression, Release-Manifest und Git-Dateiindex auf exakt einem Commit wiederholen.
 
 ## Fokus (ältere Arbeitsnotizen – zeitlich einordnen)
