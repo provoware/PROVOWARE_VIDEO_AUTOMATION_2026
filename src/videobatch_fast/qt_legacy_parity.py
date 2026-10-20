@@ -304,19 +304,6 @@ def _patch_phase2_class() -> None:
     VideoBatchQtPhase2Window._start = _parity_start
     VideoBatchQtPhase2Window._runtime_state = _parity_runtime_state
 
-    slideshow_cls = __import__(
-        "videobatch_fast.qt_phase2_components",
-        fromlist=["SlideshowPanel"],
-    ).SlideshowPanel
-    original_commit_order = slideshow_cls._commit_order
-    if not getattr(slideshow_cls, "_tk_parity_installed", False):
-        def commit_order(self, ordered, message, *, mode="manual"):
-            self._parity_order_mode = mode
-            return original_commit_order(self, ordered, message, mode=mode)
-
-        slideshow_cls._commit_order = commit_order
-        slideshow_cls._tk_parity_installed = True
-
     VideoBatchQtPhase2Window._tk_parity_installed = True
 
 
