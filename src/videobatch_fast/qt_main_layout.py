@@ -278,3 +278,31 @@ def build_main_ui(window) -> None:
     reset.activated.connect(lambda: window.view_scale.setCurrentIndex(window.view_scale.findData(110)))
     window._scale_shortcuts.append(reset)
     apply_scale()
+
+    # Bei großer Schrift müssen auch zunächst unterhalb des Fensters liegende
+    # Bedienelemente per Tastatur erreichbar und sichtbar werden. Insbesondere
+    # mehrere ineinander liegende QScrollAreas werden von Qt nicht immer
+    # automatisch gemeinsam zum gerade fokussierten Knopf nachgeführt.
+    app = QApplication.instance()
+    if app is not None:
+        def reveal_keyboard_focus(_previous, focused) -> None:
+            if focused is None or not window.isAncestorOf(focused):
+                return
+            ancestor = focused.parentWidget()
+            while ancestor is not None:
+                if isinstance(ancestor, QScrollArea):
+                    ancestor.ensureWidgetVisible(focused, 8, 8)
+                if ancestor is window:
+                    break
+                ancestor = ancestor.parentWidget()
+
+        app.focusChanged.connect(reveal_keyboard_focus)
+        window._focus_visibility_handler = reveal_keyboard_focus
+
+        def disconnect_focus_handler(*_ignored) -> None:
+            try:
+                app.focusChanged.disconnect(reveal_keyboard_focus)
+            except (RuntimeError, TypeError):
+                pass
+
+        window.destroyed.connect(disconnect_focus_handler)
