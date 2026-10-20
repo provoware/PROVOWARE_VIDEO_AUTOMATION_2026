@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "fc124dd298ad1e104b63b9d80e79d68760b8a2de",
+      "blob_sha1": "ac82438ac8326ced9c8129e412c77a7688b1f079",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -3485,7 +3485,7 @@
     {
       "path": "src/videobatch_fast/updates.py",
       "mode": "100644",
-      "blob_sha1": "8e271714031180f88f8049d93a78306958a8f7c2",
+      "blob_sha1": "50de9e6aac23f45618fd6c5daad1e2b6bd69b85a",
       "category": "application",
       "lifecycle": "active"
     },
