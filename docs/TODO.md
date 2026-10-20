@@ -6,6 +6,16 @@
 
 **Arbeitsweise:** Entwicklung und Prüfungen auf getrennten Zweigen, kein direktes Stable-Merge. Zuerst echte Funktion und Sicherheit, danach optische Verfeinerung. Kein Punkt erhält ein Häkchen, bevor ein aktueller Commit und reproduzierbare Belege vorliegen.
 
+### Neue Umsetzung: kleine Ansichten, Qt-Direktmethoden und externer Update-Starter (20.10.2026)
+
+- [x] Bei 800×600 / 175–200 % den **dekorativen Kopf** verkleinert, ohne die Arbeits-Schriftstufe global zu ändern; Datei-Auswahltasten und Auftrags-Spalten erhalten kurze sichtbare Texte sowie vollständige Tooltips. `tests/qt_phase3_42_matrix.py` prüft die kompakte Darstellung.
+- [x] Diashow-Reihenfolge sowie vier Qt-Phase-3-Abläufe (**Optionen, Aktualisieren, Laufzeitstatus, Start**) aus der dynamischen Klassenersetzung in ausdrücklich definierte Methoden überführt; die vier Importdialog-Einstiege ebenfalls direkt an Qt Phase 3 gebunden. Die bestehenden Qt-Roundtrip-/Smoke-Verträge bleiben Teil der CI.
+- [x] Vor dem lokalen Aktivieren eines Updates wird `<Installationsordner>-SICHER-STARTEN.sh` **außerhalb** des austauschbaren Ordners angelegt, zusammen mit dem eigenständigen Standardbibliothek-Python-Starter. Er prüft die persistierte Transaktion und kann einen kaputten neuen `STARTEN.sh` **und** `debug_launcher.py` unabhängig von neuen Programmimporten zurückrollen. Ein neuer echter Unterprozesstest zerstört beide neuen Startdateien und verlangt einen erfolgreichen Start der Vorversion.
+- [ ] Alle neuen technischen UI-/Sicherheitsprüfungen, Release-Manifest und Dateiindex **auf genau einem finalen Commit** erfolgreich auswerten; bei Fehlern zuerst den Quellcode reparieren.
+- [ ] Die verbleibenden echten Qt-Kompatibilitätsadapter für **DropList-Ansicht/Produktionsreihenfolge und PreviewPanel** mit unabhängigen Verhaltenstests in die jeweiligen Klassen übertragen. Keine pauschale Altcode-Löschung.
+- [ ] Die neu erzeugten **126 echten Screenshots** vollständig begutachten, insbesondere 800×600 mit 175/200 %, und mögliche Restüberläufe beheben. Automatischer Geometrie- und Fokusnachweis sind keine physische Barrierefreiheitsfreigabe.
+- [ ] Den sichtbaren Bedienweg zur externen Sicherungs-Startdatei und bestehende Startverknüpfungen auf einem echten Kubuntu-System kontrollieren. Ein völlig zerstörtes **ursprüngliches** STARTEN.sh muss über die externe Sicherungsdatei gestartet werden; der alternative Pfad darf nicht verschwiegen werden.
+
 ### P0 – grafische Vollprüfung (Issue [#254](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/issues/254))
 
 - [x] Echtes Qt-Phase-3-Fenster in einer automatisierten **42-Fälle-Schleife** erfassen: sechs Größen (800×600, 1024×768, 1280×720, 1366×768, 1920×1080, 2560×1440) × sieben Schriftstufen (80/100/110/125/150/175/200 %).
