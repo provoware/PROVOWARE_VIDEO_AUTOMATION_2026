@@ -108,7 +108,7 @@ class UpdateIntegrityTests(unittest.TestCase):
     def _working_update(self, root: Path) -> tuple[Path, Path]:
         install = root / "install"
         install.mkdir()
-        script = b'#!/usr/bin/env bash\\nset -e\\ntest "$(cat version.txt)" = new\\n'
+        script = b'#!/usr/bin/env bash\nset -e\ntest "$(cat version.txt)" = new\n'
         (install / "version.txt").write_bytes(b"old")
         (install / "test.sh").write_bytes(script)
         (install / "test.sh").chmod(0o755)
