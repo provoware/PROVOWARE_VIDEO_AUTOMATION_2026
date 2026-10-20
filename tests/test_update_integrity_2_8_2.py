@@ -432,5 +432,75 @@ with patch.object(updater, '_write_report', side_effect=terminate_after_marker):
             self.assertTrue(Path(installed.backup).is_dir() or list(root.glob(".videobatch_update_*")))
 
 
+    def test_independent_external_starter_survives_broken_debug_and_start_shell(self):
+        """Really run the parent-level rescue with BOTH new entrypoints broken."""
+        with tempfile.TemporaryDirectory() as temp, patch(
+            "videobatch_fast.paths.state_dir", return_value=Path(temp) / "state"
+        ):
+            root = Path(temp)
+            source = Path(__file__).resolve().parents[1]
+            install = root / "install"
+            (install / "scripts").mkdir(parents=True)
+            (install / "version.txt").write_bytes(b"old")
+            (install / "test.sh").write_bytes(
+                b'#!/bin/sh\nset -e\ntest "$(cat version.txt)" = new\n'
+            )
+            (install / "test.sh").chmod(0o755)
+            old_debug = (
+                b"from pathlib import Path\n"
+                b"Path(__file__).resolve().parents[2].joinpath('old_started.txt').write_text('safe')\n"
+            )
+            (install / "scripts/debug_launcher.py").write_bytes(old_debug)
+            old_shell = (source / "STARTEN.sh").read_bytes()
+            (install / "STARTEN.sh").write_bytes(old_shell)
+            bad_debug = b"raise SystemExit(57)\n"
+            bad_shell = b"#!/bin/sh\nexit 89\n"
+            files = {
+                "version.txt": (b"new", 0o644),
+                "test.sh": ((install / "test.sh").read_bytes(), 0o755),
+                "scripts/debug_launcher.py": (bad_debug, 0o644),
+                "STARTEN.sh": (bad_shell, 0o755),
+            }
+            release = _release_manifest(files)
+            changes = [
+                ("version.txt", b"new", "replace", "0o644"),
+                ("scripts/debug_launcher.py", bad_debug, "replace", "0o644"),
+                ("STARTEN.sh", bad_shell, "replace", "0o755"),
+                ("RELEASE_MANIFEST.json", release, "add", "0o644"),
+            ]
+            manifest = {
+                "schema_version": 3,
+                "version": "2.8.2-rc1",
+                "channel": "release-candidate",
+                "compatible_from": ["2.8.1-rc1"],
+                "files": [
+                    {"path": name, "operation": operation,
+                     "sha256": hashlib.sha256(data).hexdigest(), "mode": mode}
+                    for name, data, operation, mode in changes
+                ],
+            }
+            package = root / "broken-entrypoints.zip"
+            with zipfile.ZipFile(package, "w") as archive:
+                archive.writestr("update_manifest.json", json.dumps(manifest))
+                for name, data, _, _ in changes:
+                    archive.writestr(name, data)
+            result = apply_update_package(package, install, "2.8.1-rc1", timeout=20)
+            self.assertTrue(result.success, result.message)
+            self.assertEqual((install / "STARTEN.sh").read_bytes(), bad_shell)
+            self.assertEqual((install / "version.txt").read_bytes(), b"new")
+            external = root / "install-SICHER-STARTEN.sh"
+            self.assertTrue(external.is_file())
+            process = subprocess.run(
+                ["bash", str(external)], cwd=root,
+                env={**os.environ, "PYTHONPATH": str(source / "src")},
+                capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(process.returncode, 0, process.stdout + process.stderr)
+            self.assertEqual((install / "version.txt").read_bytes(), b"old")
+            self.assertEqual((install / "STARTEN.sh").read_bytes(), old_shell)
+            self.assertEqual((root / "old_started.txt").read_text(), "safe")
+            self.assertFalse((root / ".install.update_pending.json").exists())
+
+
 if __name__ == "__main__":
     unittest.main()
