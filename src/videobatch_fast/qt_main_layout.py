@@ -66,12 +66,14 @@ def build_main_ui(window) -> None:
         for action in window.menuBar().actions():
             menu.addAction(action)
         menu.exec(window.compact_menu.mapToGlobal(QPoint(0, window.compact_menu.height())))
+        menu.deleteLater()
     window.compact_menu.clicked.connect(open_compact_menu)
     header.addWidget(window.compact_menu, 1, 1)
     window.compact_menu.hide()
 
     dashboard = QFrame()
     dashboard.setObjectName("compactStatusDashboard")
+    window._compact_header_dashboard = dashboard
     dashboard_row = QVBoxLayout(dashboard)
     dashboard_row.setContentsMargins(4, 2, 4, 2)
     dashboard_row.setSpacing(8)
@@ -252,6 +254,7 @@ def build_main_ui(window) -> None:
         compact = value >= 150
         window.menuBar().setVisible(not compact)
         window.compact_menu.setVisible(compact)
+        window.main_tabs.setTabText(3, "Hilfe" if compact else "Hilfe / Werkzeuge")
         subtitle.setVisible(not compact)
         window.load_dashboard.frame.setVisible(not compact)
         route = getattr(window, "_active_workflow_route", "media")
