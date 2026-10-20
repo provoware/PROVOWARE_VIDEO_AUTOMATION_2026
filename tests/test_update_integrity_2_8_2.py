@@ -3,6 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import subprocess
+import sys
 import tempfile
 import unittest
 import warnings
@@ -147,14 +149,11 @@ class UpdateIntegrityTests(unittest.TestCase):
         ):
             root = Path(temp)
             install, package = self._working_update(root)
-            real_replace = os.replace
-
-            def simulated_failure(source, destination):
-                if Path(source).name == "candidate" and Path(destination) == install:
-                    raise OSError("Abbruch bei der Kandidatenaktivierung")
-                return real_replace(source, destination)
-
-            with patch("videobatch_fast.updates.os.replace", side_effect=simulated_failure):
+            # Atomarer Tausch schlägt fehl: Altinstallation bleibt unberührt.
+            with patch(
+                "videobatch_fast.updates._atomic_exchange_dirs",
+                side_effect=OSError("Abbruch bei der Kandidatenaktivierung"),
+            ):
                 result = apply_update_package(package, install, "2.8.1-rc1", timeout=20)
             self.assertFalse(result.success)
             self.assertEqual((install / "version.txt").read_bytes(), b"old")
@@ -181,6 +180,90 @@ class UpdateIntegrityTests(unittest.TestCase):
             self.assertEqual((install / "version.txt").read_bytes(), b"old")
             self.assertFalse(list(root.glob("install.backup_*")))
 
+
+
+    def test_hard_process_kill_after_atomic_exchange_never_removes_start_path(self):
+        # Der Kindprozess wird absichtlich ohne finally-Block getötet.
+        # Die bisherige Version muss weiter erreichbar sein, auch wenn
+        # die Kandidatenaktivierung zuvor bereits atomar erfolgte.
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            install, package = self._working_update(root)
+            worker = """
+import os, sys
+from pathlib import Path
+from unittest.mock import patch
+import videobatch_fast.updates as updater
+real_exchange = updater._atomic_exchange_dirs
+def interrupted(old, new):
+    real_exchange(old, new)
+    os._exit(91)
+with patch.object(updater, '_atomic_exchange_dirs', side_effect=interrupted):
+    updater.apply_update_package(Path(sys.argv[1]), Path(sys.argv[2]), '2.8.1-rc1', timeout=20)
+"""
+            env = {**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[1] / "src")}
+            result = subprocess.run(
+                [sys.executable, "-c", worker, str(package), str(install)],
+                env=env, timeout=30, capture_output=True, text=True,
+            )
+            self.assertEqual(result.returncode, 91, result.stderr)
+            self.assertTrue(install.is_dir())
+            self.assertEqual((install / "version.txt").read_bytes(), b"new")
+            old_copies = list(root.glob(".videobatch_update_*/candidate/version.txt"))
+            self.assertEqual(len(old_copies), 1)
+            self.assertEqual(old_copies[0].read_bytes(), b"old")
+
+    def test_hard_process_kill_before_exchange_preserves_old_start_path(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            install, package = self._working_update(root)
+            worker = """
+import os, sys
+from pathlib import Path
+from unittest.mock import patch
+import videobatch_fast.updates as updater
+with patch.object(updater, '_atomic_exchange_dirs', side_effect=lambda *_: os._exit(92)):
+    updater.apply_update_package(Path(sys.argv[1]), Path(sys.argv[2]), '2.8.1-rc1', timeout=20)
+"""
+            env = {**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[1] / "src")}
+            result = subprocess.run(
+                [sys.executable, "-c", worker, str(package), str(install)],
+                env=env, timeout=30, capture_output=True, text=True,
+            )
+            self.assertEqual(result.returncode, 92, result.stderr)
+            self.assertTrue(install.is_dir())
+            self.assertEqual((install / "version.txt").read_bytes(), b"old")
+
+    def test_hard_process_kill_after_backup_preserves_both_versions(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            install, package = self._working_update(root)
+            worker = """
+import os, sys
+from pathlib import Path
+from unittest.mock import patch
+import videobatch_fast.updates as updater
+real_sync = updater._fsync_directory
+calls = 0
+def interrupted(parent):
+    global calls
+    calls += 1
+    if calls == 2:
+        os._exit(93)
+    real_sync(parent)
+with patch.object(updater, '_fsync_directory', side_effect=interrupted):
+    updater.apply_update_package(Path(sys.argv[1]), Path(sys.argv[2]), '2.8.1-rc1', timeout=20)
+"""
+            env = {**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[1] / "src")}
+            result = subprocess.run(
+                [sys.executable, "-c", worker, str(package), str(install)],
+                env=env, timeout=30, capture_output=True, text=True,
+            )
+            self.assertEqual(result.returncode, 93, result.stderr)
+            self.assertEqual((install / "version.txt").read_bytes(), b"new")
+            backups = list(root.glob("install.backup_*"))
+            self.assertEqual(len(backups), 1)
+            self.assertEqual((backups[0] / "version.txt").read_bytes(), b"old")
 
 
 if __name__ == "__main__":
