@@ -254,6 +254,9 @@ def build_main_ui(window) -> None:
         # A compact title keeps all original font choices for the WORK controls;
         # only the decorative brand loses excess height on tiny screens.
         small_large = value >= 175 and window.width() <= 900
+        # The persistent next-step hint must show more than one line at 800x600.
+        # It remains visible while the workflow itself can scroll vertically.
+        window.action_footer_scroll.setMinimumHeight(82 if small_large else 52)
         title.setStyleSheet("font-size: 24px; font-weight: 800;" if small_large else "")
         window.status.setStyleSheet(
             "font-size: 17px; padding: 3px 6px; font-weight: 800;" if small_large else ""
