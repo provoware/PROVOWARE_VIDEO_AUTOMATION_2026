@@ -299,24 +299,11 @@ class DiagnosticsPanel(QFrame):
 # Phase 3 imports this module after qt_phase2.py is fully defined but before the
 # Phase-3 subclass is constructed. Install the migration adapter here so all
 # Phase-2 instances inherit the restored start/settings behavior without Tk.
-from .qt_legacy_parity import (
-    _archive_last_results,
-    _offer_recovery,
-    _update_package,
-    _visual_approval,
-    install_legacy_parity,
-)
-from .qt_phase2 import VideoBatchQtPhase2Window
+from .qt_legacy_parity import install_legacy_parity
 
+# Nur die noch benötigten Kompatibilitätsadapter installieren. Alle sechs
+# speziellen Qt-Dialoge werden jetzt ausdrücklich in qt_phase2.py gebunden.
 install_legacy_parity()
-
-# Qt connects button callbacks while _dialogs_panel() is built. Bind the real
-# services at class level before any window is created, otherwise those buttons
-# would keep references to the old demonstration handlers.
-VideoBatchQtPhase2Window._show_update_dialog = _update_package
-VideoBatchQtPhase2Window._show_recovery_dialog = lambda self: _offer_recovery(self, manual=True)
-VideoBatchQtPhase2Window._show_archive_dialog = _archive_last_results
-VideoBatchQtPhase2Window._show_visual_approval = _visual_approval
 
 # Complete the remaining Tk -> Qt parity before Phase-3 windows are instantiated.
 from .qt_legacy_parity_completion import install_parity_completion
