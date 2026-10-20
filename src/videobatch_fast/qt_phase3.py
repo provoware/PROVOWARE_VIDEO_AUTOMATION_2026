@@ -26,7 +26,7 @@ from .config import DEFAULT_CONFIG, load_config
 from .qt_legacy_parity import (
     _finish_parity_init, _parity_options, _parity_runtime_state, _parity_start,
 )
-from .qt_legacy_parity_completion import _finish_completion, persist_parity_on_close
+from .qt_legacy_parity_completion import _browse, _finish_completion, persist_parity_on_close
 from .qt_workspace_layout import HelpPanel, set_workflow_route
 from .qt_phase3_components import DiagnosticsPanel, ProjectPanel, WorkspaceNavigationPanel
 from .qt_theme import APP_STYLE
@@ -85,6 +85,18 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
 
     def _start(self) -> None:
         _parity_start(self)
+
+    def _choose_audio(self) -> None:
+        _browse(self, audio=True)
+
+    def _choose_media(self) -> None:
+        _browse(self, audio=False)
+
+    def _browse_audio(self) -> None:
+        _browse(self, audio=True)
+
+    def _browse_media(self) -> None:
+        _browse(self, audio=False)
 
     def _build_phase3_workspace(self) -> None:
         self.navigation_dock = QDockWidget("Bereiche", self)
