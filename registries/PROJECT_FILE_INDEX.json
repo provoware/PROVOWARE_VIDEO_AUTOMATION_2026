@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "10eef8c5d971603859e1ed990e2dc54169cd7111",
+      "blob_sha1": "e9598893e1ae097fb0c39f9c24e70f4a83e86771",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -3072,7 +3072,7 @@
     {
       "path": "src/videobatch_fast/qt_main_layout.py",
       "mode": "100644",
-      "blob_sha1": "5bd611512d31b91eab3efdbb5ec529a9f7477545",
+      "blob_sha1": "59210866ff235834a015494a27f3119b375c524d",
       "category": "application",
       "lifecycle": "active"
     },
