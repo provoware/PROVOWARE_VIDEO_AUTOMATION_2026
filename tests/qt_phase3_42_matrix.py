@@ -43,6 +43,11 @@ def findings(window: VideoBatchQtPhase3Window, width: int, height: int) -> list[
             needed_width = label.fontMetrics().horizontalAdvance(label.text())
             if label.width() + 2 < needed_width:
                 problems.append("Programmtitel horizontal abgeschnitten")
+    if width <= 900 and int(window.view_scale.currentData() or 100) >= 175:
+        if window.action_footer_scroll.height() < 78:
+            problems.append(
+                f"Nächster-Schritt-Hinweis zu flach: {window.action_footer_scroll.height()}px"
+            )
     # Detect regressions in the specifically affected 800x600 / 200% layout.
     if width <= 900 and int(window.view_scale.currentData() or 100) >= 175:
         full = [window.table.horizontalHeaderItem(i).text() for i in range(5)]
