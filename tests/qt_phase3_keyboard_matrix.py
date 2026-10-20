@@ -12,7 +12,11 @@ from pathlib import Path
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtCore import QPoint, QRect, Qt
-from PySide6.QtWidgets import QApplication, QAbstractScrollArea, QPushButton, QToolButton
+from PySide6.QtWidgets import (
+    QApplication, QAbstractButton, QAbstractScrollArea, QAbstractSpinBox,
+    QComboBox, QLineEdit, QPlainTextEdit, QPushButton, QSlider,
+    QTextEdit, QToolButton,
+)
 
 from videobatch_fast.qt_phase3 import VideoBatchQtPhase3Window
 
@@ -59,18 +63,20 @@ def run() -> int:
                     # Controls hidden by design (e.g. advanced tool docks)
                     # are not part of the currently offered beginner workflow.
                     controls = [
-                        w for w in (*window.findChildren(QPushButton),
-                                    *window.findChildren(QToolButton))
+                        w for w in window.findChildren((
+                            QAbstractButton, QAbstractSpinBox, QComboBox,
+                            QLineEdit, QPlainTextEdit, QTextEdit, QSlider,
+                        ))
                         if w.isVisibleTo(window) and w.isEnabled()
-                        and bool(w.text().strip())
                         and w.focusPolicy() != Qt.FocusPolicy.NoFocus
+                        and (not isinstance(w, QAbstractButton) or bool(w.text().strip()))
                     ]
                     for widget in controls:
                         checks += 1
                         widget.setFocus(Qt.FocusReason.TabFocusReason)
                         app.processEvents()
                         if QApplication.focusWidget() is not widget:
-                            issues.append(f"{label} {scale}%: Tastaturfokus fehlt bei {widget.text()[:35]}")
+                            issues.append(f"{label} {scale}%: Tastaturfokus fehlt bei {(widget.text()[:35] if hasattr(widget, "text") else type(widget).__name__)}")
                             continue
                         if not _on_screen(widget, window):
                             issues.append(f"{label} {scale}%: Nicht in den sichtbaren Scrollbereich gelangt: {widget.text()[:35]}")
