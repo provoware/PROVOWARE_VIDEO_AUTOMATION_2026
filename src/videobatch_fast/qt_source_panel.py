@@ -30,7 +30,9 @@ def _source_card(window, label: str, widget: DropList, add_text: str) -> QFrame:
     header.addStretch()
     sorter = QComboBox()
     sorter.setAccessibleName(f"{label} sortieren")
-    # At 200% the previous hard minimum expanded the entire scroll page.\n    sorter.setMinimumWidth(0)\n    sorter.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
+    # At 200% the previous hard minimum expanded the entire scroll page.
+    sorter.setMinimumWidth(0)
+    sorter.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
     for sort_label, sort_mode in SORT_MODES:
         sorter.addItem(sort_label, sort_mode)
     sorter.currentIndexChanged.connect(
@@ -140,7 +142,9 @@ def build_sources_panel(window) -> QWidget:
         _source_card(window, "Audiodateien", window.audio, "Audio auswählen …"),
         _source_card(window, "Bilder / Videos", window.media, "Bilder/Videos auswählen …"),
     )
-    layout.addWidget(window.source_columns, 1)\n    panel.setMinimumWidth(0)\n    layout.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
+    layout.addWidget(window.source_columns, 1)
+    panel.setMinimumWidth(0)
+    layout.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
 
     adopt = QPushButton("Ansicht als Produktionsreihenfolge übernehmen")
     adopt.setObjectName("secondary")
