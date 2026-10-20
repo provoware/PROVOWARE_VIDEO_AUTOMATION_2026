@@ -1006,15 +1006,6 @@ def _connect_settings(window: object) -> None:
     )
 
 
-def _patch_special_callbacks(window: object) -> None:
-    window._show_plugin_dialog = lambda: _plugin_scan(window)
-    window._show_plugin_decision = lambda: _plugin_scan(window)
-    window._show_update_dialog = lambda: _update_package(window)
-    window._show_recovery_dialog = lambda: _offer_recovery(window, manual=True)
-    window._show_archive_dialog = lambda: _archive_last_results(window)
-    window._show_visual_approval = lambda: _visual_approval(window)
-
-
 def _finish_parity_init(window: object) -> None:
     if getattr(window, "_parity_ready", False):
         return
@@ -1047,7 +1038,6 @@ def _finish_parity_init(window: object) -> None:
     _build_parity_dock(window)
     _wrap_project_methods(window)
     _build_menu(window)
-    _patch_special_callbacks(window)
     _install_validated_runner(window)
 
     window._parity_bridge.taskFinished.connect(
