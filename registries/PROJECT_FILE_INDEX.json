@@ -132,7 +132,7 @@
     {
       "path": "README.md",
       "mode": "100644",
-      "blob_sha1": "59c4b150d1a1db38bbf7d9c560c1200bd82bec85",
+      "blob_sha1": "57d43b5c0bb88ce11d33f893438bacf74fffb1f4",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -601,7 +601,7 @@
     {
       "path": "docs/STATUS.md",
       "mode": "100644",
-      "blob_sha1": "52f47e138091d243f5f0a95967308c85123a82b0",
+      "blob_sha1": "b87d10f0efb3abba6765d211d419688729cd2561",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -1372,6 +1372,13 @@
       "path": "docs/design/VIDEOBATCH_GRAPHICS_MANIFEST_POSTER.svg",
       "mode": "100644",
       "blob_sha1": "5a24179dc004cc7b4461c029516883dc80e50477",
+      "category": "documentation",
+      "lifecycle": "active"
+    },
+    {
+      "path": "docs/design/VIDEOBATCH_QA_AUDIT_2026-10-20.md",
+      "mode": "100644",
+      "blob_sha1": "e1a2c4ddd7de807337d19e7e52969f65b2c948c6",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -3065,7 +3072,7 @@
     {
       "path": "src/videobatch_fast/qt_main_layout.py",
       "mode": "100644",
-      "blob_sha1": "a093ff13a69ddbe33f4a2b048b42165192102909",
+      "blob_sha1": "2c3d18e69d6264cedf9578565ac87f114827fc38",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3126,9 +3133,16 @@
       "lifecycle": "active"
     },
     {
+      "path": "src/videobatch_fast/qt_responsive_controls.py",
+      "mode": "100644",
+      "blob_sha1": "cebe5af2d7d0ff1050c74a56a7fba04285971b3e",
+      "category": "application",
+      "lifecycle": "active"
+    },
+    {
       "path": "src/videobatch_fast/qt_source_panel.py",
       "mode": "100644",
-      "blob_sha1": "55a33c71b4142852aa276784b5a328bd8f533d00",
+      "blob_sha1": "c082ac0881baee38f6ce8605c6051b261648a6ce",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3156,7 +3170,7 @@
     {
       "path": "src/videobatch_fast/qt_ui.py",
       "mode": "100644",
-      "blob_sha1": "83515259e61f321788adb5e811b56c63f6e3f0e0",
+      "blob_sha1": "0bc79974636d51eb09e64c887ea0b6b39c54fec0",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3177,7 +3191,7 @@
     {
       "path": "src/videobatch_fast/qt_workspace_layout.py",
       "mode": "100644",
-      "blob_sha1": "46da22931db1e3d98547d8579821299a739e8226",
+      "blob_sha1": "dbd7d85e362fdcc06b2ae9f53cb0298a20cce741",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3471,7 +3485,7 @@
     {
       "path": "src/videobatch_fast/updates.py",
       "mode": "100644",
-      "blob_sha1": "b3748208d1ac83698cab26d8d5f148c65f0d0b4e",
+      "blob_sha1": "50eac2b7667e8b54d97774f7525d2cc75449c37f",
       "category": "application",
       "lifecycle": "active"
     },
@@ -4157,7 +4171,7 @@
     {
       "path": "tests/test_qt_responsive_20261020.py",
       "mode": "100644",
-      "blob_sha1": "22ee3161a348dd1de5a0cec29032f16060e8c353",
+      "blob_sha1": "1ef6a36a5187f5bb83e69802738f14cb86e59d16",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4185,7 +4199,7 @@
     {
       "path": "tests/test_qt_ui_contract.py",
       "mode": "100644",
-      "blob_sha1": "d4fbe7b285ce2731f959aa492aa4892f6c88176a",
+      "blob_sha1": "058810cac9d5de1d20f4a4740db4f10ede9da018",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4507,7 +4521,7 @@
     {
       "path": "tests/test_update_integrity_2_8_2.py",
       "mode": "100644",
-      "blob_sha1": "bf990b390056549fda2c9bb430317d05112b0efe",
+      "blob_sha1": "ae1257f798f2a238fbb3f39eb068e671872e0694",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4578,7 +4592,7 @@
   "directories": [
     {
       "path": ".",
-      "file_count_recursive": 653
+      "file_count_recursive": 655
     },
     {
       "path": ".githooks",
@@ -4630,7 +4644,7 @@
     },
     {
       "path": "docs",
-      "file_count_recursive": 151
+      "file_count_recursive": 152
     },
     {
       "path": "docs/archive",
@@ -4666,7 +4680,7 @@
     },
     {
       "path": "docs/design",
-      "file_count_recursive": 6
+      "file_count_recursive": 7
     },
     {
       "path": "docs/manuals",
@@ -4734,7 +4748,7 @@
     },
     {
       "path": "src",
-      "file_count_recursive": 161
+      "file_count_recursive": 162
     },
     {
       "path": "src/provoware_grid",
@@ -4742,7 +4756,7 @@
     },
     {
       "path": "src/videobatch_fast",
-      "file_count_recursive": 156
+      "file_count_recursive": 157
     },
     {
       "path": "tests",
@@ -4765,5 +4779,5 @@
       "file_count_recursive": 2
     }
   ],
-  "file_count": 653
+  "file_count": 655
 }
