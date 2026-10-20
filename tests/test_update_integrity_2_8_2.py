@@ -12,7 +12,7 @@ import zipfile
 from pathlib import Path
 from unittest.mock import patch
 
-from videobatch_fast.updates import apply_update_package, validate_update_package
+from videobatch_fast.updates import apply_update_package, recover_interrupted_update, validate_update_package
 
 
 def _release_manifest(files: dict[str, tuple[bytes, int]]) -> bytes:
@@ -212,6 +212,9 @@ with patch.object(updater, '_atomic_exchange_dirs', side_effect=interrupted):
             old_copies = list(root.glob(".videobatch_update_*/candidate/version.txt"))
             self.assertEqual(len(old_copies), 1)
             self.assertEqual(old_copies[0].read_bytes(), b"old")
+            self.assertTrue(recover_interrupted_update(install))
+            self.assertEqual((install / "version.txt").read_bytes(), b"old")
+            self.assertFalse((root / ".install.update_pending.json").exists())
 
     def test_hard_process_kill_before_exchange_preserves_old_start_path(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -233,6 +236,8 @@ with patch.object(updater, '_atomic_exchange_dirs', side_effect=lambda *_: os._e
             self.assertEqual(result.returncode, 92, result.stderr)
             self.assertTrue(install.is_dir())
             self.assertEqual((install / "version.txt").read_bytes(), b"old")
+            self.assertFalse(recover_interrupted_update(install))
+            self.assertFalse((root / ".install.update_pending.json").exists())
 
     def test_hard_process_kill_after_backup_preserves_both_versions(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -264,6 +269,9 @@ with patch.object(updater, '_fsync_directory', side_effect=interrupted):
             backups = list(root.glob("install.backup_*"))
             self.assertEqual(len(backups), 1)
             self.assertEqual((backups[0] / "version.txt").read_bytes(), b"old")
+            self.assertTrue(recover_interrupted_update(install))
+            self.assertEqual((install / "version.txt").read_bytes(), b"old")
+            self.assertFalse((root / ".install.update_pending.json").exists())
 
 
 if __name__ == "__main__":
