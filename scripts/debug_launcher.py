@@ -235,6 +235,16 @@ def _monitor_application(
 
 
 def main() -> int:
+    # Vor Qt/Bootstrap unterbrochene lokale Updates anhand eines außerhalb
+    # des getauschten Programmordners gespeicherten Journals zurückholen.
+    # Bei widersprüchlichen Belegen niemals automatisch Ordner überschreiben.
+    try:
+        from videobatch_fast.updates import recover_interrupted_update
+        if recover_interrupted_update(ROOT):
+            print("VideoBatch: Unterbrochenes Update erkannt. Vorherige Installation wieder startbar.", flush=True)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        print(f"VideoBatch: Update-Wiederanlauf blockiert: {exc}", file=sys.stderr, flush=True)
+        return 78
     started_at = time.time()
     enabled = debug_enabled_from_config(default=True)
     RUNTIME.set_enabled(enabled)
