@@ -105,5 +105,83 @@ class UpdateIntegrityTests(unittest.TestCase):
             self.assertEqual((install / "version.txt").read_bytes(), new_version)
 
 
+    def _working_update(self, root: Path) -> tuple[Path, Path]:
+        install = root / "install"
+        install.mkdir()
+        script = b'#!/usr/bin/env bash\\nset -e\\ntest "$(cat version.txt)" = new\\n'
+        (install / "version.txt").write_bytes(b"old")
+        (install / "test.sh").write_bytes(script)
+        (install / "test.sh").chmod(0o755)
+        package = root / "update.zip"
+        manifest = _release_manifest({
+            "test.sh": (script, 0o755),
+            "version.txt": (b"new", 0o644),
+        })
+        _write_update(package, b"new", manifest)
+        return install, package
+
+    def test_existing_backup_cannot_be_overwritten_on_name_collision(self):
+        class FixedUUID:
+            hex = "fixeduniqueid"
+
+        with tempfile.TemporaryDirectory() as temp, patch(
+            "videobatch_fast.paths.state_dir", return_value=Path(temp) / "state"
+        ):
+            root = Path(temp)
+            install, package = self._working_update(root)
+            previous_backup = root / "install.backup_20261020_153000_fixeduniqueid"
+            previous_backup.mkdir()
+            (previous_backup / "important.txt").write_text("Behalten!", encoding="utf-8")
+            with patch("videobatch_fast.updates.uuid.uuid4", return_value=FixedUUID()), patch(
+                "videobatch_fast.updates.time.strftime", return_value="20261020_153000"
+            ):
+                result = apply_update_package(package, install, "2.8.1-rc1", timeout=20)
+            self.assertFalse(result.success)
+            self.assertIn("bereits vorhanden", result.message)
+            self.assertEqual((install / "version.txt").read_bytes(), b"old")
+            self.assertEqual((previous_backup / "important.txt").read_text(encoding="utf-8"), "Behalten!")
+
+    def test_failed_activation_rolls_back_previous_installation(self):
+        with tempfile.TemporaryDirectory() as temp, patch(
+            "videobatch_fast.paths.state_dir", return_value=Path(temp) / "state"
+        ):
+            root = Path(temp)
+            install, package = self._working_update(root)
+            real_replace = os.replace
+
+            def simulated_failure(source, destination):
+                if Path(source).name == "candidate" and Path(destination) == install:
+                    raise OSError("Abbruch bei der Kandidatenaktivierung")
+                return real_replace(source, destination)
+
+            with patch("videobatch_fast.updates.os.replace", side_effect=simulated_failure):
+                result = apply_update_package(package, install, "2.8.1-rc1", timeout=20)
+            self.assertFalse(result.success)
+            self.assertEqual((install / "version.txt").read_bytes(), b"old")
+            self.assertFalse(list(root.glob("install.backup_*")))
+
+    def test_fsync_failure_after_activation_restores_previous_installation(self):
+        with tempfile.TemporaryDirectory() as temp, patch(
+            "videobatch_fast.paths.state_dir", return_value=Path(temp) / "state"
+        ):
+            root = Path(temp)
+            install, package = self._working_update(root)
+            calls = 0
+
+            def simulated_sync(_parent):
+                nonlocal calls
+                calls += 1
+                if calls == 2:
+                    raise OSError("Datenträger-Synchronisation ausgefallen")
+
+            with patch("videobatch_fast.updates._fsync_directory", side_effect=simulated_sync):
+                result = apply_update_package(package, install, "2.8.1-rc1", timeout=20)
+            self.assertFalse(result.success)
+            self.assertGreaterEqual(calls, 3)
+            self.assertEqual((install / "version.txt").read_bytes(), b"old")
+            self.assertFalse(list(root.glob("install.backup_*")))
+
+
+
 if __name__ == "__main__":
     unittest.main()
