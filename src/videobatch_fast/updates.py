@@ -139,7 +139,7 @@ def _remove_pending_update(journal: Path) -> None:
     _fsync_directory(journal.parent)
 
 
-def recover_interrupted_update(install_root: Path) -> bool:
+def recover_interrupted_update(install_root: Path, *, failed_start: bool = False) -> bool:
     """Vor dem normalen GUI-Start eine unfertige lokale Installation zurückholen.
 
     Liefert True, wenn der bisherige bestätigte Programmordner wieder
@@ -167,6 +167,9 @@ def recover_interrupted_update(install_root: Path) -> bool:
         or not backup.name.startswith(install_root.name + ".backup_")
     ):
         raise ValueError("Update-Wiederanlaufdatei enthält unzulässige Pfade.")
+    phase = record.get("phase", "exchanging")
+    if phase not in {"exchanging", "awaiting_first_start"}:
+        raise ValueError("Update-Wiederanlaufdatei meldet eine unbekannte Phase.")
     old_id = (int(record["old_device"]), int(record["old_inode"]))
     if not install_root.is_dir() or install_root.is_symlink():
         raise OSError("Programmstartordner fehlt; keine automatische riskante Reparatur.")
@@ -174,7 +177,19 @@ def recover_interrupted_update(install_root: Path) -> bool:
     if (current.st_dev, current.st_ino) == old_id:
         _remove_pending_update(journal)
         return False
+    old_locations = []
     for location in (candidate, backup):
+        if location.is_dir() and not location.is_symlink():
+            info = location.stat()
+            if (info.st_dev, info.st_ino) == old_id:
+                old_locations.append(location)
+    if phase == "awaiting_first_start" and not failed_start:
+        # Ein aktivierter Kandidat darf zuerst EINMAL real starten.
+        # Das Journal bleibt bis zur bestätigten Qt-Bereitschaft erhalten.
+        if len(old_locations) != 1:
+            raise OSError("Letzte bestätigte Installation ist nicht eindeutig gesichert.")
+        return False
+    for location in old_locations:
         if location.is_dir() and not location.is_symlink():
             info = location.stat()
             if (info.st_dev, info.st_ino) == old_id:
@@ -183,6 +198,35 @@ def recover_interrupted_update(install_root: Path) -> bool:
                 _remove_pending_update(journal)
                 return True
     raise OSError("Bisherige Installation nicht zweifelsfrei auffindbar; manuelle Diagnose nötig.")
+
+
+def finish_local_update_first_start(install_root: Path, *, normal_ui_ready: bool) -> str:
+    """Lokalen Update-Rückfall erst nach echtem Erststart endgültig freigeben.
+
+    'confirmed': neuer Stand gestartet; Sicherung bleibt für Nutzer erhalten.
+    'restored': Start gescheitert; alte Version ist wieder aktiv.
+    'none': kein entsprechendes neues Update wartet auf die Bestätigung.
+    """
+    install_root = Path(install_root).resolve()
+    journal = _pending_update_path(install_root)
+    if not journal.exists():
+        return "none"
+    if journal.is_symlink() or not journal.is_file():
+        raise OSError("Update-Journal ist kein regulärer Eintrag.")
+    record = json.loads(journal.read_text(encoding="utf-8"))
+    if not isinstance(record, dict) or record.get("phase") != "awaiting_first_start":
+        raise ValueError("Update-Journal enthält keine ausstehende Erststart-Bestätigung.")
+    if normal_ui_ready:
+        # Wiederanlauf prüft erst Pfade, Gerätekennung und Sicherungs-Inode.
+        recover_interrupted_update(install_root)
+        if not journal.exists():
+            # Der alte Stand war schon wieder aktiviert.
+            return "none"
+        _remove_pending_update(journal)
+        return "confirmed"
+    if recover_interrupted_update(install_root, failed_start=True):
+        return "restored"
+    return "none"
 
 
 def apply_update_package(
@@ -321,8 +365,18 @@ def apply_update_package(
             # Bei SIGKILL davor liegt sie weiterhin im Arbeitsordner.
             os.replace(candidate, backup)
             _fsync_directory(parent)
+            # Noch KEINE Bestätigung: erst der erste echte normale Qt-Start
+            # beendet die Transaktion. Ein fehlerhafter Erststart fällt zurück.
+            _write_report(journal, {
+                "schema_version": 1,
+                "phase": "awaiting_first_start",
+                "install_root": str(install_root),
+                "candidate": str(candidate),
+                "backup": str(backup),
+                "old_device": old_stat.st_dev,
+                "old_inode": old_stat.st_ino,
+            })
             activated = True
-            _remove_pending_update(journal)
         except Exception:
             if exchanged:
                 old_location = backup if backup.exists() else candidate
