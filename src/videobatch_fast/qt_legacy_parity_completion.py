@@ -806,53 +806,25 @@ def _finish_completion(window: object) -> None:
     )
 
 
-def _patch_close_event() -> None:
-    global _PHASE2_PATCHED
-    if _PHASE2_PATCHED:
+def persist_parity_on_close(window: object) -> None:
+    """Persist Qt parity view preferences through the explicit Phase-3 close path."""
+    if not getattr(window, "_parity_completion_ready", False):
         return
-    from .qt_phase2 import VideoBatchQtPhase2Window
-
-    original_close = VideoBatchQtPhase2Window.closeEvent
-
-    def close_event(self, event) -> None:
-        if getattr(self, "_parity_completion_ready", False):
-            _save_config(
-                self,
-                window_geometry=f"{self.width()}x{self.height()}",
-                preview_zoom=int(getattr(self.preview_panel, "_parity_zoom", 100)),
-                area_zoom=dict(getattr(self, "_parity_area_zoom", DEFAULT_CONFIG["area_zoom"])),
-                audio_sort=str(getattr(self.audio, "_parity_view_sort", "import")),
-                media_sort=str(getattr(self.media, "_parity_view_sort", "import")),
-                active_tab=ROUTE_TO_ACTIVE_TAB.get(
-                    getattr(self, "_parity_active_workspace", "dashboard"), 0
-                ),
-            )
-        original_close(self, event)
-
-    VideoBatchQtPhase2Window.closeEvent = close_event
-    _PHASE2_PATCHED = True
+    _save_config(
+        window,
+        window_geometry=f"{window.width()}x{window.height()}",
+        preview_zoom=int(getattr(window.preview_panel, "_parity_zoom", 100)),
+        area_zoom=dict(getattr(window, "_parity_area_zoom", DEFAULT_CONFIG["area_zoom"])),
+        audio_sort=str(getattr(window.audio, "_parity_view_sort", "import")),
+        media_sort=str(getattr(window.media, "_parity_view_sort", "import")),
+        active_tab=ROUTE_TO_ACTIVE_TAB.get(
+            getattr(window, "_parity_active_workspace", "dashboard"), 0
+        ),
+    )
 
 
 def install_parity_completion() -> None:
-    """Finish the remaining proven Tk -> Qt parity gaps without reintroducing Tk."""
+    """Keep still-needed widget compatibility adapters; never patch Qt lifecycle."""
     _patch_drop_list()
     _patch_preview_panel()
     _patch_media_browsers()
-    _patch_close_event()
-
-    from .qt_phase2 import VideoBatchQtPhase2Window
-
-    original_init = VideoBatchQtPhase2Window.__init__
-    if getattr(original_init, "_parity_completion_wrapped", False):
-        return
-
-    def init(self) -> None:
-        boot = load_config()
-        self._parity_boot_window_geometry = str(
-            boot.get("window_geometry", DEFAULT_CONFIG["window_geometry"])
-        )
-        original_init(self)
-        QTimer.singleShot(0, lambda: _finish_completion(self))
-
-    init._parity_completion_wrapped = True
-    VideoBatchQtPhase2Window.__init__ = init
