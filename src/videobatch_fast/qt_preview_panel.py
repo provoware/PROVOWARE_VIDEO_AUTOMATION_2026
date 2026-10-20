@@ -5,7 +5,10 @@ from pathlib import Path
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QPixmap, QResizeEvent
-from PySide6.QtWidgets import QFrame, QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (
+    QFrame, QHBoxLayout, QLabel, QPushButton, QScrollArea,
+    QSizePolicy, QSpinBox, QVBoxLayout, QWidget,
+)
 
 from .event_buffer import EventBuffer
 from .selection_preview_controller import SelectionPreviewController
@@ -68,6 +71,8 @@ class PreviewPanel(QFrame):
         self.meta.setObjectName("subtitle")
         self.meta.setWordWrap(True)
         layout.addWidget(self.meta)
+
+        self._init_parity_controls()
 
     def set_source(self, path: Path | None, *, include_image: bool) -> None:
         self._path = Path(path) if path is not None else None
@@ -146,17 +151,94 @@ class PreviewPanel(QFrame):
         self.image.setPixmap(QPixmap())
         self.image.setText("Keine Bildvorschau für diese Datei")
 
+    def _init_parity_controls(self) -> None:
+        """Native preview controls: no import-time method replacement."""
+        self._parity_zoom = 100
+        self._parity_fit = True
+        layout = self.layout()
+        index = layout.indexOf(self.image)
+        layout.removeWidget(self.image)
+        self.image.setMinimumSize(64, 64)
+        self.image.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        scroll = QScrollArea(self)
+        scroll.setObjectName("previewScroll")
+        scroll.setWidgetResizable(False)
+        scroll.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setWidget(self.image)
+        layout.insertWidget(max(1, index), scroll, 1)
+        self._parity_scroll = scroll
+
+        controls = QHBoxLayout()
+        controls.addWidget(QLabel("Zoom"))
+        self.parity_zoom = QSpinBox()
+        self.parity_zoom.setRange(25, 800)
+        self.parity_zoom.setSingleStep(25)
+        self.parity_zoom.setSuffix(" %")
+        self.parity_zoom.setValue(100)
+        minus = QPushButton("−")
+        plus = QPushButton("+")
+        fit_button = QPushButton("Einpassen")
+        fullscreen_button = QPushButton("Vollbild")
+        for control in (minus, self.parity_zoom, plus, fit_button, fullscreen_button):
+            controls.addWidget(control)
+        controls.addStretch()
+        layout.addLayout(controls)
+        self.parity_zoom.valueChanged.connect(self.set_parity_zoom)
+        minus.clicked.connect(lambda: self.set_parity_zoom(self.parity_zoom.value() - 25))
+        plus.clicked.connect(lambda: self.set_parity_zoom(self.parity_zoom.value() + 25))
+        fit_button.clicked.connect(self.fit_parity_preview)
+        fullscreen_button.clicked.connect(self.open_parity_fullscreen)
+        self._parity_fit_button = fit_button
+        self._parity_fullscreen_button = fullscreen_button
+
     def _render_pixmap(self) -> None:
+        pixmap = self._pixmap
+        if pixmap is None or pixmap.isNull():
+            return
+        scroll = self._parity_scroll
+        if self._parity_fit:
+            viewport = scroll.viewport().size()
+            target = pixmap.scaled(
+                max(64, viewport.width() - 12), max(64, viewport.height() - 12),
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation,
+            )
+        else:
+            factor = max(0.25, min(8.0, self._parity_zoom / 100.0))
+            target = pixmap.scaled(
+                max(1, round(pixmap.width() * factor)),
+                max(1, round(pixmap.height() * factor)),
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation,
+            )
+        self.image.setPixmap(target)
+        self.image.resize(target.size())
+
+    def set_parity_zoom(self, value: int, *, persist: bool = True) -> None:
+        self._parity_zoom = max(25, min(800, int(value)))
+        self._parity_fit = False
+        was_blocked = self.parity_zoom.blockSignals(True)
+        try:
+            self.parity_zoom.setValue(self._parity_zoom)
+        finally:
+            self.parity_zoom.blockSignals(was_blocked)
+        self._render_pixmap()
+        if persist:
+            from .qt_legacy_parity_completion import _preview_save_zoom
+
+            _preview_save_zoom(self)
+
+    def fit_parity_preview(self) -> None:
+        self._parity_fit = True
+        self._render_pixmap()
+
+    def open_parity_fullscreen(self) -> None:
         if self._pixmap is None or self._pixmap.isNull():
             return
-        size = self.image.size()
-        target = self._pixmap.scaled(
-            max(64, size.width() - 12),
-            max(64, size.height() - 12),
-            Qt.AspectRatioMode.KeepAspectRatio,
-            Qt.TransformationMode.SmoothTransformation,
-        )
-        self.image.setPixmap(target)
+        from .qt_legacy_parity_completion import _PreviewFullscreenDialog
+
+        _PreviewFullscreenDialog(self).exec()
 
     def resizeEvent(self, event: QResizeEvent) -> None:
         super().resizeEvent(event)
