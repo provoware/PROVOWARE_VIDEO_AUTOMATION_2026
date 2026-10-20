@@ -16,6 +16,16 @@
 - [ ] Die neu erzeugten **126 echten Screenshots** vollständig begutachten, insbesondere 800×600 mit 175/200 %, und mögliche Restüberläufe beheben. Automatischer Geometrie- und Fokusnachweis sind keine physische Barrierefreiheitsfreigabe.
 - [ ] Den sichtbaren Bedienweg zur externen Sicherungs-Startdatei und bestehende Startverknüpfungen auf einem echten Kubuntu-System kontrollieren. Ein völlig zerstörtes **ursprüngliches** STARTEN.sh muss über die externe Sicherungsdatei gestartet werden; der alternative Pfad darf nicht verschwiegen werden.
 
+### Entwicklungsrunde 20.10.2026 – 126 Ansichten, native Qt-Listen/Vorschau
+
+- [x] **Alle 126 Screenshots** aus dem 42-Fälle-Artefakt des Ausgangscommits `9aa42b3` als sechs Seitenübersichten (3 Arbeitsseiten × 2 Bildserien) durchgesehen; kritische 800×600-/175–200-%-Ansichten zusätzlich vergrößert. Befund: keine von der Prüfung erkannte verwaiste Hauptseite; kleine Ansichten schneiden **längere Hinweistexte am unteren Sichtausschnitt** ab, deren Scrollbarkeit bereits nachgewiesen ist. Das ist eine Einschränkung der direkten Sichtbarkeit, keine behauptete endgültige ergonomische Freigabe.
+- [x] **`DropList`:** Sortier-, Hinzufügen-/Entfernen-, Anzeige- und Produktionsreihenfolge sowie Leeren als ausdrückliche native Qt-Klassenmethoden implementiert; die alte `_patch_drop_list()`-Zuweisung entfernt. Die Produktionsreihenfolge bleibt beim bloßen Sortieren erhalten; erstmaliges Übernehmen erfordert weiter die eigene Nutzeraktion.
+- [x] **`PreviewPanel`:** Bilddarstellung im Scrollbereich, Zoom von 25–800 %, Einpassen und Vollbild als native Methoden implementiert; die alte `_patch_preview_panel()`-Ersetzung einschließlich Constructor-Patch entfernt. Gleichwertigkeit wird mit unveränderter Qt-Phase-3-Smoke- und einer zusätzlichen Bildpixel-Zoomprüfung abgesichert.
+- [x] Kleinstansichten 800×600 und >=175 %: Mindesthöhe des feststehenden Hinweis-Fußbereichs von 52 auf 82 Pixel erhöht; zusätzliches 42-Fälle-Prüfkriterium verhindert Rückschritte.
+- [ ] Neue 126 Bilddateien **nach** diesen Änderungen erneut einzeln bewerten, insbesondere ob Hinweistext in allen kritischen Ansichten ohne zusätzliche Scrollaktion unmittelbar lesbar bleibt. Erkannte Textabbrüche sachlich dokumentieren.
+- [ ] Gesamte Qt-/Wayland-, FFmpeg-, Update- und Release-Prüfkette auf **exakt einem neuen unveränderten Commit** grün nachweisen; danach keine nachträglichen Änderungen ohne erneuten Prüflauf.
+- [ ] Die physische, interaktive Kubuntu-26.04-/KDE-Plasma-/Wayland-Abnahme samt tatsächlicher Desktop-Verknüpfung und externem Sicherheitsstarter bleibt bis zum vollständigen Entwicklungs-Freeze zurückgestellt. CI/offscreen ist kein Ersatz für die reale Nutzerumgebung.
+
 ### P0 – grafische Vollprüfung (Issue [#254](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/issues/254))
 
 - [x] Echtes Qt-Phase-3-Fenster in einer automatisierten **42-Fälle-Schleife** erfassen: sechs Größen (800×600, 1024×768, 1280×720, 1366×768, 1920×1080, 2560×1440) × sieben Schriftstufen (80/100/110/125/150/175/200 %).
