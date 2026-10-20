@@ -60,6 +60,7 @@
 - [x] Ausgabe-Einstellungen in die zweite Arbeitsseite verschoben; kompakte Menütaste und geringere Kopflast bei >=150 % eingebaut. Der verschärfte Qt-Test sucht jetzt auch abgeschnittene Titel und zu flache Arbeitsseiten. **Neue Sichtprüfung erforderlich.**
 - [x] Zwei Plugin-Dialogroutinen aus Import-Zeit-Methodenersetzung in direkte Qt-Klassenbindungen überführt. **Weitere Legacy-Doppelstrukturen offen.**
 - [x] Lokalen Linux-Update-Ordnerwechsel atomar gemacht; drei Testfälle beenden echte Unterprozesse vor/nach dem Wechsel und nach der Sicherung. **Persistenter Wiederanlauf vor dem GUI-Start umgesetzt; Erststart-Rückfall nach einem späteren Programmfehler noch offen. CI-Nachweis für den neuen Stand ausstehend.**
+- [x] Nach 42/42 erfolgreicher Geometrieprüfung neue Bilder gesehen: In Schritt 2 sprang die Anzeige wegen Tastaturfokus zur Expertenkontrolle statt zu den Ausgabe-Grundeinstellungen. Fokus und Anfangsposition korrigiert, zusätzliche 42-Fälle-Prüfregel hinzugefügt. **Erneuten Bildsatz prüfen.**
 - [ ] Nach jedem Quellcode-Update 42er-Sichtprüfung, Gesamtregression, Release-Manifest und Git-Dateiindex auf exakt einem Commit wiederholen.
 
 ## Fokus (ältere Arbeitsnotizen – zeitlich einordnen)
