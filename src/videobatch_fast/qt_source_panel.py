@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (QComboBox, QFrame, QGridLayout, QHBoxLayout,
                                QLayout, QPushButton, QScrollArea, QSizePolicy,
                                QVBoxLayout, QWidget)
@@ -124,6 +124,34 @@ class ResponsiveSourceColumns(QWidget):
         self._reflow()
 
 
+
+class VerticalSourcesScroll(QScrollArea):
+    """Keep the real content width aligned with the visible viewport.
+
+    Qt may honour a stale minimumSizeHint from the previous two-column
+    arrangement after a 200-percent font change. Constrain the *scroll
+    widget itself*; the responsive cards then reflow to a single column.
+    """
+
+    def _fit_width(self) -> None:
+        content = self.widget()
+        if content is None:
+            return
+        width = max(1, self.viewport().width())
+        if content.width() != width or content.minimumWidth() != width:
+            content.setFixedWidth(width)
+            content.updateGeometry()
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        self._fit_width()
+
+    def setWidget(self, widget: QWidget) -> None:
+        super().setWidget(widget)
+        self._fit_width()
+        QTimer.singleShot(0, self._fit_width)
+
+
 def build_sources_panel(window) -> QWidget:
     panel, layout = window._panel(
         "1 · Dateien auswählen",
@@ -159,7 +187,7 @@ def build_sources_panel(window) -> QWidget:
     order_row = ResponsiveControlRow((adopt, window.clear))
     window._responsive_control_rows.append(order_row)
     layout.addWidget(order_row)
-    scroll = QScrollArea()
+    scroll = VerticalSourcesScroll()
     scroll.setObjectName("mainWorkspaceScroll")
     scroll.setWidgetResizable(True)
     scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
