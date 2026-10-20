@@ -217,6 +217,7 @@ def build_main_ui(window) -> None:
     window.kpi_values["active"].setText("Nein")
     outer.addLayout(kpis)
 
+    window._responsive_control_rows = []
     outer.addWidget(build_workflow_stack(window), 1)
 
     window.audio.setAccessibleName("Audiodateien")
@@ -237,6 +238,8 @@ def build_main_ui(window) -> None:
         window.table.verticalHeader().setDefaultSectionSize(round(38 * value / 100))
         window.settings_grid.set_zoom_percent(value)
         window.source_columns.set_zoom_percent(value)
+        for control_row in window._responsive_control_rows:
+            control_row.set_zoom_percent(value)
 
     window.view_scale.currentIndexChanged.connect(apply_scale)
     window._scale_shortcuts = []
