@@ -168,10 +168,10 @@ def build_main_ui(window) -> None:
     tabs.setObjectName("mainNavigation")
     tabs.setExpanding(True)
     tabs.setAccessibleName("Arbeitsbereiche")
-    for name in ("1 · Dateien", "2 · Produktion", "Erweitert", "Hilfe / Werkzeuge"):
+    for name in ("1 · Dateien", "2 · Ausgabe", "3 · Produktion", "Hilfe / Werkzeuge"):
         tabs.addTab(name)
     window.main_tabs = tabs
-    routes = ("media", "queue", "effects", "dashboard")
+    routes = ("media", "effects", "queue", "dashboard")
     def navigate(index: int) -> None:
         route = routes[index]
         handler = getattr(window, "_route_workspace", None)
