@@ -170,6 +170,13 @@ def build_workflow_stack(window) -> QStackedWidget:
     output_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
     output_scroll.setWidget(effects_page)
     pages["effects"] = output_scroll
+    queue_page = pages["queue"]
+    queue_scroll = QScrollArea()
+    queue_scroll.setObjectName("productionPageScroll")
+    queue_scroll.setWidgetResizable(True)
+    queue_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    queue_scroll.setWidget(queue_page)
+    pages["queue"] = queue_scroll
     for page in pages.values():
         stack.addWidget(page)
     window.workflow_stack = stack
@@ -309,7 +316,7 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     footer_scroll.setObjectName("actionFooterScroll")
     footer_scroll.setWidgetResizable(True)
     footer_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-    footer_scroll.setMinimumHeight(70)
+    footer_scroll.setMinimumHeight(52)
     footer_scroll.setMaximumHeight(210)
     footer_scroll.setWidget(footer)
     window.action_footer_scroll = footer_scroll
