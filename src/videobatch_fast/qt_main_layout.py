@@ -251,6 +251,23 @@ def build_main_ui(window) -> None:
         if app is not None:
             app.setStyleSheet(scaled_style(value))
         window.table.verticalHeader().setDefaultSectionSize(round(38 * value / 100))
+        # A compact title keeps all original font choices for the WORK controls;
+        # only the decorative brand loses excess height on tiny screens.
+        small_large = value >= 175 and window.width() <= 900
+        title.setStyleSheet("font-size: 24px; font-weight: 800;" if small_large else "")
+        window.status.setStyleSheet(
+            "font-size: 17px; padding: 3px 6px; font-weight: 800;" if small_large else ""
+        )
+        for button, full, short in getattr(window, "_source_action_labels", []):
+            button.setText(short if small_large else full)
+        # Full headings remain available via tooltips and at normal screen sizes.
+        full_headers = ("#", "Audio", "Medium", "Status", "Einzel-Fortschritt")
+        short_headers = ("#", "Audio", "Bild", "Stand", "%")
+        for column, full_label in enumerate(full_headers):
+            header_item = window.table.horizontalHeaderItem(column)
+            if header_item is not None:
+                header_item.setText(short_headers[column] if small_large else full_label)
+                header_item.setToolTip(full_label)
         compact = value >= 150
         window.menuBar().setVisible(not compact)
         window.compact_menu.setVisible(compact)
