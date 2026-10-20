@@ -142,7 +142,7 @@ def main() -> int:
         assert window.preview_panel._parity_fit is True
         # Render real pixel dimensions at fixed zoom, not merely control text.
         from PySide6.QtGui import QPixmap
-        window.preview_panel._pixmap = QPixmap(40, 30)
+        window.preview_panel._pixmap = QPixmap(40, 40)
         window.preview_panel.set_parity_zoom(175, persist=False)
         assert window.preview_panel.image.pixmap().width() == 70
         window.preview_panel.fit_parity_preview()
