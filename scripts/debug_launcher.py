@@ -244,6 +244,9 @@ def _finish_local_update_boot(bootstrap_log: Path | None, *, started: bool) -> i
     """
     from videobatch_fast.updates import finish_local_update_first_start
 
+    journal = ROOT.parent / f".{ROOT.name}.update_pending.json"
+    if not journal.exists() and not journal.is_symlink():
+        return None
     source = _tail(bootstrap_log)
     safe_mode = "Qt im sicheren Startmodus öffnen" in source
     normal_ready = started and not safe_mode and _ready_pid(bootstrap_log) is not None
