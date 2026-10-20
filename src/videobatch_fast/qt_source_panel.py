@@ -36,6 +36,12 @@ def _source_card(window, label: str, widget: DropList, add_text: str) -> QFrame:
     layout.addWidget(widget, 1)
 
     add = QPushButton(add_text)
+    add.setAccessibleName(add_text)
+    add.setToolTip(add_text)
+    if not hasattr(window, "_source_action_labels"):
+        window._source_action_labels = []
+    short = "Audio wählen …" if widget is window.audio else "Medien wählen …"
+    window._source_action_labels.append((add, add_text, short))
     remove = QPushButton("Entfernen")
     configure_file_buttons(add, remove, label)
     add.clicked.connect(window._choose_audio if widget is window.audio else window._choose_media)
