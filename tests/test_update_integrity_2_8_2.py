@@ -365,11 +365,11 @@ with patch.object(updater, '_write_report', side_effect=terminate_after_marker):
             source = Path(__file__).resolve().parents[1]
             launcher = (source / "scripts" / "debug_launcher.py").read_bytes()
             old_boot = (
-                b"from pathlib import Path\\n"
-                b"Path(__file__).resolve().parents[2].joinpath('old-start.txt').write_text('restored')\\n"
+                b"from pathlib import Path\n"
+                b"Path(__file__).resolve().parents[2].joinpath('old-start.txt').write_text('restored')\n"
             )
-            bad_boot = b"raise RuntimeError('Broken new bootstrap: intentional E2E test')\\n"
-            test_script = b'#!/bin/sh\\nset -e\\ntest "$(cat version.txt)" = new\\n'
+            bad_boot = b"raise RuntimeError('Broken new bootstrap: intentional E2E test')\n"
+            test_script = b'#!/bin/sh\nset -e\ntest "$(cat version.txt)" = new\n'
             (scripts / "debug_launcher.py").write_bytes(launcher)
             (scripts / "bootstrap.py").write_bytes(old_boot)
             (install / "version.txt").write_bytes(b"old")
