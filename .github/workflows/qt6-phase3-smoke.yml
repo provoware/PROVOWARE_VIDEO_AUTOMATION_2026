@@ -57,6 +57,7 @@ on:
       - "tests/test_ffmpeg_v1_contract.py"
       - "tests/qt_phase2_smoke.py"
       - "tests/qt_phase3_smoke.py"
+      - "tests/qt_phase3_42_matrix.py"
       - ".github/workflows/qt6-phase3-smoke.yml"
   workflow_dispatch:
 
@@ -363,6 +364,22 @@ jobs:
 
       - name: Run Phase 3 project workspace smoke on Wayland
         run: python tests/qt_phase3_smoke.py
+
+      - name: Render 42 sizes/zoom combinations on real Phase-3 widgets
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          set -Eeuo pipefail
+          python tests/qt_phase3_42_matrix.py --output "$RUNNER_TEMP/videobatch-42-matrix"
+
+      - name: Upload all 126 UI images and 42-case report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: videobatch-qt-phase3-42-matrix
+          path: ${{ runner.temp }}/videobatch-42-matrix/
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Verify persistent Qt thumbnails
         run: python -m pytest -q tests/test_qt_thumbnail_cache.py tests/test_qt_media_browser_pagination.py
