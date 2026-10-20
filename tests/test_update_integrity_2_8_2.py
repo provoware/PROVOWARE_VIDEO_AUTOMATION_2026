@@ -12,7 +12,7 @@ import zipfile
 from pathlib import Path
 from unittest.mock import patch
 
-from videobatch_fast.updates import apply_update_package, recover_interrupted_update, validate_update_package
+from videobatch_fast.updates import apply_update_package, finish_local_update_first_start, recover_interrupted_update, validate_update_package
 
 
 def _release_manifest(files: dict[str, tuple[bytes, int]]) -> bytes:
@@ -272,6 +272,80 @@ with patch.object(updater, '_fsync_directory', side_effect=interrupted):
             self.assertTrue(recover_interrupted_update(install))
             self.assertEqual((install / "version.txt").read_bytes(), b"old")
             self.assertFalse((root / ".install.update_pending.json").exists())
+
+
+    def test_successful_local_update_waits_for_real_normal_first_start(self):
+        with tempfile.TemporaryDirectory() as temp, patch(
+            "videobatch_fast.paths.state_dir", return_value=Path(temp) / "state"
+        ):
+            root = Path(temp)
+            install, package = self._working_update(root)
+            result = apply_update_package(package, install, "2.8.1-rc1", timeout=20)
+            self.assertTrue(result.success, result.message)
+            journal = root / ".install.update_pending.json"
+            self.assertEqual(json.loads(journal.read_text())["phase"], "awaiting_first_start")
+            self.assertFalse(recover_interrupted_update(install))
+            self.assertTrue(journal.exists(), "Ungeprüfter Erststart darf kein Häkchen erhalten.")
+            self.assertEqual((install / "version.txt").read_bytes(), b"new")
+            self.assertEqual(finish_local_update_first_start(install, normal_ui_ready=True), "confirmed")
+            self.assertFalse(journal.exists())
+            self.assertEqual((install / "version.txt").read_bytes(), b"new")
+            self.assertEqual((Path(result.backup) / "version.txt").read_bytes(), b"old")
+
+    def test_failed_first_start_restores_confirmed_old_release(self):
+        with tempfile.TemporaryDirectory() as temp, patch(
+            "videobatch_fast.paths.state_dir", return_value=Path(temp) / "state"
+        ):
+            root = Path(temp)
+            install, package = self._working_update(root)
+            result = apply_update_package(package, install, "2.8.1-rc1", timeout=20)
+            self.assertTrue(result.success, result.message)
+            self.assertFalse(recover_interrupted_update(install))
+            self.assertEqual(finish_local_update_first_start(install, normal_ui_ready=False), "restored")
+            self.assertEqual((install / "version.txt").read_bytes(), b"old")
+            self.assertFalse((root / ".install.update_pending.json").exists())
+            self.assertEqual(finish_local_update_first_start(install, normal_ui_ready=True), "none")
+
+    def test_kill_after_persistent_first_start_marker_keeps_rollback_possible(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            install, package = self._working_update(root)
+            worker = """
+import os, sys
+from pathlib import Path
+from unittest.mock import patch
+import videobatch_fast.updates as updater
+real_write = updater._write_report
+def terminate_after_marker(path, payload):
+    real_write(path, payload)
+    if payload.get('phase') == 'awaiting_first_start':
+        os._exit(96)
+with patch.object(updater, '_write_report', side_effect=terminate_after_marker):
+    updater.apply_update_package(Path(sys.argv[1]), Path(sys.argv[2]), '2.8.1-rc1', timeout=20)
+"""
+            env = {**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[1] / "src")}
+            result = subprocess.run(
+                [sys.executable, "-c", worker, str(package), str(install)],
+                env=env, timeout=30, capture_output=True, text=True,
+            )
+            self.assertEqual(result.returncode, 96, result.stderr)
+            self.assertEqual((install / "version.txt").read_bytes(), b"new")
+            self.assertFalse(recover_interrupted_update(install))
+            self.assertEqual(finish_local_update_first_start(install, normal_ui_ready=False), "restored")
+            self.assertEqual((install / "version.txt").read_bytes(), b"old")
+
+    def test_missing_confirmed_backup_blocks_first_start_confirmation(self):
+        with tempfile.TemporaryDirectory() as temp, patch(
+            "videobatch_fast.paths.state_dir", return_value=Path(temp) / "state"
+        ):
+            root = Path(temp)
+            install, package = self._working_update(root)
+            result = apply_update_package(package, install, "2.8.1-rc1", timeout=20)
+            self.assertTrue(result.success, result.message)
+            Path(result.backup).rename(root / "unknown_backup")
+            with self.assertRaises(OSError):
+                finish_local_update_first_start(install, normal_ui_ready=True)
+            self.assertTrue((root / ".install.update_pending.json").exists())
 
 
 if __name__ == "__main__":
