@@ -76,7 +76,7 @@ def run() -> int:
                         widget.setFocus(Qt.FocusReason.TabFocusReason)
                         app.processEvents()
                         if QApplication.focusWidget() is not widget:
-                            issues.append(f"{label} {scale}%: Tastaturfokus fehlt bei {(widget.text()[:35] if hasattr(widget, "text") else type(widget).__name__)}")
+                            issues.append(f"{label} {scale}%: Tastaturfokus fehlt bei {(widget.text()[:35] if hasattr(widget, 'text') else type(widget).__name__)}")
                             continue
                         if not _on_screen(widget, window):
                             issues.append(f"{label} {scale}%: Nicht in den sichtbaren Scrollbereich gelangt: {widget.text()[:35]}")
