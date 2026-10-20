@@ -260,6 +260,8 @@ def build_main_ui(window) -> None:
         )
         for button, full, short in getattr(window, "_source_action_labels", []):
             button.setText(short if small_large else full)
+        for label_widget, full, short in getattr(window, "_source_header_labels", []):
+            label_widget.setText(short if small_large else full)
         # Full headings remain available via tooltips and at normal screen sizes.
         full_headers = ("#", "Audio", "Medium", "Status", "Einzel-Fortschritt")
         short_headers = ("#", "Audio", "Bild", "Stand", "%")
