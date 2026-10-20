@@ -45,6 +45,16 @@
 - [ ] Nicht benötigte erweiterte Werkzeuge standardmäßig ausblenden, doppelte Schaltflächen/Sortierwege vermeiden.
 - [ ] Drei geeignete Erscheinungsbilder (dunkel, hell, hoher Kontrast) mit tatsächlichem Kontrast-, Schrift- und Fokusnachweis prüfen; optische Kosmetik bleibt bis zum Abschluss von P0 nachrangig.
 
+### Ergänzung 20.10.2026 – tatsächliche Implementierung auf PR #253
+
+- [x] Qt-Phase-3-Lebenszyklus von den beiden importseitig ersetzten `__init__`-Methoden getrennt: ausdrückliche, in Reihenfolge gestartete Qt-Paritätsdienste in `qt_phase3.py`.
+- [x] Importseitig ersetztes `closeEvent` entfernt: Sicht- und Sortiereinstellungen werden über `persist_parity_on_close` direkt beim Schließen der Qt-Phase-3-Oberfläche gesichert. Weiter bestehende Medienlisten-, Vorschau- und Optionenadapter bleiben bis zu gleichwertigen Einzeltests aktiv.
+- [x] Tastaturtest für 800×600 bei 175/200 % auf Eingabefelder, Auswahlfelder, Schalter und Einstellregler erweitert; die automatisierte Prüfung ersetzt keine vollständige Sichtabnahme auf einem physischen Monitor.
+- [x] Echter Unterprozess-Negativtest ergänzt: geprüftes Update mit absichtlich defektem `scripts/bootstrap.py` installieren, wirklichen `debug_launcher.py` ausführen und alte Version automatisch erneut starten. Nicht abgedeckt: defekter Debug-Starter selbst vor Ausführung des Wiederanlaufcodes; dafür ist ein unabhängiger, außerhalb des Programmordners gelegener Starter nötig.
+- [ ] Alle Tests, einschließlich der erweiterten Qt-Tastaturprüfung, am letzten unveränderten Commit abschließend grün nachweisen; `RELEASE_MANIFEST.json` und Git-Dateiindex nach der letzten Quellcodeänderung synchronisieren.
+- [ ] Restliche dynamische Methodenadapter in `_patch_phase2_class`, `_patch_drop_list`, `_patch_preview_panel` und `_patch_media_browsers` funktionsgleich in definierte Klassen/Dienste überführen.
+- [ ] Vollständige Sichtkontrolle aller 126 Bilder, tatsächliche Register-/Tastatur-Reihenfolge, Bildschirmlesbarkeit bei 800×600/175–200 % und physische Kubuntu-Endabnahme nach Freeze.
+
 ### Freigabegrenze
 
 - [ ] PR #253 und der darauf folgende Entwicklungsstand sind nur **Entwürfe**; bestandene Teilprüfungen sind nicht gleichbedeutend mit bestandenem Gesamtrelease.
