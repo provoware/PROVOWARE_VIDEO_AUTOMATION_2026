@@ -43,6 +43,15 @@ def findings(window: VideoBatchQtPhase3Window, width: int, height: int) -> list[
             needed_width = label.fontMetrics().horizontalAdvance(label.text())
             if label.width() + 2 < needed_width:
                 problems.append("Programmtitel horizontal abgeschnitten")
+    # Detect regressions in the specifically affected 800x600 / 200% layout.
+    if width <= 900 and int(window.view_scale.currentData() or 100) >= 175:
+        full = [window.table.horizontalHeaderItem(i).text() for i in range(5)]
+        if full != ["#", "Audio", "Bild", "Stand", "%"]:
+            problems.append(f"Kompakte Tabellenüberschriften fehlen: {full!r}")
+        if window.findChildren(QLabel, "title"):
+            banner = window.findChildren(QLabel, "title")[0]
+            if banner.height() > 44:
+                problems.append(f"Programmkopf belegt zu viel Höhe: {banner.height()}px")
     if window.workflow_stack.height() < 60:
         problems.append(f"Arbeitsseite zu flach: {window.workflow_stack.height()}px")
     route = getattr(window, "_active_workflow_route", "")
