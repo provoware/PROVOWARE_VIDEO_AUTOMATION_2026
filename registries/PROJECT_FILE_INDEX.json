@@ -90,7 +90,7 @@
     {
       "path": ".github/workflows/qt6-phase3-smoke.yml",
       "mode": "100644",
-      "blob_sha1": "6a870ba0f7e00d94baeab1ac4e8f039c2b70949a",
+      "blob_sha1": "b612eabbc15d8b9b704597698fa84936afd4c883",
       "category": "automation",
       "lifecycle": "development"
     },
@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "e53919afd2c7e1355395b2d7306681d0e58d5df9",
+      "blob_sha1": "10eef8c5d971603859e1ed990e2dc54169cd7111",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -608,7 +608,7 @@
     {
       "path": "docs/TODO.md",
       "mode": "100644",
-      "blob_sha1": "8a7076b93a9e950e7166aa50d1c91bcda32ce655",
+      "blob_sha1": "407ef0ae2a3b6f978e559b9fb713cb5896c1c38f",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -1952,7 +1952,7 @@
     {
       "path": "scripts/debug_launcher.py",
       "mode": "100644",
-      "blob_sha1": "d1a26702fd8edcfa491c4715f264aed9700c1aa5",
+      "blob_sha1": "3b8abc83b05de94a713f626674555dda9ef5b109",
       "category": "development",
       "lifecycle": "development"
     },
@@ -3044,7 +3044,7 @@
     {
       "path": "src/videobatch_fast/qt_legacy_parity.py",
       "mode": "100644",
-      "blob_sha1": "a63631271cee4e72682e2bf0bbdabd1e719c5ae0",
+      "blob_sha1": "50bd948aecbf75ce22290acaed9dcf69704b86d6",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3093,7 +3093,7 @@
     {
       "path": "src/videobatch_fast/qt_phase2.py",
       "mode": "100644",
-      "blob_sha1": "86e51155eed7bd17403d8c5fb001f301b8fe4bac",
+      "blob_sha1": "d32a0713c61d722a2e95f0977998c895e69b34c0",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3121,7 +3121,7 @@
     {
       "path": "src/videobatch_fast/qt_phase3_components.py",
       "mode": "100644",
-      "blob_sha1": "f7683158f0b3b970ffbd3bef705200a1f4003009",
+      "blob_sha1": "9b29c9a46731114d9bb62d333dd5bcce4b99568a",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3485,7 +3485,7 @@
     {
       "path": "src/videobatch_fast/updates.py",
       "mode": "100644",
-      "blob_sha1": "50de9e6aac23f45618fd6c5daad1e2b6bd69b85a",
+      "blob_sha1": "498c9ab96d9fa9201a125b793ff5d0a3b94b6f7c",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3756,9 +3756,16 @@
       "lifecycle": "development"
     },
     {
+      "path": "tests/qt_phase3_keyboard_matrix.py",
+      "mode": "100644",
+      "blob_sha1": "8e241c1dc156d9f659879eae1bd4f36cbfc7ba4c",
+      "category": "tests",
+      "lifecycle": "development"
+    },
+    {
       "path": "tests/qt_phase3_smoke.py",
       "mode": "100644",
-      "blob_sha1": "e1aff03d41218d82e727860fc2388173b738c822",
+      "blob_sha1": "16d2282ad905062737152d35263a77f05862fcd0",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -3878,6 +3885,13 @@
       "path": "tests/test_dashboard_settings_contract.py",
       "mode": "100644",
       "blob_sha1": "413e386a0824650cb21a9d6087ddd4f778ec487c",
+      "category": "tests",
+      "lifecycle": "development"
+    },
+    {
+      "path": "tests/test_debug_launcher_update_first_start.py",
+      "mode": "100644",
+      "blob_sha1": "3f06efa6703f9221a940c130b3b554e54b7335af",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4528,7 +4542,7 @@
     {
       "path": "tests/test_update_integrity_2_8_2.py",
       "mode": "100644",
-      "blob_sha1": "e1ba1422d5d3bfe26bd14b96060c73f76fcfa7c6",
+      "blob_sha1": "d1ecf643e7a3bf311d180add8c5682d2b4a0b92e",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4599,7 +4613,7 @@
   "directories": [
     {
       "path": ".",
-      "file_count_recursive": 656
+      "file_count_recursive": 658
     },
     {
       "path": ".githooks",
@@ -4767,7 +4781,7 @@
     },
     {
       "path": "tests",
-      "file_count_recursive": 145
+      "file_count_recursive": 147
     },
     {
       "path": "tests/baselines",
@@ -4786,5 +4800,5 @@
       "file_count_recursive": 2
     }
   ],
-  "file_count": 656
+  "file_count": 658
 }
