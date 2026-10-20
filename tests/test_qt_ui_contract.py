@@ -254,7 +254,7 @@ def test_main_workspace_supports_global_scaling_without_page_scroll_or_three_col
         '"effects": window._settings_panel()',
         '"queue": window._queue_panel()',
         "set_workflow_route(window, route)",
-        "guide.setVisible(route == \"dashboard\")",
+        "guide.setVisible(False)",
         'footer.setVisible(route in {"dashboard", "media", "effects", "queue"})',
         "app.setStyleSheet(scaled_style(value))",
         'view_label.setBuddy(window.view_scale)',
@@ -271,16 +271,15 @@ def test_main_workspace_supports_global_scaling_without_page_scroll_or_three_col
 
 
 
-def test_output_page_uses_width_instead_of_vertical_scroll_pressure() -> None:
-    source = QT_UI.read_text(encoding="utf-8")
-    for token in (
-        "columns = QHBoxLayout()",
-        "columns.addLayout(left, 3)",
-        "columns.addLayout(right, 2)",
-        "Ziel und Verarbeitung stehen links",
-        "Kontrolle und Sicherheit rechts",
-    ):
-        assert token in source
+def test_output_controls_keep_all_six_fields_in_responsive_settings() -> None:
+    """The former static left/right output layout was removed on purpose."""
+    source = QT_MAIN_LAYOUT.read_text(encoding="utf-8")
+    for label in ("Auflösung", "Qualität", "Bildeffekt", "Ausgabeordner", "Effektstärke", "Videoblende"):
+        assert f'window.settings_grid.add_field("{label}"' in source
+    assert "window.settings_grid = ResponsiveSettingsPanel()" in source
+    assert "settings_view.setWidgetResizable(True)" in source
+    assert "settings_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)" in source
+    assert "window.settings_grid.set_zoom_percent(value)" in source
 
 
 def test_visual_hierarchy_and_beginner_keyboard_workflow_are_explicit() -> None:
