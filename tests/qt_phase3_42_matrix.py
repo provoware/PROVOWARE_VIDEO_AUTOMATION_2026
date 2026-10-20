@@ -58,6 +58,11 @@ def findings(window: VideoBatchQtPhase3Window, width: int, height: int) -> list[
         scroll = window._workflow_pages["media"]
         if scroll.horizontalScrollBar().value() != 0:
             problems.append("Dateiseite horizontal verschoben")
+        if scroll.widget().width() > scroll.viewport().width() + 3:
+            problems.append(
+                f"Dateiseite rechts abgeschnitten: Inhalt {scroll.widget().width()}px, "
+                f"Sichtfläche {scroll.viewport().width()}px"
+            )
         for header, _full, _short in getattr(window, "_source_header_labels", []):
             if header.isVisibleTo(window) and header.mapTo(window, header.rect().topLeft()).x() < 0:
                 problems.append("Quellenüberschrift links abgeschnitten")
