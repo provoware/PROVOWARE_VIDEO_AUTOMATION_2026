@@ -302,7 +302,6 @@ class DiagnosticsPanel(QFrame):
 from .qt_legacy_parity import (
     _archive_last_results,
     _offer_recovery,
-    _plugin_scan,
     _update_package,
     _visual_approval,
     install_legacy_parity,
@@ -314,8 +313,6 @@ install_legacy_parity()
 # Qt connects button callbacks while _dialogs_panel() is built. Bind the real
 # services at class level before any window is created, otherwise those buttons
 # would keep references to the old demonstration handlers.
-VideoBatchQtPhase2Window._show_plugin_dialog = _plugin_scan
-VideoBatchQtPhase2Window._show_plugin_decision = _plugin_scan
 VideoBatchQtPhase2Window._show_update_dialog = _update_package
 VideoBatchQtPhase2Window._show_recovery_dialog = lambda self: _offer_recovery(self, manual=True)
 VideoBatchQtPhase2Window._show_archive_dialog = _archive_last_results
