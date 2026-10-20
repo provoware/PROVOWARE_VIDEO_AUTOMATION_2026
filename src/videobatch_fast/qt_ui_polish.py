@@ -105,6 +105,12 @@ def text_label(text: str, object_name: str, *, wrap: bool = False) -> QLabel:
     label = QLabel(text)
     label.setObjectName(object_name)
     label.setWordWrap(wrap)
+    if wrap:
+        # Let explanatory text shrink to the real viewport width instead of
+        # imposing its long size hint on the entire workspace.
+        from PySide6.QtWidgets import QSizePolicy
+        label.setMinimumWidth(0)
+        label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
     return label
 
 
