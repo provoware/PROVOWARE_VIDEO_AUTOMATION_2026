@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtWidgets import (
     QFrame, QHBoxLayout, QLabel, QMessageBox, QProgressBar, QPushButton,
     QScrollArea, QStackedWidget, QVBoxLayout, QWidget,
@@ -186,10 +186,24 @@ def build_workflow_stack(window) -> QStackedWidget:
 
 def set_workflow_route(window, route: str) -> None:
     pages = getattr(window, "_workflow_pages", {})
+    previous = getattr(window, "_active_workflow_route", None)
     page_key = route if route in pages else "dashboard"
     if page_key in pages:
         window.workflow_stack.setCurrentWidget(pages[page_key])
     window._active_workflow_route = route
+    # New pages always open at their explanatory heading. A previous focus or
+    # scroll position must not hide the first line at 175/200 % zoom.
+    if route != previous:
+        current_page = pages.get(page_key)
+        if isinstance(current_page, QScrollArea):
+            current_page.verticalScrollBar().setValue(0)
+            QTimer.singleShot(
+                0,
+                lambda page=current_page: page.verticalScrollBar().setValue(0),
+            )
+        footer_scroll = getattr(window, "action_footer_scroll", None)
+        if footer_scroll is not None:
+            footer_scroll.verticalScrollBar().setValue(0)
     tabs = getattr(window, "main_tabs", None)
     positions = {"media": 0, "effects": 1, "queue": 2, "dashboard": 3}
     if tabs is not None and page_key in positions and tabs.currentIndex() != positions[page_key]:
