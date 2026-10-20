@@ -48,6 +48,14 @@ def findings(window: VideoBatchQtPhase3Window, width: int, height: int) -> list[
         full = [window.table.horizontalHeaderItem(i).text() for i in range(5)]
         if full != ["#", "Audio", "Bild", "Stand", "%"]:
             problems.append(f"Kompakte Tabellenüberschriften fehlen: {full!r}")
+        # A hidden sideways-scroll offset previously clipped the left side of
+        # "Audiodateien" at 800x600 / 200%. Guard against its return.
+        scroll = window._workflow_pages["media"]
+        if scroll.horizontalScrollBar().value() != 0:
+            problems.append("Dateiseite horizontal verschoben")
+        for header, _full, _short in getattr(window, "_source_header_labels", []):
+            if header.isVisibleTo(window) and header.mapTo(window, header.rect().topLeft()).x() < 0:
+                problems.append("Quellenüberschrift links abgeschnitten")
         if window.findChildren(QLabel, "title"):
             banner = window.findChildren(QLabel, "title")[0]
             if banner.height() > 44:
