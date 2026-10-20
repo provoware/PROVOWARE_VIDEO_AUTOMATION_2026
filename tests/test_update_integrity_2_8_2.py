@@ -348,5 +348,89 @@ with patch.object(updater, '_write_report', side_effect=terminate_after_marker):
             self.assertTrue((root / ".install.update_pending.json").exists())
 
 
+    def test_real_debug_launcher_restores_old_install_after_broken_new_bootstrap(self):
+        """Use the actual user launcher in a subprocess, not a mocked callback.
+
+        The updated bootstrap is deliberately defective even though the
+        archive and read-only candidate self-test are valid. The launcher
+        must exchange the old directory back and actually launch it.
+        """
+        with tempfile.TemporaryDirectory() as temp, patch(
+            "videobatch_fast.paths.state_dir", return_value=Path(temp) / "state"
+        ):
+            root = Path(temp)
+            install = root / "install"
+            scripts = install / "scripts"
+            scripts.mkdir(parents=True)
+            source = Path(__file__).resolve().parents[1]
+            launcher = (source / "scripts" / "debug_launcher.py").read_bytes()
+            old_boot = (
+                b"from pathlib import Path\\n"
+                b"Path(__file__).resolve().parents[2].joinpath('old-start.txt').write_text('restored')\\n"
+            )
+            bad_boot = b"raise RuntimeError('Broken new bootstrap: intentional E2E test')\\n"
+            test_script = b'#!/bin/sh\\nset -e\\ntest "$(cat version.txt)" = new\\n'
+            (scripts / "debug_launcher.py").write_bytes(launcher)
+            (scripts / "bootstrap.py").write_bytes(old_boot)
+            (install / "version.txt").write_bytes(b"old")
+            (install / "test.sh").write_bytes(test_script)
+            (install / "test.sh").chmod(0o755)
+
+            included = {
+                "version.txt": (b"new", 0o644),
+                "test.sh": (test_script, 0o755),
+                "scripts/debug_launcher.py": (launcher, 0o644),
+                "scripts/bootstrap.py": (bad_boot, 0o644),
+            }
+            release = _release_manifest(included)
+            replacements = {
+                "version.txt": (b"new", "replace"),
+                "scripts/bootstrap.py": (bad_boot, "replace"),
+                "RELEASE_MANIFEST.json": (release, "add"),
+            }
+            manifest = {
+                "schema_version": 3,
+                "version": "2.8.2-rc1",
+                "channel": "release-candidate",
+                "compatible_from": ["2.8.1-rc1"],
+                "files": [
+                    {
+                        "path": name,
+                        "operation": operation,
+                        "sha256": hashlib.sha256(data).hexdigest(),
+                        "mode": "0o644",
+                    }
+                    for name, (data, operation) in sorted(replacements.items())
+                ],
+            }
+            package = root / "broken-bootstrap-update.zip"
+            with zipfile.ZipFile(package, "w") as archive:
+                archive.writestr("update_manifest.json", json.dumps(manifest))
+                for name, (data, _operation) in replacements.items():
+                    archive.writestr(name, data)
+
+            installed = apply_update_package(package, install, "2.8.1-rc1", timeout=20)
+            self.assertTrue(installed.success, installed.message)
+            self.assertEqual((install / "version.txt").read_bytes(), b"new")
+            self.assertTrue((root / ".install.update_pending.json").exists())
+
+            env = {
+                **os.environ,
+                "PYTHONPATH": str(source / "src"),
+                "XDG_CONFIG_HOME": str(root / "config"),
+                "XDG_STATE_HOME": str(root / "state"),
+                "XDG_DATA_HOME": str(root / "data"),
+            }
+            result = subprocess.run(
+                [sys.executable, str(scripts / "debug_launcher.py")],
+                cwd=install, env=env, timeout=45, capture_output=True, text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertEqual((install / "version.txt").read_bytes(), b"old")
+            self.assertEqual((root / "old-start.txt").read_text(), "restored")
+            self.assertFalse((root / ".install.update_pending.json").exists())
+            self.assertTrue(Path(installed.backup).is_dir() or list(root.glob(".videobatch_update_*")))
+
+
 if __name__ == "__main__":
     unittest.main()
