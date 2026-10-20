@@ -16,49 +16,74 @@ def build_main_ui(window) -> None:
     root = QWidget()
     window.setCentralWidget(root)
     outer = QVBoxLayout(root)
-    outer.setContentsMargins(18, 16, 18, 16)
-    outer.setSpacing(8)
+    outer.setContentsMargins(10, 8, 10, 8)
+    outer.setSpacing(5)
 
-    header = QHBoxLayout()
+    # Header is arranged in two rows: text no longer fights load/zoom for one line.
+    header = QGridLayout()
+    header.setSpacing(5)
+    header.setColumnStretch(0, 1)
     brand = QVBoxLayout()
+    brand.setSpacing(0)
     title = QLabel("VideoBatch 2026")
     title.setObjectName("title")
     subtitle = QLabel("Kubuntu 26.04 · KDE Plasma · Wayland · Qt 6")
     subtitle.setObjectName("subtitle")
+    subtitle.setWordWrap(True)
     brand.addWidget(title)
     brand.addWidget(subtitle)
-    header.addLayout(brand)
-    header.addStretch()
-    header.addWidget(window.load_dashboard.frame, alignment=Qt.AlignmentFlag.AlignTop)
+    header.addLayout(brand, 0, 0, 2, 1)
 
     window.status = QLabel("BEREIT")
     window.status.setObjectName("statusChip")
     window.status.setAccessibleDescription(
         "Aktueller Programmstatus. Der sichtbare Text nennt den momentanen Zustand."
     )
-    header.addWidget(window.status, alignment=Qt.AlignmentFlag.AlignTop)
+    header.addWidget(window.status, 0, 1, alignment=Qt.AlignmentFlag.AlignRight)
 
-    view_label = QLabel("Ansicht")
+    view_label = QLabel("Schrift")
     window.view_scale = QComboBox()
     view_label.setBuddy(window.view_scale)
-    window.view_scale.setAccessibleName("Ansichtsgröße")
-    window.view_scale.setAccessibleDescription("Vergrößert die gesamte Oberfläche von 100 bis 200 Prozent.")
+    window.view_scale.setAccessibleName("Schrift- und Ansichtsgröße")
+    window.view_scale.setAccessibleDescription(
+        "Verändert die Schrift und Bedienelemente zwischen 80 und 200 Prozent."
+    )
     window.view_scale.setToolTip(
-        "Ansichtsgröße · Strg+Alt+Pfeil hoch/runter · Strg+Alt+0 setzt auf 100 % zurück"
+        "Schriftgröße · Strg+Alt+Pfeil hoch/runter · Strg+Alt+0 setzt auf 110 % zurück"
     )
     for value in SCALE_LEVELS:
         window.view_scale.addItem(f"{value} %", value)
-    header.addWidget(view_label, alignment=Qt.AlignmentFlag.AlignTop)
-    header.addWidget(window.view_scale, alignment=Qt.AlignmentFlag.AlignTop)
+    window.view_scale.setCurrentIndex(window.view_scale.findData(110))
+    header.addWidget(view_label, 0, 2)
+    header.addWidget(window.view_scale, 0, 3)
+
+    dashboard = QFrame()
+    dashboard.setObjectName("compactStatusDashboard")
+    dashboard_row = QHBoxLayout(dashboard)
+    dashboard_row.setContentsMargins(4, 2, 4, 2)
+    dashboard_row.setSpacing(8)
+    dashboard_row.addWidget(window.load_dashboard.frame)
+
+    # The existing two progress objects are created in build_footer().
+    # Their compact dashboard container is placed here, not in the tall footer.
+    window.progress_dashboard = QWidget()
+    window.progress_dashboard.setObjectName("progressDashboard")
+    window.progress_dashboard_layout = QGridLayout(window.progress_dashboard)
+    window.progress_dashboard_layout.setContentsMargins(2, 1, 2, 1)
+    window.progress_dashboard_layout.setHorizontalSpacing(5)
+    window.progress_dashboard_layout.setVerticalSpacing(2)
+    window.progress_dashboard_layout.setColumnStretch(1, 1)
+    dashboard_row.addWidget(window.progress_dashboard, 1)
+    header.addWidget(dashboard, 1, 1, 1, 3)
     outer.addLayout(header)
 
     # One compact, responsive 2 × 2 control grid is visible on every page.
     controls = QFrame()
     controls.setObjectName("dashboardControls")
     grid = QGridLayout(controls)
-    grid.setContentsMargins(12, 8, 12, 8)
-    grid.setHorizontalSpacing(10)
-    grid.setVerticalSpacing(6)
+    grid.setContentsMargins(8, 5, 8, 5)
+    grid.setHorizontalSpacing(7)
+    grid.setVerticalSpacing(3)
     grid.setColumnStretch(1, 1)
     grid.setColumnStretch(3, 2)
 
@@ -223,6 +248,6 @@ def build_main_ui(window) -> None:
         )
         window._scale_shortcuts.append(shortcut)
     reset = QShortcut(QKeySequence("Ctrl+Alt+0"), window)
-    reset.activated.connect(lambda: window.view_scale.setCurrentIndex(0))
+    reset.activated.connect(lambda: window.view_scale.setCurrentIndex(window.view_scale.findData(110)))
     window._scale_shortcuts.append(reset)
     apply_scale()

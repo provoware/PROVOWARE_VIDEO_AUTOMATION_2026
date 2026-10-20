@@ -210,8 +210,8 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     footer.setObjectName("actionFooter")
     window.action_footer = footer
     layout = QVBoxLayout(footer)
-    layout.setContentsMargins(12, 9, 12, 9)
-    layout.setSpacing(7)
+    layout.setContentsMargins(8, 4, 8, 4)
+    layout.setSpacing(3)
 
     window.next_step = QLabel("Nächster Schritt: 1 · Dateien auswählen")
     window.next_step.setObjectName("nextStep")
@@ -225,25 +225,27 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     window.activity_detail.setWordWrap(True)
     layout.addWidget(window.activity_detail)
 
+    # Small, always-visible production meters share the upper status dashboard.
     total_label = QLabel("Gesamt")
-    total_row = QHBoxLayout()
-    total_row.addWidget(total_label)
     window.progress = QProgressBar()
     window.progress.setRange(0, 100)
     window.progress.setAccessibleName("Gesamtfortschritt")
     window.progress.setFormat("Bereit · %p %")
-    total_row.addWidget(window.progress, 1)
-    layout.addLayout(total_row)
 
     job_label = QLabel("Auftrag")
-    action_row = QHBoxLayout()
-    action_row.addWidget(job_label)
     window.job_progress = QProgressBar()
     window.job_progress.setObjectName("jobProgress")
     window.job_progress.setRange(0, 100)
     window.job_progress.setAccessibleName("Fortschritt des aktuellen Auftrags")
     window.job_progress.setFormat("Kein Auftrag aktiv · %p %")
-    action_row.addWidget(window.job_progress, 1)
+    meters = window.progress_dashboard_layout
+    meters.addWidget(total_label, 0, 0)
+    meters.addWidget(window.progress, 0, 1)
+    meters.addWidget(job_label, 1, 0)
+    meters.addWidget(window.job_progress, 1, 1)
+
+    action_row = QHBoxLayout()
+    action_row.setSpacing(5)
     window.cancel = QPushButton("Abbrechen")
     window.cancel.setObjectName("danger")
     window.cancel.setAccessibleDescription("Bricht die laufende Verarbeitung kontrolliert ab.")
@@ -251,7 +253,7 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     window.start = QPushButton("▶ Videos erstellen")
     window.start.setObjectName("primary")
     window.start.setAccessibleDescription("Startet die geprüften Video-Aufträge.")
-    window.start.setMinimumWidth(220)
+    window.start.setMinimumWidth(155)
     window.probe_button = QPushButton("▶ Probevideo · max. 10 Sekunden")
     window.probe_button.setObjectName("secondary")
     window.probe_button.setToolTip(
@@ -285,7 +287,7 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     layout.addLayout(result_row)
 
     window._production_footer_widgets = [
-        window.activity_detail, total_label, window.progress, job_label, window.job_progress,
+        window.activity_detail,
         window.cancel, window.probe_button, window.start, result_label,
         window.open_output, window.open_probe_button, window.show_result_log,
     ]

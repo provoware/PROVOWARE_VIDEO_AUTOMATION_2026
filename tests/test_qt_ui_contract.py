@@ -79,7 +79,7 @@ def test_qt_theme_exposes_high_visibility_accessibility_contract() -> None:
         "QScrollBar:vertical {",
         "width: 16px;",
         "QToolTip {",
-        "SCALE_LEVELS = (100, 125, 150, 175, 200)",
+        "SCALE_LEVELS = (80, 100, 110, 125, 150, 175, 200)",
         "def scaled_style(percent: int) -> str:",
         "QPushButton#secondary {",
         "QPushButton#quietDanger {",
@@ -246,7 +246,7 @@ def test_main_workspace_supports_global_scaling_without_page_scroll_or_three_col
     workspace = QT_WORKSPACE_LAYOUT.read_text(encoding="utf-8")
     source = layout + workspace
     for token in (
-        'window.view_scale.setAccessibleName("Ansichtsgröße")',
+        'window.view_scale.setAccessibleName("Schrift- und Ansichtsgröße")',
         "for value in SCALE_LEVELS:",
         "build_workflow_stack(window)",
         'stack.setObjectName("workflowPages")',
