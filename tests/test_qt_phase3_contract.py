@@ -261,7 +261,7 @@ def test_beginner_main_flow_has_global_controls_and_clear_navigation() -> None:
     )
     for text in (
         "Auflösung", "Qualität", "Bildeffekt", "Ausgabeordner",
-        "1 · Dateien", "2 · Produktion", "Erweitert", "Hilfe / Werkzeuge",
+        "1 · Dateien", "2 · Ausgabe", "3 · Produktion", "Hilfe / Werkzeuge",
         "Nächster Schritt:", "Hier nur prüfen",
         'stack.setObjectName("workflowPages")',
         '"media": window._sources_panel()',
@@ -292,8 +292,8 @@ def test_phase3_secondary_docks_do_not_squeeze_beginner_dashboard() -> None:
 
     navigation = _text(SRC / "qt_phase3_components.py")
     assert '("media", "1 · Dateien"' in navigation
-    assert '("effects", "Erweitert"' in navigation
-    assert '("queue", "2 · Produktion"' in navigation
+    assert '("effects", "2 · Ausgabe"' in navigation
+    assert '("queue", "3 · Produktion"' in navigation
     assert 'button = QPushButton(label)' in navigation
     assert 'QPushButton(f"{label}\n{description}")' not in navigation
 
