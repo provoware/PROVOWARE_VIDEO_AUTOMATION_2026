@@ -19,7 +19,13 @@ def _source_card(window, label: str, widget: DropList, add_text: str) -> QFrame:
     layout.setSpacing(7)
 
     header = QHBoxLayout()
-    header.addWidget(field_label(label))
+    source_label = field_label(label)
+    source_label.setAccessibleName(label)
+    source_label.setToolTip(label)
+    if not hasattr(window, "_source_header_labels"):
+        window._source_header_labels = []
+    window._source_header_labels.append((source_label, label, "Audio" if widget is window.audio else "Medien"))
+    header.addWidget(source_label)
     header.addStretch()
     sorter = QComboBox()
     sorter.setAccessibleName(f"{label} sortieren")
@@ -140,5 +146,10 @@ def build_sources_panel(window) -> QWidget:
     scroll.setObjectName("mainWorkspaceScroll")
     scroll.setWidgetResizable(True)
     scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    # Qt's focus-follow logic can change a hidden horizontal scrollbar and
+    # clip the LEFT of field labels; never scroll sideways in a vertical UI.
+    scroll.horizontalScrollBar().valueChanged.connect(
+        lambda position: scroll.horizontalScrollBar().setValue(0) if position else None
+    )
     scroll.setWidget(panel)
     return scroll
