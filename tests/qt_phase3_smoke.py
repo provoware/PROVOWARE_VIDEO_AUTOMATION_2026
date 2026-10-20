@@ -47,6 +47,17 @@ def main() -> int:
         window.show()
         app.processEvents()
 
+        # Kein Dialog darf mehr als dynamischer Instanz-Monkeypatch erscheinen.
+        for callback_name in (
+            "_show_plugin_dialog", "_show_plugin_decision",
+            "_show_update_dialog", "_show_recovery_dialog",
+            "_show_archive_dialog", "_show_visual_approval",
+        ):
+            assert callback_name not in vars(window), callback_name
+        assert VideoBatchQtPhase2Window._show_recovery_dialog.__qualname__.startswith(
+            "VideoBatchQtPhase2Window."
+        )
+
         assert len(window.workspace_navigation.buttons) == 9
         assert window.phase3_tabs.count() == 3
         assert [window.phase3_tabs.tabText(index) for index in range(3)] == [
