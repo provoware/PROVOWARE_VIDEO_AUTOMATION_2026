@@ -147,12 +147,12 @@ def _ensure_independent_starter(install_root: Path) -> Path:
     root_name = shlex.quote(install_root.name)
     rescue_name = shlex.quote(controller.name)
     wrapper_bytes = (
-        "#!/usr/bin/env bash\\n"
-        "set -Eeuo pipefail\\n"
-        'BASE="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"\\n'
-        f"APP={root_name}\\n"
-        f"HELPER={rescue_name}\\n"
-        'exec "${VIDEOBATCH_BOOTSTRAP_PYTHON:-python3}" "$BASE/$HELPER" "$BASE/$APP" "$@"\\n'
+        "#!/usr/bin/env bash\n"
+        "set -Eeuo pipefail\n"
+        'BASE="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"\n'
+        f"APP={root_name}\n"
+        f"HELPER={rescue_name}\n"
+        'exec "${VIDEOBATCH_BOOTSTRAP_PYTHON:-python3}" "$BASE/$HELPER" "$BASE/$APP" "$@"\n'
     ).encode("utf-8")
     for path, contents in ((controller, controller_bytes), (launcher, wrapper_bytes)):
         if path.exists() or path.is_symlink():
@@ -160,7 +160,7 @@ def _ensure_independent_starter(install_root: Path) -> Path:
                 raise OSError(f"Externer Sicherheitsstarter widersprüchlich; nicht überschreiben: {path}")
             continue
         _atomic_write(path, contents, 0o700)
-    _fsync_directory(parent)
+    # _atomic_write synchronizes the containing directory for new files.
     return launcher
 
 
