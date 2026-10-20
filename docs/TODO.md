@@ -52,6 +52,17 @@
 
 ---
 
+### Folgeschritt – 20.10.2026, verifizierbar erst auf neuem Commit
+
+- [x] Sechs Dialogaufrufe (Plugins, Update, Wiederherstellung, Archiv, visuelle Freigabe) sind explizit in `qt_phase2.py` gebunden; Importzeit-Klassenüberschreibungen und die früheren Dialog-Instanzpatches wurden entfernt. Der Qt-Phase-3-Smoke prüft, dass keine dynamischen Instanzmethoden zurückbleiben.
+- [x] `tests/qt_phase3_keyboard_matrix.py` prüft auf der echten Qt-Phase-3-Oberfläche **800×600 bei 175/200 %**, jeweils auf den drei Hauptseiten, den Tastaturfokus und die tatsächliche Sichtbarkeit beim Scrollen; in `.github/workflows/qt6-phase3-smoke.yml` eingebunden.
+- [x] Der lokale Paket-Updateweg behält sein Journal nach erfolgreicher Dateiumschaltung **bis zur normalen UI_READY-Erststartbestätigung**. `scripts/debug_launcher.py` führt bei Startfehler oder erforderlichem Safe-Mode den Rückfall auf die bestätigte Vorversion mit **einem** neuen Startversuch aus.
+- [x] Vier neue Update-Sicherheitsfälle testen die Erststartbestätigung, den Rückfall, einen harten Abbruch nach dem dauerhaften Journal und das Verbot einer Bestätigung bei fehlender Alt-Sicherung.
+- [ ] **Neue Tests und alle acht Gesamtprüfläufe auf einem eingefrorenen Commit erfolgreich belegen.** Bei Änderungen Manifeste und Dateiindex erneut synchronisieren.
+- [ ] **Restliches Refactoring:** `install_legacy_parity()`, `install_parity_completion()` und Legacy-Sortier-/Skalierungsbrücken nur nach separaten Gleichwertigkeitsprüfungen ablösen.
+- [ ] **Restliches Update-Gate:** Sicherung auch dann von einem unabhängig installierten Starter erreichen, wenn die neue Python-Laufzeit oder `debug_launcher.py` vor dem ersten Import kaputt ist. Dafür produktiven A/B-Controller als primären Aufrufpfad nutzen oder gleichwertigen externen Starter schaffen.
+- [ ] **Visuelle Endbewertung:** vollständige Einzelbildsichtung aller 126 Aufnahmen, echte KDE-/Kubuntu-Sichtabnahme wie vereinbart erst am fertigen Kandidaten. Ein grüner Tastaturtest ersetzt dies nicht.
+
 ### Aktuelle Zwischenbilanz der drei Arbeitsschritte
 
 - [x] Visueller 200-%-Befund: Historische Expertenleiste überdeckte den Ausgabebereich. Automatische Öffnung abgestellt, manuelle Menüfunktion erhalten. Produktionsseite scrollbar; neue vollständige Screenshot-Abnahme offen.
