@@ -4,14 +4,6 @@
     "AGENTS.md": {
       "category": "technical"
     },
-    "README.md": {
-      "category": "active",
-      "required_sections": [
-        "Dokumentation",
-        "Schnellstart",
-        "Abschlussprüfung"
-      ]
-    },
     "docs/ARCHITEKTUR.md": {
       "category": "technical"
     },
@@ -44,6 +36,15 @@
     "docs/DATEI_UND_ORDNERINDEX.md": {
       "category": "technical"
     },
+    "docs/design/PROVOWARE_RESPONSIVE_GRID_V1.md": {
+      "category": "technical"
+    },
+    "docs/design/VIDEOBATCH_DESIGN_IMPLEMENTATION_PLAN.md": {
+      "category": "technical"
+    },
+    "docs/design/VIDEOBATCH_GRAPHICS_MANIFEST.md": {
+      "category": "technical"
+    },
     "docs/DOKUMENTATIONSINDEX.md": {
       "category": "active",
       "required_sections": [
@@ -72,78 +73,6 @@
     },
     "docs/LONG_RENDER_2.8.3-rc24.md": {
       "category": "historical"
-    },
-    "docs/OFFLINE_QUALITY_ENVIRONMENT.md": {
-      "category": "technical"
-    },
-    "docs/PHASE2_FREEZE.md": {
-      "category": "historical"
-    },
-    "docs/PLUGIN_APPROVALS.md": {
-      "category": "technical"
-    },
-    "docs/PLUGIN_APPROVAL_MANAGEMENT.md": {
-      "category": "technical"
-    },
-    "docs/PLUGIN_OS_ISOLATION.md": {
-      "category": "technical"
-    },
-    "docs/PLUGIN_PERMISSIONS.md": {
-      "category": "technical"
-    },
-    "docs/PLUGIN_SIGNING.md": {
-      "category": "technical"
-    },
-    "docs/QT6_PHASE2_MIGRATION_MATRIX.md": {
-      "category": "technical"
-    },
-    "docs/QUICK_MODES.md": {
-      "category": "technical"
-    },
-    "docs/REPRODUCIBLE_UPDATE_PIPELINE.md": {
-      "category": "technical"
-    },
-    "docs/STABLE_ACCEPTANCE_EVIDENCE.md": {
-      "category": "historical"
-    },
-    "docs/STATUS.md": {
-      "category": "internal"
-    },
-    "docs/TODO.md": {
-      "category": "internal"
-    },
-    "docs/VIDEOBATCH_CP_UX_IMPLEMENTIERUNGSSTAND_2026.md": {
-      "category": "internal"
-    },
-    "docs/VIDEOBATCH_CP_UX_LAIENPRUEFUNG_2026.md": {
-      "category": "internal"
-    },
-    "docs/VISUAL_DESKTOP_APPROVAL.md": {
-      "category": "technical"
-    },
-    "docs/VISUAL_INSPECTION_HTML.md": {
-      "category": "technical"
-    },
-    "docs/VISUAL_REGRESSION.md": {
-      "category": "technical"
-    },
-    "docs/WORKSPACE_2X2_AND_DEBUGGING.md": {
-      "category": "technical"
-    },
-    "docs/WORKSPACE_LAYOUT_PROFILES.md": {
-      "category": "technical"
-    },
-    "docs/WORKSPACE_VISUAL_REGRESSION.md": {
-      "category": "technical"
-    },
-    "docs/design/PROVOWARE_RESPONSIVE_GRID_V1.md": {
-      "category": "technical"
-    },
-    "docs/design/VIDEOBATCH_DESIGN_IMPLEMENTATION_PLAN.md": {
-      "category": "technical"
-    },
-    "docs/design/VIDEOBATCH_GRAPHICS_MANIFEST.md": {
-      "category": "technical"
     },
     "docs/manuals/DEVELOPER_GUIDE.md": {
       "category": "active",
@@ -180,6 +109,33 @@
         "Nächster Schritt"
       ]
     },
+    "docs/OFFLINE_QUALITY_ENVIRONMENT.md": {
+      "category": "technical"
+    },
+    "docs/PHASE2_FREEZE.md": {
+      "category": "historical"
+    },
+    "docs/PLUGIN_APPROVAL_MANAGEMENT.md": {
+      "category": "technical"
+    },
+    "docs/PLUGIN_APPROVALS.md": {
+      "category": "technical"
+    },
+    "docs/PLUGIN_OS_ISOLATION.md": {
+      "category": "technical"
+    },
+    "docs/PLUGIN_PERMISSIONS.md": {
+      "category": "technical"
+    },
+    "docs/PLUGIN_SIGNING.md": {
+      "category": "technical"
+    },
+    "docs/QT6_PHASE2_MIGRATION_MATRIX.md": {
+      "category": "technical"
+    },
+    "docs/QUICK_MODES.md": {
+      "category": "technical"
+    },
     "docs/reference/BEST_PRACTICES.md": {
       "category": "technical"
     },
@@ -203,6 +159,12 @@
     },
     "docs/reference/VISUAL_APPROVAL_NORMALIZATION.md": {
       "category": "technical"
+    },
+    "docs/REPRODUCIBLE_UPDATE_PIPELINE.md": {
+      "category": "technical"
+    },
+    "docs/STABLE_ACCEPTANCE_EVIDENCE.md": {
+      "category": "historical"
     },
     "docs/start/AUTOINSTALLATION_save_.md": {
       "category": "active",
@@ -230,7 +192,48 @@
         "Nächster Schritt"
       ]
     },
+    "docs/STATUS.md": {
+      "category": "internal"
+    },
+    "docs/TODO.md": {
+      "category": "internal"
+    },
+    "docs/VIDEOBATCH_CP_UX_IMPLEMENTIERUNGSSTAND_2026.md": {
+      "category": "internal"
+    },
+    "docs/VIDEOBATCH_CP_UX_LAIENPRUEFUNG_2026.md": {
+      "category": "internal"
+    },
+    "docs/VISUAL_DESKTOP_APPROVAL.md": {
+      "category": "technical"
+    },
+    "docs/VISUAL_INSPECTION_HTML.md": {
+      "category": "technical"
+    },
+    "docs/VISUAL_REGRESSION.md": {
+      "category": "technical"
+    },
+    "docs/WORKSPACE_2X2_AND_DEBUGGING.md": {
+      "category": "technical"
+    },
+    "docs/WORKSPACE_LAYOUT_PROFILES.md": {
+      "category": "technical"
+    },
+    "docs/WORKSPACE_VISUAL_REGRESSION.md": {
+      "category": "technical"
+    },
+    "README.md": {
+      "category": "active",
+      "required_sections": [
+        "Dokumentation",
+        "Schnellstart",
+        "Abschlussprüfung"
+      ]
+    },
     "resources/signing/README.md": {
+      "category": "technical"
+    },
+    "src/provoware_grid/README.md": {
       "category": "technical"
     },
     "toolchain_wheelhouse/README.md": {

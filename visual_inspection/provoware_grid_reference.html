@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PROVOWARE · 120 × 80 Rasterreferenz (Layout-Demonstrator)</title>
+<link rel="stylesheet" href="../src/provoware_grid/grid-v1.css">
 <style>
 :root {
   --zoom: 1.1;
@@ -57,7 +58,7 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px s
 </style>
 </head>
 <body>
-<div class="grid-overlay" id="grid" aria-hidden="true"></div>
+<div class="grid-overlay pvw-grid-overlay" id="grid" aria-hidden="true"></div>
 <div class="shell" id="shell">
   <header class="top">
     <div class="brand">
@@ -89,7 +90,7 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px s
     <div class="meter"><label for="job">Auftrag</label><progress id="job" max="100" value="59">59 %</progress></div>
   </section>
   <main class="stage" id="stage">
-    <div class="columns" id="columns">
+    <div class="columns pvw-grid" id="columns">
       <section class="panel" data-panel="audio">
         <div class="panel-top"><h2>Audiodateien</h2><select aria-label="Audio sortieren"><option>Name A–Z</option><option>Neueste zuerst</option></select></div>
         <ul class="source-list"><li>ambient_aufnahme_mit_langem_titel.wav</li><li>track_02.mp3</li><li>track_03.flac</li></ul>

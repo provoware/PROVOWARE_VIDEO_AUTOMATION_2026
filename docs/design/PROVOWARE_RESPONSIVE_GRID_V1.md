@@ -60,3 +60,18 @@ Die vorhandenen Datei `docs/design/VIDEOBATCH_DESIGN_TOKENS.json` und ältere Tk
 3. Qt-Bereiche nach dem nachgewiesenen Raster ausrichten, realen Layout- und Funktionstest ausführen und erst danach den jeweiligen alten Vertrag bewusst ersetzen.
 
 Historische RC24-Nachweise bleiben unverändert; die persönliche Kubuntu-Endabnahme erfolgt separat.
+
+## 6. Implementierung der ersten Qt-Stufe und projektübergreifende Bausteine
+
+**Getrennte Bibliothek:** `src/provoware_grid/` enthält die vollständig Qt- und VideoBatch-unabhängige Berechnung der relativen 120×80-Rasterflächen, Schriftstufen, Mindestbreiten und der 42 Standard-Matrixfälle. Es gibt eine einfache Befehlszeile:
+
+```bash
+PYTHONPATH=src python -m provoware_grid
+PYTHONPATH=src python -m provoware_grid --width 800 --height 600 --zoom 200
+```
+
+Für HTML-Projekte enthält derselbe Ordner die wiederverwendbare Datei `grid-v1.css`, die im Offline-Beispiel eingebunden ist. Die Bibliothek hat **keinen** Import von Qt, VideoBatch, Browsern oder Netzwerkmodulen. Die Anwendung kann dieses Paket als Kopie unter `src/` in andere Projekte übernehmen, ohne deren Produktionslogik mitzubringen.
+
+**VideoBatch-Adapter:** `src/videobatch_fast/qt_source_panel.py` nutzt `choose_columns` für die Dateilisten; `qt_adaptive_settings.py` verwendet die identische Rechenregel für die sechs Grundeinstellungen. Die Einstellungsoberfläche bricht bei großen Schriften in einzelne Gruppen um und bleibt vertikal scrollbar, während alle bisherigen Steuerelemente und ihre Verbindungen bestehen bleiben. `qt_main_layout.py` übergibt denselben Schrift-Zoom an beide Adapter.
+
+**Grenzen des Nachweises:** Die reine Rastermatrix bestätigt mathematische Mindestbreitenregeln, nicht die tatsächlich gemessenen Textbreiten. Die Qt-Prüfkette enthält ergänzende Fenstergeometrietests und den echten Wayland-Start. Bei 800×600 und besonders 200 % darf vertikales Scrollen nötig sein. Die vollständige screenshotgestützte Sichtprüfung auf dem realen Kubuntu-Monitor bleibt eine eigene Abnahme. Bestehende ältere Tk-Layoutverträge sind nicht stillschweigend umgestellt.

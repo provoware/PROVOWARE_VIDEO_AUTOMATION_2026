@@ -1,0 +1,26 @@
+/* PROVOWARE · portable 120×80 responsive grid V1 · offline-only.
+   A grid cell is an alignment aid, never a fixed clickable target. */
+.pvw-grid {
+  --pvw-zoom: 1.1;
+  --pvw-grid-columns: 120;
+  --pvw-grid-rows: 80;
+  --pvw-grid-gap: 12px;
+  --pvw-min-panel: calc(360px * var(--pvw-zoom));
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--pvw-min-panel)), 1fr));
+  gap: var(--pvw-grid-gap);
+  min-width: 0;
+}
+.pvw-grid > * { min-width: 0; overflow-wrap: anywhere; }
+.pvw-grid-overlay {
+  pointer-events: none;
+  background-image: linear-gradient(to right, #8bd5ed 1px, transparent 1px),
+                    linear-gradient(to bottom, #8bd5ed 1px, transparent 1px);
+  background-size: calc(100% / 120) 100%, 100% calc(100% / 80);
+}
+.pvw-vertical-scroll { overflow-y: auto; overflow-x: hidden; min-height: 0; }
+.pvw-controls { display: flex; flex-wrap: wrap; gap: .5em; align-items: stretch; }
+.pvw-controls > * { flex: 1 1 10rem; min-width: min(100%, 10rem); }
+@media (prefers-reduced-motion: reduce) {
+  .pvw-grid *, .pvw-grid *::before, .pvw-grid *::after { transition: none !important; animation: none !important; }
+}

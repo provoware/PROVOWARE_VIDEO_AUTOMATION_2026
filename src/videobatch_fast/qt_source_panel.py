@@ -4,6 +4,8 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QComboBox, QFrame, QGridLayout, QHBoxLayout,
                                QPushButton, QScrollArea, QVBoxLayout, QWidget)
 
+from provoware_grid import choose_columns
+
 from .qt_media_list import AUDIO_EXTS, MEDIA_EXTS, SORT_MODES, DropList
 from .qt_ui_polish import configure_clear_button, configure_file_buttons, field_label, text_label
 
@@ -52,20 +54,34 @@ class ResponsiveSourceColumns(QWidget):
         self.audio_card = audio_card
         self.media_card = media_card
         self.stacked = False
+        self.zoom_percent = 110
         self.grid = QGridLayout(self)
         self.grid.setContentsMargins(0, 0, 0, 0)
-        self.grid.setSpacing(10)
+        self.grid.setSpacing(12)
         self.grid.setColumnStretch(0, 1)
         self.grid.setColumnStretch(1, 1)
         self.grid.addWidget(audio_card, 0, 0)
         self.grid.addWidget(media_card, 0, 1)
 
-    def resizeEvent(self, event) -> None:
-        super().resizeEvent(event)
-        # Panels must keep readable minimum widths even at 125–200% zoom.
-        # Text zoom increases the necessary panel width; never squash labels.
-        threshold = max(790, round(790 * self.fontMetrics().height() / 19))
-        narrow = self.width() < threshold
+    def set_zoom_percent(self, value: int) -> None:
+        """Keep the layout consistent with the global Qt typography selector."""
+        self.zoom_percent = value
+        self._reflow()
+
+    def _reflow(self) -> None:
+        # Measured widget minimums supplement the portable 120×80 grid rules.
+        intrinsic = (
+            self.audio_card.minimumSizeHint().width(),
+            self.media_card.minimumSizeHint().width(),
+        )
+        columns = choose_columns(
+            max(1, self.width()),
+            zoom_percent=self.zoom_percent,
+            panel_min_width=360,
+            gap=self.grid.spacing(),
+            intrinsic_min_widths=intrinsic,
+        )
+        narrow = columns == 1
         if narrow == self.stacked:
             return
         self.stacked = narrow
@@ -75,6 +91,10 @@ class ResponsiveSourceColumns(QWidget):
         self.grid.setRowStretch(0, 0 if narrow else 1)
         self.grid.setRowStretch(1, 0 if narrow else 1)
         self.updateGeometry()
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        self._reflow()
 
 
 def build_sources_panel(window) -> QWidget:

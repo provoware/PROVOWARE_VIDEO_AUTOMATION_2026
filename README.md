@@ -40,6 +40,10 @@ Der verbindlich vorgeschlagene PROVOWARE-Oberflächenstandard verwendet **800 ×
 - [Maschinenlesbarer Layoutvertrag](config/contracts/PROVOWARE_RESPONSIVE_GRID_V1.json)
 - [Offline-HTML-Layoutreferenz](visual_inspection/provoware_grid_reference.html)
 - [Automatische Vertragsprüfungen](tests/test_provoware_responsive_grid_contract.py)
+- [Plattformneutrales Python-Rasterpaket](src/provoware_grid/README.md) (zusätzlich [CSS-Bausteine](src/provoware_grid/grid-v1.css))
+
+**Qt-Übertragung (Entwicklung):** Die existierenden Audio-/Medienlisten und die sechs Grundeinstellungsgruppen verwenden jetzt dieselbe Spaltenberechnung des unabhängigen PROVOWARE-Pakets. Bei geringer Breite oder großer Schrift ordnen sie sich in eine Spalte um; die Einstellungen bleiben in einem begrenzten, vertikal scrollbaren Abschnitt zugänglich. Die Videoverarbeitung, Datenbank, Start- und Updatefunktionen werden dadurch nicht ersetzt.
+
 
 **Nachweisgrenze:** Die HTML-Seite ist ein optischer Layout-Demonstrator, **kein Ersatz** der Qt-Anwendung. Der Vertrag ist zunächst eine Entwicklungsbasis; real vermessene Browser-Screenshots, Abgleich der Qt-Oberfläche und physische Kubuntu-Abnahme bleiben eigene Prüfschritte. Der bisherige 1024-Pixel-Altvertrag wird nicht unbemerkt überschrieben.
 

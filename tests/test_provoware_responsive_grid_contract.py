@@ -116,3 +116,36 @@ def test_contract_expresses_real_safety_and_non_merge_policy() -> None:
     assert "no_unintended_overlap" in assertions
     assert "essential_actions_reachable_by_keyboard" in assertions
     assert "original_rendering_and_storage_unmodified" in assertions
+
+
+def test_portable_python_core_and_css_match_the_contract() -> None:
+    from provoware_grid import (
+        GRID_COLUMNS, GRID_ROWS, REFERENCE_WIDTH, REFERENCE_HEIGHT, ZOOM_LEVELS,
+    )
+    data = _contract()
+    assert (GRID_COLUMNS, GRID_ROWS) == (
+        data["reference_grid"]["columns"], data["reference_grid"]["rows"],
+    )
+    assert (REFERENCE_WIDTH, REFERENCE_HEIGHT) == (
+        data["reference_viewport_css_px"]["width"],
+        data["reference_viewport_css_px"]["height"],
+    )
+    assert list(ZOOM_LEVELS) == data["typography"]["zoom_percent"]
+    style = (ROOT / "src/provoware_grid/grid-v1.css").read_text(encoding="utf-8")
+    assert "--pvw-grid-columns: 120" in style
+    assert "--pvw-grid-rows: 80" in style
+    assert "minmax(min(100%, var(--pvw-min-panel)), 1fr)" in style
+    reference = REFERENCE.read_text(encoding="utf-8")
+    assert 'href="../src/provoware_grid/grid-v1.css"' in reference
+    assert 'class="columns pvw-grid"' in reference
+
+
+def test_qt_uses_portable_rules_without_importing_ffmpeg_or_qt_into_core() -> None:
+    source = (ROOT / "src/videobatch_fast/qt_source_panel.py").read_text(encoding="utf-8")
+    adapter = (ROOT / "src/videobatch_fast/qt_adaptive_settings.py").read_text(encoding="utf-8")
+    main = (ROOT / "src/videobatch_fast/qt_main_layout.py").read_text(encoding="utf-8")
+    assert "from provoware_grid import choose_columns" in source
+    assert "from provoware_grid import choose_columns" in adapter
+    assert 'setObjectName("adaptiveSettingScroll")' in main
+    assert "window.settings_grid.set_zoom_percent(value)" in main
+    assert "window.source_columns.set_zoom_percent(value)" in main
