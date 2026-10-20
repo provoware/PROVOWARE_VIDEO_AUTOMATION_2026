@@ -4,6 +4,7 @@ import hashlib
 import ctypes
 import errno
 import json
+import shlex
 import os
 import shutil
 import subprocess
@@ -128,6 +129,39 @@ def _atomic_exchange_dirs(first: Path, second: Path) -> None:
     ) != 0:
         code = ctypes.get_errno()
         raise OSError(code, os.strerror(code), str(first))
+
+
+def _ensure_independent_starter(install_root: Path) -> Path:
+    """Provision an immutable-by-default rescue outside the replaceable tree.
+
+    Existing, differing rescue files are NEVER overwritten: a mismatch blocks
+    the update before the first directory exchange.
+    """
+    parent = install_root.parent
+    source = Path(__file__).resolve().parents[2] / "scripts" / "local_update_rescue.py"
+    if not source.is_file() or source.is_symlink():
+        raise OSError("Unabhängiges Startprogramm fehlt; lokales Update blockiert.")
+    controller = parent / f".{install_root.name}.independent_start.py"
+    launcher = parent / f"{install_root.name}-SICHER-STARTEN.sh"
+    controller_bytes = source.read_bytes()
+    root_name = shlex.quote(install_root.name)
+    rescue_name = shlex.quote(controller.name)
+    wrapper_bytes = (
+        "#!/usr/bin/env bash\\n"
+        "set -Eeuo pipefail\\n"
+        'BASE="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"\\n'
+        f"APP={root_name}\\n"
+        f"HELPER={rescue_name}\\n"
+        'exec "${VIDEOBATCH_BOOTSTRAP_PYTHON:-python3}" "$BASE/$HELPER" "$BASE/$APP" "$@"\\n'
+    ).encode("utf-8")
+    for path, contents in ((controller, controller_bytes), (launcher, wrapper_bytes)):
+        if path.exists() or path.is_symlink():
+            if path.is_symlink() or not path.is_file() or path.read_bytes() != contents:
+                raise OSError(f"Externer Sicherheitsstarter widersprüchlich; nicht überschreiben: {path}")
+            continue
+        _atomic_write(path, contents, 0o700)
+    _fsync_directory(parent)
+    return launcher
 
 
 def _pending_update_path(install_root: Path) -> Path:
@@ -342,6 +376,9 @@ def apply_update_package(
             raise FileExistsError(f"Update-Sicherung bereits vorhanden: {backup}")
         if journal.exists() or journal.is_symlink():
             raise OSError("Vorherige Update-Transaktion nicht abgeschlossen; zuerst neu starten.")
+        # The external launcher is installed BEFORE persisting a transaction.
+        # A new broken STARTEN.sh or debug_launcher.py cannot disable recovery.
+        _ensure_independent_starter(install_root)
         old_stat = install_root.stat()
         _write_report(journal, {
             "schema_version": 1,
