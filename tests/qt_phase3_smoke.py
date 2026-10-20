@@ -261,8 +261,15 @@ def main() -> int:
 
         window._route_workspace("effects")
         app.processEvents()
-        assert window.parity_dock.isVisible()
+        assert not window.parity_dock.isVisible(), "Expertenleiste darf Schritt 2 nicht verdrängen"
+        from videobatch_fast.qt_legacy_parity import _show_parity_tab
+        _show_parity_tab(window, 0)
+        app.processEvents()
+        assert window.parity_dock.isVisible(), "Expertenwerkzeug muss auf Wunsch erreichbar bleiben"
         assert window.parity_tabs.currentIndex() == 0
+        window._route_workspace("queue")
+        app.processEvents()
+        assert not window.parity_dock.isVisible()
 
         window.diagnostics_panel.run_diagnostic()
         app.processEvents()
