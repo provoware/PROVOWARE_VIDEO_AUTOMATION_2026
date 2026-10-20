@@ -67,6 +67,8 @@ class DropList(QListWidget):
         super().__init__()
         self.extensions = {value.lower() for value in extensions}
         self._production_paths: list[str] = []
+        self._parity_production_paths: list[Path] = []
+        self._parity_view_sort = "import"
         self._zoom_point_size = max(
             self.MIN_ZOOM_POINT_SIZE,
             min(self.MAX_ZOOM_POINT_SIZE, float(self.font().pointSizeF() or 12.0)),
@@ -84,65 +86,90 @@ class DropList(QListWidget):
             "Mit Strg plus oder minus wird die Liste vergrößert oder verkleinert."
         )
 
-    def paths(self) -> list[Path]:
-        return [Path(self.item(row).data(Qt.ItemDataRole.UserRole)) for row in range(self.count())]
-
-    def production_paths(self) -> list[Path]:
-        parity_paths = getattr(self, "_parity_production_paths", None)
-        if parity_paths is not None:
-            return [Path(value) for value in parity_paths]
-        return [Path(value) for value in self._production_paths]
-
-    def apply_view_as_production_order(self) -> None:
-        displayed = [
+    def _visible_paths(self) -> list[Path]:
+        """Only the visible list, never the authoritative production order."""
+        return [
             Path(str(self.item(row).data(Qt.ItemDataRole.UserRole)))
             for row in range(self.count())
             if self.item(row).data(Qt.ItemDataRole.UserRole)
         ]
+
+    def paths(self) -> list[Path]:
+        """Preserve the explicit production order even when the view is sorted."""
+        return self.production_paths()
+
+    def production_paths(self) -> list[Path]:
+        return list(self._parity_production_paths)
+
+    def apply_view_as_production_order(self) -> None:
+        displayed = self._visible_paths()
+        self._parity_production_paths = list(displayed)
         self._production_paths = [str(path) for path in displayed]
-        if hasattr(self, "_parity_production_paths"):
-            self._parity_production_paths = list(displayed)
         self.changed.emit()
 
+    def render_view(self) -> None:
+        """Rebuild the sorted presentation without mutating output sequencing."""
+        from .media_library import sort_paths
+
+        selected = {
+            Path(str(item.data(Qt.ItemDataRole.UserRole)))
+            for item in self.selectedItems()
+            if item.data(Qt.ItemDataRole.UserRole)
+        }
+        order = self.production_paths()
+        mode = str(getattr(self, "_parity_view_sort", "import") or "import")
+        displayed = sort_paths(order, mode) if mode != "import" else order
+        previous_block = self.blockSignals(True)
+        try:
+            QListWidget.clear(self)
+            for path in displayed:
+                item = QListWidgetItem(path.name)
+                item.setData(Qt.ItemDataRole.UserRole, str(path))
+                item.setToolTip(str(path))
+                self.addItem(item)
+                if path in selected:
+                    item.setSelected(True)
+        finally:
+            self.blockSignals(previous_block)
+
     def clear(self) -> None:
-        super().clear()
-        self._production_paths.clear()
+        self._parity_production_paths = []
+        self._production_paths = []
+        QListWidget.clear(self)
 
     def add_paths(self, paths: list[Path]) -> None:
-        known = {str(path) for path in self.paths()}
+        production = self.production_paths()
+        known = {str(path) for path in production}
         added = False
         for candidate in paths:
-            path = candidate.expanduser()
+            path = Path(candidate).expanduser()
             if not path.is_file() or path.suffix.lower() not in self.extensions:
                 continue
-            resolved = str(path.resolve())
-            if resolved in known:
+            resolved = path.resolve()
+            if str(resolved) in known:
                 continue
-            item = QListWidgetItem(path.name)
-            item.setData(Qt.ItemDataRole.UserRole, resolved)
-            item.setToolTip(f"{resolved}\n{media_path_display_text(path)}")
-            if path.suffix.lower() in IMAGE_THUMBNAIL_EXTS:
-                pixmap = QPixmap(resolved)
-                if not pixmap.isNull():
-                    item.setIcon(QIcon(pixmap))
-            self.addItem(item)
-            known.add(resolved)
-            self._production_paths.append(resolved)
+            production.append(resolved)
+            known.add(str(resolved))
             added = True
         if added:
+            self._parity_production_paths = production
+            self._production_paths = [str(path) for path in production]
+            self.render_view()
             self.changed.emit()
 
     def remove_selected(self) -> None:
         selected = {
-            str(item.data(Qt.ItemDataRole.UserRole))
+            Path(str(item.data(Qt.ItemDataRole.UserRole)))
             for item in self.selectedItems()
+            if item.data(Qt.ItemDataRole.UserRole)
         }
-        rows = sorted((self.row(item) for item in self.selectedItems()), reverse=True)
-        for row in rows:
-            self.takeItem(row)
-        if rows:
-            self._production_paths = [value for value in self._production_paths if value not in selected]
-            self.changed.emit()
+        if not selected:
+            return
+        new_order = [path for path in self.production_paths() if path not in selected]
+        self._parity_production_paths = new_order
+        self._production_paths = [str(path) for path in new_order]
+        self.render_view()
+        self.changed.emit()
 
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
         event.acceptProposedAction() if event.mimeData().hasUrls() else event.ignore()
@@ -198,25 +225,30 @@ class DropList(QListWidget):
                 event.accept()
                 return
         super().keyPressEvent(event)
-
     def sort_by(self, mode: str) -> None:
-        selected = {str(item.data(Qt.ItemDataRole.UserRole)) for item in self.selectedItems()}
-        current = self.currentItem()
-        current_path = str(current.data(Qt.ItemDataRole.UserRole)) if current is not None else ""
-        ordered = sorted(self.paths(), key=lambda path: media_path_sort_key(path, mode))
-        if ordered == self.paths():
+        """Sort the view only. Persist the selection without changing jobs."""
+        from .media_library import SORT_KEYS
+        from .qt_legacy_parity_completion import _save_config, _select_combo_data
+
+        key = {"name": "name_asc", "modified": "modified_new", "size": "size_desc"}.get(mode, mode)
+        if key not in SORT_KEYS:
             return
-        production_order = list(self._production_paths)
-        self.blockSignals(True)
-        try:
-            self.clear()
-            self.add_paths(ordered)
-            self._production_paths = production_order
-            for row in range(self.count()):
-                item = self.item(row)
-                raw = str(item.data(Qt.ItemDataRole.UserRole))
-                item.setSelected(raw in selected)
-                if raw == current_path:
-                    self.setCurrentItem(item)
-        finally:
-            self.blockSignals(False)
+        self._parity_view_sort = key
+        self.render_view()
+        window = self.window()
+        is_audio = self is getattr(window, "audio", None)
+        combo = getattr(window, "parity_audio_sort" if is_audio else "parity_media_sort", None)
+        if combo is not None:
+            was_blocked = combo.blockSignals(True)
+            try:
+                _select_combo_data(combo, key)
+            finally:
+                combo.blockSignals(was_blocked)
+        _save_config(window, **{("audio_sort" if is_audio else "media_sort"): key})
+        if hasattr(window, "_project_dirty"):
+            window._project_dirty = True
+        if hasattr(window, "next_step"):
+            window.next_step.setText(
+                "Sortierung geändert: nur die Ansicht. Die Produktionsreihenfolge bleibt unverändert."
+            )
+
