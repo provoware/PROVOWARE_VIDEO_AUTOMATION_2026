@@ -45,8 +45,15 @@ def findings(window: VideoBatchQtPhase3Window, width: int, height: int) -> list[
                 problems.append("Programmtitel horizontal abgeschnitten")
     if window.workflow_stack.height() < 60:
         problems.append(f"Arbeitsseite zu flach: {window.workflow_stack.height()}px")
-    if getattr(window, "_active_workflow_route", "") != "effects" and window.settings_view.isVisibleTo(window):
+    route = getattr(window, "_active_workflow_route", "")
+    if route != "effects" and window.settings_view.isVisibleTo(window):
         problems.append("Ausgabeeinstellungen verdecken eine andere Arbeitsseite")
+    if route == "effects":
+        output_scroll = window._workflow_pages["effects"]
+        if output_scroll.verticalScrollBar().value() > 2:
+            problems.append("Ausgabeseite öffnet nicht bei den Grundeinstellungen")
+        if not window.settings_view.isVisibleTo(window):
+            problems.append("Grundlegende Ausgabeoptionen nicht erreichbar")
     tabs = window.main_tabs
     if not tabs.isVisible():
         problems.append("Dreistufige Hauptnavigation unsichtbar")
