@@ -9,7 +9,6 @@ from PySide6.QtWidgets import (
     QApplication,
     QComboBox,
     QDialog,
-    QFileDialog,
     QFrame,
     QHBoxLayout,
     QLabel,
@@ -397,34 +396,6 @@ def _initial_directory(window: object, key: str, fallback: Path) -> Path:
     cfg = _config(window)
     candidate = Path(str(cfg.get(key, fallback) or fallback)).expanduser()
     return candidate if candidate.is_dir() else fallback
-
-
-def _choose_audio(window: object) -> None:
-    initial = _initial_directory(window, "last_audio_dir", Path.home() / "Downloads")
-    files, _ = QFileDialog.getOpenFileNames(
-        window,
-        "Audiodateien",
-        str(initial),
-        "Audio (*.mp3 *.wav *.flac *.m4a *.aac *.ogg *.opus *.wma);;Alle Dateien (*)",
-    )
-    paths = [Path(value) for value in files]
-    if paths:
-        window.audio.add_paths(paths)
-        _remember_directory(window, "last_audio_dir", paths)
-
-
-def _choose_media(window: object) -> None:
-    initial = _initial_directory(window, "last_media_dir", Path.home() / "Downloads")
-    files, _ = QFileDialog.getOpenFileNames(
-        window,
-        "Bilder oder Videos",
-        str(initial),
-        "Medien (*.png *.jpg *.jpeg *.webp *.avif *.mp4 *.mkv *.mov *.webm *.mpeg *.mpg);;Alle Dateien (*)",
-    )
-    paths = [Path(value) for value in files]
-    if paths:
-        window.media.add_paths(paths)
-        _remember_directory(window, "last_media_dir", paths)
 
 
 def _browse(window: object, *, audio: bool) -> None:
