@@ -35,7 +35,7 @@ class HelpPanel(QFrame):
 
         for label, description, route in (
             ("1 · Dateien auswählen", "Audio und passende Bilder oder Videos hinzufügen.", "media"),
-            ("2 · Videoeinstellungen", "Auflösung, Qualität, Bildeffekt und Zielordner oben ändern.", "effects"),
+            ("2 · Videoeinstellungen", "Auflösung, Qualität, Bildeffekt und Zielordner in Schritt 2 ändern.", "effects"),
             ("3 · Produktion öffnen", "Aufträge prüfen, starten und Fortschritt beobachten.", "queue"),
         ):
             button = QPushButton(label)
@@ -86,7 +86,7 @@ def _overview_page(window) -> QFrame:
     layout.addWidget(title)
     intro = QLabel(
         "Musik und Bilder auf der Seite Dateien wählen. Auflösung, Qualität, Effekt "
-        "und Zielordner sind immer oben erreichbar. Zum Starten Produktion öffnen."
+        "und Zielordner stehen in Schritt 2 bereit. Zum Starten Produktion öffnen."
     )
     intro.setObjectName("panelHint")
     intro.setWordWrap(True)
@@ -159,6 +159,17 @@ def build_workflow_stack(window) -> QStackedWidget:
         "effects": window._settings_panel(),
         "queue": window._queue_panel(),
     }
+    # Die Alltags-Einstellungen gehören in die Ausgabe-Seite.
+    # Eine äußere vertikale Rollebene schützt alle erweiterten Bedienelemente
+    # bei 800×600 und 200 % vor dem Abschneiden.
+    effects_page = pages["effects"]
+    effects_page.layout().insertWidget(0, window.settings_view)
+    output_scroll = QScrollArea()
+    output_scroll.setObjectName("outputPageScroll")
+    output_scroll.setWidgetResizable(True)
+    output_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    output_scroll.setWidget(effects_page)
+    pages["effects"] = output_scroll
     for page in pages.values():
         stack.addWidget(page)
     window.workflow_stack = stack
@@ -194,6 +205,10 @@ def set_workflow_route(window, route: str) -> None:
     if footer_scroll is not None:
         footer_scroll.setVisible(route in {"dashboard", "media", "effects", "queue"})
     production = route == "queue"
+    dashboard = getattr(window, "_compact_header_dashboard", None)
+    zoom = getattr(window, "view_scale", None)
+    if dashboard is not None and zoom is not None:
+        dashboard.setVisible(int(zoom.currentData() or 110) < 150 or production)
     for widget in getattr(window, "_production_footer_widgets", []):
         widget.setVisible(production)
 
