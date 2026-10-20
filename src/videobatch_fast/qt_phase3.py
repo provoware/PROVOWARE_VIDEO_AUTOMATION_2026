@@ -23,7 +23,9 @@ from .platform_integration import PlatformCompatibilityError, prepare_gui_enviro
 from .project_state import default_project_file, load_project_state, projects_dir, save_project_state
 from .qt_phase2 import VideoBatchQtPhase2Window
 from .config import DEFAULT_CONFIG, load_config
-from .qt_legacy_parity import _finish_parity_init
+from .qt_legacy_parity import (
+    _finish_parity_init, _parity_options, _parity_runtime_state, _parity_start,
+)
 from .qt_legacy_parity_completion import _finish_completion, persist_parity_on_close
 from .qt_workspace_layout import HelpPanel, set_workflow_route
 from .qt_phase3_components import DiagnosticsPanel, ProjectPanel, WorkspaceNavigationPanel
@@ -67,6 +69,22 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         self._write_log(
             "Qt Phase 3 aktiv: Projektverwaltung · Schnellhilfe · Workspace-Navigation · Diagnose · Assurance · Fehlerlabor."
         )
+
+    def _options(self):
+        # Model first, then expert additions: never replace Qt methods at import.
+        return _parity_options(self, super()._options())
+
+    def _refresh(self, *, preserve_results: bool = False) -> None:
+        super()._refresh(preserve_results=preserve_results)
+        if not self.runner.running and not self.preparing:
+            self.start.setEnabled(True)
+            self.start.setText("▶ Prüfen & Videos erstellen")
+
+    def _runtime_state(self) -> None:
+        _parity_runtime_state(self)
+
+    def _start(self) -> None:
+        _parity_start(self)
 
     def _build_phase3_workspace(self) -> None:
         self.navigation_dock = QDockWidget("Bereiche", self)
