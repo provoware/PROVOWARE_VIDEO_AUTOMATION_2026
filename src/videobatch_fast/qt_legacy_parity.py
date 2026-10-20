@@ -261,12 +261,8 @@ def _parity_start(self) -> None:
     self.prepare_thread.start()
 
 
-def _parity_options(self) -> BatchOptions:
-    """Keep the authoritative dashboard choices through the legacy adapter."""
-    original = getattr(type(self), "_parity_original_options", None)
-    if original is None:
-        return BatchOptions(Path(self.output.text()))
-    base = original(self)
+def _parity_options(self, base: BatchOptions) -> BatchOptions:
+    """Enrich an explicitly supplied Qt model with expert-only options."""
     if not hasattr(self, "parity_output_mode"):
         return base
     # Expert controls may change codec, transition and destination organization.
@@ -279,32 +275,6 @@ def _parity_options(self) -> BatchOptions:
         codec=str(self.parity_codec.currentData() or base.codec),
         transition=str(self.parity_transition.currentData() or base.transition),
     )
-
-
-def _patch_phase2_class() -> None:
-    from .qt_phase2 import VideoBatchQtPhase2Window
-    if getattr(VideoBatchQtPhase2Window, "_tk_parity_installed", False):
-        return
-
-    VideoBatchQtPhase2Window._parity_original_options = VideoBatchQtPhase2Window._options
-    VideoBatchQtPhase2Window._options = _parity_options
-
-    original_refresh = VideoBatchQtPhase2Window._refresh
-
-    def refresh(self, *, preserve_results: bool = False) -> None:
-        original_refresh(self, preserve_results=preserve_results)
-        # Keep the action discoverable for beginners: clicking with missing
-        # sources opens the existing explanation, but _parity_start NEVER renders
-        # until every input pair has passed its validation.
-        if not self.runner.running and not self.preparing:
-            self.start.setEnabled(True)
-            self.start.setText("▶ Prüfen & Videos erstellen")
-
-    VideoBatchQtPhase2Window._refresh = refresh
-    VideoBatchQtPhase2Window._start = _parity_start
-    VideoBatchQtPhase2Window._runtime_state = _parity_runtime_state
-
-    VideoBatchQtPhase2Window._tk_parity_installed = True
 
 
 def _save_settings(window: object) -> None:
@@ -1068,9 +1038,3 @@ def _finish_parity_init(window: object) -> None:
     QTimer.singleShot(450, lambda: _offer_recovery(window, manual=False))
 
 
-def install_legacy_parity() -> None:
-    """Register remaining compatibility services without modifying Qt constructors.
-
-    The Phase-3 constructor schedules _finish_parity_init explicitly.
-    """
-    _patch_phase2_class()
