@@ -32,8 +32,8 @@ QLabel#loadLabel {
     font-weight: 750;
 }
 QProgressBar#loadMeter {
-    min-height: 12px;
-    max-height: 12px;
+    min-height: 16px;
+    max-height: 16px;
     font-size: 9pt;
     font-weight: 700;
 }
@@ -214,7 +214,7 @@ QProgressBar {
 }
 QProgressBar::chunk { background: #00c8e8; border-radius: 6px; }
 QProgressBar#jobProgress::chunk { background: #ffbf3f; }
-QWidget#progressDashboard QProgressBar { min-height: 12px; max-height: 12px; font-size: 9pt; }
+QWidget#progressDashboard QProgressBar { min-height: 18px; max-height: 18px; font-size: 10pt; }
 QSplitter::handle { background: #0b1017; width: 7px; }
 QScrollBar:vertical {
     width: 16px;
@@ -260,8 +260,8 @@ QLabel#loadLabel {{ font-size: {10 * scale:.1f}pt; }}
 QPushButton, QToolButton, QLineEdit, QComboBox {{ min-height: {round(34 * scale)}px; }}
 QCheckBox::indicator {{ width: {round(22 * scale)}px; height: {round(22 * scale)}px; }}
 QProgressBar {{ min-height: {round(18 * scale)}px; }}
-QProgressBar#loadMeter {{ min-height: {round(12 * scale)}px; max-height: {round(12 * scale)}px; }}
-QWidget#progressDashboard QProgressBar {{ min-height: {round(12 * scale)}px; max-height: {round(12 * scale)}px; }}
+QProgressBar#loadMeter {{ min-height: {round(16 * scale)}px; max-height: {round(16 * scale)}px; font-size: {9 * scale:.1f}pt; }}
+QWidget#progressDashboard QProgressBar {{ min-height: {round(18 * scale)}px; max-height: {round(18 * scale)}px; font-size: {10 * scale:.1f}pt; }}
 QScrollBar:vertical {{ width: {round(16 * scale)}px; }}
 QScrollBar:horizontal {{ height: {round(16 * scale)}px; }}
 """
