@@ -43,6 +43,10 @@ def main() -> int:
         assert VideoBatchQtPhase2Window.closeEvent.__qualname__ == "VideoBatchQtPhase2Window.closeEvent"
         assert VideoBatchQtPhase3Window.__init__.__qualname__ == "VideoBatchQtPhase3Window.__init__"
         assert VideoBatchQtPhase3Window.closeEvent.__qualname__ == "VideoBatchQtPhase3Window.closeEvent"
+        for direct_method in ("_options", "_refresh", "_runtime_state", "_start"):
+            member = getattr(VideoBatchQtPhase3Window, direct_method)
+            assert member.__qualname__.startswith("VideoBatchQtPhase3Window."), direct_method
+        assert not hasattr(VideoBatchQtPhase2Window, "_tk_parity_installed")
         assert VideoBatchQtPhase2Window._show_plugin_dialog is _plugin_scan
         assert VideoBatchQtPhase2Window._show_plugin_decision is _plugin_scan
         assert VideoBatchQtPhase2Window._show_update_dialog is _update_package
