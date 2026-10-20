@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QFrame, QHBoxLayout, QLabel, QMessageBox, QProgressBar, QPushButton,
-    QStackedWidget, QVBoxLayout, QWidget,
+    QScrollArea, QStackedWidget, QVBoxLayout, QWidget,
 )
 
 from .qt_desktop_actions import open_output_folder
+from .qt_responsive_controls import ResponsiveControlRow
 
 
 class HelpPanel(QFrame):
@@ -189,6 +190,9 @@ def set_workflow_route(window, route: str) -> None:
     footer = getattr(window, "action_footer", None)
     if footer is not None:
         footer.setVisible(route in {"dashboard", "media", "effects", "queue"})
+    footer_scroll = getattr(window, "action_footer_scroll", None)
+    if footer_scroll is not None:
+        footer_scroll.setVisible(route in {"dashboard", "media", "effects", "queue"})
     production = route == "queue"
     for widget in getattr(window, "_production_footer_widgets", []):
         widget.setVisible(production)
@@ -244,8 +248,6 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     meters.addWidget(job_label, 1, 0)
     meters.addWidget(window.job_progress, 1, 1)
 
-    action_row = QHBoxLayout()
-    action_row.setSpacing(5)
     window.cancel = QPushButton("Abbrechen")
     window.cancel.setObjectName("danger")
     window.cancel.setAccessibleDescription("Bricht die laufende Verarbeitung kontrolliert ab.")
@@ -261,14 +263,12 @@ def build_footer(window, outer: QVBoxLayout) -> None:
         "Die Ausgabe landet getrennt im Probevideo-Ordner."
     )
     window.probe_button.setAccessibleName("Kurzes Probevideo aus dem ersten Dateipaar")
-    action_row.addWidget(window.cancel)
-    action_row.addWidget(window.probe_button)
-    action_row.addWidget(window.start)
-    layout.addLayout(action_row)
+    action_row = ResponsiveControlRow((window.cancel, window.probe_button, window.start))
+    window._responsive_control_rows.append(action_row)
+    layout.addWidget(action_row)
 
     result_label = QLabel("Nach Abschluss")
-    result_row = QHBoxLayout()
-    result_row.addWidget(result_label)
+
     window.open_output = QPushButton("Ausgabeordner öffnen")
     window.open_output.setAccessibleDescription("Öffnet den Ordner mit den fertigen Videos.")
     window.open_output.setEnabled(False)
@@ -280,15 +280,22 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     window.open_probe_button = QPushButton("Probevideo öffnen")
     window.open_probe_button.setVisible(False)
     window.open_probe_button.setEnabled(False)
-    result_row.addWidget(window.open_output)
-    result_row.addWidget(window.open_probe_button)
-    result_row.addWidget(window.show_result_log)
-    result_row.addStretch()
-    layout.addLayout(result_row)
+    result_row = ResponsiveControlRow((result_label, window.open_output, window.open_probe_button, window.show_result_log))
+    window._responsive_control_rows.append(result_row)
+    layout.addWidget(result_row)
 
     window._production_footer_widgets = [
         window.activity_detail,
         window.cancel, window.probe_button, window.start, result_label,
         window.open_output, window.open_probe_button, window.show_result_log,
     ]
-    outer.addWidget(footer)
+    # At 800x600 and 200% zoom, production actions stay keyboard- and scroll-reachable.
+    footer_scroll = QScrollArea()
+    footer_scroll.setObjectName("actionFooterScroll")
+    footer_scroll.setWidgetResizable(True)
+    footer_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    footer_scroll.setMinimumHeight(70)
+    footer_scroll.setMaximumHeight(210)
+    footer_scroll.setWidget(footer)
+    window.action_footer_scroll = footer_scroll
+    outer.addWidget(footer_scroll)
