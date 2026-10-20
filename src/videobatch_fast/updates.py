@@ -307,7 +307,8 @@ def apply_update_package(
             "old_device": old_stat.st_dev,
             "old_inode": old_stat.st_ino,
         })
-        _fsync_directory(parent)
+        # _write_report nutzt atomar schreibende safe_io-Routine
+        # und synchronisiert den übergeordneten Ordner bereits selbst.
         exchanged = False
         try:
             # Der alte Programmordner bleibt während des gesamten Wechsels
