@@ -13,7 +13,7 @@ from pathlib import Path
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6.QtWidgets import QApplication, QAbstractButton
+from PySide6.QtWidgets import QApplication, QPushButton, QToolButton
 
 from videobatch_fast.qt_phase3 import VideoBatchQtPhase3Window
 
@@ -34,7 +34,7 @@ def findings(window: VideoBatchQtPhase3Window, width: int, height: int) -> list[
         needed = tabs.fontMetrics().horizontalAdvance(tabs.tabText(index)) + 14
         if actual + 2 < needed:
             problems.append(f"Register {index + 1} gekürzt: {actual}px statt {needed}px")
-    for button in window.findChildren(QAbstractButton):
+    for button in (*window.findChildren(QPushButton), *window.findChildren(QToolButton)):
         if not button.isVisibleTo(window) or not button.text().strip():
             continue
         if button.width() < 30 or button.height() < 25:
