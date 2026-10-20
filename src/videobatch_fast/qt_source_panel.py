@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QComboBox, QFrame, QGridLayout, QHBoxLayout,
-                               QPushButton, QScrollArea, QVBoxLayout, QWidget)
+                               QLayout, QPushButton, QScrollArea, QSizePolicy,
+                               QVBoxLayout, QWidget)
 
 from provoware_grid import choose_columns
 
@@ -75,6 +76,11 @@ class ResponsiveSourceColumns(QWidget):
         self.stacked = False
         self.zoom_percent = 110
         self.grid = QGridLayout(self)
+        # The original two-column minimum must not survive a one-column
+        # reflow at high zoom and force the scroll page past its right edge.
+        self.grid.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
+        self.setMinimumWidth(0)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         self.grid.setContentsMargins(0, 0, 0, 0)
         self.grid.setSpacing(12)
         self.grid.setColumnStretch(0, 1)
