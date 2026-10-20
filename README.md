@@ -55,6 +55,10 @@ Die CPU-/RAM-/SWAP-Anzeigen und der Video-Fortschritt erhalten einen gemeinsamen
 
 **Freigabegrenze:** Dies ist eine laufende Entwicklungsänderung. Erst nach vollständigen Qt6-/Wayland- und Größenprüfungen einschließlich kleiner Fenster und 100/125/150/200-%-Sichtprüfung gilt die neue Aufteilung als freigegeben. Die persönliche physische Kubuntu-Endabnahme bleibt separat offen.
 
+## QA-Audit: Entwicklung, keine Freigabe
+
+Die Änderungen zur Unterstützung kleiner Fenster, flexibel angeordneter Schaltflächen und gezielter Rückfalltests werden im [QA-Bericht](docs/design/VIDEOBATCH_QA_AUDIT_2026-10-20.md) dokumentiert. Die Gesamtregression, die 42 grafischen Ansichten und die physische Kubuntu-Abnahme sind noch offen.
+
 ## Prüfablauf ohne wiederholte Endabnahmen
 
 1. **Entwickeln:** Änderungen mit passenden automatisierten Tests und Sicherheitsprüfungen absichern. Keine persönliche Vollabnahme nach jeder Oberflächenänderung.
