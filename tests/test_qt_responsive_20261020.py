@@ -97,3 +97,47 @@ def test_grid_reroutes_on_zoom_and_settings_keep_each_field(monkeypatch):
     finally:
         sources.close()
         settings.close()
+
+def test_main_window_uses_800_by_600_contract() -> None:
+    source = (ROOT / "src/videobatch_fast/qt_ui.py").read_text(encoding="utf-8")
+    layout = (ROOT / "src/videobatch_fast/qt_main_layout.py").read_text(encoding="utf-8")
+    footer = (ROOT / "src/videobatch_fast/qt_workspace_layout.py").read_text(encoding="utf-8")
+    assert "self.setMinimumSize(800, 600)" in source
+    assert "self.setMinimumSize(980, 640)" not in source
+    assert 'header.addWidget(dashboard, 2, 0, 1, 4)' in layout
+    assert 'footer_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)' in footer
+
+
+@pytest.mark.parametrize("zoom", [80, 100, 110, 125, 150, 175, 200])
+def test_action_controls_wrap_and_preserve_buttons(monkeypatch, zoom: int) -> None:
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    pytest.importorskip("PySide6")
+    from PySide6.QtWidgets import QApplication, QPushButton
+    from videobatch_fast.qt_responsive_controls import ResponsiveControlRow
+    from videobatch_fast.qt_theme import scaled_style
+
+    app = QApplication.instance() or QApplication([])
+    app.setStyleSheet(scaled_style(zoom))
+    buttons = (
+        QPushButton("Abbrechen"),
+        QPushButton("Probevideo · maximal zehn Sekunden"),
+        QPushButton("Videos erstellen"),
+    )
+    bar = ResponsiveControlRow(buttons)
+    try:
+        bar.resize(320, 450)
+        bar.show()
+        bar.set_zoom_percent(zoom)
+        app.processEvents()
+        assert bar.columns == 1
+        for index, button in enumerate(buttons):
+            assert bar.grid.itemAtPosition(index, 0).widget() is button
+            assert button.isVisible()
+
+        bar.resize(1900, 120)
+        app.processEvents()
+        assert bar.columns == 3
+        for index, button in enumerate(buttons):
+            assert bar.grid.itemAtPosition(0, index).widget() is button
+    finally:
+        bar.close()
