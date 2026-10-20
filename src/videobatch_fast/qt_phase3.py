@@ -140,7 +140,13 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
             self.phase2_tabs.setCurrentWidget(self.slideshow)
             self.slideshow.setFocus()
         elif route == "effects":
-            self.verification.setFocus()
+            # Schritt 2 beginnt mit den sechs Alltags-Einstellungen.
+            # Fokus auf "Kontrolle" sprang in den alten Expertenbereich
+            # und ließ die eigentlichen Ausgabeoptionen unsichtbar.
+            self.resolution.setFocus()
+            page = self._workflow_pages.get("effects")
+            if page is not None and hasattr(page, "verticalScrollBar"):
+                QTimer.singleShot(0, lambda widget=page: widget.verticalScrollBar().setValue(0))
         elif route == "queue":
             self.table.setFocus()
         elif route == "project":
