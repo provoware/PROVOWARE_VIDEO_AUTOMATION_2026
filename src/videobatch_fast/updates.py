@@ -130,6 +130,61 @@ def _atomic_exchange_dirs(first: Path, second: Path) -> None:
         raise OSError(code, os.strerror(code), str(first))
 
 
+def _pending_update_path(install_root: Path) -> Path:
+    return install_root.parent / f".{install_root.name}.update_pending.json"
+
+
+def _remove_pending_update(journal: Path) -> None:
+    journal.unlink(missing_ok=True)
+    _fsync_directory(journal.parent)
+
+
+def recover_interrupted_update(install_root: Path) -> bool:
+    """Vor dem normalen GUI-Start eine unfertige lokale Installation zurückholen.
+
+    Liefert True, wenn der bisherige bestätigte Programmordner wieder
+    aktiviert wurde. Fehlen eindeutige Belege, wird nicht blind umbenannt.
+    """
+    install_root = Path(install_root).resolve()
+    journal = _pending_update_path(install_root)
+    if not journal.exists():
+        return False
+    if journal.is_symlink() or not journal.is_file():
+        raise OSError("Update-Wiederanlaufdatei ist kein regulärer Eintrag.")
+    record = json.loads(journal.read_text(encoding="utf-8"))
+    if not isinstance(record, dict) or record.get("schema_version") != 1:
+        raise ValueError("Update-Wiederanlaufdatei hat ein ungültiges Format.")
+    if record.get("install_root") != str(install_root):
+        raise ValueError("Update-Wiederanlaufdatei gehört zu einer anderen Installation.")
+    candidate = Path(str(record.get("candidate", "")))
+    backup = Path(str(record.get("backup", "")))
+    parent = install_root.parent
+    if (
+        candidate.name != "candidate"
+        or candidate.parent.parent != parent
+        or not candidate.parent.name.startswith(".videobatch_update_")
+        or backup.parent != parent
+        or not backup.name.startswith(install_root.name + ".backup_")
+    ):
+        raise ValueError("Update-Wiederanlaufdatei enthält unzulässige Pfade.")
+    old_id = (int(record["old_device"]), int(record["old_inode"]))
+    if not install_root.is_dir() or install_root.is_symlink():
+        raise OSError("Programmstartordner fehlt; keine automatische riskante Reparatur.")
+    current = install_root.stat()
+    if (current.st_dev, current.st_ino) == old_id:
+        _remove_pending_update(journal)
+        return False
+    for location in (candidate, backup):
+        if location.is_dir() and not location.is_symlink():
+            info = location.stat()
+            if (info.st_dev, info.st_ino) == old_id:
+                _atomic_exchange_dirs(install_root, location)
+                _fsync_directory(parent)
+                _remove_pending_update(journal)
+                return True
+    raise OSError("Bisherige Installation nicht zweifelsfrei auffindbar; manuelle Diagnose nötig.")
+
+
 def apply_update_package(
     package: Path,
     install_root: Path,
@@ -153,6 +208,7 @@ def apply_update_package(
     report_dir = state_dir() / "updates"
     report_path = report_dir / f"update_{time.strftime('%Y%m%d_%H%M%S')}.json"
     backup = parent / f"{install_root.name}.backup_{time.strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex}"
+    journal = _pending_update_path(install_root)
     activated = False
     try:
         progress("prepare", "Kandidat wird aus der bestehenden Installation erzeugt.")
@@ -240,6 +296,18 @@ def apply_update_package(
         # timestamp collision; a fresh opaque name is reserved for each update.
         if backup.exists() or backup.is_symlink():
             raise FileExistsError(f"Update-Sicherung bereits vorhanden: {backup}")
+        if journal.exists() or journal.is_symlink():
+            raise OSError("Vorherige Update-Transaktion nicht abgeschlossen; zuerst neu starten.")
+        old_stat = install_root.stat()
+        _write_report(journal, {
+            "schema_version": 1,
+            "install_root": str(install_root),
+            "candidate": str(candidate),
+            "backup": str(backup),
+            "old_device": old_stat.st_dev,
+            "old_inode": old_stat.st_ino,
+        })
+        _fsync_directory(parent)
         exchanged = False
         try:
             # Der alte Programmordner bleibt während des gesamten Wechsels
@@ -253,6 +321,7 @@ def apply_update_package(
             os.replace(candidate, backup)
             _fsync_directory(parent)
             activated = True
+            _remove_pending_update(journal)
         except Exception:
             if exchanged:
                 old_location = backup if backup.exists() else candidate
@@ -263,6 +332,9 @@ def apply_update_package(
                         # neue Kandidat, nicht die frühere Sicherung.
                         os.replace(backup, work / "failed_candidate")
                     _fsync_directory(parent)
+            # Nach dokumentiertem Rückfall kann das Journal entfernt werden.
+            if not exchanged or (install_root.exists() and install_root.stat().st_ino == old_stat.st_ino):
+                _remove_pending_update(journal)
             raise
         return UpdateInstallResult(
             True,
@@ -284,4 +356,7 @@ def apply_update_package(
             report=str(report_path),
         )
     finally:
-        shutil.rmtree(work, ignore_errors=True)
+        # Bei einem unvollständigen Austausch muss die frühere Version im
+        # temporären Kandidatenordner für den nächsten Start erhalten bleiben.
+        if not journal.exists():
+            shutil.rmtree(work, ignore_errors=True)
