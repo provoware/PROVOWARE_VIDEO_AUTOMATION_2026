@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (QComboBox, QFrame, QGridLayout, QHBoxLayout,
 from provoware_grid import choose_columns
 
 from .qt_media_list import AUDIO_EXTS, MEDIA_EXTS, SORT_MODES, DropList
+from .qt_responsive_controls import ResponsiveControlRow
 from .qt_ui_polish import configure_clear_button, configure_file_buttons, field_label, text_label
 
 
@@ -34,15 +35,14 @@ def _source_card(window, label: str, widget: DropList, add_text: str) -> QFrame:
     widget.setMinimumHeight(170)
     layout.addWidget(widget, 1)
 
-    actions = QHBoxLayout()
     add = QPushButton(add_text)
     remove = QPushButton("Entfernen")
     configure_file_buttons(add, remove, label)
     add.clicked.connect(window._choose_audio if widget is window.audio else window._choose_media)
     remove.clicked.connect(widget.remove_selected)
-    actions.addWidget(add, 1)
-    actions.addWidget(remove)
-    layout.addLayout(actions)
+    actions = ResponsiveControlRow((add, remove))
+    window._responsive_control_rows.append(actions)
+    layout.addWidget(actions)
     return card
 
 
@@ -117,7 +117,6 @@ def build_sources_panel(window) -> QWidget:
     )
     layout.addWidget(window.source_columns, 1)
 
-    order_row = QHBoxLayout()
     adopt = QPushButton("Ansicht als Produktionsreihenfolge übernehmen")
     adopt.setObjectName("secondary")
     adopt.setAccessibleDescription(
@@ -125,12 +124,12 @@ def build_sources_panel(window) -> QWidget:
     )
     adopt.clicked.connect(window.audio.apply_view_as_production_order)
     adopt.clicked.connect(window.media.apply_view_as_production_order)
-    order_row.addWidget(adopt, 1)
 
     window.clear = QPushButton("Alle ausgewählten Dateien entfernen")
     configure_clear_button(window.clear)
-    order_row.addWidget(window.clear)
-    layout.addLayout(order_row)
+    order_row = ResponsiveControlRow((adopt, window.clear))
+    window._responsive_control_rows.append(order_row)
+    layout.addWidget(order_row)
     scroll = QScrollArea()
     scroll.setObjectName("mainWorkspaceScroll")
     scroll.setWidgetResizable(True)
