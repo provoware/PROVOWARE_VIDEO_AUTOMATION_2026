@@ -25,6 +25,7 @@ on:
       - "scripts/bootstrap.py"
       - "scripts/qt_desktop_acceptance.py"
       - "scripts/debug_launcher.py"
+      - "tests/test_debug_launcher_update_first_start.py"
       - "scripts/build_release_manifest.py"
       - "scripts/build_toolchain_wheelhouse.py"
       - "scripts/startup_check.py"
@@ -170,6 +171,7 @@ jobs:
             tests/test_ab_channel_hardening_rc16.py \
             tests/test_update_integrity_2_8_2.py \
             tests/test_debug_runtime_contract.py \
+            tests/test_debug_launcher_update_first_start.py \
             tests/test_ui_ready_handshake_contract.py \
             tests/test_multipart_installer.py \
             tests/test_compact_release_package_20261019.py \
