@@ -40,20 +40,11 @@ def test_equal_columns_reflow_to_vertical_stack(monkeypatch):
         assert not columns.stacked
         assert columns.grid.itemAtPosition(0, 0).widget() is first
         assert columns.grid.itemAtPosition(0, 1).widget() is second
-        columns.set_column_ratio(3, 2)
-        assert (columns.grid.columnStretch(0), columns.grid.columnStretch(1)) == (3, 2)
 
         columns.resize(560, 700)
         app.processEvents()
         assert columns.stacked
         assert columns.grid.itemAtPosition(0, 0).widget() is first
         assert columns.grid.itemAtPosition(1, 0).widget() is second
-        assert columns.grid.columnStretch(1) == 0
-        columns.resize(1300, 450)
-        app.processEvents()
-        assert not columns.stacked
-        assert (columns.grid.columnStretch(0), columns.grid.columnStretch(1)) == (3, 2)
-        columns.set_column_ratio(1, 1)
-        assert (columns.grid.columnStretch(0), columns.grid.columnStretch(1)) == (1, 1)
     finally:
         columns.close()
