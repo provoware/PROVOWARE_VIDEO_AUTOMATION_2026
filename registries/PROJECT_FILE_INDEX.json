@@ -321,7 +321,7 @@
       "path": "README.md"
     },
     {
-      "blob_sha1": "92be435a317e3bbba9eabe3c048b9d4a512bed2a",
+      "blob_sha1": "ec7ec085c1ad496ace3b49ba4e265d5d5746cba6",
       "category": "project_contract",
       "lifecycle": "active",
       "mode": "100644",
@@ -3961,7 +3961,7 @@
       "path": "tests/test_compact_release_package_20261019.py"
     },
     {
-      "blob_sha1": "b1be1e9ea929574b5d7adbc2fe8b1f682fe89b96",
+      "blob_sha1": "50f92e699228c34c2dffdef8148946a19f462c71",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",
@@ -4269,7 +4269,7 @@
       "path": "tests/test_qt_output_controls_20261018.py"
     },
     {
-      "blob_sha1": "3b7af3893a7f6e32fa591c5512c2e287f8472a9d",
+      "blob_sha1": "ccdcf26d665e59b991c23128ef04df695a527364",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",
