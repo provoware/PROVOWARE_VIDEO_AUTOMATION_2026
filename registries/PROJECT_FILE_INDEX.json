@@ -321,7 +321,7 @@
       "path": "README.md"
     },
     {
-      "blob_sha1": "fa8d2c1d4c3c4012ad71d8884c88985555da9e9d",
+      "blob_sha1": "0d179d1a6f3c84ccb030195679fd381446dd558e",
       "category": "project_contract",
       "lifecycle": "active",
       "mode": "100644",
@@ -391,7 +391,7 @@
       "path": "config/contracts/STARTUP_CONTRACT.json"
     },
     {
-      "blob_sha1": "e0ba4f04c9fedd489142130551f54bc9e34467ed",
+      "blob_sha1": "da7b6c43371cb3084d8991a09599f94017cedf3e",
       "category": "project_contract",
       "lifecycle": "active",
       "mode": "100644",
@@ -419,14 +419,14 @@
       "path": "config/requirements/requirements-quality.lock"
     },
     {
-      "blob_sha1": "7ab6f766dec198a52d3cd4b5229e51afb771f593",
+      "blob_sha1": "4a9f6002e72b3eb85cca28a374782be3f5330360",
       "category": "project_contract",
       "lifecycle": "active",
       "mode": "100644",
       "path": "config/requirements/requirements-toolchain.lock"
     },
     {
-      "blob_sha1": "b5773c3eb35f3154bce75cf227213343d5414ea6",
+      "blob_sha1": "08ed1713ffc528d4e98f3b0ba5a8366eef059787",
       "category": "project_contract",
       "lifecycle": "active",
       "mode": "100644",
@@ -706,7 +706,7 @@
       "path": "docs/OFFLINE_QUALITY_ENVIRONMENT.md"
     },
     {
-      "blob_sha1": "b4b477fdb6f6e36329dad8b21d36842f75d7080d",
+      "blob_sha1": "9d78db7d54283c8cdf0259dde8a2501fc4b98ac8",
       "category": "documentation",
       "lifecycle": "active",
       "mode": "100644",
@@ -1651,7 +1651,7 @@
       "path": "docs/start/START_HIER_save_.md"
     },
     {
-      "blob_sha1": "a84ac5f9ab0548c8051a626db92b1c4f4c5097e5",
+      "blob_sha1": "3ee0b10676fe12890651222175dbf82c404929be",
       "category": "project_contract",
       "lifecycle": "active",
       "mode": "100644",
@@ -4346,7 +4346,7 @@
       "path": "tests/test_quality_toolchain_contract.py"
     },
     {
-      "blob_sha1": "6f8c559a70bbe08eaaf1402c0742a7fedc519165",
+      "blob_sha1": "a189295dcd0a36fb4334771d237f73b2392510a1",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",
