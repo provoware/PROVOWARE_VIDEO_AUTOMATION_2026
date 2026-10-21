@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 import tempfile
-import time
 from pathlib import Path
 
 APP_ID = "VideoBatchFast"
@@ -46,21 +45,17 @@ def _probe_directory(directory: Path) -> None:
 
 
 def _prepare_directory(directory: Path) -> None:
+    """Prüft einen Benutzerordner, ohne bestehende Inhalte umzubenennen."""
     directory = Path(directory).expanduser()
     try:
         _probe_directory(directory)
-        return
-    except OSError:
-        pass
-    parent = directory.parent
-    parent.mkdir(parents=True, exist_ok=True)
-    quarantine = parent / f".{directory.name}.permission-conflict-{time.strftime('%Y%m%dT%H%M%S')}"
-    try:
-        if directory.exists() or directory.is_symlink():
-            os.replace(directory, quarantine)
-        _probe_directory(directory)
     except OSError as exc:
-        raise PermissionError(f"VideoBatch kann den Benutzerordner nicht vorbereiten: {directory}: {exc}") from exc
+        raise PermissionError(
+            f"VideoBatch kann den Benutzerordner nicht verwenden: {directory}. "
+            "Vorhandene Dateien und Ordner wurden nicht verschoben oder verändert. "
+            "Bitte Zugriffsrechte prüfen oder einen anderen Speicherort wählen. "
+            f"Technischer Hinweis: {exc}"
+        ) from exc
 
 
 def ensure_app_dirs() -> None:
