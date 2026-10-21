@@ -232,6 +232,9 @@
     },
     "docs/DATEI_UND_ORDNERINDEX.md": {
       "category": "technical"
+    },
+    "docs/OPTIMIERUNGSPROTOKOLL.md": {
+      "category": "internal"
     }
   },
   "excluded_relative_links": [],
