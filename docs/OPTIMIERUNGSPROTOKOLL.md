@@ -34,3 +34,20 @@ Persönliche Daten bleiben am vertrauten Ort. Fehlende Zugriffsrechte werden nic
 ### Nächste Empfehlung
 
 Den unveränderten Pull-Request-HEAD mit bestehenden Pfad-/Start-/Sicherheitsprüfungen kontrollieren, gegebenenfalls Release-Index und Manifest gemäß `AGENTS.md` erst für den finalisierten Dateibaum regenerieren; keine historische Releasefreigabe behaupten.
+
+
+### Pillow-Sicherheitsaktualisierung – 21.10.2026
+
+**Ausgangslage:** Die GitHub-Integrationsprüfung von PR #259 meldete über `pip-audit` bekannte Sicherheitslücken der festgelegten Bildbibliothek Pillow 12.3.0. Der übrige Pfad-Sicherheitspatch bleibt unverändert.
+
+**Änderung:** Pillow wurde auf die veröffentlichte Version **13.0.0** angehoben, einheitlich in `pyproject.toml`, dem Laufzeit-Lockfile, dem gemeinsamen Toolchain-Lockfile und `config/contracts/TOOLCHAIN_CONTRACT.json`. Die Mindestversion von Python lautet nun **3.11**, da Pillow 13 Python 3.10 nicht mehr unterstützt. Für das vorgesehene GitHub-Testsystem Python 3.12 ist ein kompatibles Paket verfügbar.
+
+**Nutzermehrwert:** Sicherheitsaktualisierte Bildverarbeitung bei unverändertem lokalem Medien- und Projektformat. Keine automatisch ausgeführte Bearbeitung persönlicher Dateien.
+
+**Rückfallprüfung:** Drei zusätzliche Tests in `tests/test_quality_toolchain_resolved_lock_2_8_3.py` kontrollieren Versionsübereinstimmung, PNG mit Transparenz einschließlich verkleinerter Vorschau und JPEG-Ein-/Ausgabe. Die Ergebnisse gelten erst nach Ausführung auf dem endgültigen unveränderten PR-Commit. Außerdem sind die vollständigen Qt-, Start-, Toolchain- und Renderingprüfungen erforderlich.
+
+**Einschränkung:** Der Python-3.10-Startpfad kann mit Pillow 13 nicht unterstützt werden; die neue Mindestversion wird ausdrücklich genannt. Weitere in Pillow 13 entfernte oder geänderte APIs werden durch die vorhandenen Anwendungstests abgesichert, eine pauschale Verträglichkeitsbehauptung erfolgt nicht.
+
+**Quellen:** [Pillow 13.0.0 (PyPI)](https://pypi.org/project/pillow/13.0.0/), [Änderungshinweise](https://pillow.readthedocs.io/en/stable/releasenotes/13.0.0.html).
+
+**Freigabegrenze:** PR #259 bleibt Entwurf, bis sämtliche verpflichtenden Prüfungen des endgültigen Commits erfolgreich sind; `main` und die persönliche Kubuntu-Endabnahme bleiben unberührt.
