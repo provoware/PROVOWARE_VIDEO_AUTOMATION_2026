@@ -321,7 +321,7 @@
       "path": "README.md"
     },
     {
-      "blob_sha1": "0d179d1a6f3c84ccb030195679fd381446dd558e",
+      "blob_sha1": "ec7ec085c1ad496ace3b49ba4e265d5d5746cba6",
       "category": "project_contract",
       "lifecycle": "active",
       "mode": "100644",
@@ -3261,7 +3261,7 @@
       "path": "src/videobatch_fast/qt_preview_panel.py"
     },
     {
-      "blob_sha1": "6b3209bae1dadd0cf68c3da01716c35d40cbbf38",
+      "blob_sha1": "01326486dbceec5556c14a5c447e50584e023ebc",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
@@ -4269,7 +4269,7 @@
       "path": "tests/test_qt_output_controls_20261018.py"
     },
     {
-      "blob_sha1": "3b7af3893a7f6e32fa591c5512c2e287f8472a9d",
+      "blob_sha1": "ccdcf26d665e59b991c23128ef04df695a527364",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",

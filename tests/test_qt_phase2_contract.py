@@ -3,6 +3,8 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src" / "videobatch_fast"
@@ -118,3 +120,39 @@ def test_selecting_audio_or_media_routes_preview_without_squeezing_file_page() -
     assert "self.phase2_tabs.setCurrentWidget(self.preview_panel)" in source
     assert source.count("self._show_selection_preview()") == 2
     assert "SelectionPreviewMixin" in app
+
+
+def test_source_widths_change_and_survive_reflow(monkeypatch):
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    pytest.importorskip("PySide6")
+    from PySide6.QtWidgets import QApplication, QFrame
+    from videobatch_fast.qt_source_panel import ResponsiveSourceColumns
+
+    app = QApplication.instance() or QApplication([])
+    first, second = QFrame(), QFrame()
+    columns = ResponsiveSourceColumns(first, second)
+    try:
+        columns.resize(1300, 450)
+        columns.show()
+        app.processEvents()
+        assert not columns.stacked
+        assert (columns.grid.columnStretch(0), columns.grid.columnStretch(1)) == (1, 1)
+        columns.set_column_ratio(3, 2)
+        assert (columns.grid.columnStretch(0), columns.grid.columnStretch(1)) == (3, 2)
+
+        columns.resize(560, 700)
+        app.processEvents()
+        assert columns.stacked
+        assert columns.grid.itemAtPosition(0, 0).widget() is first
+        assert columns.grid.itemAtPosition(1, 0).widget() is second
+        assert columns.grid.columnStretch(1) == 0
+        columns.set_column_ratio(2, 3)
+
+        columns.resize(1300, 450)
+        app.processEvents()
+        assert not columns.stacked
+        assert (columns.grid.columnStretch(0), columns.grid.columnStretch(1)) == (2, 3)
+        columns.set_column_ratio(1, 1)
+        assert (columns.grid.columnStretch(0), columns.grid.columnStretch(1)) == (1, 1)
+    finally:
+        columns.close()
