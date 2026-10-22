@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtWidgets import (QComboBox, QFrame, QGridLayout, QHBoxLayout,
+from PySide6.QtWidgets import (QComboBox, QFrame, QHBoxLayout, QSplitter,
                                QLayout, QPushButton, QScrollArea, QSizePolicy,
                                QVBoxLayout, QWidget)
 
@@ -69,7 +69,7 @@ def _source_card(window, label: str, widget: DropList, add_text: str) -> QFrame:
 
 
 class ResponsiveSourceColumns(QWidget):
-    """Equal source panels on wide screens; vertical stack on narrow screens."""
+    """Zwei per Maus verstellbare Quellenlisten; bei wenig Platz untereinander."""
 
     def __init__(self, audio_card: QWidget, media_card: QWidget) -> None:
         super().__init__()
@@ -78,36 +78,56 @@ class ResponsiveSourceColumns(QWidget):
         self.stacked = False
         self.column_ratio = (1, 1)
         self.zoom_percent = 110
-        self.grid = QGridLayout(self)
-        # The original two-column minimum must not survive a one-column
-        # reflow at high zoom and force the scroll page past its right edge.
-        self.grid.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
         self.setMinimumWidth(0)
         self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
-        self.grid.setContentsMargins(0, 0, 0, 0)
-        self.grid.setSpacing(12)
-        self.grid.setColumnStretch(0, 1)
-        self.grid.setColumnStretch(1, 1)
-        self.grid.addWidget(audio_card, 0, 0)
-        self.grid.addWidget(media_card, 0, 1)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        self.splitter = QSplitter(Qt.Horizontal, self)
+        self.splitter.setObjectName("sourceAreaSplitter")
+        self.splitter.setAccessibleName("Trennlinie zwischen Audio- und Medienbereich")
+        self.splitter.setToolTip("Trennlinie mit der Maus ziehen, um die Listenbreiten zu ändern.")
+        self.splitter.setChildrenCollapsible(False)
+        self.splitter.setHandleWidth(12)
+        self.splitter.setMinimumWidth(0)
+        self.splitter.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        for card in (audio_card, media_card):
+            card.setMinimumWidth(0)
+            card.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+            self.splitter.addWidget(card)
+        layout.addWidget(self.splitter)
+        self.splitter.splitterMoved.connect(self._remember_manual_sizes)
+        self._apply_column_ratio()
+
+    def _apply_column_ratio(self) -> None:
+        old = self.splitter.blockSignals(True)
+        try:
+            self.splitter.setSizes(list(self.column_ratio))
+        finally:
+            self.splitter.blockSignals(old)
+
+    def _remember_manual_sizes(self, _pos: int, _handle: int) -> None:
+        """Beide Listen bleiben sichtbar; die manuelle Breite überlebt den Umbruch."""
+        if self.stacked:
+            return
+        widths = self.splitter.sizes()
+        if len(widths) == 2 and min(widths) > 0:
+            self.column_ratio = tuple(widths)
 
     def set_column_ratio(self, left: int, right: int) -> None:
-        """Gewichtete Listenbreiten, ohne den automatischen Einspaltenmodus zu stören."""
+        """Die bisherigen drei Tastatur-Voreinstellungen bleiben verfügbar."""
         if (left, right) not in {(1, 1), (3, 2), (2, 3)}:
             return
         self.column_ratio = (left, right)
         if not self.stacked:
-            self.grid.setColumnStretch(0, left)
-            self.grid.setColumnStretch(1, right)
-        self.grid.invalidate()
+            self._apply_column_ratio()
 
     def set_zoom_percent(self, value: int) -> None:
-        """Keep the layout consistent with the global Qt typography selector."""
         self.zoom_percent = value
         self._reflow()
 
     def _reflow(self) -> None:
-        # Measured widget minimums supplement the portable 120×80 grid rules.
         intrinsic = (
             max(0, self.audio_card.minimumSizeHint().width()),
             max(0, self.media_card.minimumSizeHint().width()),
@@ -116,25 +136,23 @@ class ResponsiveSourceColumns(QWidget):
             max(1, self.width()),
             zoom_percent=self.zoom_percent,
             panel_min_width=360,
-            gap=self.grid.spacing(),
+            gap=self.splitter.handleWidth(),
             intrinsic_min_widths=intrinsic,
         )
         narrow = columns == 1
         if narrow == self.stacked:
             return
         self.stacked = narrow
-        self.grid.removeWidget(self.media_card)
-        self.grid.addWidget(self.media_card, 1 if narrow else 0, 0 if narrow else 1)
-        self.grid.setColumnStretch(0, 1 if narrow else self.column_ratio[0])
-        self.grid.setColumnStretch(1, 0 if narrow else self.column_ratio[1])
-        self.grid.setRowStretch(0, 0 if narrow else 1)
-        self.grid.setRowStretch(1, 0 if narrow else 1)
+        self.splitter.setOrientation(Qt.Vertical if narrow else Qt.Horizontal)
+        if narrow:
+            self.splitter.setSizes([1, 1])
+        else:
+            self._apply_column_ratio()
         self.updateGeometry()
 
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)
         self._reflow()
-
 
 
 class VerticalSourcesScroll(QScrollArea):
@@ -198,6 +216,10 @@ def build_sources_panel(window) -> QWidget:
         window.source_width_button.setText(f"Listenbreite: {description}")
 
     window.source_width_button.clicked.connect(change_widths)
+    window.source_columns.splitter.splitterMoved.connect(
+        lambda _position, _handle: window.source_width_button.setText("Listenbreite: frei")
+        if not window.source_columns.stacked else None
+    )
     layout.addWidget(window.source_width_button, 0, Qt.AlignmentFlag.AlignRight)
     layout.addWidget(window.source_columns, 1)
     panel.setMinimumWidth(0)

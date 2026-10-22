@@ -3156,7 +3156,7 @@
     {
       "path": "src/videobatch_fast/qt_source_panel.py",
       "mode": "100644",
-      "blob_sha1": "68357ab593ecd558c8fde38d213ba09e719b4441",
+      "blob_sha1": "b04079cea13938ccfe4db19d6dfb44571bfb8b9a",
       "category": "application",
       "lifecycle": "active"
     },
@@ -4197,7 +4197,7 @@
       "lifecycle": "development"
     },
     {
-      "blob_sha1": "ccdcf26d665e59b991c23128ef04df695a527364",
+      "blob_sha1": "07dfd01f7260c9182982636a1fcd9e86187231f3",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",
@@ -4213,7 +4213,7 @@
     {
       "path": "tests/test_qt_responsive_20261020.py",
       "mode": "100644",
-      "blob_sha1": "0200df8e0be13863a99b0ae0a9c3bf159b4efc70",
+      "blob_sha1": "3530183bf1613a24c228bd76c7b8ec711092aab9",
       "category": "tests",
       "lifecycle": "development"
     },
