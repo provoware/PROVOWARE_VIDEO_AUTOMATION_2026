@@ -32,7 +32,8 @@ def test_responsive_layout_contract_is_readable_without_horizontal_scrolling():
 def test_equal_columns_reflow_to_vertical_stack(monkeypatch):
     monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
     pytest.importorskip("PySide6")
-    from PySide6.QtWidgets import QApplication, QFrame
+    from PySide6.QtCore import Qt
+    from PySide6.QtWidgets import QApplication, QFrame, QSplitterHandle
     from videobatch_fast.qt_source_panel import ResponsiveSourceColumns
 
     app = QApplication.instance() or QApplication([])
@@ -43,14 +44,17 @@ def test_equal_columns_reflow_to_vertical_stack(monkeypatch):
         columns.show()
         app.processEvents()
         assert not columns.stacked
-        assert columns.grid.itemAtPosition(0, 0).widget() is first
-        assert columns.grid.itemAtPosition(0, 1).widget() is second
+        assert columns.splitter.orientation() == Qt.Horizontal
+        assert columns.splitter.widget(0) is first
+        assert columns.splitter.widget(1) is second
+        assert isinstance(columns.splitter.handle(1), QSplitterHandle)
 
         columns.resize(560, 700)
         app.processEvents()
         assert columns.stacked
-        assert columns.grid.itemAtPosition(0, 0).widget() is first
-        assert columns.grid.itemAtPosition(1, 0).widget() is second
+        assert columns.splitter.orientation() == Qt.Vertical
+        assert columns.splitter.widget(0) is first
+        assert columns.splitter.widget(1) is second
     finally:
         columns.close()
 
