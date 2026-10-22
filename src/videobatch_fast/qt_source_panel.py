@@ -76,6 +76,7 @@ class ResponsiveSourceColumns(QWidget):
         self.audio_card = audio_card
         self.media_card = media_card
         self.stacked = False
+        self.column_ratio = (1, 1)
         self.zoom_percent = 110
         self.grid = QGridLayout(self)
         # The original two-column minimum must not survive a one-column
@@ -89,6 +90,16 @@ class ResponsiveSourceColumns(QWidget):
         self.grid.setColumnStretch(1, 1)
         self.grid.addWidget(audio_card, 0, 0)
         self.grid.addWidget(media_card, 0, 1)
+
+    def set_column_ratio(self, left: int, right: int) -> None:
+        """Gewichtete Listenbreiten, ohne den automatischen Einspaltenmodus zu stören."""
+        if (left, right) not in {(1, 1), (3, 2), (2, 3)}:
+            return
+        self.column_ratio = (left, right)
+        if not self.stacked:
+            self.grid.setColumnStretch(0, left)
+            self.grid.setColumnStretch(1, right)
+        self.grid.invalidate()
 
     def set_zoom_percent(self, value: int) -> None:
         """Keep the layout consistent with the global Qt typography selector."""
@@ -114,7 +125,8 @@ class ResponsiveSourceColumns(QWidget):
         self.stacked = narrow
         self.grid.removeWidget(self.media_card)
         self.grid.addWidget(self.media_card, 1 if narrow else 0, 0 if narrow else 1)
-        self.grid.setColumnStretch(1, 0 if narrow else 1)
+        self.grid.setColumnStretch(0, 1 if narrow else self.column_ratio[0])
+        self.grid.setColumnStretch(1, 0 if narrow else self.column_ratio[1])
         self.grid.setRowStretch(0, 0 if narrow else 1)
         self.grid.setRowStretch(1, 0 if narrow else 1)
         self.updateGeometry()
@@ -170,6 +182,23 @@ def build_sources_panel(window) -> QWidget:
         _source_card(window, "Audiodateien", window.audio, "Audio auswählen …"),
         _source_card(window, "Bilder / Videos", window.media, "Bilder/Videos auswählen …"),
     )
+    widths = ((1, 1, "gleich"), (3, 2, "Audio breiter"), (2, 3, "Bilder/Videos breiter"))
+    window.source_width_button = QPushButton("Listenbreite: gleich")
+    window.source_width_button.setAccessibleName("Breite der Audio- und Medienbereiche ändern")
+    window.source_width_button.setToolTip(
+        "Ändert das Breitenverhältnis der beiden Medienlisten. "
+        "Auf kleinen Bildschirmen stehen die Listen untereinander."
+    )
+
+    def change_widths() -> None:
+        current = window.source_columns.column_ratio
+        index = next((i for i, (left, right, _) in enumerate(widths) if (left, right) == current), 0)
+        left, right, description = widths[(index + 1) % len(widths)]
+        window.source_columns.set_column_ratio(left, right)
+        window.source_width_button.setText(f"Listenbreite: {description}")
+
+    window.source_width_button.clicked.connect(change_widths)
+    layout.addWidget(window.source_width_button, 0, Qt.AlignmentFlag.AlignRight)
     layout.addWidget(window.source_columns, 1)
     panel.setMinimumWidth(0)
     layout.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)

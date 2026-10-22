@@ -50,3 +50,51 @@ def test_low_level_online_index_requires_explicit_environment_consent(tmp_path: 
     argv = ["build_toolchain_wheelhouse.py", "--output", str(tmp_path), "--index-url", "https://pypi.org/simple"]
     with mock.patch.object(sys, "argv", argv), mock.patch.dict("os.environ", {}, clear=True):
         assert builder.main() == 4
+
+
+def test_pillow_13_contract_matches_python_support_and_locks() -> None:
+    import tomllib
+    from PIL import __version__ as pillow_version
+
+    contract = common.load_contract(ROOT)
+    assert contract["packages"]["runtime"]["Pillow"] == "13.0.0"
+    assert common.read_exact_lock(ROOT / "config/requirements/requirements.lock")["pillow"] == "13.0.0"
+    assert common.read_exact_lock(ROOT / "config/requirements/requirements-toolchain.lock")["pillow"] == "13.0.0"
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
+    assert project["requires-python"] == ">=3.11"
+    assert "Pillow==13.0.0" in project["dependencies"]
+    assert pillow_version == "13.0.0"
+
+
+def test_pillow_13_png_preview_and_thumbnail_roundtrip() -> None:
+    from io import BytesIO
+
+    from PIL import Image, ImageOps
+
+    source = Image.new("RGBA", (16, 12), (20, 70, 120, 160))
+    stream = BytesIO()
+    source.save(stream, format="PNG")
+    stream.seek(0)
+    with Image.open(stream) as restored:
+        restored.load()
+        assert restored.mode == "RGBA"
+        assert restored.size == (16, 12)
+        assert restored.getpixel((0, 0)) == (20, 70, 120, 160)
+        reduced = ImageOps.contain(restored, (8, 8), method=Image.Resampling.LANCZOS)
+        assert reduced.size == (8, 6)
+
+
+def test_pillow_13_jpeg_encode_decode_roundtrip() -> None:
+    from io import BytesIO
+
+    from PIL import Image
+
+    source = Image.new("RGB", (12, 8), (30, 100, 180))
+    stream = BytesIO()
+    source.save(stream, format="JPEG", quality=92)
+    stream.seek(0)
+    with Image.open(stream) as restored:
+        restored.load()
+        assert restored.format == "JPEG"
+        assert restored.mode == "RGB"
+        assert restored.size == source.size
