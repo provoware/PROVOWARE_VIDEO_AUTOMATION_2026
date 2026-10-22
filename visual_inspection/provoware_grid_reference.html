@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROVOWARE · 120 × 80 Rasterreferenz (Layout-Demonstrator)</title>
+<link rel="stylesheet" href="../src/provoware_grid/grid-v1.css">
+<style>
+:root {
+  --zoom: 1.1;
+  --gap: 12px;
+  --min-card-width: calc(360px * var(--zoom));
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { font-family: system-ui, "Noto Sans", sans-serif; font-size: calc(14px * var(--zoom)); }
+body { margin: 0; background: #0e1620; color: #eef5ff; }
+button, select, input { font: inherit; min-height: 2.8em; }
+button, select { cursor: pointer; }
+button, select, input { border: 1px solid #84b6d3; border-radius: .5em; background: #1d3044; color: inherit; padding: .4em .7em; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid #ffd166; outline-offset: 2px; }
+.grid-overlay { position: fixed; inset: 0; z-index: 10; pointer-events: none; opacity: .18;
+  background-image: linear-gradient(to right, #8bd5ed 1px, transparent 1px),
+                    linear-gradient(to bottom, #8bd5ed 1px, transparent 1px);
+  background-size: calc(100% / 120) 100%, 100% calc(100% / 80); }
+.grid-overlay[hidden] { display: none; }
+.shell { max-width: 2200px; margin: auto; padding: 10px; display: flex; flex-direction: column; gap: var(--gap); min-height: 100vh; }
+.top { display: flex; align-items: center; gap: .8em; flex-wrap: wrap; }
+.brand { flex: 1 1 270px; min-width: 0; }
+.brand h1 { font-size: 1.4em; line-height: 1.2; margin: .1em 0; }
+.brand p { margin: .2em 0; color: #a9c7d9; }
+.tools { display: flex; flex: 0 1 auto; align-items: center; flex-wrap: wrap; gap: .5em; }
+.top label { white-space: nowrap; }
+.badge { border: 1px solid #6ba4bd; padding: .45em; border-radius: .5em; }
+.settings { display: flex; flex-wrap: wrap; gap: .7em; padding: .6em; border: 1px solid #486982; border-radius: .8em; background: #152638; }
+.setting { display: flex; flex: 1 1 155px; gap: .35em; flex-direction: column; min-width: min(100%, 155px); }
+.setting label { font-weight: 600; }
+.setting input { min-width: 0; width: 100%; }
+.status { display: flex; flex-wrap: wrap; align-items: center; gap: 1em; padding: .5em .75em; background: #132c34; border: 1px solid #426977; border-radius: .8em; }
+.meter { display: flex; align-items: center; gap: .5em; flex: 1 1 120px; min-width: 0; }
+.meter progress { width: 100%; min-width: 0; height: .8em; accent-color: #7ed9c6; }
+.stage { container: main / inline-size; flex: 1 1 auto; min-width: 0; }
+.columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min-card-width)), 1fr)); gap: var(--gap); }
+.panel { display: flex; flex-direction: column; background: #1a2b3c; border: 1px solid #6b89a2; border-radius: .9em; padding: .7em; gap: .65em; min-width: 0; }
+.panel h2 { font-size: 1.12em; margin: 0; }
+.panel-top { display: flex; flex-wrap: wrap; align-items: center; gap: .5em; justify-content: space-between; }
+.panel-top select { flex: 0 1 170px; min-width: 0; max-width: 100%; }
+.source-list { list-style: none; margin: 0; padding: .3em; overflow-y: auto; overflow-x: hidden; min-height: 115px; max-height: min(34vh, 270px); border: 1px solid #4d6d86; border-radius: .5em; background: #0d1925; }
+.source-list li { padding: .5em; border-bottom: 1px solid #284158; overflow-wrap: anywhere; }
+.source-list li:last-child { border-bottom: none; }
+.actions { display: flex; flex-wrap: wrap; align-items: stretch; gap: .5em; }
+.actions button { flex: 1 1 140px; }
+.readout { margin: 0; font-size: .88em; color: #bcd1e0; overflow-wrap: anywhere; }
+.footer { display: flex; flex-wrap: wrap; gap: .5em; justify-content: space-between; align-items: center; }
+#measurement { font-weight: 600; }
+@container main (max-width: 620px) { .columns { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="grid-overlay pvw-grid-overlay" id="grid" aria-hidden="true"></div>
+<div class="shell" id="shell">
+  <header class="top">
+    <div class="brand">
+      <h1>PROVOWARE · VideoBatch</h1>
+      <p>120 × 80 Raster · Ausgangsfläche 800 × 600</p>
+    </div>
+    <div class="tools">
+      <label for="zoom">Schriftgröße</label>
+      <select id="zoom" aria-label="Schriftgröße">
+        <option value="80">80 %</option><option value="100">100 %</option>
+        <option value="110" selected>110 %</option><option value="125">125 %</option>
+        <option value="150">150 %</option><option value="175">175 %</option>
+        <option value="200">200 %</option>
+      </select>
+      <button id="grid-toggle" type="button" aria-pressed="true">Raster ein/aus</button>
+      <span class="badge">Referenz · keine Videoproduktion</span>
+    </div>
+  </header>
+  <section class="settings" aria-label="Kompakte Grundeinstellungen">
+    <div class="setting"><label for="resolution">Auflösung</label><select id="resolution"><option>1920 × 1080</option><option>1280 × 720</option></select></div>
+    <div class="setting"><label for="quality">Qualität</label><select id="quality"><option>Ausgewogen</option><option>Hoch</option></select></div>
+    <div class="setting"><label for="effect">Bildeffekt</label><select id="effect"><option>Standard</option><option>Industrial</option></select></div>
+    <div class="setting"><label for="target">Ausgabeordner</label><input id="target" type="text" value="~/Videos/Fertig" readonly></div>
+  </section>
+  <section class="status" aria-label="Kompaktes Dashboard">
+    <div class="meter"><label for="cpu">CPU</label><progress id="cpu" max="100" value="24">24 %</progress></div>
+    <div class="meter"><label for="ram">RAM</label><progress id="ram" max="100" value="38">38 %</progress></div>
+    <div class="meter"><label for="total">Gesamt</label><progress id="total" max="100" value="42">42 %</progress></div>
+    <div class="meter"><label for="job">Auftrag</label><progress id="job" max="100" value="59">59 %</progress></div>
+  </section>
+  <main class="stage" id="stage">
+    <div class="columns pvw-grid" id="columns">
+      <section class="panel" data-panel="audio">
+        <div class="panel-top"><h2>Audiodateien</h2><select aria-label="Audio sortieren"><option>Name A–Z</option><option>Neueste zuerst</option></select></div>
+        <ul class="source-list"><li>ambient_aufnahme_mit_langem_titel.wav</li><li>track_02.mp3</li><li>track_03.flac</li></ul>
+        <div class="actions"><button type="button" data-critical>Audio auswählen</button><button type="button" data-critical>Entfernen</button></div>
+      </section>
+      <section class="panel" data-panel="media">
+        <div class="panel-top"><h2>Bilder und Videos</h2><select aria-label="Medien sortieren"><option>Name A–Z</option><option>Neueste zuerst</option></select></div>
+        <ul class="source-list"><li>landschaft_mit_ausführlicher_beschreibung.png</li><li>szene_02.mp4</li><li>szene_03.jpg</li></ul>
+        <div class="actions"><button type="button" data-critical>Bilder und Videos wählen</button><button type="button" data-critical>Entfernen</button></div>
+      </section>
+    </div>
+  </main>
+  <footer class="footer">
+    <p class="readout">Hinweis: Raster und Felder sind ein reiner Layout-Test, keine aktiven Video-Funktionen.</p>
+    <span id="measurement" role="status" aria-live="polite">Layoutprüfung läuft</span>
+  </footer>
+</div>
+<script>
+"use strict";
+const root = document.documentElement;
+const zoom = document.getElementById("zoom");
+const grid = document.getElementById("grid");
+const toggle = document.getElementById("grid-toggle");
+function measureLayout() {
+  const layoutWidth = document.documentElement.clientWidth;
+  const exceedsWidth = document.documentElement.scrollWidth > layoutWidth + 1;
+  const panels = [...document.querySelectorAll("[data-panel]")];
+  const a = panels[0].getBoundingClientRect();
+  const b = panels[1].getBoundingClientRect();
+  const stacked = b.top >= a.bottom - 1;
+  const cardsOverlap = !(a.right <= b.left + 1 || b.top >= a.bottom - 1);
+  const inaccessible = [...document.querySelectorAll("[data-critical]")]
+    .some(button => button.getBoundingClientRect().width < 40);
+  const ok = !exceedsWidth && !cardsOverlap && !inaccessible;
+  document.getElementById("measurement").textContent =
+    (ok ? "✓" : "⚠") + " " + innerWidth + " × " + innerHeight +
+    " · " + zoom.value + " % · " + (stacked ? "untereinander" : "nebeneinander") +
+    (ok ? " · Grundprüfung OK" : " · Platzproblem prüfen");
+  document.body.dataset.layoutOk = String(ok);
+}
+zoom.addEventListener("change", () => {
+  root.style.setProperty("--zoom", String(Number(zoom.value) / 100));
+  requestAnimationFrame(measureLayout);
+});
+toggle.addEventListener("click", () => {
+  grid.hidden = !grid.hidden;
+  toggle.setAttribute("aria-pressed", String(!grid.hidden));
+});
+addEventListener("resize", measureLayout);
+new ResizeObserver(measureLayout).observe(document.getElementById("stage"));
+measureLayout();
+</script>
+</body>
+</html>

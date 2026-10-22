@@ -46,7 +46,7 @@ class VideoBatchQtWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("PROVOWARE VideoBatch 2026 · Qt 6")
-        self.setMinimumSize(980, 640)
+        self.setMinimumSize(800, 600)
         self.resize(1360, 820)
         self.events = EventBuffer()
         self.runner = BatchRunner(self.events.put)
@@ -216,7 +216,7 @@ class VideoBatchQtWindow(QMainWindow):
         panel, layout = self._panel(
             "Erweiterte Einstellungen",
             "Hier stehen selten benötigte Prüf- und Sicherheitsoptionen. "
-            "Auflösung, Qualität, Effekt und Ausgabeordner sind immer oben sichtbar.",
+            "Die alltäglichen Ausgabeoptionen stehen vor diesen Expertenoptionen.",
         )
         layout.addWidget(field_label("Kontrolle nach der Erstellung"))
         # Compatibility-only adapter for older project/playlist services.

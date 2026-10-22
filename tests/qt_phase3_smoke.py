@@ -37,15 +37,59 @@ def main() -> int:
 
         # The special-tool callbacks must already be replaced before construction,
         # otherwise Qt would retain references to the historical demo handlers.
+        # Constructors and the close event must remain defined on their Qt
+        # classes, not replaced at import time by legacy adapter closures.
+        assert VideoBatchQtPhase2Window.__init__.__qualname__ == "VideoBatchQtPhase2Window.__init__"
+        assert VideoBatchQtPhase2Window.closeEvent.__qualname__ == "VideoBatchQtPhase2Window.closeEvent"
+        assert VideoBatchQtPhase3Window.__init__.__qualname__ == "VideoBatchQtPhase3Window.__init__"
+        assert VideoBatchQtPhase3Window.closeEvent.__qualname__ == "VideoBatchQtPhase3Window.closeEvent"
+        for direct_method in ("_options", "_refresh", "_runtime_state", "_start",
+                              "_choose_audio", "_choose_media", "_browse_audio", "_browse_media"):
+            member = getattr(VideoBatchQtPhase3Window, direct_method)
+            assert member.__qualname__.startswith("VideoBatchQtPhase3Window."), direct_method
+        assert not hasattr(VideoBatchQtPhase2Window, "_tk_parity_installed")
         assert VideoBatchQtPhase2Window._show_plugin_dialog is _plugin_scan
         assert VideoBatchQtPhase2Window._show_plugin_decision is _plugin_scan
         assert VideoBatchQtPhase2Window._show_update_dialog is _update_package
         assert VideoBatchQtPhase2Window._show_archive_dialog is _archive_last_results
         assert VideoBatchQtPhase2Window._show_visual_approval is _visual_approval
 
+        # These widget methods must be native. No legacy installer may rewrite
+        # the classes when the phase-3 module gets imported.
+        from videobatch_fast.qt_media_list import DropList
+        from videobatch_fast.qt_preview_panel import PreviewPanel
+        from videobatch_fast.qt_legacy_parity_completion import install_parity_completion
+
+        for name in ("paths", "production_paths", "add_paths", "remove_selected",
+                     "clear", "sort_by", "render_view"):
+            assert getattr(DropList, name).__qualname__.startswith("DropList."), name
+        for name in ("__init__", "_render_pixmap", "set_parity_zoom",
+                     "fit_parity_preview", "open_parity_fullscreen"):
+            assert getattr(PreviewPanel, name).__qualname__.startswith("PreviewPanel."), name
+        previous_methods = (
+            DropList.add_paths, DropList.sort_by,
+            PreviewPanel.__init__, PreviewPanel._render_pixmap,
+        )
+        install_parity_completion()
+        assert previous_methods == (
+            DropList.add_paths, DropList.sort_by,
+            PreviewPanel.__init__, PreviewPanel._render_pixmap,
+        )
+
         window = VideoBatchQtPhase3Window(autoload_project=False)
         window.show()
         app.processEvents()
+
+        # Kein Dialog darf mehr als dynamischer Instanz-Monkeypatch erscheinen.
+        for callback_name in (
+            "_show_plugin_dialog", "_show_plugin_decision",
+            "_show_update_dialog", "_show_recovery_dialog",
+            "_show_archive_dialog", "_show_visual_approval",
+        ):
+            assert callback_name not in vars(window), callback_name
+        assert VideoBatchQtPhase2Window._show_recovery_dialog.__qualname__.startswith(
+            "VideoBatchQtPhase2Window."
+        )
 
         assert len(window.workspace_navigation.buttons) == 9
         assert window.phase3_tabs.count() == 3
@@ -94,6 +138,17 @@ def main() -> int:
         assert window.preview_panel.parity_zoom.maximum() == 800
         assert window.preview_panel._parity_fit_button.text() == "Einpassen"
         assert window.preview_panel._parity_fullscreen_button.text() == "Vollbild"
+        window.preview_panel.fit_parity_preview()
+        assert window.preview_panel._parity_fit is True
+        # Render real pixel dimensions at fixed zoom, not merely control text.
+        from PySide6.QtGui import QPixmap
+        window.preview_panel._pixmap = QPixmap(40, 40)
+        window.preview_panel.set_parity_zoom(175, persist=False)
+        assert window.preview_panel.image.pixmap().width() == 70
+        window.preview_panel.fit_parity_preview()
+        assert window.preview_panel._parity_fit is True
+        window.preview_panel._pixmap = None
+        window.preview_panel.image.clear()
         window.preview_panel.set_parity_zoom(175, persist=False)
         assert window.preview_panel._parity_zoom == 175
         assert window.preview_panel.parity_zoom.value() == 175
@@ -261,8 +316,15 @@ def main() -> int:
 
         window._route_workspace("effects")
         app.processEvents()
-        assert window.parity_dock.isVisible()
+        assert not window.parity_dock.isVisible(), "Expertenleiste darf Schritt 2 nicht verdrängen"
+        from videobatch_fast.qt_legacy_parity import _show_parity_tab
+        _show_parity_tab(window, 0)
+        app.processEvents()
+        assert window.parity_dock.isVisible(), "Expertenwerkzeug muss auf Wunsch erreichbar bleiben"
         assert window.parity_tabs.currentIndex() == 0
+        window._route_workspace("queue")
+        app.processEvents()
+        assert not window.parity_dock.isVisible()
 
         window.diagnostics_panel.run_diagnostic()
         app.processEvents()

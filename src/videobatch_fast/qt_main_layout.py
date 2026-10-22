@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QKeySequence, QShortcut
-from PySide6.QtWidgets import QApplication, QComboBox, QDoubleSpinBox, QSlider, QFrame, QHBoxLayout, QGridLayout, QLabel, QVBoxLayout, QWidget, QLineEdit, QPushButton, QTabBar
+from PySide6.QtWidgets import QApplication, QComboBox, QDoubleSpinBox, QSlider, QFrame, QHBoxLayout, QGridLayout, QLabel, QVBoxLayout, QWidget, QLineEdit, QPushButton, QTabBar, QScrollArea, QMenu
 
 from .qt_theme import SCALE_LEVELS, scaled_style
+from .qt_adaptive_settings import ResponsiveSettingsPanel
 from .dashboard_settings import RESOLUTION_LABELS, QUALITY_LABELS, EFFECT_LABELS
 from .effects import TRANSITIONS
 from .qt_workspace_layout import build_footer, build_workflow_stack, set_workflow_route
@@ -32,14 +33,14 @@ def build_main_ui(window) -> None:
     subtitle.setWordWrap(True)
     brand.addWidget(title)
     brand.addWidget(subtitle)
-    header.addLayout(brand, 0, 0, 2, 1)
+    header.addLayout(brand, 0, 0, 1, 4)
 
     window.status = QLabel("BEREIT")
     window.status.setObjectName("statusChip")
     window.status.setAccessibleDescription(
         "Aktueller Programmstatus. Der sichtbare Text nennt den momentanen Zustand."
     )
-    header.addWidget(window.status, 0, 1, alignment=Qt.AlignmentFlag.AlignRight)
+    header.addWidget(window.status, 1, 0, alignment=Qt.AlignmentFlag.AlignLeft)
 
     view_label = QLabel("Schrift")
     window.view_scale = QComboBox()
@@ -54,12 +55,26 @@ def build_main_ui(window) -> None:
     for value in SCALE_LEVELS:
         window.view_scale.addItem(f"{value} %", value)
     window.view_scale.setCurrentIndex(window.view_scale.findData(110))
-    header.addWidget(view_label, 0, 2)
-    header.addWidget(window.view_scale, 0, 3)
+    header.addWidget(view_label, 1, 2)
+    header.addWidget(window.view_scale, 1, 3)
+
+    # Große Schrift: Alle Menüs bleiben über eine einzige Schaltfläche erreichbar.
+    window.compact_menu = QPushButton("Menü")
+    window.compact_menu.setAccessibleName("Alle Programmmenüs öffnen")
+    def open_compact_menu() -> None:
+        menu = QMenu(window)
+        for action in window.menuBar().actions():
+            menu.addAction(action)
+        menu.exec(window.compact_menu.mapToGlobal(QPoint(0, window.compact_menu.height())))
+        menu.deleteLater()
+    window.compact_menu.clicked.connect(open_compact_menu)
+    header.addWidget(window.compact_menu, 1, 1)
+    window.compact_menu.hide()
 
     dashboard = QFrame()
     dashboard.setObjectName("compactStatusDashboard")
-    dashboard_row = QHBoxLayout(dashboard)
+    window._compact_header_dashboard = dashboard
+    dashboard_row = QVBoxLayout(dashboard)
     dashboard_row.setContentsMargins(4, 2, 4, 2)
     dashboard_row.setSpacing(8)
     dashboard_row.addWidget(window.load_dashboard.frame)
@@ -73,19 +88,21 @@ def build_main_ui(window) -> None:
     window.progress_dashboard_layout.setHorizontalSpacing(5)
     window.progress_dashboard_layout.setVerticalSpacing(2)
     window.progress_dashboard_layout.setColumnStretch(1, 1)
-    dashboard_row.addWidget(window.progress_dashboard, 1)
-    header.addWidget(dashboard, 1, 1, 1, 3)
+    dashboard_row.addWidget(window.progress_dashboard)
+    header.addWidget(dashboard, 2, 0, 1, 4)
     outer.addLayout(header)
 
-    # One compact, responsive 2 × 2 control grid is visible on every page.
-    controls = QFrame()
-    controls.setObjectName("dashboardControls")
-    grid = QGridLayout(controls)
-    grid.setContentsMargins(8, 5, 8, 5)
-    grid.setHorizontalSpacing(7)
-    grid.setVerticalSpacing(3)
-    grid.setColumnStretch(1, 1)
-    grid.setColumnStretch(3, 2)
+    # Responsive settings follow the same 120×80 reference logic as the lists.
+    # Keep every existing control object and its signal handlers unchanged.
+    window.settings_grid = ResponsiveSettingsPanel()
+    settings_view = QScrollArea()
+    settings_view.setObjectName("adaptiveSettingScroll")
+    settings_view.setWidgetResizable(True)
+    settings_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    settings_view.setMinimumHeight(92)
+    settings_view.setMaximumHeight(140)
+    settings_view.setWidget(window.settings_grid)
+    window.settings_view = settings_view
 
     window.resolution = QComboBox()
     for value, label in RESOLUTION_LABELS.items():
@@ -113,22 +130,17 @@ def build_main_ui(window) -> None:
             widget.setCurrentIndex(index)
     window.output.setText(str(state.output_dir))
 
-    output_row = QHBoxLayout()
+    output_box = QWidget()
+    output_row = QHBoxLayout(output_box)
+    output_row.setContentsMargins(0, 0, 0, 0)
     output_row.setSpacing(6)
     output_row.addWidget(window.output, 1)
     output_row.addWidget(window.output_button)
 
-    for label, row, col, widget in (
-        ("Auflösung", 0, 0, window.resolution),
-        ("Qualität", 0, 2, window.quality),
-        ("Bildeffekt", 1, 0, window.effect),
-    ):
-        caption = QLabel(label)
-        caption.setBuddy(widget)
-        grid.addWidget(caption, row, col)
-        grid.addWidget(widget, row, col + 1)
-    grid.addWidget(QLabel("Ausgabeordner"), 1, 2)
-    grid.addLayout(output_row, 1, 3)
+    window.settings_grid.add_field("Auflösung", window.resolution)
+    window.settings_grid.add_field("Qualität", window.quality)
+    window.settings_grid.add_field("Bildeffekt", window.effect)
+    window.settings_grid.add_field("Ausgabeordner", output_box, buddy=window.output)
 
     # The original compact everyday controls remain; one additional row
     # exposes real rendering values without hiding them in legacy dialogs.
@@ -138,11 +150,12 @@ def build_main_ui(window) -> None:
     window.effect_intensity.setAccessibleName("Effektstärke von 0 bis 100 Prozent")
     window.effect_intensity.setToolTip("100 % = bisheriger Effekt, 0 % = kein Effekt.")
     window.intensity_value = QLabel(f"{state.effect_intensity} %")
-    strength_row = QHBoxLayout()
+    strength_box = QWidget()
+    strength_row = QHBoxLayout(strength_box)
+    strength_row.setContentsMargins(0, 0, 0, 0)
     strength_row.addWidget(window.effect_intensity, 1)
     strength_row.addWidget(window.intensity_value)
-    grid.addWidget(QLabel("Effektstärke"), 2, 0)
-    grid.addLayout(strength_row, 2, 1)
+    window.settings_grid.add_field("Effektstärke", strength_box, buddy=window.effect_intensity)
 
     window.transition = QComboBox()
     for key, transition in TRANSITIONS.items():
@@ -157,22 +170,23 @@ def build_main_ui(window) -> None:
     window.fade_seconds.setSuffix(" s")
     window.fade_seconds.setValue(state.transition_duration)
     window.fade_seconds.setAccessibleName("Videoblenddauer in Sekunden")
-    fade_row = QHBoxLayout()
+    fade_box = QWidget()
+    fade_row = QHBoxLayout(fade_box)
+    fade_row.setContentsMargins(0, 0, 0, 0)
     fade_row.addWidget(window.transition, 1)
     fade_row.addWidget(window.fade_seconds)
-    grid.addWidget(QLabel("Videoblende"), 2, 2)
-    grid.addLayout(fade_row, 2, 3)
-    outer.addWidget(controls)
+    window.settings_grid.add_field("Videoblende", fade_box, buddy=window.transition)
+    # Einstellungen stehen in Schritt 2, nicht auf jeder Hauptseite.
 
     # Permanent, novice-readable workspace navigation.
     tabs = QTabBar()
     tabs.setObjectName("mainNavigation")
     tabs.setExpanding(True)
     tabs.setAccessibleName("Arbeitsbereiche")
-    for name in ("1 · Dateien", "2 · Produktion", "Erweitert", "Hilfe / Werkzeuge"):
+    for name in ("1 · Dateien", "2 · Ausgabe", "3 · Produktion", "Hilfe / Werkzeuge"):
         tabs.addTab(name)
     window.main_tabs = tabs
-    routes = ("media", "queue", "effects", "dashboard")
+    routes = ("media", "effects", "queue", "dashboard")
     def navigate(index: int) -> None:
         route = routes[index]
         handler = getattr(window, "_route_workspace", None)
@@ -218,6 +232,7 @@ def build_main_ui(window) -> None:
     window.kpi_values["active"].setText("Nein")
     outer.addLayout(kpis)
 
+    window._responsive_control_rows = []
     outer.addWidget(build_workflow_stack(window), 1)
 
     window.audio.setAccessibleName("Audiodateien")
@@ -236,6 +251,40 @@ def build_main_ui(window) -> None:
         if app is not None:
             app.setStyleSheet(scaled_style(value))
         window.table.verticalHeader().setDefaultSectionSize(round(38 * value / 100))
+        # A compact title keeps all original font choices for the WORK controls;
+        # only the decorative brand loses excess height on tiny screens.
+        small_large = value >= 175 and window.width() <= 900
+        # The persistent next-step hint must show more than one line at 800x600.
+        # It remains visible while the workflow itself can scroll vertically.
+        window.action_footer_scroll.setMinimumHeight(82 if small_large else 52)
+        title.setStyleSheet("font-size: 24px; font-weight: 800;" if small_large else "")
+        window.status.setStyleSheet(
+            "font-size: 17px; padding: 3px 6px; font-weight: 800;" if small_large else ""
+        )
+        for button, full, short in getattr(window, "_source_action_labels", []):
+            button.setText(short if small_large else full)
+        for label_widget, full, short in getattr(window, "_source_header_labels", []):
+            label_widget.setText(short if small_large else full)
+        # Full headings remain available via tooltips and at normal screen sizes.
+        full_headers = ("#", "Audio", "Medium", "Status", "Einzel-Fortschritt")
+        short_headers = ("#", "Audio", "Bild", "Stand", "%")
+        for column, full_label in enumerate(full_headers):
+            header_item = window.table.horizontalHeaderItem(column)
+            if header_item is not None:
+                header_item.setText(short_headers[column] if small_large else full_label)
+                header_item.setToolTip(full_label)
+        compact = value >= 150
+        window.menuBar().setVisible(not compact)
+        window.compact_menu.setVisible(compact)
+        window.main_tabs.setTabText(3, "Hilfe" if compact else "Hilfe / Werkzeuge")
+        subtitle.setVisible(value <= 110)
+        window.load_dashboard.frame.setVisible(not compact)
+        route = getattr(window, "_active_workflow_route", "media")
+        dashboard.setVisible(not compact or route == "queue")
+        window.settings_grid.set_zoom_percent(value)
+        window.source_columns.set_zoom_percent(value)
+        for control_row in window._responsive_control_rows:
+            control_row.set_zoom_percent(value)
 
     window.view_scale.currentIndexChanged.connect(apply_scale)
     window._scale_shortcuts = []
@@ -251,3 +300,31 @@ def build_main_ui(window) -> None:
     reset.activated.connect(lambda: window.view_scale.setCurrentIndex(window.view_scale.findData(110)))
     window._scale_shortcuts.append(reset)
     apply_scale()
+
+    # Bei großer Schrift müssen auch zunächst unterhalb des Fensters liegende
+    # Bedienelemente per Tastatur erreichbar und sichtbar werden. Insbesondere
+    # mehrere ineinander liegende QScrollAreas werden von Qt nicht immer
+    # automatisch gemeinsam zum gerade fokussierten Knopf nachgeführt.
+    app = QApplication.instance()
+    if app is not None:
+        def reveal_keyboard_focus(_previous, focused) -> None:
+            if focused is None or not window.isAncestorOf(focused):
+                return
+            ancestor = focused.parentWidget()
+            while ancestor is not None:
+                if isinstance(ancestor, QScrollArea):
+                    ancestor.ensureWidgetVisible(focused, 8, 8)
+                if ancestor is window:
+                    break
+                ancestor = ancestor.parentWidget()
+
+        app.focusChanged.connect(reveal_keyboard_focus)
+        window._focus_visibility_handler = reveal_keyboard_focus
+
+        def disconnect_focus_handler(*_ignored) -> None:
+            try:
+                app.focusChanged.disconnect(reveal_keyboard_focus)
+            except (RuntimeError, TypeError):
+                pass
+
+        window.destroyed.connect(disconnect_focus_handler)

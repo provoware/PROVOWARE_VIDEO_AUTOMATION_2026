@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 import hashlib
+import ctypes
+import errno
 import json
+import shlex
 import os
 import shutil
 import subprocess
 import tempfile
 import time
 import zipfile
+import uuid
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable
@@ -104,6 +108,161 @@ def _fsync_directory(path: Path) -> None:
         pass
 
 
+def _atomic_exchange_dirs(first: Path, second: Path) -> None:
+    """Atomisch zwei vorhandene Verzeichnisse auf demselben Linux-Dateisystem tauschen.
+
+    Anders als zwei aufeinanderfolgende os.replace-Aufrufe lässt RENAME_EXCHANGE
+    den Installationsnamen auch bei abruptem Prozessende niemals unbesetzt.
+    Auf nicht unterstützten Dateisystemen wird die Aktualisierung blockiert.
+    """
+    renameat2 = getattr(ctypes.CDLL(None, use_errno=True), "renameat2", None)
+    if renameat2 is None:
+        raise OSError(errno.ENOSYS, "Atomarer Linux-Verzeichnistausch nicht verfügbar")
+    renameat2.argtypes = [
+        ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_uint,
+    ]
+    renameat2.restype = ctypes.c_int
+    at_fdcwd = -100
+    rename_exchange = 2
+    if renameat2(
+        at_fdcwd, os.fsencode(first), at_fdcwd, os.fsencode(second), rename_exchange
+    ) != 0:
+        code = ctypes.get_errno()
+        raise OSError(code, os.strerror(code), str(first))
+
+
+def _ensure_independent_starter(install_root: Path) -> Path:
+    """Provision an immutable-by-default rescue outside the replaceable tree.
+
+    Existing, differing rescue files are NEVER overwritten: a mismatch blocks
+    the update before the first directory exchange.
+    """
+    parent = install_root.parent
+    source = Path(__file__).resolve().parents[2] / "scripts" / "local_update_rescue.py"
+    if not source.is_file() or source.is_symlink():
+        raise OSError("Unabhängiges Startprogramm fehlt; lokales Update blockiert.")
+    controller = parent / f".{install_root.name}.independent_start.py"
+    launcher = parent / f"{install_root.name}-SICHER-STARTEN.sh"
+    controller_bytes = source.read_bytes()
+    root_name = shlex.quote(install_root.name)
+    rescue_name = shlex.quote(controller.name)
+    wrapper_bytes = (
+        "#!/usr/bin/env bash\n"
+        "set -Eeuo pipefail\n"
+        'BASE="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"\n'
+        f"APP={root_name}\n"
+        f"HELPER={rescue_name}\n"
+        'exec "${VIDEOBATCH_BOOTSTRAP_PYTHON:-python3}" "$BASE/$HELPER" "$BASE/$APP" "$@"\n'
+    ).encode("utf-8")
+    for path, contents in ((controller, controller_bytes), (launcher, wrapper_bytes)):
+        if path.exists() or path.is_symlink():
+            if path.is_symlink() or not path.is_file() or path.read_bytes() != contents:
+                raise OSError(f"Externer Sicherheitsstarter widersprüchlich; nicht überschreiben: {path}")
+            continue
+        _atomic_write(path, contents, 0o700)
+    # _atomic_write synchronizes the containing directory for new files.
+    return launcher
+
+
+def _pending_update_path(install_root: Path) -> Path:
+    return install_root.parent / f".{install_root.name}.update_pending.json"
+
+
+def _remove_pending_update(journal: Path) -> None:
+    journal.unlink(missing_ok=True)
+    _fsync_directory(journal.parent)
+
+
+def recover_interrupted_update(install_root: Path, *, failed_start: bool = False) -> bool:
+    """Vor dem normalen GUI-Start eine unfertige lokale Installation zurückholen.
+
+    Liefert True, wenn der bisherige bestätigte Programmordner wieder
+    aktiviert wurde. Fehlen eindeutige Belege, wird nicht blind umbenannt.
+    """
+    install_root = Path(install_root).resolve()
+    journal = _pending_update_path(install_root)
+    if not journal.exists():
+        return False
+    if journal.is_symlink() or not journal.is_file():
+        raise OSError("Update-Wiederanlaufdatei ist kein regulärer Eintrag.")
+    record = json.loads(journal.read_text(encoding="utf-8"))
+    if not isinstance(record, dict) or record.get("schema_version") != 1:
+        raise ValueError("Update-Wiederanlaufdatei hat ein ungültiges Format.")
+    if record.get("install_root") != str(install_root):
+        raise ValueError("Update-Wiederanlaufdatei gehört zu einer anderen Installation.")
+    candidate = Path(str(record.get("candidate", "")))
+    backup = Path(str(record.get("backup", "")))
+    parent = install_root.parent
+    if (
+        candidate.name != "candidate"
+        or candidate.parent.parent != parent
+        or not candidate.parent.name.startswith(".videobatch_update_")
+        or backup.parent != parent
+        or not backup.name.startswith(install_root.name + ".backup_")
+    ):
+        raise ValueError("Update-Wiederanlaufdatei enthält unzulässige Pfade.")
+    phase = record.get("phase", "exchanging")
+    if phase not in {"exchanging", "awaiting_first_start"}:
+        raise ValueError("Update-Wiederanlaufdatei meldet eine unbekannte Phase.")
+    old_id = (int(record["old_device"]), int(record["old_inode"]))
+    if not install_root.is_dir() or install_root.is_symlink():
+        raise OSError("Programmstartordner fehlt; keine automatische riskante Reparatur.")
+    current = install_root.stat()
+    if (current.st_dev, current.st_ino) == old_id:
+        _remove_pending_update(journal)
+        return False
+    old_locations = []
+    for location in (candidate, backup):
+        if location.is_dir() and not location.is_symlink():
+            info = location.stat()
+            if (info.st_dev, info.st_ino) == old_id:
+                old_locations.append(location)
+    if phase == "awaiting_first_start" and not failed_start:
+        # Ein aktivierter Kandidat darf zuerst EINMAL real starten.
+        # Das Journal bleibt bis zur bestätigten Qt-Bereitschaft erhalten.
+        if len(old_locations) != 1:
+            raise OSError("Letzte bestätigte Installation ist nicht eindeutig gesichert.")
+        return False
+    for location in old_locations:
+        if location.is_dir() and not location.is_symlink():
+            info = location.stat()
+            if (info.st_dev, info.st_ino) == old_id:
+                _atomic_exchange_dirs(install_root, location)
+                _fsync_directory(parent)
+                _remove_pending_update(journal)
+                return True
+    raise OSError("Bisherige Installation nicht zweifelsfrei auffindbar; manuelle Diagnose nötig.")
+
+
+def finish_local_update_first_start(install_root: Path, *, normal_ui_ready: bool) -> str:
+    """Lokalen Update-Rückfall erst nach echtem Erststart endgültig freigeben.
+
+    'confirmed': neuer Stand gestartet; Sicherung bleibt für Nutzer erhalten.
+    'restored': Start gescheitert; alte Version ist wieder aktiv.
+    'none': kein entsprechendes neues Update wartet auf die Bestätigung.
+    """
+    install_root = Path(install_root).resolve()
+    journal = _pending_update_path(install_root)
+    if not journal.exists():
+        return "none"
+    if journal.is_symlink() or not journal.is_file():
+        raise OSError("Update-Journal ist kein regulärer Eintrag.")
+    record = json.loads(journal.read_text(encoding="utf-8"))
+    if not isinstance(record, dict) or record.get("phase") != "awaiting_first_start":
+        raise ValueError("Update-Journal enthält keine ausstehende Erststart-Bestätigung.")
+    if normal_ui_ready:
+        # Wiederanlauf prüft erst Pfade, Gerätekennung und Sicherungs-Inode.
+        recover_interrupted_update(install_root)
+        if not journal.exists():
+            # Der alte Stand war schon wieder aktiviert.
+            return "none"
+        _remove_pending_update(journal)
+        return "confirmed"
+    if recover_interrupted_update(install_root, failed_start=True):
+        return "restored"
+    return "none"
+
+
 def apply_update_package(
     package: Path,
     install_root: Path,
@@ -126,7 +285,8 @@ def apply_update_package(
 
     report_dir = state_dir() / "updates"
     report_path = report_dir / f"update_{time.strftime('%Y%m%d_%H%M%S')}.json"
-    backup = parent / f"{install_root.name}.backup_{time.strftime('%Y%m%d_%H%M%S')}"
+    backup = parent / f"{install_root.name}.backup_{time.strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex}"
+    journal = _pending_update_path(install_root)
     activated = False
     try:
         progress("prepare", "Kandidat wird aus der bestehenden Installation erzeugt.")
@@ -210,16 +370,63 @@ def apply_update_package(
             return UpdateInstallResult(False, check.version, "Selbsttest hat manifestierte Kandidatendateien verändert.", report=str(report_path))
 
         progress("activate", "Unveränderter geprüfter Kandidat wird atomisch aktiviert.")
-        if backup.exists():
-            shutil.rmtree(backup)
-        os.replace(install_root, backup)
+        # An earlier backup is user data. Never delete or overwrite one for a
+        # timestamp collision; a fresh opaque name is reserved for each update.
+        if backup.exists() or backup.is_symlink():
+            raise FileExistsError(f"Update-Sicherung bereits vorhanden: {backup}")
+        if journal.exists() or journal.is_symlink():
+            raise OSError("Vorherige Update-Transaktion nicht abgeschlossen; zuerst neu starten.")
+        # The external launcher is installed BEFORE persisting a transaction.
+        # A new broken STARTEN.sh or debug_launcher.py cannot disable recovery.
+        _ensure_independent_starter(install_root)
+        old_stat = install_root.stat()
+        _write_report(journal, {
+            "schema_version": 1,
+            "install_root": str(install_root),
+            "candidate": str(candidate),
+            "backup": str(backup),
+            "old_device": old_stat.st_dev,
+            "old_inode": old_stat.st_ino,
+        })
+        # _write_report nutzt atomar schreibende safe_io-Routine
+        # und synchronisiert den übergeordneten Ordner bereits selbst.
+        exchanged = False
         try:
-            os.replace(candidate, install_root)
+            # Der alte Programmordner bleibt während des gesamten Wechsels
+            # jederzeit unter einem Namen erreichbar. Beide Seiten liegen
+            # auf demselben Datenträger; kein nicht-atomarer Zwischenzustand.
+            _atomic_exchange_dirs(install_root, candidate)
+            exchanged = True
             _fsync_directory(parent)
+            # Erst nach dem Austausch wird die alte Version gesichert.
+            # Bei SIGKILL davor liegt sie weiterhin im Arbeitsordner.
+            os.replace(candidate, backup)
+            _fsync_directory(parent)
+            # Noch KEINE Bestätigung: erst der erste echte normale Qt-Start
+            # beendet die Transaktion. Ein fehlerhafter Erststart fällt zurück.
+            _write_report(journal, {
+                "schema_version": 1,
+                "phase": "awaiting_first_start",
+                "install_root": str(install_root),
+                "candidate": str(candidate),
+                "backup": str(backup),
+                "old_device": old_stat.st_dev,
+                "old_inode": old_stat.st_ino,
+            })
             activated = True
         except Exception:
-            os.replace(backup, install_root)
-            _fsync_directory(parent)
+            if exchanged:
+                old_location = backup if backup.exists() else candidate
+                if old_location.exists() and not old_location.is_symlink():
+                    _atomic_exchange_dirs(install_root, old_location)
+                    if old_location == backup:
+                        # Hier liegt nach dem Rücktausch der fehlgeschlagene
+                        # neue Kandidat, nicht die frühere Sicherung.
+                        os.replace(backup, work / "failed_candidate")
+                    _fsync_directory(parent)
+            # Nach dokumentiertem Rückfall kann das Journal entfernt werden.
+            if not exchanged or (install_root.exists() and install_root.stat().st_ino == old_stat.st_ino):
+                _remove_pending_update(journal)
             raise
         return UpdateInstallResult(
             True,
@@ -241,4 +448,7 @@ def apply_update_package(
             report=str(report_path),
         )
     finally:
-        shutil.rmtree(work, ignore_errors=True)
+        # Bei einem unvollständigen Austausch muss die frühere Version im
+        # temporären Kandidatenordner für den nächsten Start erhalten bleiben.
+        if not journal.exists():
+            shutil.rmtree(work, ignore_errors=True)

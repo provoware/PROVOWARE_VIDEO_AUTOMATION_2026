@@ -261,12 +261,8 @@ def _parity_start(self) -> None:
     self.prepare_thread.start()
 
 
-def _parity_options(self) -> BatchOptions:
-    """Keep the authoritative dashboard choices through the legacy adapter."""
-    original = getattr(type(self), "_parity_original_options", None)
-    if original is None:
-        return BatchOptions(Path(self.output.text()))
-    base = original(self)
+def _parity_options(self, base: BatchOptions) -> BatchOptions:
+    """Enrich an explicitly supplied Qt model with expert-only options."""
     if not hasattr(self, "parity_output_mode"):
         return base
     # Expert controls may change codec, transition and destination organization.
@@ -279,45 +275,6 @@ def _parity_options(self) -> BatchOptions:
         codec=str(self.parity_codec.currentData() or base.codec),
         transition=str(self.parity_transition.currentData() or base.transition),
     )
-
-
-def _patch_phase2_class() -> None:
-    from .qt_phase2 import VideoBatchQtPhase2Window
-    if getattr(VideoBatchQtPhase2Window, "_tk_parity_installed", False):
-        return
-
-    VideoBatchQtPhase2Window._parity_original_options = VideoBatchQtPhase2Window._options
-    VideoBatchQtPhase2Window._options = _parity_options
-
-    original_refresh = VideoBatchQtPhase2Window._refresh
-
-    def refresh(self, *, preserve_results: bool = False) -> None:
-        original_refresh(self, preserve_results=preserve_results)
-        # Keep the action discoverable for beginners: clicking with missing
-        # sources opens the existing explanation, but _parity_start NEVER renders
-        # until every input pair has passed its validation.
-        if not self.runner.running and not self.preparing:
-            self.start.setEnabled(True)
-            self.start.setText("▶ Prüfen & Videos erstellen")
-
-    VideoBatchQtPhase2Window._refresh = refresh
-    VideoBatchQtPhase2Window._start = _parity_start
-    VideoBatchQtPhase2Window._runtime_state = _parity_runtime_state
-
-    slideshow_cls = __import__(
-        "videobatch_fast.qt_phase2_components",
-        fromlist=["SlideshowPanel"],
-    ).SlideshowPanel
-    original_commit_order = slideshow_cls._commit_order
-    if not getattr(slideshow_cls, "_tk_parity_installed", False):
-        def commit_order(self, ordered, message, *, mode="manual"):
-            self._parity_order_mode = mode
-            return original_commit_order(self, ordered, message, mode=mode)
-
-        slideshow_cls._commit_order = commit_order
-        slideshow_cls._tk_parity_installed = True
-
-    VideoBatchQtPhase2Window._tk_parity_installed = True
 
 
 def _save_settings(window: object) -> None:
@@ -525,11 +482,10 @@ def _wrap_project_methods(window: object) -> None:
 
     def route(route_name: str):
         original_route(route_name)
-        if route_name == "effects":
-            window.parity_dock.show()
-            window.parity_dock.raise_()
-            window.parity_tabs.setCurrentIndex(0)
-        elif route_name in {"dashboard", "media", "queue"}:
+        # Im Drei-Schritt-Ablauf wird die breite historische Expertenleiste
+        # niemals automatisch geöffnet; bei 800×600 verdrängte sie den Inhalt.
+        # Über Ansicht → Einstellungen & Werkzeuge (Strg+,) bleibt sie erreichbar.
+        if route_name in {"dashboard", "media", "effects", "queue"}:
             window.parity_dock.hide()
 
     window._collect_project_state = collect
@@ -1007,15 +963,6 @@ def _connect_settings(window: object) -> None:
     )
 
 
-def _patch_special_callbacks(window: object) -> None:
-    window._show_plugin_dialog = lambda: _plugin_scan(window)
-    window._show_plugin_decision = lambda: _plugin_scan(window)
-    window._show_update_dialog = lambda: _update_package(window)
-    window._show_recovery_dialog = lambda: _offer_recovery(window, manual=True)
-    window._show_archive_dialog = lambda: _archive_last_results(window)
-    window._show_visual_approval = lambda: _visual_approval(window)
-
-
 def _finish_parity_init(window: object) -> None:
     if getattr(window, "_parity_ready", False):
         return
@@ -1048,7 +995,6 @@ def _finish_parity_init(window: object) -> None:
     _build_parity_dock(window)
     _wrap_project_methods(window)
     _build_menu(window)
-    _patch_special_callbacks(window)
     _install_validated_runner(window)
 
     window._parity_bridge.taskFinished.connect(
@@ -1092,18 +1038,3 @@ def _finish_parity_init(window: object) -> None:
     QTimer.singleShot(450, lambda: _offer_recovery(window, manual=False))
 
 
-def install_legacy_parity() -> None:
-    """Install a temporary migration adapter until Qt has full native parity."""
-    _patch_phase2_class()
-
-    from .qt_phase2 import VideoBatchQtPhase2Window
-    original_init = VideoBatchQtPhase2Window.__init__
-    if getattr(original_init, "_tk_parity_wrapped", False):
-        return
-
-    def init(self) -> None:
-        original_init(self)
-        QTimer.singleShot(0, lambda: _finish_parity_init(self))
-
-    init._tk_parity_wrapped = True
-    VideoBatchQtPhase2Window.__init__ = init

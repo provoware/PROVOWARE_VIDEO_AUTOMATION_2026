@@ -42,7 +42,7 @@ Only standalone user and release deliverables receive _save_. Source modules, CI
 
 ## Entwicklungsprüfung (separat vom historischen RC24-Nachweis)
 
-- **Kanonischer offener PR:** [#246](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/246). Die Parallel-PRs #247, #248 und #250 sind geschlossen; #250 wurde nicht gemergt.
+- **Historischer Integrationsstand:** PR #246 (Ordnerstruktur) und PR #251 (Qt-Layout) wurden integriert. PR #252 (Raster) bleibt ein Entwicklungsentwurf. Neuer QA-Bericht: `docs/design/VIDEOBATCH_QA_AUDIT_2026-10-20.md`.
 - **Letzter vollständig geprüfter Commit vor diesem Dokumentationsupdate:** `2ae2ae51fb1147b46150fe107b97a53e4a65495f` – alle acht GitHub-Prüfläufe erfolgreich.
 - **Entpacktes Benutzerpaket:** ZIP erstellt, Integrität geprüft, **7 Hauptordnerdateien**, interner Kommando-Einstieg über Bash erfolgreich getestet; [Paketprüflauf](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39339430217).
 - **Offen:** vollständige Offline-Erstinstallation und Qt-GUI-Start *aus dem entpackten Paket*, anschließende reale Kubuntu-Endabnahme; keinerlei neue Stable-Freigabe.

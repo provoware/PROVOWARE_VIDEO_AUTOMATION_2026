@@ -9,7 +9,6 @@ from PySide6.QtWidgets import (
     QApplication,
     QComboBox,
     QDialog,
-    QFileDialog,
     QFrame,
     QHBoxLayout,
     QLabel,
@@ -59,13 +58,8 @@ ACTIVE_TAB_TO_ROUTE = {
 ROUTE_TO_ACTIVE_TAB = {route: tab for tab, route in ACTIVE_TAB_TO_ROUTE.items()}
 ROUTE_TO_ACTIVE_TAB.update({"slideshow": 2, "project": 0})
 
-_DROP_PATCHED = False
-_PREVIEW_PATCHED = False
-_PHASE2_PATCHED = False
-
-_DROP_PATHS = DropList.paths
-_DROP_CLEAR = DropList.clear
-_DROP_SORT_BY = DropList.sort_by
+# Native DropList and PreviewPanel methods now own their UI lifecycle.
+# Retain the selection/sorting services below for existing project contracts.
 
 _QUICK_SORT_KEYS = {
     "name": "name_asc",
@@ -88,11 +82,7 @@ def _save_config(window: object | None, **changes: object) -> None:
 
 
 def _production_paths(widget: DropList) -> list[Path]:
-    paths = getattr(widget, "_parity_production_paths", None)
-    if paths is None:
-        paths = [Path(path) for path in _DROP_PATHS(widget)]
-        widget._parity_production_paths = list(paths)
-    return list(paths)
+    return widget.production_paths()
 
 
 def _visual_paths(widget: DropList) -> list[Path]:
@@ -106,108 +96,8 @@ def _visual_paths(widget: DropList) -> list[Path]:
 
 
 def _render_drop_view(widget: DropList) -> None:
-    selected = {
-        Path(str(item.data(Qt.ItemDataRole.UserRole)))
-        for item in widget.selectedItems()
-        if item.data(Qt.ItemDataRole.UserRole)
-    }
-    production = _production_paths(widget)
-    key = str(getattr(widget, "_parity_view_sort", "import") or "import")
-    displayed = sort_paths(production, key) if key != "import" else production
-    widget.blockSignals(True)
-    try:
-        _DROP_CLEAR(widget)
-        for path in displayed:
-            item = QListWidgetItem(path.name)
-            item.setData(Qt.ItemDataRole.UserRole, str(path))
-            item.setToolTip(str(path))
-            widget.addItem(item)
-            if path in selected:
-                item.setSelected(True)
-    finally:
-        widget.blockSignals(False)
-
-
-def _patch_drop_list() -> None:
-    global _DROP_PATCHED
-    if _DROP_PATCHED:
-        return
-
-    def paths(self: DropList) -> list[Path]:
-        return _production_paths(self)
-
-    def add_paths(self: DropList, paths_to_add: list[Path]) -> None:
-        production = _production_paths(self)
-        known = {str(path) for path in production}
-        added = False
-        for candidate in paths_to_add:
-            path = Path(candidate).expanduser()
-            if not path.is_file() or path.suffix.lower() not in self.extensions:
-                continue
-            resolved = Path(path.resolve())
-            if str(resolved) in known:
-                continue
-            production.append(resolved)
-            known.add(str(resolved))
-            added = True
-        self._parity_production_paths = production
-        if added:
-            _render_drop_view(self)
-            self.changed.emit()
-
-    def remove_selected(self: DropList) -> None:
-        selected = {
-            Path(str(item.data(Qt.ItemDataRole.UserRole)))
-            for item in self.selectedItems()
-            if item.data(Qt.ItemDataRole.UserRole)
-        }
-        if not selected:
-            return
-        self._parity_production_paths = [
-            path for path in _production_paths(self) if path not in selected
-        ]
-        _render_drop_view(self)
-        self.changed.emit()
-
-    def clear(self: DropList) -> None:
-        self._parity_production_paths = []
-        _DROP_CLEAR(self)
-
-    def sort_by(self: DropList, mode: str) -> None:
-        key = _QUICK_SORT_KEYS.get(mode, mode)
-        if key not in SORT_KEYS:
-            _DROP_SORT_BY(self, mode)
-            return
-        self._parity_view_sort = key
-        _render_drop_view(self)
-        window = self.window()
-        audio = self is getattr(window, "audio", None)
-        combo = getattr(
-            window,
-            "parity_audio_sort" if audio else "parity_media_sort",
-            None,
-        )
-        if combo is not None:
-            combo.blockSignals(True)
-            try:
-                _select_combo_data(combo, key)
-            finally:
-                combo.blockSignals(False)
-        _save_config(window, **{("audio_sort" if audio else "media_sort"): key})
-        if hasattr(window, "_project_dirty"):
-            window._project_dirty = True
-        if hasattr(window, "next_step"):
-            window.next_step.setText(
-                "Sortierung geändert: nur die Ansicht. "
-                "Die Produktionsreihenfolge bleibt unverändert."
-            )
-
-    DropList.paths = paths
-    DropList.add_paths = add_paths
-    DropList.remove_selected = remove_selected
-    DropList.clear = clear
-    DropList.sort_by = sort_by
-    _DROP_PATCHED = True
+    # Service entry point kept for existing project and view callbacks.
+    widget.render_view()
 
 
 class _PreviewFullscreenDialog(QDialog):
@@ -282,109 +172,7 @@ def _preview_save_zoom(panel: PreviewPanel) -> None:
         _save_config(window, preview_zoom=int(panel._parity_zoom))
 
 
-def _patch_preview_panel() -> None:
-    global _PREVIEW_PATCHED
-    if _PREVIEW_PATCHED:
-        return
-    original_init = PreviewPanel.__init__
-    original_render = PreviewPanel._render_pixmap
-
-    def render(self: PreviewPanel) -> None:
-        pixmap = self._pixmap
-        scroll = getattr(self, "_parity_scroll", None)
-        if pixmap is None or pixmap.isNull() or scroll is None:
-            original_render(self)
-            return
-        if getattr(self, "_parity_fit", True):
-            viewport = scroll.viewport().size()
-            target = pixmap.scaled(
-                max(64, viewport.width() - 12),
-                max(64, viewport.height() - 12),
-                Qt.AspectRatioMode.KeepAspectRatio,
-                Qt.TransformationMode.SmoothTransformation,
-            )
-        else:
-            factor = max(0.25, min(8.0, int(self._parity_zoom) / 100.0))
-            target = pixmap.scaled(
-                max(1, round(pixmap.width() * factor)),
-                max(1, round(pixmap.height() * factor)),
-                Qt.AspectRatioMode.KeepAspectRatio,
-                Qt.TransformationMode.SmoothTransformation,
-            )
-        self.image.setPixmap(target)
-        self.image.resize(target.size())
-
-    def set_zoom(self: PreviewPanel, value: int, *, persist: bool = True) -> None:
-        self._parity_zoom = max(25, min(800, int(value)))
-        self._parity_fit = False
-        if hasattr(self, "parity_zoom"):
-            self.parity_zoom.blockSignals(True)
-            self.parity_zoom.setValue(self._parity_zoom)
-            self.parity_zoom.blockSignals(False)
-        render(self)
-        if persist:
-            _preview_save_zoom(self)
-
-    def fit(self: PreviewPanel) -> None:
-        self._parity_fit = True
-        render(self)
-
-    def fullscreen(self: PreviewPanel) -> None:
-        if self._pixmap is None or self._pixmap.isNull():
-            return
-        _PreviewFullscreenDialog(self).exec()
-
-    def init(self: PreviewPanel, parent: QWidget | None = None) -> None:
-        original_init(self, parent)
-        self._parity_zoom = 100
-        self._parity_fit = True
-        layout = self.layout()
-        index = layout.indexOf(self.image)
-        layout.removeWidget(self.image)
-        self.image.setMinimumSize(64, 64)
-        self.image.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        scroll = QScrollArea(self)
-        scroll.setObjectName("previewScroll")
-        scroll.setWidgetResizable(False)
-        scroll.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        scroll.setFrameShape(QFrame.Shape.NoFrame)
-        scroll.setWidget(self.image)
-        layout.insertWidget(max(1, index), scroll, 1)
-        self._parity_scroll = scroll
-
-        controls = QHBoxLayout()
-        controls.addWidget(QLabel("Zoom"))
-        self.parity_zoom = QSpinBox()
-        self.parity_zoom.setRange(25, 800)
-        self.parity_zoom.setSingleStep(25)
-        self.parity_zoom.setSuffix(" %")
-        self.parity_zoom.setValue(100)
-        minus = QPushButton("−")
-        plus = QPushButton("+")
-        fit_button = QPushButton("Einpassen")
-        fullscreen_button = QPushButton("Vollbild")
-        controls.addWidget(minus)
-        controls.addWidget(self.parity_zoom)
-        controls.addWidget(plus)
-        controls.addWidget(fit_button)
-        controls.addWidget(fullscreen_button)
-        controls.addStretch()
-        layout.addLayout(controls)
-
-        self.parity_zoom.valueChanged.connect(lambda value: set_zoom(self, value))
-        minus.clicked.connect(lambda: set_zoom(self, self.parity_zoom.value() - 25))
-        plus.clicked.connect(lambda: set_zoom(self, self.parity_zoom.value() + 25))
-        fit_button.clicked.connect(lambda: fit(self))
-        fullscreen_button.clicked.connect(lambda: fullscreen(self))
-        self._parity_fit_button = fit_button
-        self._parity_fullscreen_button = fullscreen_button
-
-    PreviewPanel.__init__ = init
-    PreviewPanel._render_pixmap = render
-    PreviewPanel.set_parity_zoom = set_zoom
-    PreviewPanel.fit_parity_preview = fit
-    PreviewPanel.open_parity_fullscreen = fullscreen
-    _PREVIEW_PATCHED = True
+# Zoom/fit/fullscreen are native PreviewPanel methods, not class patches.
 
 
 def _remember_directory(window: object, key: str, selected: list[Path]) -> None:
@@ -397,34 +185,6 @@ def _initial_directory(window: object, key: str, fallback: Path) -> Path:
     cfg = _config(window)
     candidate = Path(str(cfg.get(key, fallback) or fallback)).expanduser()
     return candidate if candidate.is_dir() else fallback
-
-
-def _choose_audio(window: object) -> None:
-    initial = _initial_directory(window, "last_audio_dir", Path.home() / "Downloads")
-    files, _ = QFileDialog.getOpenFileNames(
-        window,
-        "Audiodateien",
-        str(initial),
-        "Audio (*.mp3 *.wav *.flac *.m4a *.aac *.ogg *.opus *.wma);;Alle Dateien (*)",
-    )
-    paths = [Path(value) for value in files]
-    if paths:
-        window.audio.add_paths(paths)
-        _remember_directory(window, "last_audio_dir", paths)
-
-
-def _choose_media(window: object) -> None:
-    initial = _initial_directory(window, "last_media_dir", Path.home() / "Downloads")
-    files, _ = QFileDialog.getOpenFileNames(
-        window,
-        "Bilder oder Videos",
-        str(initial),
-        "Medien (*.png *.jpg *.jpeg *.webp *.avif *.mp4 *.mkv *.mov *.webm *.mpeg *.mpg);;Alle Dateien (*)",
-    )
-    paths = [Path(value) for value in files]
-    if paths:
-        window.media.add_paths(paths)
-        _remember_directory(window, "last_media_dir", paths)
 
 
 def _browse(window: object, *, audio: bool) -> None:
@@ -441,16 +201,6 @@ def _browse(window: object, *, audio: bool) -> None:
         return
     (window.audio if audio else window.media).add_paths(paths)
     _remember_directory(window, key, paths)
-
-
-def _patch_media_browsers() -> None:
-    from .qt_phase2 import VideoBatchQtPhase2Window
-
-    # All visible import buttons must use the SAME preview-capable browser.
-    VideoBatchQtWindow._choose_audio = lambda self: _browse(self, audio=True)
-    VideoBatchQtWindow._choose_media = lambda self: _browse(self, audio=False)
-    VideoBatchQtPhase2Window._browse_audio = lambda self: _browse(self, audio=True)
-    VideoBatchQtPhase2Window._browse_media = lambda self: _browse(self, audio=False)
 
 
 def _select_combo_data(combo: QComboBox, value: object) -> None:
@@ -806,53 +556,22 @@ def _finish_completion(window: object) -> None:
     )
 
 
-def _patch_close_event() -> None:
-    global _PHASE2_PATCHED
-    if _PHASE2_PATCHED:
+def persist_parity_on_close(window: object) -> None:
+    """Persist Qt parity view preferences through the explicit Phase-3 close path."""
+    if not getattr(window, "_parity_completion_ready", False):
         return
-    from .qt_phase2 import VideoBatchQtPhase2Window
-
-    original_close = VideoBatchQtPhase2Window.closeEvent
-
-    def close_event(self, event) -> None:
-        if getattr(self, "_parity_completion_ready", False):
-            _save_config(
-                self,
-                window_geometry=f"{self.width()}x{self.height()}",
-                preview_zoom=int(getattr(self.preview_panel, "_parity_zoom", 100)),
-                area_zoom=dict(getattr(self, "_parity_area_zoom", DEFAULT_CONFIG["area_zoom"])),
-                audio_sort=str(getattr(self.audio, "_parity_view_sort", "import")),
-                media_sort=str(getattr(self.media, "_parity_view_sort", "import")),
-                active_tab=ROUTE_TO_ACTIVE_TAB.get(
-                    getattr(self, "_parity_active_workspace", "dashboard"), 0
-                ),
-            )
-        original_close(self, event)
-
-    VideoBatchQtPhase2Window.closeEvent = close_event
-    _PHASE2_PATCHED = True
+    _save_config(
+        window,
+        window_geometry=f"{window.width()}x{window.height()}",
+        preview_zoom=int(getattr(window.preview_panel, "_parity_zoom", 100)),
+        area_zoom=dict(getattr(window, "_parity_area_zoom", DEFAULT_CONFIG["area_zoom"])),
+        audio_sort=str(getattr(window.audio, "_parity_view_sort", "import")),
+        media_sort=str(getattr(window.media, "_parity_view_sort", "import")),
+        active_tab=ROUTE_TO_ACTIVE_TAB.get(
+            getattr(window, "_parity_active_workspace", "dashboard"), 0
+        ),
+    )
 
 
 def install_parity_completion() -> None:
-    """Finish the remaining proven Tk -> Qt parity gaps without reintroducing Tk."""
-    _patch_drop_list()
-    _patch_preview_panel()
-    _patch_media_browsers()
-    _patch_close_event()
-
-    from .qt_phase2 import VideoBatchQtPhase2Window
-
-    original_init = VideoBatchQtPhase2Window.__init__
-    if getattr(original_init, "_parity_completion_wrapped", False):
-        return
-
-    def init(self) -> None:
-        boot = load_config()
-        self._parity_boot_window_geometry = str(
-            boot.get("window_geometry", DEFAULT_CONFIG["window_geometry"])
-        )
-        original_init(self)
-        QTimer.singleShot(0, lambda: _finish_completion(self))
-
-    init._parity_completion_wrapped = True
-    VideoBatchQtPhase2Window.__init__ = init
+    """Keep still-needed widget compatibility adapters; never patch Qt lifecycle."""

@@ -573,7 +573,9 @@ class SlideshowPanel(QFrame):
         self._commit_order(ordered, "Manuelle Reihenfolge übernommen.", mode=ORDER_MANUAL)
 
     def _commit_order(self, ordered: list[Path], message: str, *, mode: str = ORDER_MANUAL) -> None:
-        del mode
+        # Formerly injected from qt_legacy_parity at module import time.
+        # Keep the actual sorting policy separate from explicit production order.
+        self._parity_order_mode = mode
         self.order_status.setText(message)
         self.orderChanged.emit(list(ordered))
         self._media = list(ordered) + [path for path in self._media if path.suffix.lower() not in IMAGE_EXTENSIONS]

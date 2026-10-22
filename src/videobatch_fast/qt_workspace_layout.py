@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtWidgets import (
     QFrame, QHBoxLayout, QLabel, QMessageBox, QProgressBar, QPushButton,
-    QStackedWidget, QVBoxLayout, QWidget,
+    QScrollArea, QStackedWidget, QVBoxLayout, QWidget,
 )
 
 from .qt_desktop_actions import open_output_folder
+from .qt_responsive_controls import ResponsiveControlRow
 
 
 class HelpPanel(QFrame):
@@ -34,7 +35,7 @@ class HelpPanel(QFrame):
 
         for label, description, route in (
             ("1 · Dateien auswählen", "Audio und passende Bilder oder Videos hinzufügen.", "media"),
-            ("2 · Videoeinstellungen", "Auflösung, Qualität, Bildeffekt und Zielordner oben ändern.", "effects"),
+            ("2 · Videoeinstellungen", "Auflösung, Qualität, Bildeffekt und Zielordner in Schritt 2 ändern.", "effects"),
             ("3 · Produktion öffnen", "Aufträge prüfen, starten und Fortschritt beobachten.", "queue"),
         ):
             button = QPushButton(label)
@@ -85,7 +86,7 @@ def _overview_page(window) -> QFrame:
     layout.addWidget(title)
     intro = QLabel(
         "Musik und Bilder auf der Seite Dateien wählen. Auflösung, Qualität, Effekt "
-        "und Zielordner sind immer oben erreichbar. Zum Starten Produktion öffnen."
+        "und Zielordner stehen in Schritt 2 bereit. Zum Starten Produktion öffnen."
     )
     intro.setObjectName("panelHint")
     intro.setWordWrap(True)
@@ -93,8 +94,8 @@ def _overview_page(window) -> QFrame:
 
     for label, description, route in (
         ("1 · Dateien", "Audio und Bilder/Videos auswählen und die Paarung prüfen.", "media"),
-        ("Erweiterte Einstellungen", "Selten benötigte Prüf- und Sicherheitsoptionen.", "effects"),
-        ("2 · Produktion", "Aufträge kontrollieren, starten und Fortschritt sehen.", "queue"),
+        ("2 · Ausgabe", "Einstellungen und Ausgabeziel auswählen.", "effects"),
+        ("3 · Produktion", "Aufträge kontrollieren, starten und Fortschritt sehen.", "queue"),
     ):
         row = QFrame()
         row.setObjectName("overviewStep")
@@ -158,6 +159,24 @@ def build_workflow_stack(window) -> QStackedWidget:
         "effects": window._settings_panel(),
         "queue": window._queue_panel(),
     }
+    # Die Alltags-Einstellungen gehören in die Ausgabe-Seite.
+    # Eine äußere vertikale Rollebene schützt alle erweiterten Bedienelemente
+    # bei 800×600 und 200 % vor dem Abschneiden.
+    effects_page = pages["effects"]
+    effects_page.layout().insertWidget(0, window.settings_view)
+    output_scroll = QScrollArea()
+    output_scroll.setObjectName("outputPageScroll")
+    output_scroll.setWidgetResizable(True)
+    output_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    output_scroll.setWidget(effects_page)
+    pages["effects"] = output_scroll
+    queue_page = pages["queue"]
+    queue_scroll = QScrollArea()
+    queue_scroll.setObjectName("productionPageScroll")
+    queue_scroll.setWidgetResizable(True)
+    queue_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    queue_scroll.setWidget(queue_page)
+    pages["queue"] = queue_scroll
     for page in pages.values():
         stack.addWidget(page)
     window.workflow_stack = stack
@@ -167,12 +186,26 @@ def build_workflow_stack(window) -> QStackedWidget:
 
 def set_workflow_route(window, route: str) -> None:
     pages = getattr(window, "_workflow_pages", {})
+    previous = getattr(window, "_active_workflow_route", None)
     page_key = route if route in pages else "dashboard"
     if page_key in pages:
         window.workflow_stack.setCurrentWidget(pages[page_key])
     window._active_workflow_route = route
+    # New pages always open at their explanatory heading. A previous focus or
+    # scroll position must not hide the first line at 175/200 % zoom.
+    if route != previous:
+        current_page = pages.get(page_key)
+        if isinstance(current_page, QScrollArea):
+            current_page.verticalScrollBar().setValue(0)
+            QTimer.singleShot(
+                0,
+                lambda page=current_page: page.verticalScrollBar().setValue(0),
+            )
+        footer_scroll = getattr(window, "action_footer_scroll", None)
+        if footer_scroll is not None:
+            footer_scroll.verticalScrollBar().setValue(0)
     tabs = getattr(window, "main_tabs", None)
-    positions = {"media": 0, "queue": 1, "effects": 2, "dashboard": 3}
+    positions = {"media": 0, "effects": 1, "queue": 2, "dashboard": 3}
     if tabs is not None and page_key in positions and tabs.currentIndex() != positions[page_key]:
         tabs.blockSignals(True)
         try:
@@ -189,7 +222,14 @@ def set_workflow_route(window, route: str) -> None:
     footer = getattr(window, "action_footer", None)
     if footer is not None:
         footer.setVisible(route in {"dashboard", "media", "effects", "queue"})
+    footer_scroll = getattr(window, "action_footer_scroll", None)
+    if footer_scroll is not None:
+        footer_scroll.setVisible(route in {"dashboard", "media", "effects", "queue"})
     production = route == "queue"
+    dashboard = getattr(window, "_compact_header_dashboard", None)
+    zoom = getattr(window, "view_scale", None)
+    if dashboard is not None and zoom is not None:
+        dashboard.setVisible(int(zoom.currentData() or 110) < 150 or production)
     for widget in getattr(window, "_production_footer_widgets", []):
         widget.setVisible(production)
 
@@ -244,8 +284,6 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     meters.addWidget(job_label, 1, 0)
     meters.addWidget(window.job_progress, 1, 1)
 
-    action_row = QHBoxLayout()
-    action_row.setSpacing(5)
     window.cancel = QPushButton("Abbrechen")
     window.cancel.setObjectName("danger")
     window.cancel.setAccessibleDescription("Bricht die laufende Verarbeitung kontrolliert ab.")
@@ -261,14 +299,12 @@ def build_footer(window, outer: QVBoxLayout) -> None:
         "Die Ausgabe landet getrennt im Probevideo-Ordner."
     )
     window.probe_button.setAccessibleName("Kurzes Probevideo aus dem ersten Dateipaar")
-    action_row.addWidget(window.cancel)
-    action_row.addWidget(window.probe_button)
-    action_row.addWidget(window.start)
-    layout.addLayout(action_row)
+    action_row = ResponsiveControlRow((window.cancel, window.probe_button, window.start))
+    window._responsive_control_rows.append(action_row)
+    layout.addWidget(action_row)
 
     result_label = QLabel("Nach Abschluss")
-    result_row = QHBoxLayout()
-    result_row.addWidget(result_label)
+
     window.open_output = QPushButton("Ausgabeordner öffnen")
     window.open_output.setAccessibleDescription("Öffnet den Ordner mit den fertigen Videos.")
     window.open_output.setEnabled(False)
@@ -280,15 +316,22 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     window.open_probe_button = QPushButton("Probevideo öffnen")
     window.open_probe_button.setVisible(False)
     window.open_probe_button.setEnabled(False)
-    result_row.addWidget(window.open_output)
-    result_row.addWidget(window.open_probe_button)
-    result_row.addWidget(window.show_result_log)
-    result_row.addStretch()
-    layout.addLayout(result_row)
+    result_row = ResponsiveControlRow((result_label, window.open_output, window.open_probe_button, window.show_result_log))
+    window._responsive_control_rows.append(result_row)
+    layout.addWidget(result_row)
 
     window._production_footer_widgets = [
         window.activity_detail,
         window.cancel, window.probe_button, window.start, result_label,
         window.open_output, window.open_probe_button, window.show_result_log,
     ]
-    outer.addWidget(footer)
+    # At 800x600 and 200% zoom, production actions stay keyboard- and scroll-reachable.
+    footer_scroll = QScrollArea()
+    footer_scroll.setObjectName("actionFooterScroll")
+    footer_scroll.setWidgetResizable(True)
+    footer_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    footer_scroll.setMinimumHeight(52)
+    footer_scroll.setMaximumHeight(210)
+    footer_scroll.setWidget(footer)
+    window.action_footer_scroll = footer_scroll
+    outer.addWidget(footer_scroll)
