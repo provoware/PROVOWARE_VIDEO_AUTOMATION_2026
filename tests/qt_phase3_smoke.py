@@ -8,11 +8,12 @@ from pathlib import Path
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QPoint
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 from videobatch_fast.config import load_config
 from videobatch_fast.dashboard_settings import load_settings
+from videobatch_fast.project_state import append_project_note, project_notes_file
 from videobatch_fast.qt_legacy_parity import (
     _archive_last_results,
     _plugin_scan,
@@ -115,6 +116,62 @@ def main() -> int:
 
         # Real Qt widgets -> single settings model -> BatchOptions -> saved JSON.
         assert window.main_tabs.count() == 4
+        assert window.main_tabs.tabText(3) == "Dashboard"
+        window.main_tabs.setCurrentIndex(3)
+        app.processEvents()
+        notes_path = project_notes_file(window._project_file)
+        assert window.dashboard_note_file.text().endswith(str(notes_path))
+        window.dashboard_note_input.setText("Erste Notiz per Enter")
+        window.dashboard_note_input.returnPressed.emit()
+        assert window.dashboard_note_input.text() == ""
+        assert "Gespeichert:" in window.dashboard_note_status.text()
+        assert notes_path.exists()
+        first = notes_path.read_text(encoding="utf-8").splitlines()
+        assert len(first) == 1 and first[0].startswith("[20")
+        assert first[0].endswith("Erste Notiz per Enter")
+        window.dashboard_note_input.setText("Zweite Notiz per Knopf")
+        window.dashboard_note_button.click()
+        lines = notes_path.read_text(encoding="utf-8").splitlines()
+        assert len(lines) == 2 and lines[0] == first[0]
+        assert lines[1].endswith("Zweite Notiz per Knopf")
+        # A custom project directory gets its own fixed TXT; an unfinished
+        # pre-existing last line is preserved and separated from the new entry.
+        custom_project = temporary_path / "eigener_projektordner" / "projekt.vbfast.json"
+        custom_project.parent.mkdir()
+        custom_notes = project_notes_file(custom_project)
+        custom_notes.write_bytes(b"Alter Eintrag ohne Zeilenumbruch")
+        appended_path, _stamp = append_project_note(custom_project, "Neue Notiz")
+        assert appended_path == custom_notes
+        custom_lines = custom_notes.read_text(encoding="utf-8").splitlines()
+        assert len(custom_lines) == 2
+        assert custom_lines[0] == "Alter Eintrag ohne Zeilenumbruch"
+        assert custom_lines[1].endswith("Neue Notiz")
+        window.dashboard_note_input.setText("   ")
+        window.dashboard_note_button.click()
+        assert "Bitte zuerst" in window.dashboard_note_status.text()
+        assert notes_path.read_text(encoding="utf-8").splitlines() == lines
+        missing_project = temporary_path / "nicht_vorhanden" / "projekt.vbfast.json"
+        window._project_file = missing_project
+        window.dashboard_note_input.setText("Bei Fehler erhalten")
+        with patch.object(QMessageBox, "warning") as warning:
+            window.dashboard_note_button.click()
+        warning.assert_called_once()
+        assert window.dashboard_note_input.text() == "Bei Fehler erhalten"
+        assert "Nicht gespeichert" in window.dashboard_note_status.text()
+        window._project_file = notes_path.parent / "aktuelles_projekt.vbfast.json"
+        window.view_scale.setCurrentIndex(window.view_scale.findData(200))
+        window.resize(800, 600)
+        app.processEvents()
+        assert window.main_tabs.tabText(3) == "Notizen"
+        assert sum(window.main_tabs.tabRect(i).width() for i in range(4)) <= window.main_tabs.width()
+        assert not window.dashboard_note_hint.isVisibleTo(window)
+        input_bottom = window.dashboard_note_input.mapTo(window, QPoint(0, 0)).y() + window.dashboard_note_input.height()
+        footer_top = window.action_footer_scroll.mapTo(window, QPoint(0, 0)).y()
+        assert input_bottom <= footer_top, (input_bottom, footer_top)
+        window.view_scale.setCurrentIndex(window.view_scale.findData(110))
+        window.resize(1360, 820)
+        window.main_tabs.setCurrentIndex(0)
+        app.processEvents()
         window.resolution.setCurrentIndex(window.resolution.findData("1920×1080"))
         window.quality.setCurrentIndex(window.quality.findData("maximum"))
         window.effect.setCurrentIndex(window.effect.findData("vivid"))

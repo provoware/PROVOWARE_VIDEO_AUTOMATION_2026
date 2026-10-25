@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "81471c479d1fbbdc8c0dd15eb5b603c560ac8f53",
+      "blob_sha1": "1da5f56e1418a17ad638e89d82eb8690de10a36d",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -214,11 +214,11 @@
       "lifecycle": "active"
     },
     {
+      "path": "config/contracts/TOOLCHAIN_CONTRACT.json",
+      "mode": "100644",
       "blob_sha1": "da7b6c43371cb3084d8991a09599f94017cedf3e",
       "category": "project_contract",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "config/contracts/TOOLCHAIN_CONTRACT.json"
+      "lifecycle": "active"
     },
     {
       "path": "config/contracts/manifest.json",
@@ -242,18 +242,18 @@
       "lifecycle": "active"
     },
     {
+      "path": "config/requirements/requirements-toolchain.lock",
+      "mode": "100644",
       "blob_sha1": "4a9f6002e72b3eb85cca28a374782be3f5330360",
       "category": "project_contract",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "config/requirements/requirements-toolchain.lock"
+      "lifecycle": "active"
     },
     {
+      "path": "config/requirements/requirements.lock",
+      "mode": "100644",
       "blob_sha1": "08ed1713ffc528d4e98f3b0ba5a8366eef059787",
       "category": "project_contract",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "config/requirements/requirements.lock"
+      "lifecycle": "active"
     },
     {
       "path": "config/requirements/requirements.txt",
@@ -529,11 +529,11 @@
       "lifecycle": "active"
     },
     {
+      "path": "docs/OPTIMIERUNGSPROTOKOLL.md",
+      "mode": "100644",
       "blob_sha1": "9d78db7d54283c8cdf0259dde8a2501fc4b98ac8",
       "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/OPTIMIERUNGSPROTOKOLL.md"
+      "lifecycle": "active"
     },
     {
       "path": "docs/PHASE2_FREEZE.md",
@@ -1488,11 +1488,11 @@
       "lifecycle": "active"
     },
     {
+      "path": "pyproject.toml",
+      "mode": "100644",
       "blob_sha1": "3ee0b10676fe12890651222175dbf82c404929be",
       "category": "project_contract",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "pyproject.toml"
+      "lifecycle": "active"
     },
     {
       "path": "registries/ARTIFACT_ROLE_REGISTRY.json",
@@ -2916,11 +2916,11 @@
       "lifecycle": "active"
     },
     {
+      "path": "src/videobatch_fast/paths.py",
+      "mode": "100644",
       "blob_sha1": "7ac5b16b9f15fbaf7d91df3165db0bf0132d2b06",
       "category": "application",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "src/videobatch_fast/paths.py"
+      "lifecycle": "active"
     },
     {
       "path": "src/videobatch_fast/permission_service.py",
@@ -3023,7 +3023,7 @@
     {
       "path": "src/videobatch_fast/project_state.py",
       "mode": "100644",
-      "blob_sha1": "19b58cb6fb41fa8bfe1a1f4562ebd30f6a521b99",
+      "blob_sha1": "6c67e2b63810c43e8bf32a169ba797c94e65ea38",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3086,7 +3086,7 @@
     {
       "path": "src/videobatch_fast/qt_main_layout.py",
       "mode": "100644",
-      "blob_sha1": "9630632d2ba1bdae9a1d80c39bbff53213503658",
+      "blob_sha1": "5d8a05fb8462cdaebf72c831fa5bc7877489363d",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3205,7 +3205,7 @@
     {
       "path": "src/videobatch_fast/qt_workspace_layout.py",
       "mode": "100644",
-      "blob_sha1": "2e2852c31d900f3fcb6d0fa5e2482b868f845563",
+      "blob_sha1": "3f6293e5c44b19f55d0003dc83568c9b16d238c3",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3779,7 +3779,7 @@
     {
       "path": "tests/qt_phase3_smoke.py",
       "mode": "100644",
-      "blob_sha1": "b9b1bc74e27a9812ec18db70262fe37de1ce501b",
+      "blob_sha1": "cd139d2dff51129b0fe09f628610a371f1ed9e07",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4057,11 +4057,11 @@
       "lifecycle": "development"
     },
     {
+      "path": "tests/test_paths_permission_safety.py",
+      "mode": "100644",
       "blob_sha1": "76dd7dc8545125ebb1f233551c225fcd3f46ad8f",
       "category": "tests",
-      "lifecycle": "development",
-      "mode": "100644",
-      "path": "tests/test_paths_permission_safety.py"
+      "lifecycle": "development"
     },
     {
       "path": "tests/test_persistence_v1_contract.py",
@@ -4197,11 +4197,11 @@
       "lifecycle": "development"
     },
     {
+      "path": "tests/test_qt_phase2_contract.py",
+      "mode": "100644",
       "blob_sha1": "07dfd01f7260c9182982636a1fcd9e86187231f3",
       "category": "tests",
-      "lifecycle": "development",
-      "mode": "100644",
-      "path": "tests/test_qt_phase2_contract.py"
+      "lifecycle": "development"
     },
     {
       "path": "tests/test_qt_phase3_contract.py",
@@ -4274,11 +4274,11 @@
       "lifecycle": "development"
     },
     {
+      "path": "tests/test_quality_toolchain_resolved_lock_2_8_3.py",
+      "mode": "100644",
       "blob_sha1": "a189295dcd0a36fb4334771d237f73b2392510a1",
       "category": "tests",
-      "lifecycle": "development",
-      "mode": "100644",
-      "path": "tests/test_quality_toolchain_resolved_lock_2_8_3.py"
+      "lifecycle": "development"
     },
     {
       "path": "tests/test_quality_wheelhouse_2_8_3.py",

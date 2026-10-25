@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +13,7 @@ from .safe_io import atomic_write_json, quarantine_file
 from .slideshow_sequence import ORDER_MANUAL, ORDER_MODES
 
 PROJECT_SCHEMA_VERSION = 3
+PROJECT_NOTES_FILENAME = "VideoBatch_Notizen.txt"
 
 DEFAULT_CALENDAR_COLORS = ["none", "success", "warning", "error", "info", "active"]
 CALENDAR_ENTRY_TYPES = ["note", "task", "reminder", "deadline"]
@@ -25,6 +27,36 @@ def projects_dir() -> Path:
 
 def default_project_file() -> Path:
     return projects_dir() / "aktuelles_projekt.vbfast.json"
+
+
+def project_notes_file(project_file: Path) -> Path:
+    """Keep the append-only note file next to the active project document."""
+    return Path(project_file).expanduser().parent / PROJECT_NOTES_FILENAME
+
+
+def append_project_note(project_file: Path, note: str, *, now: datetime | None = None) -> tuple[Path, str]:
+    """Append one dated line without replacing existing notes or source media."""
+    content = " ".join(str(note).split())
+    if not content:
+        raise ValueError("Bitte zuerst eine Notiz eingeben.")
+    if len(content) > 500:
+        raise ValueError("Die Notiz darf höchstens 500 Zeichen enthalten.")
+    target = project_notes_file(project_file)
+    if not target.parent.is_dir():
+        raise FileNotFoundError(f"Projektordner nicht erreichbar: {target.parent}")
+    timestamp = (now or datetime.now().astimezone()).astimezone().isoformat(timespec="seconds")
+    entry = f"[{timestamp}] {content}\n".encode("utf-8")
+    # Binary append permits checking an existing last line without altering it.
+    with target.open("a+b") as stream:
+        stream.seek(0, os.SEEK_END)
+        has_content = stream.tell() > 0
+        if has_content:
+            stream.seek(-1, os.SEEK_END)
+        separator = b"\n" if has_content and stream.read(1) != b"\n" else b""
+        stream.write(separator + entry)
+        stream.flush()
+        os.fsync(stream.fileno())
+    return target, timestamp
 
 
 def _normalize_paths(values: Any) -> list[str]:

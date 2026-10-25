@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtWidgets import (
-    QFrame, QHBoxLayout, QLabel, QMessageBox, QProgressBar, QPushButton,
+    QFrame, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QProgressBar, QPushButton,
     QScrollArea, QStackedWidget, QVBoxLayout, QWidget,
 )
 
+from .project_state import append_project_note, default_project_file, project_notes_file
 from .qt_desktop_actions import open_output_folder
 from .qt_responsive_controls import ResponsiveControlRow
+from .qt_ui_polish import text_label
 
 
 class HelpPanel(QFrame):
@@ -81,7 +83,7 @@ def _overview_page(window) -> QFrame:
     layout = QVBoxLayout(panel)
     layout.setContentsMargins(18, 16, 18, 16)
     layout.setSpacing(10)
-    title = QLabel("Hilfe und Werkzeuge")
+    title = QLabel("Dashboard · Schnellnotiz")
     title.setObjectName("section")
     layout.addWidget(title)
     intro = QLabel(
@@ -111,7 +113,81 @@ def _overview_page(window) -> QFrame:
         row_layout.addWidget(button)
         row_layout.addWidget(hint, 1)
         layout.addWidget(row)
-    tools_hint = QLabel("Zusätzliche Werkzeuge")
+
+    note_card = QFrame()
+    note_card.setObjectName("sourceCard")
+    note_layout = QVBoxLayout(note_card)
+    note_layout.setContentsMargins(10, 10, 10, 10)
+    note_layout.setSpacing(6)
+    note_title = QLabel("Schnellnotiz zum Projekt")
+    note_title.setObjectName("section")
+    note_layout.addWidget(note_title)
+    note_hint = text_label(
+        "Eine Zeile eingeben und mit Enter oder „Anhängen“ speichern. "
+        "Bestehende Notizen bleiben erhalten.", "panelHint", wrap=True,
+    )
+    window.dashboard_note_hint = note_hint
+    note_layout.addWidget(note_hint)
+    note_input = QLineEdit()
+    note_input.setObjectName("dashboardNoteInput")
+    note_input.setMaxLength(500)
+    note_input.setPlaceholderText("Notiz eingeben …")
+    note_input.setAccessibleName("Neue Projektnotiz")
+    note_input.setAccessibleDescription("Eine Zeile. Mit Enter oder der Schaltfläche zeitgestempelt speichern.")
+    note_input.setToolTip("Enter hängt die Notiz mit Datum und Uhrzeit an die TXT-Datei an.")
+    note_title.setBuddy(note_input)
+    note_button = QPushButton("Notiz anhängen")
+    note_button.setObjectName("secondary")
+    note_button.setAccessibleDescription("Hängt die Eingabe mit Zeitstempel an die feste Projekt-TXT an.")
+    note_row = ResponsiveControlRow((note_input, note_button))
+    window._responsive_control_rows.append(note_row)
+    note_layout.addWidget(note_row)
+    note_status = text_label("Bereit für eine Notiz.", "panelHint", wrap=True)
+    note_status.setAccessibleName("Speicherstatus der Projektnotiz")
+    note_layout.addWidget(note_status)
+    note_file = text_label("", "helperText", wrap=True)
+    note_file.setAccessibleName("Ablageort der Projektnotizen")
+    note_layout.addWidget(note_file)
+    window.dashboard_note_input = note_input
+    window.dashboard_note_button = note_button
+    window.dashboard_note_status = note_status
+    window.dashboard_note_file = note_file
+
+    def refresh_note_file() -> None:
+        path = project_notes_file(getattr(window, "_project_file", None) or default_project_file())
+        note_file.setText(f"TXT-Datei: {path}")
+        note_file.setToolTip(str(path))
+
+    def save_note() -> None:
+        try:
+            target, stamp = append_project_note(
+                getattr(window, "_project_file", None) or default_project_file(), note_input.text(),
+            )
+        except ValueError as exc:
+            note_status.setText(str(exc))
+            note_input.setFocus()
+            return
+        except OSError as exc:
+            note_status.setText("Nicht gespeichert · Bitte Projektordner und Schreibrechte prüfen.")
+            QMessageBox.warning(
+                panel, "Notiz nicht gespeichert",
+                "Die TXT-Datei konnte nicht ergänzt werden. Die Eingabe bleibt erhalten.\n\n"
+                f"Grund: {exc}",
+            )
+            return
+        note_input.clear()
+        note_status.setText(f"Gespeichert: {stamp} · Eintrag angehängt.")
+        note_file.setText(f"TXT-Datei: {target}")
+        note_input.setFocus()
+
+    window.refresh_dashboard_note_file = refresh_note_file
+    refresh_note_file()
+    note_input.returnPressed.connect(save_note)
+    note_button.clicked.connect(save_note)
+    # The requested one-line note stays near the top, before optional help links.
+    layout.insertWidget(1, note_card)
+
+    tools_hint = QLabel("Hilfe / Werkzeuge")
     tools_hint.setObjectName("section")
     layout.addWidget(tools_hint)
     hash_help = QPushButton("Hilfe: SHA-256 und Prüfstatus verstehen")
@@ -159,6 +235,12 @@ def build_workflow_stack(window) -> QStackedWidget:
         "effects": window._settings_panel(),
         "queue": window._queue_panel(),
     }
+    dashboard_scroll = QScrollArea()
+    dashboard_scroll.setObjectName("dashboardPageScroll")
+    dashboard_scroll.setWidgetResizable(True)
+    dashboard_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    dashboard_scroll.setWidget(pages["dashboard"])
+    pages["dashboard"] = dashboard_scroll
     # Die Alltags-Einstellungen gehören in die Ausgabe-Seite.
     # Eine äußere vertikale Rollebene schützt alle erweiterten Bedienelemente
     # bei 800×600 und 200 % vor dem Abschneiden.
@@ -191,6 +273,8 @@ def set_workflow_route(window, route: str) -> None:
     if page_key in pages:
         window.workflow_stack.setCurrentWidget(pages[page_key])
     window._active_workflow_route = route
+    if route == "dashboard" and hasattr(window, "refresh_dashboard_note_file"):
+        window.refresh_dashboard_note_file()
     # New pages always open at their explanatory heading. A previous focus or
     # scroll position must not hide the first line at 175/200 % zoom.
     if route != previous:
