@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
+import sys
 import tempfile
 from unittest.mock import patch
 from pathlib import Path
@@ -14,6 +16,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 from videobatch_fast.config import load_config
 from videobatch_fast.dashboard_settings import load_settings
 from videobatch_fast.project_state import append_project_note, project_notes_file
+from videobatch_fast.safe_io import SafeIoError
 from videobatch_fast.qt_legacy_parity import (
     _archive_last_results,
     _plugin_scan,
@@ -146,6 +149,40 @@ def main() -> int:
         assert len(custom_lines) == 2
         assert custom_lines[0] == "Alter Eintrag ohne Zeilenumbruch"
         assert custom_lines[1].endswith("Neue Notiz")
+        # An interrupted/short write must never leave half of a dated line.
+        limited_project = temporary_path / "begrenzter_speicher" / "projekt.vbfast.json"
+        limited_project.parent.mkdir()
+        limited_notes = project_notes_file(limited_project)
+        previous_notes = b"Bestehende Notiz\n"
+        limited_notes.write_bytes(previous_notes)
+        limited_script = (
+            "import resource, signal, sys\n"
+            "from pathlib import Path\n"
+            "from videobatch_fast.project_state import append_project_note\n"
+            "project = Path(sys.argv[1])\n"
+            "hard = resource.getrlimit(resource.RLIMIT_FSIZE)[1]\n"
+            "resource.setrlimit(resource.RLIMIT_FSIZE, (int(sys.argv[2]), hard))\n"
+            "signal.signal(signal.SIGXFSZ, signal.SIG_IGN)\n"
+            "try:\n"
+            "    append_project_note(project, 'Darf nicht unvollständig gespeichert werden')\n"
+            "except OSError:\n"
+            "    print('EXPECTED_CAPACITY_FAILURE')\n"
+            "else:\n"
+            "    raise AssertionError('Schreiben trotz Dateigrößenlimit erfolgreich')\n"
+        )
+        test_env = dict(os.environ)
+        test_env["PYTHONPATH"] = str(Path(__file__).resolve().parents[1] / "src")
+        limited_run = subprocess.run(
+            [sys.executable, "-c", limited_script, str(limited_project), str(len(previous_notes) + 18)],
+            env=test_env, capture_output=True, text=True, timeout=15, check=True,
+        )
+        assert "EXPECTED_CAPACITY_FAILURE" in limited_run.stdout
+        assert limited_notes.read_bytes() == previous_notes
+        assert not list(limited_notes.parent.glob(".VideoBatch_Notizen.txt.*.tmp"))
+        append_project_note(limited_project, "Nach Fehler erfolgreich wiederholt")
+        recovered = limited_notes.read_text(encoding="utf-8").splitlines()
+        assert recovered[0] == "Bestehende Notiz" and len(recovered) == 2
+        assert recovered[1].endswith("Nach Fehler erfolgreich wiederholt")
         # A crafted notes link must not append bytes to original media.
         unsafe_project = temporary_path / "unsicherer_projektordner" / "projekt.vbfast.json"
         unsafe_project.parent.mkdir()
@@ -176,6 +213,13 @@ def main() -> int:
         warning.assert_called_once()
         assert window.dashboard_note_input.text() == "Bei Fehler erhalten"
         assert "Nicht gespeichert" in window.dashboard_note_status.text()
+        window.dashboard_note_input.setText("Unsicherer Speicherstatus")
+        with patch("videobatch_fast.qt_workspace_layout.append_project_note", side_effect=SafeIoError("Test")):
+            with patch.object(QMessageBox, "warning") as warning:
+                window.dashboard_note_button.click()
+        warning.assert_called_once()
+        assert window.dashboard_note_input.text() == "Unsicherer Speicherstatus"
+        assert "Speicherstatus unklar" in window.dashboard_note_status.text()
         window._project_file = notes_path.parent / "aktuelles_projekt.vbfast.json"
         # Both Save As and project navigation must show the actual target directory.
         saved_as_project = temporary_path / "gespeichert_unter" / "projekt.vbfast.json"

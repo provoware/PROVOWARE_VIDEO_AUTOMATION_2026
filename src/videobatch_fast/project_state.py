@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import fcntl
 import json
 import os
 import stat
@@ -10,7 +11,7 @@ from typing import Any
 
 from .layout_profiles import normalize_layout_store
 from .paths import ensure_app_dirs, state_dir
-from .safe_io import atomic_write_json, quarantine_file
+from .safe_io import atomic_write_bytes, atomic_write_json, quarantine_file
 from .slideshow_sequence import ORDER_MANUAL, ORDER_MODES
 
 PROJECT_SCHEMA_VERSION = 3
@@ -35,6 +36,19 @@ def project_notes_file(project_file: Path) -> Path:
     return Path(project_file).expanduser().parent / PROJECT_NOTES_FILENAME
 
 
+def _read_existing_notes(target: Path) -> tuple[bytes, int]:
+    """Refuse redirected targets before copying their content into an atomic update."""
+    try:
+        descriptor = os.open(target, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    except FileNotFoundError:
+        return b"", 0o600
+    with os.fdopen(descriptor, "rb") as stream:
+        info = os.fstat(stream.fileno())
+        if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+            raise OSError(f"Unsicheres Notizziel (kein einzelner regulärer Dateieintrag): {target}")
+        return stream.read(), stat.S_IMODE(info.st_mode)
+
+
 def append_project_note(project_file: Path, note: str, *, now: datetime | None = None) -> tuple[Path, str]:
     """Append one dated line without replacing existing notes or source media."""
     content = " ".join(str(note).split())
@@ -47,21 +61,15 @@ def append_project_note(project_file: Path, note: str, *, now: datetime | None =
         raise FileNotFoundError(f"Projektordner nicht erreichbar: {target.parent}")
     timestamp = (now or datetime.now().astimezone()).astimezone().isoformat(timespec="seconds")
     entry = f"[{timestamp}] {content}\n".encode("utf-8")
-    # A pre-existing symlink or hardlink must never redirect notes into source media.
-    flags = os.O_RDWR | os.O_APPEND | os.O_CREAT | os.O_NOFOLLOW | os.O_NONBLOCK
-    descriptor = os.open(target, flags, 0o600)
-    with os.fdopen(descriptor, "r+b") as stream:
-        info = os.fstat(stream.fileno())
-        if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
-            raise OSError(f"Unsicheres Notizziel (kein einzelner regulärer Dateieintrag): {target}")
-        stream.seek(0, os.SEEK_END)
-        has_content = stream.tell() > 0
-        if has_content:
-            stream.seek(-1, os.SEEK_END)
-        separator = b"\n" if has_content and stream.read(1) != b"\n" else b""
-        stream.write(separator + entry)
-        stream.flush()
-        os.fsync(stream.fileno())
+    # Lock the stable directory inode: the notes inode changes at atomic replace.
+    directory_fd = os.open(target.parent, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        fcntl.flock(directory_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        previous, mode = _read_existing_notes(target)
+        separator = b"\n" if previous and not previous.endswith(b"\n") else b""
+        atomic_write_bytes(target, previous + separator + entry, mode=mode)
+    finally:
+        os.close(directory_fd)
     return target, timestamp
 
 

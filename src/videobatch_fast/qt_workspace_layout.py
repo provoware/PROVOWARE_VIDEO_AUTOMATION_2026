@@ -10,6 +10,7 @@ from .project_state import append_project_note, default_project_file, project_no
 from .qt_desktop_actions import open_output_folder
 from .qt_responsive_controls import ResponsiveControlRow
 from .qt_ui_polish import text_label
+from .safe_io import SafeIoError
 
 
 class HelpPanel(QFrame):
@@ -166,6 +167,15 @@ def _overview_page(window) -> QFrame:
         except ValueError as exc:
             note_status.setText(str(exc))
             note_input.setFocus()
+            return
+        except SafeIoError as exc:
+            note_status.setText("Speicherstatus unklar · TXT-Datei vor erneutem Speichern prüfen.")
+            QMessageBox.warning(
+                panel, "Notiz: Speicherstatus unklar",
+                "Die dauerhafte Dateisynchronisierung ist fehlgeschlagen. "
+                "Der Eintrag könnte bereits in der TXT-Datei stehen. "
+                f"Bitte vor einem erneuten Versuch nachsehen.\n\nGrund: {exc}",
+            )
             return
         except OSError as exc:
             note_status.setText("Nicht gespeichert · Bitte Projektordner und Schreibrechte prüfen.")

@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "b8c4a527330e793651a9ec8dd8b4d50827d05fdf",
+      "blob_sha1": "309ea324e75c06bd0c90d80ac9f456a0a0e79662",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -3023,7 +3023,7 @@
     {
       "path": "src/videobatch_fast/project_state.py",
       "mode": "100644",
-      "blob_sha1": "1c5befe8912766dba5da178f735b43d0466a712c",
+      "blob_sha1": "f9c950808130751c3f6a7f50d79e7206310b77e0",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3205,7 +3205,7 @@
     {
       "path": "src/videobatch_fast/qt_workspace_layout.py",
       "mode": "100644",
-      "blob_sha1": "dc74b6611a83f0896aea53965d1c48322cdb0b09",
+      "blob_sha1": "5884c3d67cf28e2fb39fb3cbc1f7030aa98e8d4f",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3779,7 +3779,7 @@
     {
       "path": "tests/qt_phase3_smoke.py",
       "mode": "100644",
-      "blob_sha1": "95173307ed17035ced16882d08579f8fe1b17cdd",
+      "blob_sha1": "afc687056f7ea4894983670fee2258fb7289c342",
       "category": "tests",
       "lifecycle": "development"
     },
