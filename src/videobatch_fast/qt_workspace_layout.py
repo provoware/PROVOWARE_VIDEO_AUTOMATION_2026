@@ -273,7 +273,7 @@ def set_workflow_route(window, route: str) -> None:
     if page_key in pages:
         window.workflow_stack.setCurrentWidget(pages[page_key])
     window._active_workflow_route = route
-    if route == "dashboard" and hasattr(window, "refresh_dashboard_note_file"):
+    if page_key == "dashboard" and hasattr(window, "refresh_dashboard_note_file"):
         window.refresh_dashboard_note_file()
     # New pages always open at their explanatory heading. A previous focus or
     # scroll position must not hide the first line at 175/200 % zoom.

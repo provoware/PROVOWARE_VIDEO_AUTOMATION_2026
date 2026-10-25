@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import stat
 import time
 from datetime import datetime
 from pathlib import Path
@@ -46,8 +47,13 @@ def append_project_note(project_file: Path, note: str, *, now: datetime | None =
         raise FileNotFoundError(f"Projektordner nicht erreichbar: {target.parent}")
     timestamp = (now or datetime.now().astimezone()).astimezone().isoformat(timespec="seconds")
     entry = f"[{timestamp}] {content}\n".encode("utf-8")
-    # Binary append permits checking an existing last line without altering it.
-    with target.open("a+b") as stream:
+    # A pre-existing symlink or hardlink must never redirect notes into source media.
+    flags = os.O_RDWR | os.O_APPEND | os.O_CREAT | os.O_NOFOLLOW | os.O_NONBLOCK
+    descriptor = os.open(target, flags, 0o600)
+    with os.fdopen(descriptor, "r+b") as stream:
+        info = os.fstat(stream.fileno())
+        if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+            raise OSError(f"Unsicheres Notizziel (kein einzelner regulärer Dateieintrag): {target}")
         stream.seek(0, os.SEEK_END)
         has_content = stream.tell() > 0
         if has_content:

@@ -146,6 +146,24 @@ def main() -> int:
         assert len(custom_lines) == 2
         assert custom_lines[0] == "Alter Eintrag ohne Zeilenumbruch"
         assert custom_lines[1].endswith("Neue Notiz")
+        # A crafted notes link must not append bytes to original media.
+        unsafe_project = temporary_path / "unsicherer_projektordner" / "projekt.vbfast.json"
+        unsafe_project.parent.mkdir()
+        original_media = unsafe_project.parent / "original.mp4"
+        original_media.write_bytes(b"ORIGINAL_MEDIEN_DATEN")
+        unsafe_notes = project_notes_file(unsafe_project)
+        unsafe_notes.symlink_to(original_media)
+        for link_type in ("symlink", "hardlink"):
+            if link_type == "hardlink":
+                unsafe_notes.unlink()
+                os.link(original_media, unsafe_notes)
+            try:
+                append_project_note(unsafe_project, "Darf nicht in Medien landen")
+            except OSError:
+                pass
+            else:
+                raise AssertionError(f"Unsicheres Notizziel wurde geöffnet: {link_type}")
+            assert original_media.read_bytes() == b"ORIGINAL_MEDIEN_DATEN"
         window.dashboard_note_input.setText("   ")
         window.dashboard_note_button.click()
         assert "Bitte zuerst" in window.dashboard_note_status.text()
@@ -159,6 +177,15 @@ def main() -> int:
         assert window.dashboard_note_input.text() == "Bei Fehler erhalten"
         assert "Nicht gespeichert" in window.dashboard_note_status.text()
         window._project_file = notes_path.parent / "aktuelles_projekt.vbfast.json"
+        # Both Save As and project navigation must show the actual target directory.
+        saved_as_project = temporary_path / "gespeichert_unter" / "projekt.vbfast.json"
+        saved_as_project.parent.mkdir()
+        assert window._persist_project_to(saved_as_project, silent=True)
+        assert window.dashboard_note_file.text().endswith(str(project_notes_file(saved_as_project)))
+        window._project_file = notes_path.parent / "aktuelles_projekt.vbfast.json"
+        window._route_workspace("project")
+        assert window.dashboard_note_file.text().endswith(str(notes_path))
+        window._route_workspace("dashboard")
         window.view_scale.setCurrentIndex(window.view_scale.findData(200))
         window.resize(800, 600)
         app.processEvents()
