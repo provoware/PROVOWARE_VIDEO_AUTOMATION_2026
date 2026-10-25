@@ -77,7 +77,7 @@ def test_release_builders_exclude_historical_archive() -> None:
 
 
 def test_changelog_has_one_title_and_unique_version_headings() -> None:
-    content = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    content = (ROOT / 'docs/CHANGELOG.md').read_text(encoding="utf-8")
     assert content.count("# Changelog") == 1
     headings = re.findall(r"^## (.+)$", content, flags=re.MULTILINE)
     assert len(headings) == len(set(headings))

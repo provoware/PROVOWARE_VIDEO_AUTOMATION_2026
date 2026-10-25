@@ -1,6 +1,8 @@
 """Native Qt geometry contracts for responsive media columns and compact status."""
 from __future__ import annotations
 
+from qt_source_contracts import read_qt_sources
+
 from pathlib import Path
 
 import pytest
@@ -9,10 +11,10 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_responsive_layout_contract_is_readable_without_horizontal_scrolling():
-    source = (ROOT / "src/videobatch_fast/qt_source_panel.py").read_text(encoding="utf-8")
-    main = (ROOT / "src/videobatch_fast/qt_main_layout.py").read_text(encoding="utf-8")
-    footer = (ROOT / "src/videobatch_fast/qt_workspace_layout.py").read_text(encoding="utf-8")
-    theme = (ROOT / "src/videobatch_fast/qt_theme.py").read_text(encoding="utf-8")
+    source = read_qt_sources(ROOT / 'src/videobatch_fast/qt_source_panel.py', encoding='utf-8')
+    main = read_qt_sources(ROOT / 'src/videobatch_fast/qt_main_layout.py', encoding='utf-8')
+    footer = read_qt_sources(ROOT / 'src/videobatch_fast/qt_workspace_layout.py', encoding='utf-8')
+    theme = read_qt_sources(ROOT / 'src/videobatch_fast/qt_theme.py', encoding='utf-8')
     assert "class ResponsiveSourceColumns(QWidget)" in source
     assert "ScrollBarAlwaysOff" in source
     assert "scroll.setWidget(panel)" in source
@@ -103,9 +105,9 @@ def test_grid_reroutes_on_zoom_and_settings_keep_each_field(monkeypatch):
         settings.close()
 
 def test_main_window_uses_800_by_600_contract() -> None:
-    source = (ROOT / "src/videobatch_fast/qt_ui.py").read_text(encoding="utf-8")
-    layout = (ROOT / "src/videobatch_fast/qt_main_layout.py").read_text(encoding="utf-8")
-    footer = (ROOT / "src/videobatch_fast/qt_workspace_layout.py").read_text(encoding="utf-8")
+    source = read_qt_sources(ROOT / 'src/videobatch_fast/qt_ui.py', encoding='utf-8')
+    layout = read_qt_sources(ROOT / 'src/videobatch_fast/qt_main_layout.py', encoding='utf-8')
+    footer = read_qt_sources(ROOT / 'src/videobatch_fast/qt_workspace_layout.py', encoding='utf-8')
     assert "self.setMinimumSize(800, 600)" in source
     assert "self.setMinimumSize(980, 640)" not in source
     assert 'header.addWidget(dashboard, 2, 0, 1, 4)' in layout

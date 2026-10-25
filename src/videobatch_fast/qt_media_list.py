@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .display_formatting import media_size_text
+
 from datetime import datetime
 from pathlib import Path
 
@@ -22,14 +24,7 @@ IMAGE_THUMBNAIL_EXTS = {
 }
 
 
-def media_size_text(size: int) -> str:
-    value = float(max(0, size))
-    units = ("B", "KB", "MB", "GB", "TB")
-    for unit in units:
-        if value < 1024.0 or unit == units[-1]:
-            return f"{value:.1f} {unit}"
-        value /= 1024.0
-    return f"{value:.1f} TB"
+
 
 
 def media_path_display_text(path: Path) -> str:

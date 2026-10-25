@@ -86,40 +86,7 @@ def validate(*, phase: str = "integration", acceptance_dir: Path | None = None) 
     if not _sha256_text(manifest.get("files_sha256")):
         raise ContractSyncError("RELEASE_MANIFEST.json enthält keinen gültigen files_sha256")
 
-    product = _mapping(evidence.get("product"), "RELEASE_EVIDENCE.product")
-    evidence_manifest = _mapping(evidence.get("manifest"), "RELEASE_EVIDENCE.manifest")
-    historical_count = historical_manifest.get("file_count")
-    if evidence_manifest.get("file_count") != historical_count:
-        raise ContractSyncError(
-            f"Historischer RC24-Nachweis nennt {evidence_manifest.get('file_count')} statt {historical_count} Dateien"
-        )
-    if evidence_manifest.get("status") != "passed":
-        raise ContractSyncError("RELEASE_EVIDENCE.manifest.status muss passed sein")
-    if product.get("version") != manifest.get("version") or product.get("version") != manifest.get("build"):
-        raise ContractSyncError("Produktversion und Manifest version/build sind nicht synchron")
-    if product.get("channel") != manifest.get("channel"):
-        raise ContractSyncError("Release-Kanal in Evidence und Manifest ist nicht synchron")
-
-    if package_manifest.get("schema_version") != 1:
-        raise ContractSyncError("config/contracts/manifest.json besitzt eine unbekannte Schema-Version")
-    for field in ("name", "version", "channel", "build_date"):
-        if package_manifest.get(field) != product.get(field):
-            raise ContractSyncError(
-                f"config/contracts/manifest.json Feld {field!r} ist nicht mit RELEASE_EVIDENCE.product synchron"
-            )
-    if package_manifest.get("artifact_policy") != evidence.get("artifact_policy"):
-        raise ContractSyncError(
-            "config/contracts/manifest.json artifact_policy ist nicht mit RELEASE_EVIDENCE synchron"
-        )
-    entrypoint = str(package_manifest.get("entrypoint") or "")
-    if not entrypoint or not (ROOT / entrypoint).is_file():
-        raise ContractSyncError("config/contracts/manifest.json verweist auf keinen gültigen Einstieg")
-
-    internal = _mapping(quality.get("internal_gates"), "QUALITY_ENVIRONMENT_STATUS.internal_gates")
-    if internal.get("release_manifest_files") != historical_count:
-        raise ContractSyncError("Historischer Qualitätsstatus passt nicht zum RC24-Manifest")
-    if build.get("release_manifest_files") != historical_count:
-        raise ContractSyncError("Historischer Buildbericht passt nicht zum RC24-Manifest")
+    historical_count = _validate_historical_contract(manifest, historical_manifest, package_manifest, evidence, quality, build)
 
     expected_line = f"Release-Manifest: {historical_count} Dateien"
     for path in (README_PATH, STATUS_PATH):
@@ -198,6 +165,45 @@ def validate(*, phase: str = "integration", acceptance_dir: Path | None = None) 
         "stable_ready": bool(evidence.get("stable_ready")),
     }
 
+
+
+def _validate_historical_contract(manifest, historical_manifest, package_manifest, evidence, quality, build):
+    product = _mapping(evidence.get("product"), "RELEASE_EVIDENCE.product")
+    evidence_manifest = _mapping(evidence.get("manifest"), "RELEASE_EVIDENCE.manifest")
+    historical_count = historical_manifest.get("file_count")
+    if evidence_manifest.get("file_count") != historical_count:
+        raise ContractSyncError(
+            f"Historischer RC24-Nachweis nennt {evidence_manifest.get('file_count')} statt {historical_count} Dateien"
+        )
+    if evidence_manifest.get("status") != "passed":
+        raise ContractSyncError("RELEASE_EVIDENCE.manifest.status muss passed sein")
+    if product.get("version") != manifest.get("version") or product.get("version") != manifest.get("build"):
+        raise ContractSyncError("Produktversion und Manifest version/build sind nicht synchron")
+    if product.get("channel") != manifest.get("channel"):
+        raise ContractSyncError("Release-Kanal in Evidence und Manifest ist nicht synchron")
+
+    if package_manifest.get("schema_version") != 1:
+        raise ContractSyncError("config/contracts/manifest.json besitzt eine unbekannte Schema-Version")
+    for field in ("name", "version", "channel", "build_date"):
+        if package_manifest.get(field) != product.get(field):
+            raise ContractSyncError(
+                f"config/contracts/manifest.json Feld {field!r} ist nicht mit RELEASE_EVIDENCE.product synchron"
+            )
+    if package_manifest.get("artifact_policy") != evidence.get("artifact_policy"):
+        raise ContractSyncError(
+            "config/contracts/manifest.json artifact_policy ist nicht mit RELEASE_EVIDENCE synchron"
+        )
+    entrypoint = str(package_manifest.get("entrypoint") or "")
+    if not entrypoint or not (ROOT / entrypoint).is_file():
+        raise ContractSyncError("config/contracts/manifest.json verweist auf keinen gültigen Einstieg")
+
+    internal = _mapping(quality.get("internal_gates"), "QUALITY_ENVIRONMENT_STATUS.internal_gates")
+    if internal.get("release_manifest_files") != historical_count:
+        raise ContractSyncError("Historischer Qualitätsstatus passt nicht zum RC24-Manifest")
+    if build.get("release_manifest_files") != historical_count:
+        raise ContractSyncError("Historischer Buildbericht passt nicht zum RC24-Manifest")
+
+    return historical_count
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Prüft Manifest, Release-Evidence und abgeleitete Statusdateien auf Drift.")

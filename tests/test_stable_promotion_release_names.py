@@ -13,7 +13,7 @@ def test_stable_promotion_renames_all_release_reports_and_updates_status() -> No
 
 def test_stable_promotion_is_source_pinned_and_gui_roundtrip_is_bounded() -> None:
     workflow = (ROOT / ".github/workflows/stable-promotion.yml").read_text(encoding="utf-8")
-    test_script = (ROOT / "test.sh").read_text(encoding="utf-8")
+    test_script = (ROOT / 'scripts/dev/test.sh').read_text(encoding="utf-8")
     assert 'paths:\n      - ".release/stable-2.8.3.json"' in workflow
     assert 'git checkout --detach "$SOURCE_SHA"' in workflow
     assert 'test "$AUTH_PARENT" = "$SOURCE_SHA"' in workflow

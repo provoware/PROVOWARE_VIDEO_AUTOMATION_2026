@@ -178,6 +178,8 @@ def test_main_selected_media_list_rapid_clicks_remain_stable(
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
     monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path / "cache"))
     project_file = tmp_path / "state" / "VideoBatchFast" / "projects" / "current.vbfast.json"
+    from videobatch_fast.project_state import save_project_state
+    save_project_state(project_file, {"project_name": "Auswahl-Stabilität"})
     monkeypatch.setitem(config_module.DEFAULT_CONFIG, "current_project_file", str(project_file))
     monkeypatch.setitem(config_module.DEFAULT_CONFIG, "output_dir", str(home / "Videos" / "VideoBatchFast"))
     monkeypatch.setitem(config_module.DEFAULT_CONFIG, "last_audio_dir", str(home / "Downloads"))

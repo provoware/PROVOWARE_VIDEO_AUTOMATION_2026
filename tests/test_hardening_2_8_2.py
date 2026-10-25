@@ -221,7 +221,7 @@ class QualityContractTests(unittest.TestCase):
     def test_dependency_locks_are_exact(self):
         root = Path(__file__).resolve().parents[1]
         for name in ("requirements.lock", "requirements-quality.lock"):
-            lines = [line.strip() for line in (root / name).read_text(encoding="utf-8").splitlines()]
+            lines = [line.strip() for line in (root / "config/requirements" / name).read_text(encoding="utf-8").splitlines()]
             requirements = [line for line in lines if line and not line.startswith("#")]
             self.assertTrue(requirements)
             self.assertTrue(all("==" in line for line in requirements))

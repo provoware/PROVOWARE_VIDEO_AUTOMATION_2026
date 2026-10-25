@@ -6,8 +6,10 @@ import json
 import math
 import os
 import re
+import tomllib
 from dataclasses import dataclass, asdict
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_DIRS = (ROOT / "src", ROOT / "scripts", ROOT / "tests")
@@ -139,6 +141,25 @@ def _inspect_file(
         findings.append(Finding("error", "PRIVATE_KEY", relative, 1, "Privates Schlüsselmaterial im Quelltext erkannt."))
 
 
+
+def _configuration_findings(policy: dict[str, Any], root: Path = ROOT) -> list[Finding]:
+    project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
+    canonical = policy["python"]
+    minimum = canonical["minimum"]
+    expected = {
+        "project.requires-python": (project["project"]["requires-python"], ">=" + minimum),
+        "ruff.target-version": (project["tool"]["ruff"]["target-version"], "py" + minimum.replace(".", "")),
+        "mypy.python_version": (project["tool"]["mypy"]["python_version"], minimum),
+        "coverage.fail_under": (project["tool"]["coverage"]["report"]["fail_under"], canonical["coverage_minimum_percent"]),
+    }
+    findings = [Finding("error", "CONFIG_DRIFT", "pyproject.toml", 0, f"{key}: {actual!r} statt {wanted!r}")
+                for key, (actual, wanted) in expected.items() if actual != wanted]
+    toolchain = json.loads((root / "config/contracts/TOOLCHAIN_CONTRACT.json").read_text(encoding="utf-8"))
+    for name in ("runtime_lock", "quality_lock", "unified_lock"):
+        if policy["dependency_policy"][name] != toolchain["paths"][name]:
+            findings.append(Finding("error", "LOCK_PATH_DRIFT", "registries/CODE_QUALITY_REGISTRY.json", 0, name))
+    return findings
+
 def main() -> int:
     policy = json.loads(REGISTRY.read_text(encoding="utf-8"))
     py_policy = policy["python"]
@@ -196,8 +217,9 @@ def main() -> int:
                 )
             )
 
-    findings.extend(_exact_lock(ROOT / "requirements.lock"))
-    findings.extend(_exact_lock(ROOT / "requirements-quality.lock"))
+    findings.extend(_exact_lock(ROOT / policy["dependency_policy"]["runtime_lock"]))
+    findings.extend(_exact_lock(ROOT / policy["dependency_policy"]["quality_lock"]))
+    findings.extend(_configuration_findings(policy))
     errors = [item for item in findings if item.severity == "error"]
     report = {
         "schema_version": 1,

@@ -16,8 +16,8 @@ def test_current_version_contract_is_consistent() -> None:
 
 def test_version_contract_detects_pyproject_drift(tmp_path: Path) -> None:
     for relative in (
-        "VERSION.json", "pyproject.toml", "TOOLCHAIN_CONTRACT.json",
-        "VISUAL_INSPECTION_MANIFEST.json", "QUALITY_ENVIRONMENT_STATUS.json",
+        "VERSION.json", "pyproject.toml", "config/contracts/TOOLCHAIN_CONTRACT.json",
+        "registries/VISUAL_INSPECTION_MANIFEST.json", "config/status/QUALITY_ENVIRONMENT_STATUS.json",
     ):
         target = tmp_path / relative
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -40,5 +40,5 @@ def test_version_contract_detects_pyproject_drift(tmp_path: Path) -> None:
 
 def test_unified_contract_id_uses_current_build() -> None:
     build = json.loads((ROOT / "VERSION.json").read_text(encoding="utf-8"))["build"]
-    contract = (ROOT / "TOOLCHAIN_CONTRACT.json").read_text(encoding="utf-8")
+    contract = (ROOT / 'config/contracts/TOOLCHAIN_CONTRACT.json').read_text(encoding="utf-8")
     assert build in contract

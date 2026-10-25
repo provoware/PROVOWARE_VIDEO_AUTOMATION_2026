@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 from pathlib import Path
+from qt_source_contracts import read_qt_sources
 
 import pytest
 
@@ -20,7 +21,7 @@ PHASE2_FILES = (
 
 
 def _text(path: Path) -> str:
-    return path.read_text(encoding="utf-8")
+    return read_qt_sources(path, encoding="utf-8")
 
 
 def test_phase2_qt_modules_are_tk_free_and_parseable() -> None:

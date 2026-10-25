@@ -43,6 +43,7 @@ from .qt_workflow_dialogs import (
     update_assistant_dialog,
 )
 from .slideshow import SLIDESHOW_MODE_ALL_IMAGES
+from . import qt_layout_sections
 
 
 class VideoBatchQtPhase2Window(SelectionPreviewMixin, VideoBatchQtWindow):
@@ -217,19 +218,7 @@ class VideoBatchQtPhase2Window(SelectionPreviewMixin, VideoBatchQtWindow):
         self.step_output.setText("2 · Ausgabe ✓" if output_ready else "2 · Ausgabe")
         self.step_start.setText("3 · Start bereit" if ready else "3 · Start")
 
-        if pending and not self.runner.running and not self.preparing:
-            self._status("ANALYSE")
-            self.next_step.setText("Audioanalyse läuft. Danach wird Schritt 3 automatisch freigegeben.")
-        elif not self.runner.running and not self.preparing:
-            if not audios:
-                self.next_step.setText("Nächster Schritt: 1 · Mindestens eine Audiodatei auswählen.")
-            elif not images:
-                self.next_step.setText("Nächster Schritt: 1 · Bilder für die Diashow auswählen.")
-            elif not output_ready:
-                self.next_step.setText("Nächster Schritt: 2 · Einen Ausgabeordner wählen.")
-            else:
-                self.next_step.setText(f"Bereit: {jobs} Diashow-Video(s). Nächster Schritt: 3 · Videos erstellen.")
-            self._status("BEREIT" if ready else "PRÜFEN")
+        qt_layout_sections.update_slideshow_hint(self, audios, images, jobs, output_ready, ready, pending)
 
     def _start(self) -> None:
         if not hasattr(self, "slideshow") or self.slideshow.assignment_mode != SLIDESHOW_MODE_ALL_IMAGES:

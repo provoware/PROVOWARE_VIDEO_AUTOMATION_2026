@@ -69,7 +69,7 @@ def test_missing_quality_package_is_reported_without_traceback(monkeypatch: pyte
 
 
 def test_launcher_uses_predictive_bootstrap_and_does_not_require_ffmpeg_to_open_ui() -> None:
-    launcher = (ROOT / "videobatch.sh").read_text(encoding="utf-8")
+    launcher = (ROOT / 'scripts/cli/videobatch.sh').read_text(encoding="utf-8")
     debug_launcher = (SCRIPTS / "debug_launcher.py").read_text(encoding="utf-8")
     bootstrap = (SCRIPTS / "bootstrap.py").read_text(encoding="utf-8")
     assert 'start_application() {\n  exec "$ROOT_DIR/STARTEN.sh"\n}' in launcher
@@ -91,13 +91,13 @@ def test_installation_is_created_at_final_content_addressed_path() -> None:
 
 def test_double_click_and_menu_launchers_are_shipped() -> None:
     assert (ROOT / "STARTEN.sh").is_file()
-    assert (ROOT / "VideoBatch-Fast.desktop").is_file()
-    assert "Terminal=false" in (ROOT / "VideoBatch-Fast.desktop").read_text(encoding="utf-8")
+    assert (ROOT / 'resources/desktop/VideoBatch-Fast.desktop').is_file()
+    assert "Terminal=false" in (ROOT / 'resources/desktop/VideoBatch-Fast.desktop').read_text(encoding="utf-8")
 
 
 def test_startup_contract_prevents_future_start_blocker_regressions() -> None:
     import json
-    contract = json.loads((ROOT / "STARTUP_CONTRACT.json").read_text(encoding="utf-8"))
+    contract = json.loads((ROOT / 'config/contracts/STARTUP_CONTRACT.json').read_text(encoding="utf-8"))
     policy = contract["policy"]
     assert policy["interactive_questions_forbidden"] is True
     assert policy["quality_tools_must_not_block_application_start"] is True
@@ -120,7 +120,7 @@ Filters:
 
 def test_bootstrap_checks_repairs_and_revalidates_system_dependencies() -> None:
     source = (SCRIPTS / "bootstrap.py").read_text(encoding="utf-8")
-    contract = __import__("json").loads((ROOT / "STARTUP_CONTRACT.json").read_text(encoding="utf-8"))
+    contract = __import__("json").loads((ROOT / 'config/contracts/STARTUP_CONTRACT.json').read_text(encoding="utf-8"))
     assert "def ensure_system_dependencies" in source
     assert '"ffmpeg"' in source
     assert '"python3-venv"' in source

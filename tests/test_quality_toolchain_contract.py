@@ -20,7 +20,7 @@ def root() -> Path:
 
 
 def test_quality_versions_are_exact_in_unified_contract() -> None:
-    contract = json.loads((root() / "TOOLCHAIN_CONTRACT.json").read_text(encoding="utf-8"))
+    contract = json.loads((root() / 'config/contracts/TOOLCHAIN_CONTRACT.json').read_text(encoding="utf-8"))
     actual = {name.lower(): version for name, version in contract["packages"]["quality"].items()}
     assert contract["release_target"] == json.loads((root() / "VERSION.json").read_text(encoding="utf-8"))["build"]
     assert actual == EXPECTED_QUALITY
@@ -29,14 +29,14 @@ def test_quality_versions_are_exact_in_unified_contract() -> None:
 
 
 def test_quality_lock_contains_each_exact_version_once() -> None:
-    text = (root() / "requirements-quality.lock").read_text(encoding="utf-8")
+    text = (root() / 'config/requirements/requirements-quality.lock').read_text(encoding="utf-8")
     for name, version in EXPECTED_QUALITY.items():
         matches = re.findall(rf"(?mi)^{re.escape(name)}=={re.escape(version)}(?:\s|$)", text)
         assert len(matches) == 1
 
 
 def test_release_paths_use_unified_toolchain_fail_closed() -> None:
-    for filename in ("quality.sh", "test.sh", "stable_release.sh"):
+    for filename in ("scripts/dev/quality.sh", "scripts/dev/test.sh", "scripts/release/stable_release.sh"):
         text = (root() / filename).read_text(encoding="utf-8")
         assert "scripts/toolchain.py" in text
-        assert "path --scope quality" in text or filename == "stable_release.sh"
+        assert "path --scope quality" in text or Path(filename).name == "stable_release.sh"

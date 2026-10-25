@@ -7,11 +7,11 @@ import shutil
 import tempfile
 import time
 import uuid
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .naming import safe_stem
+from .naming import used_name
 from .safe_io import atomic_write_json
 
 JOURNAL_SCHEMA_VERSION = 2
@@ -51,13 +51,6 @@ def file_hash(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
-
-
-def used_name(path: Path, suffix: str = "__verwendet") -> str:
-    stem = path.stem
-    while stem.endswith(suffix):
-        stem = stem[: -len(suffix)]
-    return f"{safe_stem(stem + suffix)}{path.suffix.lower()}"
 
 
 def _transaction_dir(project_dir: Path) -> Path:
@@ -170,7 +163,8 @@ def _new_transaction(source: Path, project_dir: Path, kind: str, suffix: str) ->
 
 
 def archive_file(source: Path, project_dir: Path, kind: str, suffix: str = "__verwendet") -> ArchiveRecord:
-    source = Path(source)
+    source = Path(source).resolve()
+    project_dir = Path(project_dir).resolve()
     if not source.is_file():
         raise FileNotFoundError(source)
     transaction = _new_transaction(source, Path(project_dir), kind, suffix)
@@ -222,11 +216,8 @@ def archive_file(source: Path, project_dir: Path, kind: str, suffix: str = "__ve
             transaction.transaction_id,
         )
     except Exception as exc:
-        if transaction.target.exists() and transaction.state not in {"verified_target", "source_removed", "committed", "source_retained"}:
-            try:
-                transaction.target.unlink()
-            except OSError:
-                pass
+        # A failed exclusive publish may refer to a competing writer's file.
+        # Retain ambiguous targets; only our private temporary copy is disposable.
         if transaction.temp:
             transaction.temp.unlink(missing_ok=True)
         safe = source.exists()
@@ -241,61 +232,12 @@ def archive_file(source: Path, project_dir: Path, kind: str, suffix: str = "__ve
 
 
 def recover_archive_transactions(project_dir: Path) -> list[dict[str, str]]:
-    """Recover or classify unfinished archive transactions without deleting source data."""
-    results: list[dict[str, str]] = []
-    directory = _transaction_dir(Path(project_dir))
-    for journal in sorted(directory.glob("*.json")):
-        try:
-            payload = json.loads(journal.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            results.append({"journal": str(journal), "status": "invalid", "message": "Journal nicht lesbar."})
-            continue
-        state = str(payload.get("state", ""))
-        if state in TERMINAL_STATES:
-            continue
-        source = Path(str(payload.get("source", "")))
-        target = Path(str(payload.get("target", "")))
-        temp = Path(str(payload.get("temp", ""))) if payload.get("temp") else None
-        reservation = Path(str(payload.get("reservation", ""))) if payload.get("reservation") else None
-        expected_size = int(payload.get("expected_size", 0) or 0)
-        expected_hash = str(payload.get("expected_hash", ""))
-        target_valid = False
-        try:
-            _verify_file(target, expected_size, expected_hash)
-            target_valid = True
-        except OSError:
-            target_valid = False
-        if target_valid and source.exists():
-            payload["state"] = "source_retained"
-            payload["message"] = "Wiederaufnahme: gültiges Ziel und Original vorhanden; Original bewusst erhalten."
-        elif target_valid and not source.exists():
-            payload["state"] = "committed"
-            payload["message"] = "Wiederaufnahme: gültiges Ziel bestätigt und Original bereits entfernt."
-        else:
-            if temp:
-                temp.unlink(missing_ok=True)
-            payload["state"] = "failed_safe" if source.exists() else "failed"
-            payload["message"] = "Wiederaufnahme: unvollständiges Ziel bereinigt; Originalstatus geprüft."
-        payload["updated_at"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
-        _atomic_json(journal, payload)
-        if reservation:
-            reservation.unlink(missing_ok=True)
-        results.append({"journal": str(journal), "status": str(payload["state"]), "message": str(payload["message"])})
-    return results
+    from .archive_recovery import recover_transactions
+
+    return recover_transactions(Path(project_dir), _verify_file)
 
 
 def append_manifest(project_dir: Path, records: list[ArchiveRecord]) -> Path:
-    path = Path(project_dir) / "used_files_manifest.json"
-    existing: list[dict[str, Any]] = []
-    try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
-        existing = raw.get("records", []) if isinstance(raw, dict) and isinstance(raw.get("records"), list) else []
-    except (OSError, json.JSONDecodeError):
-        pass
-    payload = {
-        "schema_version": 2,
-        "updated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
-        "records": existing + [asdict(item) for item in records],
-    }
-    _atomic_json(path, payload)
-    return path
+    from .archive_recovery import append_manifest as append
+
+    return append(project_dir, records)

@@ -171,12 +171,13 @@ fi
 "$ENV_PYTHON" "$ROOT_DIR/scripts/run_assurance_lab.py"
 "$ENV_PYTHON" -m pytest -q -p no:cacheprovider \
   --cov=videobatch_fast \
+  --cov=provoware_grid \
   --cov-config="$ROOT_DIR/pyproject.toml" \
   --cov-report=term-missing:skip-covered \
   --cov-report=json:"$TMP_ROOT/coverage.json" \
   --cov-fail-under=0 \
   "$ROOT_DIR/tests"
-"$ENV_PYTHON" "$ROOT_DIR/scripts/coverage_policy.py" "$TMP_ROOT/coverage.json" 80 65
+"$ENV_PYTHON" "$ROOT_DIR/scripts/coverage_policy.py" "$TMP_ROOT/coverage.json"
 
 GUI_TIMEOUT_SECONDS="${VIDEOBATCH_GUI_TIMEOUT_SECONDS:-180}"
 if ! command -v timeout >/dev/null 2>&1; then

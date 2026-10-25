@@ -108,10 +108,13 @@ def test_qt_phase3_restores_legacy_options_and_uses_configured_media_tools(
     window.parity_output_mode.setCurrentIndex(
         window.parity_output_mode.findData("Neben Mediendatei")
     )
-    window.parity_resolution.setCurrentIndex(window.parity_resolution.findData("1920×1080"))
+    window.resolution.setCurrentIndex(window.resolution.findData("1920×1080"))
+    window.parity_resolution.setCurrentIndex(window.parity_resolution.findData("Original"))
     window.parity_codec.setCurrentIndex(window.parity_codec.findData("libx265"))
-    window.parity_profile.setCurrentIndex(window.parity_profile.findData("quality"))
-    window.parity_effect.setCurrentIndex(window.parity_effect.findData("hardtechno"))
+    window.quality.setCurrentIndex(window.quality.findData("quality"))
+    window.parity_profile.setCurrentIndex(window.parity_profile.findData("fast"))
+    window.effect.setCurrentIndex(window.effect.findData("hardtechno"))
+    window.parity_effect.setCurrentIndex(window.parity_effect.findData("none"))
     window.parity_transition.setCurrentIndex(window.parity_transition.findData("soft"))
     window.parity_keep_lists.setChecked(False)
 
@@ -146,7 +149,7 @@ def test_qt_phase3_restores_legacy_options_and_uses_configured_media_tools(
     ]
     assert quick_displayed == [audio_a.resolve(), audio_z.resolve()]
     assert window.audio.paths() == [audio_z.resolve(), audio_a.resolve()]
-    assert "nur die Ansicht" in window.sort_hint.text()
+    assert "nur die Ansicht" in window.next_step.text()
     assert window.parity_audio_sort.currentData() == "name_asc"
 
     window.parity_audio_sort.setCurrentIndex(window.parity_audio_sort.findData("name_asc"))
@@ -273,7 +276,8 @@ def test_extracted_legacy_appearance_applies_theme_and_font_scale(tmp_path: Path
 
         apply_theme(window)
 
-        assert "#f2f0d8" in app.styleSheet()
+        assert "#f2f0d8" in window.styleSheet()
+        assert app.styleSheet() == original_style
         assert abs(app.font().pointSizeF() - 12.0) < 0.01
     finally:
         app.setStyleSheet(original_style)

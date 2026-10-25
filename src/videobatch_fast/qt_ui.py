@@ -38,6 +38,10 @@ from .qt_ui_polish import (
     job_table_item, text_label, update_status_chip,
 )
 
+from . import qt_desktop_actions
+
+from . import qt_production_events
+
 class VideoBatchQtWindow(QMainWindow):
     """Tk-free Qt 6 frontend that reuses the verified processing core."""
 
@@ -99,58 +103,7 @@ class VideoBatchQtWindow(QMainWindow):
             status.setText(message)
 
     def _refresh_media_index_async(self) -> None:
-        if self._media_index_stop.is_set():
-            return
-        if self._media_index_worker is not None and self._media_index_worker.is_alive():
-            if self._media_rescan_pending:
-                QTimer.singleShot(1500, self._refresh_media_index_async)
-            return
-        self._media_rescan_pending = False
-        self._media_index_reconfigure.clear()
-        index = self._media_index  # capture configuration for this worker
-        def worker() -> None:
-            from .media_watcher import MediaWatcher
-            try:
-                for result in index.refresh(cancel=self._media_index_stop):
-                    if result.error and not self._media_index_stop.is_set():
-                        self.mediaIndexMessage.emit(
-                            f"{result.root}: {result.error}. Gespeicherte Medien bleiben erhalten."
-                        )
-                if self._media_index_stop.is_set() or self._media_index_reconfigure.is_set():
-                    return
-                with MediaWatcher(index.roots, index.excluded_paths) as watcher:
-                    last_full_scan = time.monotonic()
-                    while not (self._media_index_stop.is_set() or
-                               self._media_index_reconfigure.is_set()):
-                        affected = watcher.changed(timeout=1.0)
-                        if affected:
-                            # Bundle bursts (downloads often write in many chunks).
-                            time.sleep(0.3)
-                            affected.update(watcher.changed(timeout=0.0))
-                            for root in sorted(affected):
-                                if self._media_index_stop.is_set() or self._media_index_reconfigure.is_set():
-                                    return
-                                index.refresh_root(root, cancel=self._media_index_stop)
-                            if watcher.topology_changed:
-                                watcher.reset()
-                        now = time.monotonic()
-                        interval = 300 if watcher.coverage_limited else 1800
-                        if now - last_full_scan >= interval:
-                            index.refresh(cancel=self._media_index_stop)
-                            if watcher.coverage_limited:
-                                watcher.reset()
-                            last_full_scan = now
-            except (OSError, ValueError, RuntimeError, sqlite3.DatabaseError) as exc:
-                # Optional index failure is visible but never blocks rendering.
-                if not self._media_index_stop.is_set():
-                    self.mediaIndexMessage.emit(
-                        f"Index vorübergehend nicht verfügbar: {exc}. Videos erstellen ist weiterhin möglich."
-                    )
-                return
-        self._media_index_worker = threading.Thread(
-            target=worker, name="VideoBatch-MediaIndex", daemon=True
-        )
-        self._media_index_worker.start()
+        return qt_desktop_actions._refresh_media_index_async(self)
 
     @staticmethod
     def _panel(title: str, hint: str) -> tuple[QFrame, QVBoxLayout]:
@@ -213,86 +166,7 @@ class VideoBatchQtWindow(QMainWindow):
         return panel
 
     def _settings_panel(self) -> QWidget:
-        panel, layout = self._panel(
-            "Erweiterte Einstellungen",
-            "Hier stehen selten benötigte Prüf- und Sicherheitsoptionen. "
-            "Die alltäglichen Ausgabeoptionen stehen vor diesen Expertenoptionen.",
-        )
-        layout.addWidget(field_label("Kontrolle nach der Erstellung"))
-        # Compatibility-only adapter for older project/playlist services.
-        # Not displayed; the authoritative values live in dashboard_settings.
-        self.mode = QComboBox()
-        self.mode.addItem("Dashboard-Vorgaben", "custom")
-        self.verification = QComboBox()
-        self.verification.addItems(["Vollständig", "Schnell"])
-        self.verification.setToolTip("Vollständig überprüft das fertige Video genauer.")
-        layout.addWidget(self.verification)
-        self.exclusions_toggle = QToolButton()
-        self.exclusions_toggle.setText("▸ Eigene Programmierordner auslassen")
-        self.exclusions_toggle.setCheckable(True)
-        self.exclusions_toggle.setAccessibleDescription(
-            "Optional. Ordner innerhalb von Videos, Downloads und Bilder gezielt auslassen."
-        )
-        layout.addWidget(self.exclusions_toggle)
-        exclusions_box = QFrame()
-        exclusion_layout = QVBoxLayout(exclusions_box)
-        exclusion_layout.setContentsMargins(6, 4, 6, 4)
-        exclusions_box.setVisible(False)
-        self.exclusions_toggle.toggled.connect(exclusions_box.setVisible)
-        exclusion_layout.addWidget(field_label("Ordner bei der Mediensuche auslassen"))
-        info = QLabel(
-            "Hier kannst du eigene Programmierordner in Videos, Downloads oder Bilder "
-            "ausschließen. Ein vollständiger Ordnerpfad pro Zeile. "
-            "Andere Dateien werden ohnehin ignoriert."
-        )
-        info.setWordWrap(True)
-        exclusion_layout.addWidget(info)
-        self.media_exclusions = QPlainTextEdit()
-        self.media_exclusions.setAccessibleName("Ausgeschlossene Projektordner")
-        self.media_exclusions.setPlaceholderText(
-            str(Path.home() / "Downloads" / "Mein-Programmierprojekt")
-        )
-        self.media_exclusions.setMaximumHeight(94)
-        try:
-            self.media_exclusions.setPlainText(
-                "\n".join(str(path) for path in load_exclusions())
-            )
-        except ValueError:
-            self.media_exclusions.setPlaceholderText(
-                "Gespeicherte Liste ist beschädigt. Bitte hier neue Ordner eingeben."
-            )
-        exclusion_layout.addWidget(self.media_exclusions)
-        self.browse_exclusion_button = QPushButton("Projektordner auswählen …")
-        self.browse_exclusion_button.clicked.connect(self._browse_media_exclusion)
-        exclusion_layout.addWidget(self.browse_exclusion_button)
-        self.save_exclusions_button = QPushButton("Ausgeschlossene Ordner speichern")
-        self.save_exclusions_button.clicked.connect(self._save_media_exclusions)
-        exclusion_layout.addWidget(self.save_exclusions_button)
-        self.media_exclusion_status = QLabel("")
-        self.media_exclusion_status.setObjectName("subtitle")
-        self.media_exclusion_status.setWordWrap(True)
-        exclusion_layout.addWidget(self.media_exclusion_status)
-        layout.addWidget(exclusions_box)
-        self.details_toggle = QToolButton()
-        self.details_toggle.setText("▸ Technische Details und Sicherheit")
-        self.details_toggle.setCheckable(True)
-        layout.addWidget(self.details_toggle)
-        self.safety_details = QLabel(
-            "Originaldateien bleiben unverändert.\n"
-            "Ausgaben erhalten eindeutige Dateinamen.\n"
-            "VideoBatch kann die Verarbeitung kontrolliert abbrechen."
-        )
-        self.safety_details.setObjectName("subtitle")
-        self.safety_details.setWordWrap(True)
-        self.safety_details.setVisible(False)
-        layout.addWidget(self.safety_details)
-        self.details_toggle.toggled.connect(self._toggle_details)
-        self.runtime = QLabel()
-        self.runtime.setObjectName("subtitle")
-        layout.addWidget(self.runtime)
-        layout.addStretch()
-        self._runtime_state()
-        return panel
+        return qt_desktop_actions._settings_panel(self)
 
     def _connect(self) -> None:
         self.audio.changed.connect(self._refresh)
@@ -629,75 +503,7 @@ class VideoBatchQtWindow(QMainWindow):
             self._write_log("Kontrollierter Abbruch angefordert.")
 
     def _poll(self) -> None:
-        try:
-            kind, payload = self.prepare_queue.get_nowait()
-        except queue.Empty:
-            pass
-        else:
-            generation, data, *rest = payload  # type: ignore[misc]
-            if generation == self.prepare_generation and self.preparing:
-                self.preparing = False
-                self.progress.setRange(0, 100)
-                self.job_progress.setRange(0, 100)
-                if kind == "error":
-                    self._probe_pending = False
-                    self._show_start_error(str(data), "Vorbereitung")
-                else:
-                    self.jobs = list(data)
-                    options = rest[0]
-                    notices = rest[1] if len(rest) > 1 else []
-                    if notices:
-                        details = "\n\n".join(
-                            f"• {notice.title}: {notice.message}\n{notice.solution}"
-                            for notice in notices[:5]
-                        )
-                        if len(notices) > 5:
-                            details += f"\n\nWeitere Hinweise: {len(notices) - 5}"
-                        response = QMessageBox.question(
-                            self, "Hinweise vor der Videoerstellung",
-                            details + "\n\nTrotz dieser Hinweise fortfahren?",
-                            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                            QMessageBox.StandardButton.No,
-                        )
-                        if response != QMessageBox.StandardButton.Yes:
-                            self._probe_pending = False
-                            self._status("ABGEBROCHEN")
-                            self._write_log("Produktion nach Hinweisen nicht gestartet.")
-                            self._refresh()
-                            return
-                    if not self._probe_pending:
-                        estimated = sum(estimate_job_output_bytes(j, options) for j in self.jobs)
-                        self._write_log(
-                            f"Grobe Dateigrößenschätzung: {estimated / 1024**2:.0f} MiB "
-                            "einschließlich Auftragsreserve; keine Größen- oder Laufzeitgarantie."
-                        )
-                    if self._probe_pending:
-                        self._probe_pending = False
-                        try:
-                            destination = probe_output()
-                            short_job, options = plan_probe(
-                                self.jobs[0], options, destination
-                            )
-                            self.jobs = [short_job]
-                            self._probe_file = destination
-                            self._probe_active = True
-                            prune_probes(destination.parent, keep=10)
-                        except (ValueError, OSError, IndexError) as exc:
-                            self._probe_active = False
-                            self._show_start_error(str(exc), "Probevorbereitung")
-                            self._drain_events()
-                            return
-                    self._load_jobs()
-                    try:
-                        self.runner.start(self.jobs, options)
-                    except Exception as exc:
-                        self._probe_active = False
-                        self._show_start_error(f"{type(exc).__name__}: {exc}", "Start")
-        self._drain_events()
-        prepare_alive = bool(self.prepare_thread and self.prepare_thread.is_alive())
-        if self.close_after_stop and not self.runner.running and not prepare_alive:
-            self.close_after_stop = False
-            self.close()
+        return qt_production_events._poll(self)
 
     def _show_start_error(self, message: str, phase: str) -> None:
         self._status("FEHLER")
@@ -713,139 +519,16 @@ class VideoBatchQtWindow(QMainWindow):
         self.activity_detail.setText(f"{phase}: {reason}")
 
     def _drain_events(self) -> None:
-        for _ in range(200):
-            try:
-                event = self.events.get_nowait()
-            except queue.Empty:
-                return
-            p, name = event.payload, event.name
-            if name == "batch_started":
-                self.progress.setValue(0)
-                self.progress.setFormat("Verarbeitung · %p %")
-                self.job_progress.setValue(0)
-                self.job_progress.setFormat("Auftrag startet · %p %")
-                self.kpi_values["done"].setText("0")
-                self.kpi_values["active"].setText("Ja")
-                self._status("LÄUFT")
-                self.step_start.setText("3 · Läuft …")
-                self.next_step.setText("Produktion läuft. Fortschritt und Abbrechen bleiben hier immer sichtbar.")
-            elif name == "job_started":
-                position, total = int(p.get("position", 1)), int(p.get("total", len(self.jobs)))
-                self._row_status(position - 1, "Läuft …", "0 %")
-                self.activity_detail.setText(f"Aktiv · Auftrag {position}/{total} wird gestartet")
-            elif name == "progress":
-                snap = p.get("snapshot")
-                value = float(getattr(snap, "total_percent", 0.0) or 0.0)
-                value = value * 100.0 if 0 <= value <= 1 else value
-                self.progress.setValue(max(0, min(100, round(value))))
-                self.progress.setFormat(f"{getattr(snap, 'phase', 'Verarbeitung')} · %p %")
-                job_value = max(0, min(100, round(float(getattr(snap, "job_percent", 0.0) or 0.0))))
-                position = int(getattr(snap, "job_index", 0) or 0)
-                total = int(getattr(snap, "job_total", len(self.jobs)) or len(self.jobs))
-                self.job_progress.setValue(job_value)
-                self.job_progress.setFormat(f"Auftrag {position}/{total} · %p %")
-                self._row_status(position - 1, "Läuft …", f"{job_value} %")
-                elapsed_seconds = float(getattr(snap, "elapsed_seconds", 0.0) or 0.0)
-                elapsed = format_clock(elapsed_seconds)
-                eta = format_eta(getattr(snap, "eta_seconds", None), elapsed_seconds, job_value)
-                speed = getattr(snap, "speed", "") or "aktiv"
-                size = format_size(int(getattr(snap, "output_size", 0) or 0))
-                idle = float(getattr(snap, "last_activity_seconds", 0.0) or 0.0)
-                self.activity_detail.setText(
-                    f"Aktiv · Auftrag {position}/{total} · Phase: {getattr(snap, 'phase', 'Verarbeitung')} · "
-                    f"Zeit {elapsed} · ETA {eta} · {speed} · Ausgabe {size} · Signal vor {idle:.0f} s"
-                )
-            elif name == "job_finished":
-                result, pos = p.get("result"), int(p.get("position", 1))
-                success = bool(getattr(result, "success", False))
-                status = "Fertig ✓" if success else "⚠ Fehler · Protokoll prüfen"
-                self._row_status(pos - 1, status, "100 %" if success else "Fehler", failed=not success)
-                self.job_progress.setValue(100 if success else self.job_progress.value())
-                completed = int(self.kpi_values["done"].text() or "0") + int(success)
-                self.kpi_values["done"].setText(str(completed))
-                if getattr(result, "message", ""):
-                    self._write_log(f"Auftrag {pos}: {result.message}")
-            elif name in {"job_failed_internal", "batch_failed_internal"}:
-                self._status("SCHUTZSTOPP" if name == "batch_failed_internal" else "FEHLER")
-                self._write_log(str(p.get("message", "")))
-            elif name == "log":
-                self._write_log(str(p.get("message", "")))
-            elif name == "batch_finished":
-                self._finish_batch(p)
+        return qt_production_events._drain_events(self)
 
     def _finish_batch(self, payload) -> None:
-        ok = int(payload.get("successes", 0))
-        failed = int(payload.get("failures", 0))
-        open_ = int(payload.get("unprocessed", 0))
-        cancelled = bool(payload.get("cancelled"))
-        self._status("ABGEBROCHEN" if cancelled else ("FERTIG" if not failed and not open_ else "FERTIG MIT HINWEIS"))
-        if not failed and not open_ and not cancelled:
-            self.progress.setValue(100)
-        self.progress.setFormat("Abgeschlossen · %p %")
-        self.cancel.setEnabled(False)
-        self.kpi_values["active"].setText("Nein")
-        self.kpi_values["done"].setText(str(ok))
-        self.open_output.setEnabled(Path(self.output.text().strip()).expanduser().is_dir())
-        self.show_result_log.setEnabled(bool(self.log.toPlainText().strip()))
-        self.activity_detail.setText(f"Beendet · {ok} erfolgreich · {failed} Fehler · {open_} offen")
-        self._write_log(f"Abschluss: {ok} erfolgreich · {failed} Fehler · {open_} offen.")
-        for row in range(max(0, self.table.rowCount() - open_), self.table.rowCount()):
-            self._row_status(row, "Nicht gestartet", "–")
-        self._refresh(preserve_results=True)
-        if self._probe_active:
-            self._probe_active = False
-            good = ok == 1 and not failed and not open_ and not cancelled
-            self.open_probe_button.setVisible(good)
-            self.open_probe_button.setEnabled(good)
-            if good:
-                self.next_step.setText(
-                    "Probevideo fertig (höchstens 10 Sekunden). "
-                    "Mit „Probevideo öffnen“ das Ergebnis prüfen. "
-                    "Die normale Ausgabe wurde nicht verändert."
-                )
-            else:
-                self.next_step.setText(
-                    "Probevideo nicht erfolgreich. Fehlerdetails unter "
-                    "„Technische Meldungen anzeigen“ prüfen."
-                )
+        return qt_production_events._finish_batch(self, payload)
 
     def _load_jobs(self) -> None:
-        self.table.setRowCount(len(self.jobs))
-        for row, job in enumerate(self.jobs):
-            for col, text in enumerate((str(job.index), job.audio.name, job.media.name, "Geprüft", "0 %")):
-                self.table.setItem(row, col, job_table_item(text, col))
-            duration = job.audio_info.duration
-            duration_text = f"{duration:.1f} Sekunden" if duration else "unbekannt"
-            self.table.item(row, 1).setToolTip(
-                f"Audio: {job.audio}\nAudiodauer: {duration_text}"
-            )
-            self.table.item(row, 2).setToolTip(
-                f"Medium: {job.media}\nAusgabe: {job.output.name}\nZiel: {job.output.parent}"
-            )
-        if self.jobs:
-            first = self.jobs[0]
-            self.pairing_summary_label.setText(
-                f"✓ {len(self.jobs)} Auftrag/Aufträge geprüft. "
-                f"Beispiel: {first.audio.name} + {first.media.name} → {first.output.name}. "
-                "Dateidetails stehen in den beiden Spalten als Hinweis bereit."
-            )
+        return qt_production_events._load_jobs(self)
 
-    def _row_status(self, row: int, text: str, progress: str | None = None, *, failed: bool = False) -> None:
-        if 0 <= row < self.table.rowCount():
-            if self.table.item(row, 3) is None:
-                self.table.setItem(row, 3, QTableWidgetItem())
-            self.table.item(row, 3).setText(text)
-            if progress is not None:
-                if self.table.item(row, 4) is None:
-                    self.table.setItem(row, 4, QTableWidgetItem())
-                self.table.item(row, 4).setText(progress)
-            if failed:
-                for column in range(self.table.columnCount()):
-                    item = self.table.item(row, column)
-                    if item is not None:
-                        item.setBackground(QColor("#4a1722"))
-                        item.setForeground(QColor("#ffffff"))
-                        item.setToolTip("Auftrag fehlgeschlagen. Ergebnisprotokoll öffnen und Ursache prüfen.")
+    def _row_status(self, row: int, text: str, progress: str | None=None, *, failed: bool=False) -> None:
+        return qt_production_events._row_status(self, row, text, progress, failed=failed)
 
     def _write_log(self, message: str) -> None:
         if message.strip():

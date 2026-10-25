@@ -19,9 +19,9 @@ HELP_STATUS = ROOT / "src" / "videobatch_fast" / "canonical_help_status_mixin.py
 CHROME = ROOT / "src" / "videobatch_fast" / "canonical_shell_chrome.py"
 CANONICAL_UI = ROOT / "src" / "videobatch_fast" / "canonical_ui.py"
 WINDOW_MIXIN = ROOT / "src" / "videobatch_fast" / "canonical_window_mixin.py"
-TEST_SH = ROOT / "test.sh"
-VERIFY_SH = ROOT / "verify_release.sh"
-VIDEOBATCH_SH = ROOT / "videobatch.sh"
+TEST_SH = ROOT / 'scripts/dev/test.sh'
+VERIFY_SH = ROOT / 'scripts/dev/verify_release.sh'
+VIDEOBATCH_SH = ROOT / 'scripts/cli/videobatch.sh'
 
 
 def test_dashboard_breakpoints_are_complete_and_stable() -> None:
@@ -122,7 +122,7 @@ def test_local_verification_does_not_claim_reproducible_release() -> None:
     assert "--local" in test_source
     assert "run_external_quality.py" in test_source
     assert "KEINE STABLE-FREIGABE" in test_source
-    assert 'exec "$ROOT_DIR/test.sh" --local' in verify_source
+    assert 'exec "$ROOT_DIR/scripts/dev/test.sh" --local' in verify_source
     assert "--strict" in verify_source
-    assert 'exec "$ROOT_DIR/verify_release.sh" "$@"' in starter_source
+    assert 'exec "$ROOT_DIR/scripts/dev/verify_release.sh" "$@"' in starter_source
     assert "verify --strict" in starter_source

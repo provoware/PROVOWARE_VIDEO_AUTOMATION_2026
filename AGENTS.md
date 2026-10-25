@@ -92,15 +92,15 @@ Die kleinste passende Prüfung läuft zuerst. Keine vollständige Releasekette f
 Bevorzugte Reihenfolge:
 
 ```bash
-./test.sh --docs   # nur Dokumentation
-./test.sh --core   # Kernverträge ohne externe Qualitätswerkzeuge
-./verify_release.sh # praktische lokale Qualitätsprüfung
+./scripts/dev/test.sh --docs   # nur Dokumentation
+./scripts/dev/test.sh --core   # Kernverträge ohne externe Qualitätswerkzeuge
+./scripts/dev/verify_release.sh # praktische lokale Qualitätsprüfung
 ```
 
 Die strenge reproduzierbare Releaseprüfung wird nur auf einem finalen Kandidaten ausgeführt:
 
 ```bash
-./verify_release.sh --strict
+./scripts/dev/verify_release.sh --strict
 ```
 
 Zusätzlich gilt:

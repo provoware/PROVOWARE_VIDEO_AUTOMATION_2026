@@ -24,7 +24,7 @@ def projects_dir() -> Path:
 
 
 def default_project_file() -> Path:
-    return projects_dir() / "aktuelles_projekt.vbfast.json"
+    return state_dir() / "projects" / "aktuelles_projekt.vbfast.json"
 
 
 def _normalize_paths(values: Any) -> list[str]:

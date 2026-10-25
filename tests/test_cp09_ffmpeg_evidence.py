@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from qt_source_contracts import read_qt_sources
+
 import os
 import subprocess
 import sys
@@ -187,7 +189,7 @@ def test_fallback_policy_blocks_known_unsafe_failure_classes(tmp_path: Path) -> 
 
 
 def test_ffprobe_preparation_is_dispatched_off_qt_main_thread() -> None:
-    source = (ROOT / "src/videobatch_fast/qt_ui.py").read_text(encoding="utf-8")
+    source = read_qt_sources(ROOT / 'src/videobatch_fast/qt_ui.py', encoding='utf-8')
 
     assert "def prepare() -> None:" in source
     assert "jobs = build_jobs(audios, media, options)" in source

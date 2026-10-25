@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import json
 import re
 import subprocess
@@ -215,7 +216,7 @@ def main() -> int:
     parser.add_argument(
         "--report",
         type=Path,
-        default=ROOT / "RELEASE_LITERAL_HYGIENE.json",
+        default=Path(os.environ.get("VIDEOBATCH_DIAGNOSTICS_DIR", ROOT / "diagnostics")) / "RELEASE_LITERAL_HYGIENE.json",
     )
     args = parser.parse_args()
 

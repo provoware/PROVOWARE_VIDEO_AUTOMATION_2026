@@ -21,11 +21,12 @@ python3 "$ROOT_DIR/scripts/toolchain.py" gate --scope quality --run-external --q
 "$ENV_PYTHON" "$ROOT_DIR/scripts/check_github_actions_pins.py" --json
 "$ENV_PYTHON" -m pytest -q -p no:cacheprovider \
   --cov=videobatch_fast \
+  --cov=provoware_grid \
   --cov-config="$ROOT_DIR/pyproject.toml" \
   --cov-report=term-missing:skip-covered \
   --cov-report=json:"$TMP_ROOT/coverage.json" \
   --cov-fail-under=0 \
   "$ROOT_DIR/tests"
-"$ENV_PYTHON" "$ROOT_DIR/scripts/coverage_policy.py" "$TMP_ROOT/coverage.json" 80 65
+"$ENV_PYTHON" "$ROOT_DIR/scripts/coverage_policy.py" "$TMP_ROOT/coverage.json"
 "$ENV_PYTHON" "$ROOT_DIR/scripts/run_fault_lab.py" --output "$TMP_ROOT/fault_lab.json"
 printf 'VERBINDLICHE CODEQUALITÄTSSTRECKE BESTANDEN\n'

@@ -28,24 +28,7 @@ def validate(root: Path = ROOT) -> dict[str, Any]:
         if not isinstance(entries, list) or not entries:
             raise ValueError(f"Release-Dateivertrag enthält keine Gruppe {group}")
         for entry in entries:
-            relative = str(entry.get("path", ""))
-            candidate = Path(relative)
-            if not relative or candidate.is_absolute() or ".." in candidate.parts:
-                raise ValueError(f"Ungültiger Releasepfad: {relative}")
-            if relative in seen:
-                raise ValueError(f"Doppelter Releasepfad: {relative}")
-            seen.add(relative)
-            if not (root / candidate).is_file():
-                raise ValueError(f"Deklarierte Datei fehlt: {relative}")
-            has_marker = READY_MARKER in candidate.stem
-            if group == "ready" and not has_marker:
-                raise ValueError(f"Releasefertige Datei besitzt kein _save_: {relative}")
-            if group == "unfinished" and has_marker:
-                raise ValueError(f"Unfertige Datei trägt fälschlich _save_: {relative}")
-            if group == "ready":
-                old_name = candidate.name.replace(READY_MARKER, "")
-                if (root / candidate.with_name(old_name)).exists():
-                    raise ValueError(f"Ungesicherte Dublette existiert: {old_name}")
+            _validate_entry(root, entry, group, seen)
     old_root_reports = [
         path.name for path in root.iterdir()
         if path.is_file() and path.name.startswith(LEGACY_PREFIXES) and READY_MARKER not in path.stem
@@ -73,6 +56,28 @@ def validate(root: Path = ROOT) -> dict[str, Any]:
             if f"`{relative}`" not in document:
                 raise ValueError(f"{document_name}: deklarierter Releasepfad fehlt: {relative}")
     return contract
+
+
+
+def _validate_entry(root: Path, entry: dict[str, Any], group: str, seen: set[str]) -> None:
+    relative = str(entry.get("path", ""))
+    candidate = Path(relative)
+    if not relative or candidate.is_absolute() or ".." in candidate.parts:
+        raise ValueError(f"Ungültiger Releasepfad: {relative}")
+    if relative in seen:
+        raise ValueError(f"Doppelter Releasepfad: {relative}")
+    seen.add(relative)
+    if not (root / candidate).is_file():
+        raise ValueError(f"Deklarierte Datei fehlt: {relative}")
+    has_marker = READY_MARKER in candidate.stem
+    if group == "ready" and not has_marker:
+        raise ValueError(f"Releasefertige Datei besitzt kein _save_: {relative}")
+    if group == "unfinished" and has_marker:
+        raise ValueError(f"Unfertige Datei trägt fälschlich _save_: {relative}")
+    if group == "ready":
+        old_name = candidate.name.replace(READY_MARKER, "")
+        if (root / candidate.with_name(old_name)).exists():
+            raise ValueError(f"Ungesicherte Dublette existiert: {old_name}")
 
 
 def main() -> int:

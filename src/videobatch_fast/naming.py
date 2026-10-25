@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import fcntl
 import json
 import os
 import re
 import time
 import unicodedata
+import uuid
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -59,20 +61,36 @@ def _pid_is_alive(pid: int) -> bool:
 
 
 def _remove_stale_marker(marker: Path, *, stale_after: float = 86_400.0) -> bool:
+    # Never reclaim a marker held by another cooperating writer, even when old.
     try:
-        payload = json.loads(marker.read_text(encoding="utf-8"))
-        pid = int(payload.get("pid", 0) or 0)
-        created = float(payload.get("created_unix", 0.0) or 0.0)
-    except (OSError, ValueError, TypeError, json.JSONDecodeError):
-        pid, created = 0, 0.0
-    stale = (created and time.time() - created > stale_after) or (pid and not _pid_is_alive(pid)) or (not pid and not created)
-    if stale:
+        descriptor = os.open(marker, os.O_RDONLY | os.O_NOFOLLOW)
+    except OSError:
+        return False
+    try:
         try:
-            marker.unlink(missing_ok=True)
-            return True
-        except OSError:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
             return False
-    return False
+        stat = os.fstat(descriptor)
+        with os.fdopen(os.dup(descriptor), "r", encoding="utf-8") as handle:
+            try:
+                payload = json.load(handle)
+                pid = int(payload.get("pid", 0) or 0)
+            except (ValueError, TypeError, AttributeError):
+                pid = 0
+        if pid > 0 and _pid_is_alive(pid):
+            return False
+        if pid <= 0 and time.time() - stat.st_mtime <= stale_after:
+            return False
+        current = marker.lstat()
+        if (current.st_dev, current.st_ino) != (stat.st_dev, stat.st_ino):
+            return False
+        marker.unlink()
+        return True
+    except (OSError, UnicodeError):
+        return False
+    finally:
+        os.close(descriptor)
 
 
 @dataclass(slots=True)
@@ -80,13 +98,23 @@ class OutputReservation:
     target: Path
     marker: Path
     released: bool = False
+    owner_token: str = ""
+    descriptor: int = -1
 
     def release(self) -> None:
         if self.released:
             return
         try:
-            self.marker.unlink(missing_ok=True)
+            try:
+                payload = json.loads(self.marker.read_text(encoding="utf-8"))
+            except (OSError, ValueError, UnicodeError):
+                return
+            if isinstance(payload, dict) and payload.get("owner_token") == self.owner_token:
+                self.marker.unlink(missing_ok=True)
         finally:
+            if self.descriptor >= 0:
+                os.close(self.descriptor)
+                self.descriptor = -1
             self.released = True
 
 
@@ -110,8 +138,11 @@ def reserve_output_targets(targets: Iterable[Path]) -> list[OutputReservation]:
                 fd = os.open(marker, flags, 0o600)
             except FileExistsError as exc:
                 raise FileExistsError(f"Ziel ist bereits durch einen anderen Auftrag reserviert: {target}") from exc
+            owner_token = uuid.uuid4().hex
             try:
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
                 payload = {
+                    "owner_token": owner_token,
                     "schema_version": 1,
                     "pid": os.getpid(),
                     "created_unix": time.time(),
@@ -119,9 +150,12 @@ def reserve_output_targets(targets: Iterable[Path]) -> list[OutputReservation]:
                 }
                 os.write(fd, (json.dumps(payload, ensure_ascii=False) + "\n").encode("utf-8"))
                 os.fsync(fd)
-            finally:
+            except BaseException:
+                # The descriptor remains ours until publication has completed.
+                marker.unlink(missing_ok=True)
                 os.close(fd)
-            reservations.append(OutputReservation(target, marker))
+                raise
+            reservations.append(OutputReservation(target, marker, owner_token=owner_token, descriptor=fd))
         return reservations
     except Exception:
         for reservation in reservations:
@@ -132,3 +166,10 @@ def reserve_output_targets(targets: Iterable[Path]) -> list[OutputReservation]:
 def release_output_reservations(reservations: Iterable[OutputReservation]) -> None:
     for reservation in reservations:
         reservation.release()
+
+
+def used_name(path: Path, suffix: str = "__verwendet") -> str:
+    stem = path.stem
+    while stem.endswith(suffix):
+        stem = stem[: -len(suffix)]
+    return f"{safe_stem(stem + suffix)}{path.suffix.lower()}"

@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import json
 from pathlib import Path
+from qt_source_contracts import read_qt_sources
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -10,7 +11,7 @@ INVENTORY = ROOT / "docs" / "archive" / "diagnostics-checkpoints" / "architectur
 
 
 def _source(relative: str) -> str:
-    return (ROOT / relative).read_text(encoding="utf-8")
+    return read_qt_sources(ROOT / relative, encoding="utf-8")
 
 
 def _tree(relative: str) -> ast.Module:

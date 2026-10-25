@@ -64,6 +64,7 @@ class VisualApprovalTests(unittest.TestCase):
             "scenarios": [{"id": "one", "baseline": "tests/baselines/one.png", "passed": True}],
         }
         target = root / "registries/VISUAL_INSPECTION_MANIFEST.json"
+        target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(json.dumps(manifest), encoding="utf-8")
         return target
 

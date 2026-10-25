@@ -5,13 +5,14 @@ import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
+from .storage_validation import _validate_storage
+from .resource_estimation import estimate_required_by_filesystem
 from .models import BatchOptions, PairJob
 from .command_builder import PROFILES
 from .effects import TRANSITIONS, VISUAL_EFFECTS
 from .ffmpeg_capabilities import encoder_smoke_test, read_ffmpeg_capabilities, required_filter_names
 from .probe import ffmpeg_path, ffprobe_path, sampled_audio_peak
 from .quick_modes import QUICK_MODES, processing_options_for_job, validate_quick_modes
-from .resource_estimation import estimate_required_by_filesystem
 
 
 @dataclass(frozen=True, slots=True)
@@ -132,30 +133,7 @@ def validate_pairs(
             actions=("add_audio", "add_media", "switch_to_slideshow", "focus_file_lists"),
         ))
         return issues
-    capabilities = read_ffmpeg_capabilities(ffmpeg_path()) if ffmpeg_path() else None
-    if capabilities and not capabilities.error:
-        codec_ok = options.codec in capabilities.encoders
-        if not codec_ok and ffmpeg_path():
-            codec_ok, _detail = encoder_smoke_test(ffmpeg_path(), options.codec, "video")
-        if not codec_ok:
-            issues.append(ValidationIssue(
-                "FFMPEG_VIDEO_ENCODER_MISSING",
-                "Gewählter Video-Encoder fehlt",
-                f"Der FFmpeg-Build kann {options.codec} nicht verwenden.",
-                "Wähle einen verfügbaren Encoder oder installiere den vollständigen FFmpeg-Build.",
-            ))
-        required_filters = required_filter_names(options.visual_effect, options.transition)
-        if options.assignment_mode == "all_images_each_audio":
-            required_filters |= {"scale", "pad", "fps", "trim", "setpts"}
-            required_filters.add("xfade" if options.slideshow_transition != "none" else "concat")
-        missing_filters = required_filters - set(capabilities.filters)
-        if missing_filters:
-            issues.append(ValidationIssue(
-                "FFMPEG_FILTER_MISSING",
-                "Benötigter Video-Filter fehlt",
-                ", ".join(sorted(missing_filters)),
-                "Wähle einen einfacheren Look oder installiere den vollständigen FFmpeg-Build.",
-            ))
+    issues.extend(_validate_capabilities(options))
     checked_directories: set[Path] = {Path(options.output_dir).expanduser()}
     peak_checked: set[Path] = set()
     flash_notice = False
@@ -229,28 +207,34 @@ def validate_pairs(
                 "Teile die Bildmenge in kleinere Projekte mit höchstens 250 Bildern.",
             ))
 
-    for requirement in estimate_required_by_filesystem(jobs, options):
-        directory = requirement.directories[0]
-        try:
-            free = shutil.disk_usage(directory).free
-        except OSError as exc:
+    issues.extend(_validate_storage(jobs, options, estimate_required_by_filesystem))
+    return issues
+
+
+def _validate_capabilities(options: BatchOptions) -> list[ValidationIssue]:
+    issues: list[ValidationIssue] = []
+    capabilities = read_ffmpeg_capabilities(ffmpeg_path()) if ffmpeg_path() else None
+    if capabilities and not capabilities.error:
+        codec_ok = options.codec in capabilities.encoders
+        if not codec_ok and ffmpeg_path():
+            codec_ok, _detail = encoder_smoke_test(ffmpeg_path(), options.codec, "video")
+        if not codec_ok:
             issues.append(ValidationIssue(
-                "DISK_CHECK_UNKNOWN", "Freien Speicher nicht überprüfbar",
-                f"{directory}: {exc}",
-                "Ziel-Laufwerk prüfen und genügend freien Speicher bereitstellen.",
-                blocking=False,
+                "FFMPEG_VIDEO_ENCODER_MISSING",
+                "Gewählter Video-Encoder fehlt",
+                f"Der FFmpeg-Build kann {options.codec} nicht verwenden.",
+                "Wähle einen verfügbaren Encoder oder installiere den vollständigen FFmpeg-Build.",
             ))
-            continue
-        if free < requirement.required_bytes:
-            targets = ", ".join(str(path) for path in requirement.directories)
+        required_filters = required_filter_names(options.visual_effect, options.transition)
+        if options.assignment_mode == "all_images_each_audio":
+            required_filters |= {"scale", "pad", "fps", "trim", "setpts"}
+            required_filters.add("xfade" if options.slideshow_transition != "none" else "concat")
+        missing_filters = required_filters - set(capabilities.filters)
+        if missing_filters:
             issues.append(ValidationIssue(
-                "DISK_LOW",
-                "Wenig freier Speicher",
-                (
-                    f"Ziel-Dateisystem für {targets} · frei: {free / 1024**3:.1f} GB · "
-                    f"mit Sicherheitsreserve benötigt: {requirement.required_bytes / 1024**3:.1f} GB"
-                ),
-                "Wähle einen anderen Ordner oder erstelle einen Ausgabeordner auf einem Laufwerk mit mehr Platz.",
-                actions=("choose_output", "create_output_folder"),
+                "FFMPEG_FILTER_MISSING",
+                "Benötigter Video-Filter fehlt",
+                ", ".join(sorted(missing_filters)),
+                "Wähle einen einfacheren Look oder installiere den vollständigen FFmpeg-Build.",
             ))
     return issues

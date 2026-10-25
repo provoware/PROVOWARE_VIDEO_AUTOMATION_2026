@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from qt_source_contracts import read_qt_sources
+
 import importlib.util
 import queue
 import subprocess
@@ -107,7 +109,7 @@ def test_default_videobatch_start_has_no_tk_preflight() -> None:
 
 
 def test_qt_phase3_owns_ready_lock_and_clean_shutdown_contract() -> None:
-    source = (SRC / "videobatch_fast" / "qt_phase3.py").read_text(encoding="utf-8")
+    source = read_qt_sources(SRC / 'videobatch_fast' / 'qt_phase3.py', encoding='utf-8')
     required = (
         'os.environ.setdefault("QT_QPA_PLATFORM", "wayland")',
         "prepare_gui_environment()",

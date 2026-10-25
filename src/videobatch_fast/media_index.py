@@ -7,7 +7,6 @@ access happens in the caller's thread; GUI code must call refresh in a worker.
 from __future__ import annotations
 
 import os
-import re
 import sqlite3
 from contextlib import closing
 import threading
@@ -28,49 +27,7 @@ XDG_KEYS = {"videos": "XDG_VIDEOS_DIR", "downloads": "XDG_DOWNLOAD_DIR",
 SCHEMA_VERSION = 1
 
 
-def _xdg_user_dirs() -> dict[str, Path]:
-    config = os.environ.get("XDG_CONFIG_HOME")
-    root = Path(config) if config and Path(config).is_absolute() else Path.home() / ".config"
-    file = root / "user-dirs.dirs"
-    try:
-        lines = file.read_text(encoding="utf-8").splitlines()
-    except OSError:
-        return {}
-    found: dict[str, Path] = {}
-    for line in lines:
-        match = re.fullmatch(r'\s*(XDG_(?:VIDEOS|DOWNLOAD|PICTURES)_DIR)="([^"]+)"\s*', line)
-        if match is None:
-            continue
-        key, raw = match.groups()
-        # Do not interpret arbitrary shell fragments from configuration files.
-        if raw.startswith("$HOME/"):
-            path = Path.home() / raw[6:]
-        elif raw == "$HOME":
-            path = Path.home()
-        elif Path(raw).is_absolute():
-            path = Path(raw)
-        else:
-            continue
-        found[key] = path
-    return found
-
-
-def media_roots() -> dict[str, Path]:
-    """Exactly three configured user roots; never crawl the whole home tree."""
-    configured = _xdg_user_dirs()
-    home = Path.home()
-    pictures = home / "Bilder" if (home / "Bilder").is_dir() else home / "Pictures"
-    defaults = {"videos": home / "Videos", "downloads": home / "Downloads",
-                "pictures": pictures}
-    roots: dict[str, Path] = {}
-    for name, default in defaults.items():
-        candidate = configured.get(XDG_KEYS[name], default).expanduser().absolute()
-        # XDG can intentionally map an unset user folder to $HOME.
-        # Never interpret that as permission to scan the entire home or /.
-        if candidate in (home.absolute(), Path("/")):
-            candidate = default
-        roots[name] = candidate
-    return roots
+from .media_index_preferences import media_roots
 
 
 @dataclass(frozen=True)

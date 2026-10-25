@@ -82,3 +82,22 @@ def test_missing_user_selected_project_is_not_created(tmp_path: Path, monkeypatc
     assert project == tmp_path / "default.vbfast.json"
     assert project.is_file()
     assert not healed
+
+
+def test_config_import_never_creates_user_directories(tmp_path: Path) -> None:
+    import os
+    import subprocess
+    import sys
+
+    source = Path(__file__).resolve().parents[1] / "src"
+    code = (
+        "from unittest.mock import patch; "
+        "guard=patch('pathlib.Path.mkdir', side_effect=AssertionError('import attempted mkdir')); "
+        "guard.start(); import videobatch_fast.config"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, timeout=10,
+        env={**os.environ, "PYTHONPATH": str(source), "XDG_STATE_HOME": str(tmp_path / "absent")},
+    )
+    assert result.returncode == 0, result.stderr
+    assert not (tmp_path / "absent").exists()

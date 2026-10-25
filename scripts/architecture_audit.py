@@ -10,7 +10,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src" / "videobatch_fast"
 REGISTRY = ROOT / "registries" / "CODE_QUALITY_REGISTRY.json"
-MAX_LINES = 700
 
 
 def main() -> int:
@@ -28,7 +27,7 @@ def main() -> int:
         if lines > max_file[1]:
             max_file = (path.name, lines)
         relative = path.relative_to(ROOT).as_posix()
-        limit = int(ceilings.get(relative, MAX_LINES))
+        limit = int(ceilings.get(relative, policy["source_line_limit"]))
         if lines > limit:
             findings.append(f"{path.name}: {lines} Zeilen > {limit}")
         tree = ast.parse(source)
@@ -41,7 +40,7 @@ def main() -> int:
                 for keyword in node.keywords:
                     if keyword.arg == "shell" and isinstance(keyword.value, ast.Constant) and keyword.value.value is True:
                         findings.append(f"{path.name}:{node.lineno}: shell=True")
-    payload = {"schema_version":1,"modules":modules,"functions":functions,"classes":classes,"max_file":{"name":max_file[0],"lines":max_file[1]},"line_limit":MAX_LINES,"findings":findings}
+    payload = {"schema_version":1,"modules":modules,"functions":functions,"classes":classes,"max_file":{"name":max_file[0],"lines":max_file[1]},"line_limit":policy["source_line_limit"],"findings":findings}
     diagnostics = Path(os.environ.get("VIDEOBATCH_DIAGNOSTICS_DIR", ROOT / "diagnostics"))
     diagnostics.mkdir(parents=True, exist_ok=True)
     (diagnostics / "architecture_audit_latest.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")

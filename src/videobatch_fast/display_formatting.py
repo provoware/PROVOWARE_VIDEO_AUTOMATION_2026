@@ -44,3 +44,13 @@ def format_eta(eta: object, elapsed: float, job_percent: int) -> str:
         return "wird berechnet" if elapsed < 15 else "nicht verfügbar"
     label = "erste Schätzung" if elapsed < 20 or job_percent < 10 else "aktuelle Schätzung"
     return f"{label} · ca. {format_clock(float(eta))}"
+
+
+def media_size_text(size: int) -> str:
+    value = float(max(0, size))
+    units = ("B", "KB", "MB", "GB", "TB")
+    for unit in units:
+        if value < 1024.0 or unit == units[-1]:
+            return f"{value:.1f} {unit}"
+        value /= 1024.0
+    return f"{value:.1f} TB"

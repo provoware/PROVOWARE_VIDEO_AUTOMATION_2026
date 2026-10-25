@@ -59,7 +59,7 @@ def test_successful_builder_keeps_project_and_publishes_manifest(tmp_path: Path)
     ):
         assert builder.main() == 0
     assert (output / common.MANIFEST_NAME).is_file()
-    assert (ROOT / "videobatch.sh").is_file()
+    assert (ROOT / 'scripts/cli/videobatch.sh').is_file()
 
 
 def test_dangerous_cleanup_target_is_blocked(tmp_path: Path) -> None:
@@ -81,7 +81,7 @@ def test_previous_version_wheels_are_imported_automatically(tmp_path: Path, monk
 
 
 def test_launcher_is_noninteractive_and_visible() -> None:
-    launcher = (ROOT / "videobatch.sh").read_text(encoding="utf-8")
+    launcher = (ROOT / 'scripts/cli/videobatch.sh').read_text(encoding="utf-8")
     debug_launcher = (ROOT / "scripts" / "debug_launcher.py").read_text(encoding="utf-8")
     assert "--auto-repair" in launcher
     assert 'start_application() {\n  exec "$ROOT_DIR/STARTEN.sh"\n}' in launcher

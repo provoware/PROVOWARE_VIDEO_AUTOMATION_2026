@@ -7,12 +7,14 @@ from pathlib import Path
 
 
 def main() -> int:
-    if len(sys.argv) != 4:
-        print("Nutzung: coverage_policy.py COVERAGE_JSON MIN_LINE MIN_BRANCH", file=sys.stderr)
+    if len(sys.argv) not in (2, 4):
+        print("Nutzung: coverage_policy.py COVERAGE_JSON [MIN_LINE MIN_BRANCH]", file=sys.stderr)
         return 2
     path = Path(sys.argv[1])
-    min_line = float(sys.argv[2])
-    min_branch = float(sys.argv[3])
+    registry = Path(__file__).resolve().parents[1] / "registries/CODE_QUALITY_REGISTRY.json"
+    policy = json.loads(registry.read_text(encoding="utf-8"))["python"]
+    min_line = float(sys.argv[2]) if len(sys.argv) == 4 else float(policy["line_coverage_minimum_percent"])
+    min_branch = float(sys.argv[3]) if len(sys.argv) == 4 else float(policy["branch_coverage_minimum_percent"])
     payload = json.loads(path.read_text(encoding="utf-8"))
     totals = payload.get("totals", {})
     statements = int(totals.get("num_statements", 0) or 0)

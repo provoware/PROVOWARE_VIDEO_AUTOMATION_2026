@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from qt_source_contracts import read_qt_sources
+
 import ast
 from pathlib import Path
 
@@ -28,7 +30,7 @@ def _imports(source: str) -> set[str]:
 
 
 def test_qt_frontend_is_native_and_tk_free() -> None:
-    source = QT_UI.read_text(encoding="utf-8")
+    source = read_qt_sources(QT_UI, encoding='utf-8')
     imports = _imports(source)
 
     assert any(name == "PySide6" or name.startswith("PySide6.") for name in imports)
@@ -41,10 +43,10 @@ def test_qt_frontend_is_native_and_tk_free() -> None:
 
 
 def test_qt_theme_and_dependency_contract_exist() -> None:
-    theme = QT_THEME.read_text(encoding="utf-8")
+    theme = read_qt_sources(QT_THEME, encoding='utf-8')
     pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-    requirements = (ROOT / "requirements-qt.txt").read_text(encoding="utf-8")
-    runtime_lock = (ROOT / "requirements.lock").read_text(encoding="utf-8")
+    requirements = (ROOT / 'config/requirements/requirements-qt.txt').read_text(encoding="utf-8")
+    runtime_lock = (ROOT / 'config/requirements/requirements.lock').read_text(encoding="utf-8")
 
     assert "APP_STYLE" in theme
     assert 'qt = ["PySide6==6.11.2"]' in pyproject
@@ -53,7 +55,7 @@ def test_qt_theme_and_dependency_contract_exist() -> None:
 
 
 def test_qt_theme_exposes_high_visibility_accessibility_contract() -> None:
-    theme = QT_THEME.read_text(encoding="utf-8") + QT_UI_POLISH.read_text(encoding="utf-8")
+    theme = read_qt_sources(QT_THEME, encoding='utf-8') + QT_UI_POLISH.read_text(encoding="utf-8")
 
     for token in (
         "background: #0b1016;",
@@ -93,7 +95,7 @@ def test_qt_theme_exposes_high_visibility_accessibility_contract() -> None:
 
 def test_qt_dashboard_exposes_total_job_and_activity_feedback() -> None:
     source = "".join(
-        path.read_text(encoding="utf-8")
+        read_qt_sources(path, encoding="utf-8")
         for path in (QT_UI, QT_MAIN_LAYOUT, QT_WORKSPACE_LAYOUT, QT_UI_POLISH, DISPLAY_FORMATTING)
     )
     for token in (
@@ -106,8 +108,8 @@ def test_qt_dashboard_exposes_total_job_and_activity_feedback() -> None:
         'getattr(snap, "elapsed_seconds"',
         'getattr(snap, "eta_seconds"',
         'getattr(snap, "last_activity_seconds"',
-        'f"Qualität: {spec.resolution}',
-        'f"Ziel: {quality_target(spec.key)}',
+        'def _runtime_state(self) -> None:',
+        'FFmpeg + FFprobe gefunden',
         '"wird berechnet" if elapsed < 15 else "nicht verfügbar"',
         '"erste Schätzung"',
         '"aktuelle Schätzung"',
@@ -161,8 +163,8 @@ def test_media_selection_lists_support_bounded_ctrl_wheel_zoom() -> None:
 
     for token in (
         "zoomChanged = Signal(int)",
-        "MIN_ZOOM_POINT_SIZE = 10.0",
-        "MAX_ZOOM_POINT_SIZE = 22.0",
+        "MIN_ZOOM_POINT_SIZE = 12.0",
+        "MAX_ZOOM_POINT_SIZE = 24.0",
         "def wheelEvent(self, event: QWheelEvent)",
         "def keyPressEvent(self, event: QKeyEvent)",
         "Qt.KeyboardModifier.ControlModifier",
@@ -181,8 +183,8 @@ def test_media_selection_lists_support_bounded_ctrl_wheel_zoom() -> None:
 def test_media_selection_lists_offer_deterministic_view_sort_without_pairing_drift() -> None:
     source = (
         QT_MEDIA_LIST.read_text(encoding="utf-8")
-        + QT_UI.read_text(encoding="utf-8")
-        + QT_SOURCE_PANEL.read_text(encoding="utf-8")
+        + read_qt_sources(QT_UI, encoding='utf-8')
+        + read_qt_sources(QT_SOURCE_PANEL, encoding='utf-8')
     )
     for token in (
         '("Name A–Z", "name")',
@@ -193,7 +195,7 @@ def test_media_selection_lists_offer_deterministic_view_sort_without_pairing_dri
         'if mode == "size":',
         "def sort_by(self, mode: str)",
         "def production_paths(self) -> list[Path]:",
-        "production_order = list(self._production_paths)",
+        "return list(self._parity_production_paths)",
         "def apply_view_as_production_order(self) -> None:",
         "Ansicht als Produktionsreihenfolge übernehmen",
         "self.audio.production_paths(), self.media.production_paths()",
@@ -201,25 +203,24 @@ def test_media_selection_lists_offer_deterministic_view_sort_without_pairing_dri
         assert token in source
 
 
-def test_media_selection_lists_show_metadata_and_image_thumbnails() -> None:
-    source = QT_MEDIA_LIST.read_text(encoding="utf-8")
+def test_media_browser_provides_metadata_and_worker_thumbnails() -> None:
+    # Rich browsing moved to the dedicated media dialog; the production list
+    # keeps the selected order. Decoding must stay in the thumbnail worker.
+    source = read_qt_sources(ROOT / "src/videobatch_fast/qt_media_import_dialog.py")
     for token in (
-        "def media_size_text(size: int) -> str:",
-        "def media_path_display_text(path: Path) -> str:",
-        "geändert {changed}",
-        "IMAGE_THUMBNAIL_EXTS",
-        "item = QListWidgetItem(media_path_display_text(path))",
-        "pixmap = QPixmap(resolved)",
-        "item.setIcon(QIcon(pixmap))",
-        "self.setIconSize(QSize(72, 54))",
-        "scale = bounded / 11.0",
+        "human_size(record.size)", "datetime.fromtimestamp(record.modified)",
+        "self._thumb_pool.submit(load_thumbnail, Path(filename))",
+        "item.setIcon(QIcon(QPixmap.fromImage(cached)))",
+        "self._thumbReady.emit(token, image_key, picture)",
     ):
         assert token in source
+    from videobatch_fast.display_formatting import media_size_text
+    assert media_size_text(1024) == "1.0 KB"
 
 
 def test_header_dashboard_exposes_graphical_cpu_ram_swap_load() -> None:
-    source = QT_LOAD_DASHBOARD.read_text(encoding="utf-8") + QT_UI.read_text(encoding="utf-8")
-    theme = QT_THEME.read_text(encoding="utf-8")
+    source = QT_LOAD_DASHBOARD.read_text(encoding="utf-8") + read_qt_sources(QT_UI, encoding='utf-8')
+    theme = read_qt_sources(QT_THEME, encoding='utf-8')
     for token in (
         "SystemLoadSampler",
         "self.timer.setInterval(1000)",
@@ -242,8 +243,8 @@ def test_header_dashboard_exposes_graphical_cpu_ram_swap_load() -> None:
 
 
 def test_main_workspace_supports_global_scaling_without_page_scroll_or_three_column_squeeze() -> None:
-    layout = QT_MAIN_LAYOUT.read_text(encoding="utf-8")
-    workspace = QT_WORKSPACE_LAYOUT.read_text(encoding="utf-8")
+    layout = read_qt_sources(QT_MAIN_LAYOUT, encoding='utf-8')
+    workspace = read_qt_sources(QT_WORKSPACE_LAYOUT, encoding='utf-8')
     source = layout + workspace
     for token in (
         'window.view_scale.setAccessibleName("Schrift- und Ansichtsgröße")',
@@ -273,7 +274,7 @@ def test_main_workspace_supports_global_scaling_without_page_scroll_or_three_col
 
 def test_output_controls_keep_all_six_fields_in_responsive_settings() -> None:
     """The former static left/right output layout was removed on purpose."""
-    source = QT_MAIN_LAYOUT.read_text(encoding="utf-8")
+    source = read_qt_sources(QT_MAIN_LAYOUT, encoding='utf-8')
     for label in ("Auflösung", "Qualität", "Bildeffekt", "Ausgabeordner", "Effektstärke", "Videoblende"):
         assert f'window.settings_grid.add_field("{label}"' in source
     assert "window.settings_grid = ResponsiveSettingsPanel()" in source
@@ -283,7 +284,7 @@ def test_output_controls_keep_all_six_fields_in_responsive_settings() -> None:
 
 
 def test_visual_hierarchy_and_beginner_keyboard_workflow_are_explicit() -> None:
-    source = QT_UI.read_text(encoding="utf-8") + QT_UI_POLISH.read_text(encoding="utf-8") + QT_SOURCE_PANEL.read_text(encoding="utf-8")
+    source = read_qt_sources(QT_UI, encoding='utf-8') + QT_UI_POLISH.read_text(encoding="utf-8") + read_qt_sources(QT_SOURCE_PANEL, encoding='utf-8')
     for token in (
         'text_label(hint, "panelHint", wrap=True)',
         '"ANALYSE"',
@@ -296,7 +297,7 @@ def test_visual_hierarchy_and_beginner_keyboard_workflow_are_explicit() -> None:
         'table.setTextElideMode(Qt.TextElideMode.ElideMiddle)',
         'table.verticalHeader().setDefaultSectionSize(38)',
         '("Alt+1", "media", window.audio)',
-        '("Alt+2", "effects", window.output)',
+        '("Alt+2", "global_settings", window.output)',
         '("Alt+3", "queue", window.start)',
         'window.audio.setToolTip(window.audio.toolTip() + " · Alt+1: Dateiauswahl")',
         '"Alt+2: Ausgabeordner"',
@@ -309,7 +310,7 @@ def test_visual_hierarchy_and_beginner_keyboard_workflow_are_explicit() -> None:
 
 
 def test_accessibility_scaling_composes_with_the_selected_theme() -> None:
-    layout = QT_MAIN_LAYOUT.read_text(encoding="utf-8")
+    layout = read_qt_sources(QT_MAIN_LAYOUT, encoding='utf-8')
     appearance = QT_LEGACY_APPEARANCE.read_text(encoding="utf-8")
 
     assert 'window.setStyleSheet(_THEME_OVERRIDES.get(theme, ""))' in appearance
@@ -328,12 +329,14 @@ def test_result_preserving_refresh_propagates_through_qt_layers() -> None:
     assert "def _refresh(self, *, preserve_results: bool = False)" in phase2
     assert "super()._refresh(preserve_results=preserve_results)" in phase2
     assert "if not preserve_results:" in phase2
-    assert "def refresh(self, *, preserve_results: bool = False)" in parity
-    assert "original_refresh(self, preserve_results=preserve_results)" in parity
+    phase3 = read_qt_sources(ROOT / "src/videobatch_fast/qt_phase3.py")
+    assert "def _refresh(self, *, preserve_results: bool = False)" in phase3
+    assert "super()._refresh(preserve_results=preserve_results)" in phase3
+    assert "original_refresh" not in parity
     assert 'self.job_progress.setFormat("Aufträge werden vorbereitet …")' in parity
     assert 'self.kpi_values["active"].setText("Prüfung")' in parity
     assert 'self.activity_detail.setText(f"Aktiv · prüfe {len(audios)} Auftrag/Aufträge mit FFprobe")' in parity
-    qt_ui = QT_UI.read_text(encoding="utf-8")
+    qt_ui = read_qt_sources(QT_UI, encoding='utf-8')
     assert 'self.table.rowCount() - open_' in qt_ui
     assert 'self._row_status(row, "Nicht gestartet", "–")' in qt_ui
     assert 'output_dir = Path(self.output.text().strip()).expanduser()' in qt_ui

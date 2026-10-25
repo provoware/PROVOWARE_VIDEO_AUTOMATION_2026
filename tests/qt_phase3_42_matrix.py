@@ -26,6 +26,16 @@ def findings(window: VideoBatchQtPhase3Window, width: int, height: int) -> list[
     problems: list[str] = []
     if (window.width(), window.height()) != (width, height):
         problems.append(f"Fenster {window.width()}x{window.height()} statt {width}x{height}")
+    problems.extend(_label_findings(window))
+    problems.extend(_compact_findings(window, width))
+    problems.extend(_route_findings(window, width))
+    problems.extend(_navigation_findings(window))
+    return sorted(set(problems))
+
+
+
+def _label_findings(window) -> list[str]:
+    problems: list[str] = []
     # Nicht nur Widgets zählen: ein Qt-Label kann als "sichtbar" gelten,
     # obwohl es kleiner als eine einzige Textzeile zusammengedrückt wird.
     for label in window.findChildren(QLabel):
@@ -43,6 +53,11 @@ def findings(window: VideoBatchQtPhase3Window, width: int, height: int) -> list[
             needed_width = label.fontMetrics().horizontalAdvance(label.text())
             if label.width() + 2 < needed_width:
                 problems.append("Programmtitel horizontal abgeschnitten")
+    return problems
+
+
+def _compact_findings(window, width) -> list[str]:
+    problems: list[str] = []
     if width <= 900 and int(window.view_scale.currentData() or 100) >= 175:
         if window.action_footer_scroll.height() < 78:
             problems.append(
@@ -70,6 +85,11 @@ def findings(window: VideoBatchQtPhase3Window, width: int, height: int) -> list[
             banner = window.findChildren(QLabel, "title")[0]
             if banner.height() > 44:
                 problems.append(f"Programmkopf belegt zu viel Höhe: {banner.height()}px")
+    return problems
+
+
+def _route_findings(window, width) -> list[str]:
+    problems: list[str] = []
     if window.workflow_stack.height() < 60:
         problems.append(f"Arbeitsseite zu flach: {window.workflow_stack.height()}px")
     route = getattr(window, "_active_workflow_route", "")
@@ -91,6 +111,11 @@ def findings(window: VideoBatchQtPhase3Window, width: int, height: int) -> list[
             problems.append("Ausgabeseite öffnet nicht bei den Grundeinstellungen")
         if not window.settings_view.isVisibleTo(window):
             problems.append("Grundlegende Ausgabeoptionen nicht erreichbar")
+    return problems
+
+
+def _navigation_findings(window) -> list[str]:
+    problems: list[str] = []
     tabs = window.main_tabs
     if not tabs.isVisible():
         problems.append("Dreistufige Hauptnavigation unsichtbar")
@@ -104,8 +129,7 @@ def findings(window: VideoBatchQtPhase3Window, width: int, height: int) -> list[
             continue
         if button.width() < 30 or button.height() < 25:
             problems.append(f"Schaltfläche zu klein: {button.text()[:40]!r}")
-    return sorted(set(problems))
-
+    return problems
 
 def run(output: Path) -> int:
     output.mkdir(parents=True, exist_ok=True)

@@ -100,8 +100,8 @@ Den Testpfad an die tatsächliche Änderung anpassen.
 ### Schritt 6: Vollständige Tests und Qualitätsprüfung ausführen
 
 ```bash
-./test.sh
-./quality.sh
+./scripts/dev/test.sh
+./scripts/dev/quality.sh
 ```
 
 `test.sh` verwendet temporäre Verzeichnisse für XDG-Zustand, Coverage, Diagnosen und visuelle Kandidaten. Änderungen an manifestierten Projektdateien gelten als Fehler.

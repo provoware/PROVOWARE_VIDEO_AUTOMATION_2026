@@ -63,6 +63,10 @@ def test_release_docs_use_canonical_evidence_and_keep_marker_api(tmp_path: Path)
         "stable_ready": False,
         "approved_quality_report": "report_save_.json",
     }
+    # The renderer verifies the complete frozen file-list contract. Reuse
+    # that real list while varying the report numbers and marker-bearing text.
+    canonical = Path(__file__).resolve().parents[1] / "diagnostics/release_readiness/RELEASE_EVIDENCE.json"
+    evidence["release_files"] = json.loads(canonical.read_text(encoding="utf-8"))["release_files"]
     (evidence_dir / "RELEASE_EVIDENCE.json").write_text(
         json.dumps(evidence),
         encoding="utf-8",
@@ -72,6 +76,7 @@ def test_release_docs_use_canonical_evidence_and_keep_marker_api(tmp_path: Path)
         f"{FILES_START}\nalt\n{FILES_END}\n\nNutzung\n",
         encoding="utf-8",
     )
+    (tmp_path / "docs").mkdir(exist_ok=True)
     (tmp_path / "docs/STATUS.md").write_text("alt\n", encoding="utf-8")
 
     documents = render(tmp_path)
@@ -79,7 +84,7 @@ def test_release_docs_use_canonical_evidence_and_keep_marker_api(tmp_path: Path)
 
     assert "1.2.3-rc4" in status
     assert "12/12 automatisierte Tests" in status
-    assert "Guide_save_.md" in status
+    assert "docs/start/START_HIER_save_.md" in status
     assert "docs/TODO.md" in status
     assert documents[tmp_path / "README.md"].endswith("\n\nNutzung\n")
 

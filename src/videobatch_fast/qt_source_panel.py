@@ -13,59 +13,9 @@ from .qt_ui_polish import configure_clear_button, configure_file_buttons, field_
 
 
 def _source_card(window, label: str, widget: DropList, add_text: str) -> QFrame:
-    card = QFrame()
-    card.setObjectName("sourceCard")
-    layout = QVBoxLayout(card)
-    layout.setContentsMargins(10, 10, 10, 10)
-    layout.setSpacing(7)
+    from .qt_desktop_actions import _source_card as build
 
-    header = QHBoxLayout()
-    source_label = field_label(label)
-    source_label.setAccessibleName(label)
-    source_label.setToolTip(label)
-    if not hasattr(window, "_source_header_labels"):
-        window._source_header_labels = []
-    window._source_header_labels.append((source_label, label, "Audio" if widget is window.audio else "Medien"))
-    header.addWidget(source_label)
-    header.addStretch()
-    sorter = QComboBox()
-    sorter.setAccessibleName(f"{label} sortieren")
-    # At 200% the previous hard minimum expanded the entire scroll page.
-    sorter.setMinimumWidth(0)
-    sorter.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
-    for sort_label, sort_mode in SORT_MODES:
-        sorter.addItem(sort_label, sort_mode)
-    sorter.currentIndexChanged.connect(
-        lambda _index, target=widget, control=sorter: target.sort_by(str(control.currentData()))
-    )
-    header.addWidget(sorter)
-    layout.addLayout(header)
-
-    widget.setMinimumHeight(170)
-    layout.addWidget(widget, 1)
-
-    add = QPushButton(add_text)
-    add.setAccessibleName(add_text)
-    add.setToolTip(add_text)
-    if not hasattr(window, "_source_action_labels"):
-        window._source_action_labels = []
-    short = "Audio wählen …" if widget is window.audio else "Medien wählen …"
-    window._source_action_labels.append((add, add_text, short))
-    remove = QPushButton("Entfernen")
-    configure_file_buttons(add, remove, label)
-    # The full accessible text remains available while 200%-zoom screens
-    # receive a short visible action label instead of clipped letters.
-    remove.setAccessibleName("Ausgewählte Dateien aus der Liste entfernen")
-    remove.setToolTip(
-        "Markierte Dateien nur aus der Liste entfernen; Originalmedien bleiben erhalten."
-    )
-    window._source_action_labels.append((remove, "Entfernen", "Entf."))
-    add.clicked.connect(window._choose_audio if widget is window.audio else window._choose_media)
-    remove.clicked.connect(widget.remove_selected)
-    actions = ResponsiveControlRow((add, remove))
-    window._responsive_control_rows.append(actions)
-    layout.addWidget(actions)
-    return card
+    return build(window, label, widget, add_text)
 
 
 class ResponsiveSourceColumns(QWidget):

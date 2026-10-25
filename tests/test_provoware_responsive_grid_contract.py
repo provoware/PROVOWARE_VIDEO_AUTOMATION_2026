@@ -5,6 +5,8 @@ geometry and visual screenshot approval remain independent gates.
 """
 from __future__ import annotations
 
+from qt_source_contracts import read_qt_sources
+
 import json
 from html.parser import HTMLParser
 from pathlib import Path
@@ -141,9 +143,9 @@ def test_portable_python_core_and_css_match_the_contract() -> None:
 
 
 def test_qt_uses_portable_rules_without_importing_ffmpeg_or_qt_into_core() -> None:
-    source = (ROOT / "src/videobatch_fast/qt_source_panel.py").read_text(encoding="utf-8")
+    source = read_qt_sources(ROOT / 'src/videobatch_fast/qt_source_panel.py', encoding='utf-8')
     adapter = (ROOT / "src/videobatch_fast/qt_adaptive_settings.py").read_text(encoding="utf-8")
-    main = (ROOT / "src/videobatch_fast/qt_main_layout.py").read_text(encoding="utf-8")
+    main = read_qt_sources(ROOT / 'src/videobatch_fast/qt_main_layout.py', encoding='utf-8')
     assert "from provoware_grid import choose_columns" in source
     assert "from provoware_grid import choose_columns" in adapter
     assert 'setObjectName("adaptiveSettingScroll")' in main

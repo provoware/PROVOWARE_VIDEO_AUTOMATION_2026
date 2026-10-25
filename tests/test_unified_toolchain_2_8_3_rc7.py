@@ -20,7 +20,7 @@ import toolchain_common as common  # noqa: E402
 RUNTIME = {
     "cffi": "2.0.0",
     "cryptography": "50.0.0",
-    "pillow": "12.3.0",
+    "pillow": "13.0.0",
     "pyside6": "6.11.2",
     "pyside6-addons": "6.11.2",
     "pyside6-essentials": "6.11.2",
@@ -66,11 +66,11 @@ def test_unified_contract_matches_all_exact_locks() -> None:
     assert common.expected_packages(contract, "runtime") == RUNTIME
     assert common.expected_packages(contract, "quality") == QUALITY
     assert common.expected_packages(contract, "all") == ALL
-    assert common.read_exact_lock(ROOT / "requirements-toolchain.lock") == ALL
+    assert common.read_exact_lock(ROOT / 'config/requirements/requirements-toolchain.lock') == ALL
 
 
 def test_only_one_canonical_contract_and_wheelhouse_exist() -> None:
-    assert (ROOT / "TOOLCHAIN_CONTRACT.json").is_file()
+    assert (ROOT / 'config/contracts/TOOLCHAIN_CONTRACT.json').is_file()
     assert (ROOT / "toolchain_wheelhouse").is_dir()
     assert not (ROOT / "QUALITY_TOOLCHAIN_CONTRACT.json").exists()
     assert not (ROOT / "RUNTIME_ENVIRONMENT_CONTRACT.json").exists()
@@ -99,9 +99,10 @@ def test_orchestrator_verifies_without_legacy_modules(tmp_path: Path) -> None:
     for filename in ("toolchain.py", "toolchain_common.py"):
         shutil.copy2(SCRIPTS / filename, scripts / filename)
     for filename in (
-        "TOOLCHAIN_CONTRACT.json", "VERSION.json", "requirements.lock",
-        "requirements-quality.lock", "requirements-toolchain.lock",
+        "config/contracts/TOOLCHAIN_CONTRACT.json", "VERSION.json", "config/requirements/requirements.lock",
+        "config/requirements/requirements-quality.lock", "config/requirements/requirements-toolchain.lock",
     ):
+        (project / filename).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(ROOT / filename, project / filename)
     assert not (scripts / "quality_toolchain.py").exists()
     assert not (scripts / "runtime_toolchain.py").exists()
@@ -115,17 +116,17 @@ def test_orchestrator_verifies_without_legacy_modules(tmp_path: Path) -> None:
 
 
 def test_single_entrypoint_and_compatibility_wrappers_are_bound() -> None:
-    entry = (ROOT / "videobatch.sh").read_text(encoding="utf-8")
+    entry = (ROOT / 'scripts/cli/videobatch.sh').read_text(encoding="utf-8")
     start = (ROOT / "STARTEN.sh").read_text(encoding="utf-8")
     debug_launcher = (ROOT / "scripts" / "debug_launcher.py").read_text(encoding="utf-8")
     assert "scripts/toolchain.py" in entry
     assert "scripts/debug_launcher.py" in start
     assert 'str(ROOT / "scripts" / "bootstrap.py")' in debug_launcher
     assert "toolchain_python" in entry
-    for filename in ("start.sh", "setup.sh"):
+    for filename in ("scripts/cli/start.sh", "scripts/install/setup.sh"):
         assert "videobatch.sh" in (ROOT / filename).read_text(encoding="utf-8")
-    assert "--scope runtime" in (ROOT / "runtime-toolchain.sh").read_text(encoding="utf-8")
-    assert "--scope quality" in (ROOT / "quality-toolchain.sh").read_text(encoding="utf-8")
+    assert "--scope runtime" in (ROOT / 'scripts/dev/runtime-toolchain.sh').read_text(encoding="utf-8")
+    assert "--scope quality" in (ROOT / 'scripts/dev/quality-toolchain.sh').read_text(encoding="utf-8")
 
 
 def test_orchestrator_reports_wheelhouse_build_diagnostics(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -88,18 +88,7 @@ def probe_media_cached(path_text: str, mtime_ns: int, size: int) -> MediaInfo:
     except (TypeError, ValueError):
         duration = None
     stream = video or audio or {}
-    rate_differs = False
-    if video and kind == "video":
-        try:
-            nominal = float(Fraction(str(video.get("r_frame_rate", "0/1"))))
-            average = float(Fraction(str(video.get("avg_frame_rate", "0/1"))))
-            rate_differs = (
-                math.isfinite(nominal) and math.isfinite(average)
-                and nominal > 0 and average > 0
-                and abs(nominal - average) / nominal > 0.08
-            )
-        except (ValueError, ZeroDivisionError, OverflowError):
-            rate_differs = False
+    rate_differs = _variable_frame_rate(video, kind)
     return MediaInfo(
         path=path,
         kind=kind,
@@ -174,3 +163,19 @@ def sampled_audio_peak(path: Path) -> float | None:
     except OSError:
         return None
     return sample_audio_peak(str(Path(path).resolve()), stat.st_mtime_ns, stat.st_size)
+
+
+def _variable_frame_rate(video: dict | None, kind: str) -> bool:
+    rate_differs = False
+    if video and kind == "video":
+        try:
+            nominal = float(Fraction(str(video.get("r_frame_rate", "0/1"))))
+            average = float(Fraction(str(video.get("avg_frame_rate", "0/1"))))
+            rate_differs = (
+                math.isfinite(nominal) and math.isfinite(average)
+                and nominal > 0 and average > 0
+                and abs(nominal - average) / nominal > 0.08
+            )
+        except (ValueError, ZeroDivisionError, OverflowError):
+            rate_differs = False
+    return rate_differs

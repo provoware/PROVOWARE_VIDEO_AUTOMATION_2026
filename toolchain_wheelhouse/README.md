@@ -1,6 +1,6 @@
 # Einheitliches Offline-Wheelhouse
 
-Dieses Verzeichnis wird durch `./videobatch.sh setup` atomar aufgebaut.
+Dieses Verzeichnis wird durch `./scripts/cli/videobatch.sh setup` atomar aufgebaut.
 Es enthält anschließend sämtliche exakt gesperrten Laufzeit- und Qualitätswerkzeuge,
 das SHA-256-Manifest und das vollständig aufgelöste Hash-Lockfile.
 

@@ -453,7 +453,8 @@ jobs:
           mkdir -p "$HOME" "$XDG_DATA_HOME" "$XDG_STATE_HOME" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME"
           unset VIDEOBATCH_INSTALL_ROOT VIDEOBATCH_PORTABLE_LAUNCHER VIDEOBATCH_PORTABLE \
             VIDEOBATCH_RUNTIME_PYTHON VIDEOBATCH_QUALITY_PYTHON VIDEOBATCH_TOOLCHAIN_PYTHON
-          project="$RUNNER_TEMP/qt-fresh-extract/VideoBatch_Fast_2.8.3-rc24"
+          build="$(python -c 'import json; print(json.load(open("VERSION.json"))["build"])')"
+          project="$RUNNER_TEMP/qt-fresh-extract/VideoBatch_Fast_$build"
           test -d "$project"
           cd "$project"
           chmod +x STARTEN.sh scripts/cli/start.sh scripts/validate_acceptance_isolation.py

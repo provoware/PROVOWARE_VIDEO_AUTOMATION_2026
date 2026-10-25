@@ -23,7 +23,7 @@ def _load_script(name: str):
 
 
 def test_portable_contract_is_explicit_and_runtime_only():
-    contract = json.loads((ROOT / "PORTABLE_RUNTIME_CONTRACT.json").read_text(encoding="utf-8"))
+    contract = json.loads((ROOT / 'config/contracts/PORTABLE_RUNTIME_CONTRACT.json').read_text(encoding="utf-8"))
     assert contract["release_target"] == json.loads((ROOT / "VERSION.json").read_text(encoding="utf-8"))["build"]
     assert contract["policy"]["network_not_required_at_runtime"] is True
     assert contract["policy"]["quality_tools_are_not_part_of_user_runtime"] is True
@@ -52,7 +52,7 @@ def test_probe_prefers_explicit_portable_binaries(tmp_path: Path, monkeypatch: p
 
 
 def test_fault_lab_contract_and_all_scenarios_pass():
-    contract = json.loads((ROOT / "FAULT_LAB_CONTRACT.json").read_text(encoding="utf-8"))
+    contract = json.loads((ROOT / 'config/contracts/FAULT_LAB_CONTRACT.json').read_text(encoding="utf-8"))
     results = run_fault_lab()
     assert len(results) == len(contract["scenarios"]) == 15
     assert {item.scenario_id for item in results} == set(contract["scenarios"])
@@ -67,7 +67,7 @@ def test_bootstrap_has_portable_fast_path_and_launcher_override():
 
 
 def test_fault_lab_is_available_from_main_entry_and_help_center():
-    shell = (ROOT / "videobatch.sh").read_text(encoding="utf-8")
+    shell = (ROOT / 'scripts/cli/videobatch.sh').read_text(encoding="utf-8")
     services = (ROOT / "src/videobatch_fast/ui_services_mixin.py").read_text(encoding="utf-8")
     assert "fault-lab)" in shell
     assert "on_run_fault_lab=self._run_fault_lab" in services
