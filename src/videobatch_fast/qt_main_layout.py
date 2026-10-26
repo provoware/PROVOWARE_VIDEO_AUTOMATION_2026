@@ -18,6 +18,7 @@ from . import qt_layout_sections
 
 def build_main_ui(window) -> None:
     root = QWidget()
+    root.setObjectName("desktopSurface")
     window.setCentralWidget(root)
     outer = QVBoxLayout(root)
     outer.setContentsMargins(10, 8, 10, 8)

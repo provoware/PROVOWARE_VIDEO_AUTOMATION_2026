@@ -8,20 +8,20 @@ from PySide6.QtWidgets import QApplication
 
 _THEME_OVERRIDES = {
     "neon_gravity": """
-        QMainWindow, QWidget { background-color: #10141b; color: #eef4ff; }
+        QMainWindow, QWidget#desktopSurface { background-color: #10141b; color: #eef4ff; }
         QFrame#panel, QFrame#card { background-color: #171d27; }
     """,
     "acid_paper": """
-        QMainWindow, QWidget { background-color: #f2f0d8; color: #1b2415; }
+        QMainWindow, QWidget#desktopSurface { background-color: #f2f0d8; color: #1b2415; }
         QFrame#panel, QFrame#card { background-color: #fffde8; }
         QLineEdit, QListWidget, QComboBox { background-color: #ffffff; color: #172012; }
     """,
     "toxic_candy": """
-        QMainWindow, QWidget { background-color: #1b1020; color: #fff0fb; }
+        QMainWindow, QWidget#desktopSurface { background-color: #1b1020; color: #fff0fb; }
         QFrame#panel, QFrame#card { background-color: #28152f; }
     """,
     "ultraviolet": """
-        QMainWindow, QWidget { background-color: #151126; color: #f2edff; }
+        QMainWindow, QWidget#desktopSurface { background-color: #151126; color: #f2edff; }
         QFrame#panel, QFrame#card { background-color: #201936; }
     """,
 }

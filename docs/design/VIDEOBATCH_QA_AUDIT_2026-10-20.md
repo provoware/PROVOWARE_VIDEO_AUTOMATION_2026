@@ -106,3 +106,24 @@ Die gesamte Prüfungsumgebung ist Debian 13 mit Python 3.12 und Qt-Offscreen bez
 **Weiterhin offen:** Prüfung des Legacy-Rundlaufs auf seinem passenden Tk-/X11-Zielsystem; reale Qt-/Kubuntu-/Wayland-Endabnahme, grafischer Paket-Erststart und physischer Offline-Erststart; echte OS-Plugin-Isolation in einer unterstützenden Umgebung; Langzeitrender. Ein lokaler Test- oder Paketnachweis ist weder eine Stable-Freigabe noch ein Ersatz dieser Prüfungen.
 
 **Kleinster nächster Schritt:** diesen Entwicklungsstand per Draft-PR überprüfen und dessen unveränderten Commit in der vorhandenen CI prüfen lassen. Danach den noch offenen Legacy-Rundlauf auf dem geeigneten Zielsystem abgleichen. Der Release-Endkandidat bleibt bis zu den tatsächlichen Abnahmen gesperrt.
+
+
+### Erscheinungsbild, 26.10.2026
+
+**Soll/Ist vor der ersten Änderung**
+Referenz: tatsächlicher Qt-Offscreen-Screenshot 1366×768, 110 %, Dateien; keine externe Designvorlage.
+- Struktur: vorhandene drei Arbeitsschritte und Hilfe bleiben; aktiver Reiter derzeit kaum unterscheidbar, soll eindeutig markiert sein.
+- Maße/Proportionen: vorhandene responsive Geometrie, Mindestgrößen und Zoomstufen bleiben; keine neue feste Fenstergröße.
+- Typografie: Titel/Abschnitt/Feld behalten Hierarchie; erklärende Beschriftungen sollen ohne schwarze Hintergrundbalken auf ihrer Karte stehen.
+- Farben: dunkle Flächen derzeit mit vielen konkurrierenden hellen Rahmen; ruhigere dünne Trennlinien, dezente Nebenaktionen, gelbe Hauptaktion bleiben.
+- Abstände: vorhandene Layoutabstände bleiben; Reiter erhalten gleichmäßige Innenabstände.
+- Zustände: Hover, Auswahl, deaktiviert, Status und deutlicher weißer Tastaturfokus müssen unterscheidbar bleiben.
+- Clipping/Überlagerung: bei 1366×768 ist der Arbeitsbereich scrollbar; keine Behauptung vollständiger Sichtbarkeit. Alle 42 Größen-/Zoomkombinationen und Tastaturmatrix erneut prüfen.
+
+Befund beim ersten Nachherbild: fensterlokale Legacy-Themeregel `QWidget` übermalt die globale Komponentenformatierung. Auf die benannte zentrale Fläche begrenzen, damit Beschriftungen transparent und semantische Komponentenfarben wirksam werden. Dafür drei Produktdateien nötig (Stil, Themenadapter, Name der zentralen Fläche); keine Layoutgeometrie geändert.
+
+**Umgesetzt:** transparente Beschriftungen, dünnere Karten-/Statusrahmen, zurückhaltende Standardaktionen, sichtbarer aktiver Reiter mit Akzentlinie und eigenem Hover-/Fokuszustand. Die fensterlokalen Themenregeln betreffen jetzt die benannte zentrale Fläche statt sämtliche QWidget-Unterklassen. So übermalen sie keine Eingabefelder, Statusfarben oder Kartenbeschriftungen mehr. Alle vier Themen behalten ihre Fenster-/Kartenfarben. Keine neue Abhängigkeit.
+
+**Validiert:** 70 Qt-Tests bestanden; 42 Größen-/Zoomkombinationen mit 126 neuen Offscreen-Bildern bestanden; Tastaturmatrix: sechs Fälle, 54 fokussierte Bedienelemente. Vorher/Nachher bei 1366×768/110 % und Nachher bei 800×600/200 % tatsächlich angesehen. Der kleine Arbeitsbereich bleibt scrollbar; vollständige gleichzeitige Sichtbarkeit wird nicht behauptet. Ruff und Architekturprüfung bestanden. Bildartefakte im externen Audit-Arbeitsbereich `appearance-final/`.
+
+**Offen/Risiko:** keine physische Kubuntu-/Wayland-Abnahme und keine Stable-Freigabe. Die bestehende Legacy-Tk-Prüfgrenze bleibt unverändert. Nächster Schritt: Prüfung des aktualisierten Draft-PR und visueller Abgleich auf dem Zielsystem.

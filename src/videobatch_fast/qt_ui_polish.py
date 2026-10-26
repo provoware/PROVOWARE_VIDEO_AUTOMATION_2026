@@ -8,7 +8,31 @@ from PySide6.QtWidgets import (
 
 
 VISUAL_HIERARCHY_STYLE = """
-QFrame#panel { border-color: #526985; }
+QLabel { background: transparent; }
+QFrame#panel { border: 1px solid #40536b; }
+QFrame#workflowGuide, QFrame#dashboardControls { border: 1px solid #40536b; }
+QFrame#loadDashboard { border: 1px solid #40536b; }
+QPushButton { background: #20384a; border: 1px solid #6685a8; }
+QPushButton:hover { background: #2b4a60; border-color: #8fb9e2; }
+QPushButton:disabled { border-color: #40536b; color: #aebfd3; }
+QTabBar::tab {
+    background: #141e2a;
+    color: #c6d4e6;
+    border: 1px solid #40536b;
+    border-bottom: 3px solid #40536b;
+    padding: 6px 10px;
+}
+QTabBar::tab:selected {
+    background: #20384a;
+    color: #ffffff;
+    border-bottom-color: #5dd7f5;
+    font-weight: 700;
+}
+QTabBar::tab:hover { background: #2b4a60; }
+QTabBar::tab:focus { border: 3px solid #ffffff; }
+QMenuBar, QMenu { background: #101822; }
+QMenuBar::item:selected, QMenu::item:selected { background: #29465e; }
+QMenuBar::item { padding: 5px 9px; }
 QFrame#card {
     min-height: 56px;
     background: #101a26;
@@ -28,7 +52,7 @@ QLabel#fieldLabel {
 }
 QLabel#section { font-weight: 800; }
 QLabel#statusChip {
-    border-width: 2px;
+    border-width: 1px;
     padding: 6px 11px;
     font-weight: 800;
 }
@@ -69,7 +93,7 @@ QPushButton#quietDanger:hover {
 }
 QFrame#actionFooter {
     background: #111c28;
-    border: 2px solid #58789d;
+    border: 1px solid #40536b;
 }
 QLabel#nextStep {
     background: #0d2632;
