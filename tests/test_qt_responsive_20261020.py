@@ -145,3 +145,24 @@ def test_action_controls_wrap_and_preserve_buttons(monkeypatch, zoom: int) -> No
             assert bar.grid.itemAtPosition(0, index).widget() is button
     finally:
         bar.close()
+
+
+def test_compact_header_keeps_status_load_meters_zoom_and_menu() -> None:
+    """U1 must save a full header row without hiding operational information."""
+    source = (ROOT / "src/videobatch_fast/qt_main_layout.py").read_text(encoding="utf-8")
+    assert "heading.addWidget(title)" in source
+    assert "heading.addWidget(window.status, alignment=Qt.AlignmentFlag.AlignVCenter)" in source
+    assert "header.addLayout(brand, 0, 0, 1, 2)" in source
+    assert "header.addLayout(view_row, 0, 3)" in source
+    assert "header.addWidget(window.compact_menu, 0, 2)" in source
+    assert "dashboard_row = QHBoxLayout(dashboard)" in source
+    assert "dashboard_row.addWidget(window.load_dashboard.frame)" in source
+    assert "dashboard_row.addWidget(window.progress_dashboard, 1)" in source
+    for existing_contract in (
+        'window.status.setAccessibleDescription(',
+        'window.view_scale.setAccessibleName("Schrift- und Ansichtsgröße")',
+        'window.compact_menu.clicked.connect(open_compact_menu)',
+        'window.progress_dashboard_layout = QGridLayout(window.progress_dashboard)',
+        'header.addWidget(dashboard, 2, 0, 1, 4)',
+    ):
+        assert existing_contract in source
