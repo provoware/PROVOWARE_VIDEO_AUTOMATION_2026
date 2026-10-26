@@ -282,9 +282,13 @@ def test_output_page_uses_one_scroll_area_and_preserves_controls(
     try:
         window.resize(*size)
         window.show()
+        # Phase 3 completes legacy startup through two single-shot Qt timers.
+        # Route only after they have run, or the last callback resets to dashboard.
+        app.processEvents()
         window.view_scale.setCurrentIndex(window.view_scale.findData(zoom))
         window.main_tabs.setCurrentIndex(1)
         app.processEvents()
+        assert window._active_workflow_route == "effects"
 
         output_page = window._workflow_pages["effects"]
         assert isinstance(output_page, QScrollArea)
