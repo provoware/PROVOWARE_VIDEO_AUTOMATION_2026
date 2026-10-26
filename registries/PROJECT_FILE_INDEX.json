@@ -4178,7 +4178,7 @@
     {
       "path": "tests/test_provoware_responsive_grid_contract.py",
       "mode": "100644",
-      "blob_sha1": "bbbbf7c8c298a9b50cbda15577ea492cc6c81745",
+      "blob_sha1": "9de7a60d6c5bf4aab2eeccf3702d25f1497e5529",
       "category": "tests",
       "lifecycle": "development"
     },
