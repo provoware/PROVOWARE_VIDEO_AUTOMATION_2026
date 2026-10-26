@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "81471c479d1fbbdc8c0dd15eb5b603c560ac8f53",
+      "blob_sha1": "89d8bafcd556510e5506be28c4d673fe34600e1d",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -3499,7 +3499,7 @@
     {
       "path": "src/videobatch_fast/updates.py",
       "mode": "100644",
-      "blob_sha1": "af93f2b77dab14c60026b212758961a8f626dcef",
+      "blob_sha1": "7fe80f74c97b20a58de5bdb759091952de8b7930",
       "category": "application",
       "lifecycle": "active"
     },
@@ -4563,7 +4563,7 @@
     {
       "path": "tests/test_update_integrity_2_8_2.py",
       "mode": "100644",
-      "blob_sha1": "d727685a5c8023aa85257b2c6493030e3661f7de",
+      "blob_sha1": "51c9f42c8d0b1c2d02b9487a06de7c696ee62313",
       "category": "tests",
       "lifecycle": "development"
     },
