@@ -165,6 +165,9 @@ def build_workflow_stack(window) -> QStackedWidget:
     effects_page = pages["effects"]
     effects_layout = effects_page.layout()
     effects_layout.insertWidget(0, window.settings_view)
+    # Qt does not automatically reveal a previously top-level panel when it
+    # is inserted into a page that is still hidden inside QStackedWidget.
+    window.settings_view.show()
     basics_heading = QLabel("Grundeinstellungen")
     basics_heading.setObjectName("section")
     effects_layout.insertWidget(0, basics_heading)
