@@ -289,7 +289,13 @@ def test_output_page_uses_one_scroll_area_and_preserves_controls(
         output_page = window._workflow_pages["effects"]
         assert isinstance(output_page, QScrollArea)
         assert window.settings_view is window.settings_grid
-        assert window.settings_grid.isVisibleTo(window)
+        assert window.settings_grid.isVisibleTo(window), (
+            window._active_workflow_route,
+            window.main_tabs.currentIndex(),
+            window.workflow_stack.currentWidget().objectName(),
+            window.settings_grid.isHidden(),
+            output_page.isHidden(),
+        )
         assert output_page.verticalScrollBar().value() == 0
 
         # No second QScrollArea may surround everyday settings.

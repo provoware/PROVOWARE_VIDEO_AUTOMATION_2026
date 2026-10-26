@@ -146,6 +146,11 @@ def test_qt_uses_portable_rules_without_importing_ffmpeg_or_qt_into_core() -> No
     main = (ROOT / "src/videobatch_fast/qt_main_layout.py").read_text(encoding="utf-8")
     assert "from provoware_grid import choose_columns" in source
     assert "from provoware_grid import choose_columns" in adapter
-    assert 'setObjectName("adaptiveSettingScroll")' in main
+    workspace = (ROOT / "src/videobatch_fast/qt_workspace_layout.py").read_text(encoding="utf-8")
+    assert "window.settings_view = window.settings_grid" in main
+    assert "adaptiveSettingScroll" not in main
+    assert 'output_scroll.setObjectName("outputPageScroll")' in workspace
+    assert "effects_layout.insertWidget(0, window.settings_view)" in workspace
+    assert "window.settings_view.show()" in workspace
     assert "window.settings_grid.set_zoom_percent(value)" in main
     assert "window.source_columns.set_zoom_percent(value)" in main

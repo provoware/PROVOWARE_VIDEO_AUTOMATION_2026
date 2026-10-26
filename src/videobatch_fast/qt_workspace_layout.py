@@ -165,9 +165,6 @@ def build_workflow_stack(window) -> QStackedWidget:
     effects_page = pages["effects"]
     effects_layout = effects_page.layout()
     effects_layout.insertWidget(0, window.settings_view)
-    # Qt does not automatically reveal a previously top-level panel when it
-    # is inserted into a page that is still hidden inside QStackedWidget.
-    window.settings_view.show()
     basics_heading = QLabel("Grundeinstellungen")
     basics_heading.setObjectName("section")
     effects_layout.insertWidget(0, basics_heading)
@@ -197,6 +194,10 @@ def set_workflow_route(window, route: str) -> None:
     page_key = route if route in pages else "dashboard"
     if page_key in pages:
         window.workflow_stack.setCurrentWidget(pages[page_key])
+        # The basic panel is reparented while the stack is hidden during setup.
+        # Reveal it only after its actual output page becomes current.
+        if page_key == "effects":
+            window.settings_view.show()
     window._active_workflow_route = route
     # New pages always open at their explanatory heading. A previous focus or
     # scroll position must not hide the first line at 175/200 % zoom.
