@@ -20,7 +20,7 @@
     {
       "path": ".github/workflows/bounded-long-render-rehearsal.yml",
       "mode": "100644",
-      "blob_sha1": "905c9dfca3f5975387c1e9b100b17484462a1c98",
+      "blob_sha1": "4bd50b736c4de365827ccb100bf160cdb4652b86",
       "category": "automation",
       "lifecycle": "development"
     },
@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "81471c479d1fbbdc8c0dd15eb5b603c560ac8f53",
+      "blob_sha1": "165ad9e68582dcb2115d877d26eaa400fe31794b",
       "category": "project_contract",
       "lifecycle": "active"
     },
