@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QFrame, QHBoxLayout, QLabel, QMessageBox, QProgressBar, QPushButton,
-    QScrollArea, QVBoxLayout,
+    QFrame, QHBoxLayout, QLabel, QLayout, QMessageBox, QProgressBar, QPushButton,
+    QScrollArea, QSizePolicy, QVBoxLayout,
 )
 from .qt_desktop_actions import open_output_folder
 from .qt_responsive_controls import ResponsiveControlRow
@@ -112,6 +112,7 @@ def _overview_page(window) -> QFrame:
     panel = QFrame()
     panel.setObjectName("panel")
     layout = QVBoxLayout(panel)
+    layout.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
     layout.setContentsMargins(18, 16, 18, 16)
     layout.setSpacing(10)
     title = QLabel("Hilfe und Werkzeuge")
@@ -141,13 +142,16 @@ def _overview_page(window) -> QFrame:
         hint = QLabel(description)
         hint.setObjectName("subtitle")
         hint.setWordWrap(True)
-        row_layout.addWidget(button)
-        row_layout.addWidget(hint, 1)
+        controls = ResponsiveControlRow((button, hint))
+        controls.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        window._responsive_control_rows.append(controls)
+        row_layout.addWidget(controls)
         layout.addWidget(row)
     tools_hint = QLabel("Zusätzliche Werkzeuge")
     tools_hint.setObjectName("section")
     layout.addWidget(tools_hint)
-    hash_help = QPushButton("Hilfe: SHA-256 und Prüfstatus verstehen")
+    hash_help = QPushButton("SHA-256 und Prüfstatus")
+    hash_help.setToolTip("Hilfe: SHA-256 und Prüfstatus verstehen")
     hash_help.setObjectName("workspaceNav")
     hash_help.setAccessibleDescription(
         "Erklärt Dateifingerabdruck, Medienindex und Entwicklungsprüfungen."
@@ -167,7 +171,7 @@ def _overview_page(window) -> QFrame:
             "Mehr: docs/BENUTZERHANDBUCH.md, Abschnitt SHA-256."
         )
     )
-    layout.addWidget(hash_help)
+    tools = [hash_help]
     for text, route in (
         ("Bildvorschau öffnen", "preview"),
         ("Diashow öffnen", "slideshow"),
@@ -178,6 +182,11 @@ def _overview_page(window) -> QFrame:
         button = QPushButton(text)
         button.setObjectName("workspaceNav")
         button.clicked.connect(lambda _checked=False, key=route: _request_route(window, key))
-        layout.addWidget(button)
+        tools.append(button)
+    for index in range(0, len(tools), 2):
+        controls = ResponsiveControlRow(tuple(tools[index:index + 2]))
+        controls.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        window._responsive_control_rows.append(controls)
+        layout.addWidget(controls)
     layout.addStretch()
     return panel

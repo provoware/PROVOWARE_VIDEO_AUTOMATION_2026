@@ -325,7 +325,7 @@
       "path": "README.md"
     },
     {
-      "blob_sha1": "389e1cd071b70155ede3952fa397819f8284fc1b",
+      "blob_sha1": "b6fe93ba40c741cdcfceed28777a44afd6c3df13",
       "category": "project_contract",
       "lifecycle": "active",
       "mode": "100644",
@@ -1571,7 +1571,7 @@
       "path": "docs/design/VIDEOBATCH_GRAPHICS_MANIFEST_POSTER.svg"
     },
     {
-      "blob_sha1": "7dbd31e987f4281c63d6fc6037e9545ee684f82c",
+      "blob_sha1": "9c5550b879c522dbcf6d7ca71c4398ee44977283",
       "category": "documentation",
       "lifecycle": "active",
       "mode": "100644",
@@ -3447,14 +3447,14 @@
       "path": "src/videobatch_fast/qt_workflow_dialogs.py"
     },
     {
-      "blob_sha1": "8cb59aef8b0279e3e79c18cf1a1eb6172c57b14e",
+      "blob_sha1": "5e37fc131500237a66a13415570770810bcc1077",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
       "path": "src/videobatch_fast/qt_workflow_footer.py"
     },
     {
-      "blob_sha1": "e7468e000934821ace8c80b8cb86c3516f2f06cf",
+      "blob_sha1": "f2e7798f31be872900a895279cc2769e1039da83",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
@@ -4504,7 +4504,7 @@
       "path": "tests/test_qt_phase3_contract.py"
     },
     {
-      "blob_sha1": "810ca611073c64a55861b7e25559adaf85ba6598",
+      "blob_sha1": "0a3854c7b4c2852fdaf2a34c22e9c2610536585e",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",

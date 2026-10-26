@@ -127,3 +127,25 @@ Befund beim ersten Nachherbild: fensterlokale Legacy-Themeregel `QWidget` überm
 **Validiert:** 70 Qt-Tests bestanden; 42 Größen-/Zoomkombinationen mit 126 neuen Offscreen-Bildern bestanden; Tastaturmatrix: sechs Fälle, 54 fokussierte Bedienelemente. Vorher/Nachher bei 1366×768/110 % und Nachher bei 800×600/200 % tatsächlich angesehen. Der kleine Arbeitsbereich bleibt scrollbar; vollständige gleichzeitige Sichtbarkeit wird nicht behauptet. Ruff und Architekturprüfung bestanden. Bildartefakte im externen Audit-Arbeitsbereich `appearance-final/`.
 
 **Offen/Risiko:** keine physische Kubuntu-/Wayland-Abnahme und keine Stable-Freigabe. Die bestehende Legacy-Tk-Prüfgrenze bleibt unverändert. Nächster Schritt: Prüfung des aktualisierten Draft-PR und visueller Abgleich auf dem Zielsystem.
+
+
+### Zweite visuelle Iteration: lesbare Werkzeugübersicht, 26.10.2026
+
+**Soll/Ist vor Patch**
+Ausgang: 26f48857893c4086dc736b41c2f396558aa549e7. Scope: Hilfe-/Werkzeugübersicht; keine Datei-, Render-, Start- oder Persistenzänderung.
+Beleg: tatsächliches Bild theme-neon_gravity.jpg zeigt abgeschnittene Übersichtskarten und überlagernde Werkzeugschalter bei 1366×768/110 %.
+- Struktur: Drei Schritte und Zusatzwerkzeuge bleiben, bekommen einen eigenen vertikalen Scrollbereich wie Ausgabe/Produktion.
+- Maße: tatsächliche Mindestgrößen der Qt-Inhalte statt in das Fenster gequetschter Höhe; keine neue feste Fenstergröße.
+- Proportionen: Werkzeugschalter paarweise nebeneinander, bei Platzmangel untereinander.
+- Typografie: bestehende Schrift und 80–200-%-Skalierung bleiben; Beschriftungen und Hinweise dürfen sich nicht überlagern.
+- Farben: bestehende vier Themen und semantische Farben unverändert.
+- Abstände: bestehende Karten-/Reihenabstände werden respektiert, keine negative/überlagernde Geometrie.
+- Zustände: Tastaturfokus, Navigation, Hover und deaktivierte Zustände unverändert; letztes Werkzeug muss erreichbar sein.
+- Clipping: Inhaltsmindesthöhe wird im Scrollbereich respektiert, keine horizontal abgeschnittenen Karten bei 800×600/200 %.
+Prüfzyklen: (1) Screenshot/Ursache; (2) minimale Geometriekorrektur + fokussierter Test; (3) reale Größen-/Zoommatrix und Bildvergleich; (4) Regression, Qualitätsgates und Doku/Manifest. Physische Abnahme bleibt offen.
+
+**Geändert:** Die bisher ungescrollte Hilfe-/Werkzeugübersicht wurde im tatsächlichen Fenster unter ihre Inhaltsmindesthöhe gedrückt. Ein eigener vertikaler Scrollbereich respektiert jetzt die Inhaltsmindesthöhe. Vorhandene responsive Reihen ordnen die drei Schrittkarten und sechs Zusatzwerkzeuge ohne Überlappung an. Die Reihen dürfen ihre Breite an den realen Viewport anpassen; veraltete mehrspaltige Mindestbreiten erzwingen keine horizontale Verbreiterung. Der lange SHA-256-Schalter wurde gekürzt; die vollständige Erklärung bleibt im Tooltip und Hilfedialog. Zwei Produktdateien, ein bestehender Test ergänzt; keine neue Abhängigkeit.
+
+**Geprüft:** Neue reale Qt-Regressionsprüfung in vier Größen-/Zoomfällen: alle neun Schalter mindestens in ihrer tatsächlichen Mindesthöhe, keine gegenseitige Überlappung, keine horizontale Verbreiterung und letztes Werkzeug per Tastatur/Scroll sichtbar. 74 Qt-Tests bestanden; anschließend 15 betroffene Responsivitätstests nach Entfernung einer redundanten Layoutoperation erneut bestanden. Die vorhandene 42er-Matrix wurde im externen Prüfharness um den vierten Reiter ergänzt: 42 Kombinationen, 168 Bilder, bestanden. Tastaturmatrix: sechs Fälle, 54 fokussierte Bedienelemente, bestanden. Ruff, internes Qualitätsgate und Architekturprüfung bestanden. Tatsächlich angesehen: normale Übersicht und 800×600/200 %, Werkzeugbereich im dunklen und hellen Thema. Vier Themenbilder erzeugt; Bildartefakte unter `appearance-2-final/` und `appearance-2-*-tools.jpg` im externen Audit-Arbeitsbereich.
+
+**Offen/Risiko:** Physische Kubuntu-/Wayland-Abnahme weiterhin offen. Bei kleinen Fenstern und großer Schrift wird vertikal gescrollt; keine vollständige gleichzeitige Sichtbarkeit behauptet. Medien, Produktion und Persistenz wurden nicht verändert. Die zuvor offene GitHub-CI für `b3bf5ba2781dd6546cf2a94f3c88c759b6f45e39` ist inzwischen mit acht erfolgreichen Workflow-Läufen abgeschlossen; das gilt nicht automatisch für diesen Folgepatch. **Nächster Schritt:** aktualisierten Draft-PR und dessen neue CI prüfen, danach Zielsystem-Sichtprüfung.

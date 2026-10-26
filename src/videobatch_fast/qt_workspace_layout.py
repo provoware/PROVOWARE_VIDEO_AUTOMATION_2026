@@ -90,6 +90,12 @@ def build_workflow_stack(window) -> QStackedWidget:
         "effects": window._settings_panel(),
         "queue": window._queue_panel(),
     }
+    overview_scroll = QScrollArea()
+    overview_scroll.setObjectName("overviewPageScroll")
+    overview_scroll.setWidgetResizable(True)
+    overview_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    overview_scroll.setWidget(pages["dashboard"])
+    pages["dashboard"] = overview_scroll
     # Die Alltags-Einstellungen gehören in die Ausgabe-Seite.
     # Eine äußere vertikale Rollebene schützt alle erweiterten Bedienelemente
     # bei 800×600 und 200 % vor dem Abschneiden.

@@ -147,3 +147,43 @@ def test_action_controls_wrap_and_preserve_buttons(monkeypatch, zoom: int) -> No
             assert bar.grid.itemAtPosition(0, index).widget() is button
     finally:
         bar.close()
+
+
+@pytest.mark.parametrize("width,height,zoom", [(800, 600, 80), (800, 600, 200), (1366, 768, 110), (2560, 1440, 200)])
+def test_overview_keeps_tools_readable_and_scroll_reachable(monkeypatch, width, height, zoom):
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    pytest.importorskip("PySide6")
+    from PySide6.QtWidgets import QApplication, QLabel, QPushButton, QScrollArea
+    from videobatch_fast.qt_phase3 import VideoBatchQtPhase3Window
+
+    app = QApplication.instance() or QApplication([])
+    window = VideoBatchQtPhase3Window(autoload_project=False)
+    try:
+        window.show()
+        app.processEvents()
+        window.resize(width, height)
+        window.view_scale.setCurrentIndex(window.view_scale.findData(zoom))
+        window.main_tabs.setCurrentIndex(3)
+        for _ in range(8):
+            app.processEvents()
+        scroll = window._workflow_pages["dashboard"]
+        assert isinstance(scroll, QScrollArea)
+        panel = scroll.widget()
+        assert panel.width() <= scroll.viewport().width() + 3
+        buttons = panel.findChildren(QPushButton)
+        assert len(buttons) == 9
+        rectangles = [button.rect().translated(button.mapTo(panel, button.rect().topLeft())) for button in buttons]
+        for index, button in enumerate(buttons):
+            assert button.height() >= button.minimumSizeHint().height()
+            assert all(not rectangles[index].intersects(other) for other in rectangles[index + 1:])
+        for label in panel.findChildren(QLabel):
+            assert label.height() >= label.fontMetrics().height()
+        last = buttons[-1]
+        last.setFocus()
+        scroll.ensureWidgetVisible(last)
+        app.processEvents()
+        assert last.hasFocus()
+        assert scroll.viewport().rect().contains(last.mapTo(scroll.viewport(), last.rect().center()))
+    finally:
+        window.close()
+        app.processEvents()
