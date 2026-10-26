@@ -47,6 +47,7 @@ def build_main_ui(window) -> None:
     header.addWidget(window.status, 1, 0, alignment=Qt.AlignmentFlag.AlignLeft)
 
     view_label = QLabel("Schrift")
+    view_label.setObjectName("viewScaleLabel")
     window.view_scale = QComboBox()
     view_label.setBuddy(window.view_scale)
     window.view_scale.setAccessibleName("Schrift- und Ansichtsgröße")

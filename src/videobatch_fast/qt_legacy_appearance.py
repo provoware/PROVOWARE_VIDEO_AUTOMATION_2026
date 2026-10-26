@@ -14,6 +14,9 @@ _THEME_OVERRIDES = {
     "acid_paper": """
         QMainWindow, QWidget#desktopSurface { background-color: #f2f0d8; color: #1b2415; }
         QFrame#panel, QFrame#card { background-color: #fffde8; }
+        QWidget#desktopSurface > QLabel#title,
+        QWidget#desktopSurface > QLabel#subtitle, QLabel#viewScaleLabel,
+        QFrame#panel > QLabel, QFrame#card > QLabel { color: #1b2415; }
         QLineEdit, QListWidget, QComboBox { background-color: #ffffff; color: #172012; }
     """,
     "toxic_candy": """
