@@ -102,14 +102,10 @@ def build_main_ui(window) -> None:
     # Responsive settings follow the same 120×80 reference logic as the lists.
     # Keep every existing control object and its signal handlers unchanged.
     window.settings_grid = ResponsiveSettingsPanel()
-    settings_view = QScrollArea()
-    settings_view.setObjectName("adaptiveSettingScroll")
-    settings_view.setWidgetResizable(True)
-    settings_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-    settings_view.setMinimumHeight(92)
-    settings_view.setMaximumHeight(140)
-    settings_view.setWidget(window.settings_grid)
-    window.settings_view = settings_view
+    window.settings_grid.setAccessibleName("Grundeinstellungen für die Videoausgabe")
+    # U3: the output page already scrolls. A second 140-pixel scroll area
+    # hid the remaining everyday controls above the advanced section.
+    window.settings_view = window.settings_grid
 
     window.resolution = QComboBox()
     for value, label in RESOLUTION_LABELS.items():

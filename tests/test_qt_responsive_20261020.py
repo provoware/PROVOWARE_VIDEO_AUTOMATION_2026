@@ -26,7 +26,8 @@ def test_responsive_layout_contract_is_readable_without_horizontal_scrolling():
     assert "window.settings_grid = ResponsiveSettingsPanel()" in main
     assert "window.settings_grid.set_zoom_percent(value)" in main
     assert "window.source_columns.set_zoom_percent(value)" in main
-    assert "adaptiveSettingScroll" in main
+    assert "window.settings_view = window.settings_grid" in main
+    assert "adaptiveSettingScroll" not in main
 
 
 def test_equal_columns_reflow_to_vertical_stack(monkeypatch):
@@ -252,3 +253,87 @@ def test_media_toolbar_route_contract_and_existing_ordering_are_preserved():
         "scroll.setWidget(panel)",
     ):
         assert contract in source
+
+
+@pytest.mark.parametrize("size, zoom", [
+    ((1366, 768), 110),
+    ((1024, 768), 175),
+    ((800, 600), 200),
+])
+def test_output_page_uses_one_scroll_area_and_preserves_controls(
+    monkeypatch, tmp_path, size: tuple[int, int], zoom: int
+) -> None:
+    """U3 guards the real output-widget hierarchy, routes, and saved values."""
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    for key, folder in (
+        ("HOME", "home"), ("XDG_CONFIG_HOME", "config"),
+        ("XDG_STATE_HOME", "state"), ("XDG_DATA_HOME", "data"),
+        ("XDG_CACHE_HOME", "cache"),
+    ):
+        location = tmp_path / folder
+        location.mkdir(exist_ok=True)
+        monkeypatch.setenv(key, str(location))
+    pytest.importorskip("PySide6")
+    from PySide6.QtWidgets import QApplication, QScrollArea
+    from videobatch_fast.qt_phase3 import VideoBatchQtPhase3Window
+
+    app = QApplication.instance() or QApplication([])
+    window = VideoBatchQtPhase3Window(autoload_project=False)
+    try:
+        window.resize(*size)
+        window.show()
+        window.view_scale.setCurrentIndex(window.view_scale.findData(zoom))
+        window.main_tabs.setCurrentIndex(1)
+        app.processEvents()
+
+        output_page = window._workflow_pages["effects"]
+        assert isinstance(output_page, QScrollArea)
+        assert window.settings_view is window.settings_grid
+        assert window.settings_grid.isVisibleTo(window)
+        assert output_page.verticalScrollBar().value() == 0
+
+        # No second QScrollArea may surround everyday settings.
+        ancestor = window.settings_grid.parentWidget()
+        scrolls = []
+        while ancestor is not None:
+            if isinstance(ancestor, QScrollArea):
+                scrolls.append(ancestor)
+            ancestor = ancestor.parentWidget()
+        assert scrolls == [output_page]
+        assert len(window.settings_grid._fields) == 6
+
+        values = (
+            window.resolution.currentData(), window.quality.currentData(),
+            window.effect.currentData(), window.output.text(),
+            window.effect_intensity.value(), window.transition.currentData(),
+            window.fade_seconds.value(), window.verification.currentText(),
+        )
+        assert all(control.isVisibleTo(window) for control in (
+            window.resolution, window.quality, window.effect, window.output,
+            window.effect_intensity, window.transition, window.fade_seconds,
+            window.verification,
+        ))
+        assert output_page.widget().layout().itemAt(0).widget().text() == "Grundeinstellungen"
+        assert window.resolution.mapTo(window, window.resolution.rect().topLeft()).y() < window.height()
+
+        # Expanded expert controls remain reachable via the *same* scrollbar.
+        window.exclusions_toggle.setChecked(True)
+        window.details_toggle.setChecked(True)
+        app.processEvents()
+        assert window.media_exclusions.isVisibleTo(window)
+        assert window.safety_details.isVisibleTo(window)
+        output_page.verticalScrollBar().setValue(output_page.verticalScrollBar().maximum())
+        app.processEvents()
+        window.main_tabs.setCurrentIndex(2)
+        window.main_tabs.setCurrentIndex(1)
+        app.processEvents()
+        assert output_page.verticalScrollBar().value() == 0
+        assert values == (
+            window.resolution.currentData(), window.quality.currentData(),
+            window.effect.currentData(), window.output.text(),
+            window.effect_intensity.value(), window.transition.currentData(),
+            window.fade_seconds.value(), window.verification.currentText(),
+        )
+    finally:
+        window.close()
+        app.processEvents()

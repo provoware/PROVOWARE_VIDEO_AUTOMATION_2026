@@ -159,11 +159,15 @@ def build_workflow_stack(window) -> QStackedWidget:
         "effects": window._settings_panel(),
         "queue": window._queue_panel(),
     }
-    # Die Alltags-Einstellungen gehören in die Ausgabe-Seite.
-    # Eine äußere vertikale Rollebene schützt alle erweiterten Bedienelemente
-    # bei 800×600 und 200 % vor dem Abschneiden.
+    # One vertical scroll area serves both everyday and advanced settings.
+    # The basic options must precede the expert section without a clipped
+    # nested viewport (also at 800x600 and 200 percent).
     effects_page = pages["effects"]
-    effects_page.layout().insertWidget(0, window.settings_view)
+    effects_layout = effects_page.layout()
+    effects_layout.insertWidget(0, window.settings_view)
+    basics_heading = QLabel("Grundeinstellungen")
+    basics_heading.setObjectName("section")
+    effects_layout.insertWidget(0, basics_heading)
     output_scroll = QScrollArea()
     output_scroll.setObjectName("outputPageScroll")
     output_scroll.setWidgetResizable(True)
