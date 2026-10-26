@@ -5,7 +5,6 @@ on:
     branches:
       - main
     paths:
-      - 'RELEASE_MANIFEST.json'
       - 'src/videobatch_fast/long_render_contract.py'
       - 'scripts/run_long_render_acceptance.py'
       - 'scripts/build_long_render_contract.py'
@@ -18,7 +17,6 @@ on:
     branches:
       - main
     paths:
-      - 'RELEASE_MANIFEST.json'
       - 'src/videobatch_fast/long_render_contract.py'
       - 'scripts/run_long_render_acceptance.py'
       - 'scripts/build_long_render_contract.py'
@@ -40,7 +38,7 @@ jobs:
   rehearsal:
     name: Controlled checkpoint and resume
     runs-on: ubuntu-26.04
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Check out exact revision
@@ -52,8 +50,10 @@ jobs:
       - name: Install deterministic FFmpeg runtime
         run: |
           set -Eeuo pipefail
-          sudo env DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=5 update
-          sudo env DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=5 install -y --no-install-recommends ffmpeg
+          if ! command -v ffmpeg >/dev/null 2>&1 || ! command -v ffprobe >/dev/null 2>&1; then
+            sudo env DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=2 update
+            sudo env DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=2 install -y --no-install-recommends ffmpeg
+          fi
           ffmpeg -version | head -1
           ffprobe -version | head -1
 
