@@ -39,7 +39,7 @@ def build_main_ui(window) -> None:
     )
     heading = QHBoxLayout()
     heading.setSpacing(10)
-    heading.addWidget(title)
+    heading.addWidget(title, alignment=Qt.AlignmentFlag.AlignVCenter)
     heading.addWidget(window.status, alignment=Qt.AlignmentFlag.AlignVCenter)
     heading.addStretch(1)
     brand.addLayout(heading)
@@ -264,7 +264,9 @@ def build_main_ui(window) -> None:
         # The persistent next-step hint must show more than one line at 800x600.
         # It remains visible while the workflow itself can scroll vertically.
         window.action_footer_scroll.setMinimumHeight(82 if small_large else 52)
-        title.setStyleSheet("font-size: 24px; font-weight: 800;" if small_large else "")
+        # The decorative title stays readable beside status and zoom at 150–200 %.
+        compact_brand = value >= 150 and window.width() <= 1100
+        title.setStyleSheet("font-size: 24px; font-weight: 800;" if compact_brand else "")
         window.status.setStyleSheet(
             "font-size: 17px; padding: 3px 6px; font-weight: 800;" if small_large else ""
         )

@@ -150,7 +150,8 @@ def test_action_controls_wrap_and_preserve_buttons(monkeypatch, zoom: int) -> No
 def test_compact_header_keeps_status_load_meters_zoom_and_menu() -> None:
     """U1 must save a full header row without hiding operational information."""
     source = (ROOT / "src/videobatch_fast/qt_main_layout.py").read_text(encoding="utf-8")
-    assert "heading.addWidget(title)" in source
+    assert "heading.addWidget(title, alignment=Qt.AlignmentFlag.AlignVCenter)" in source
+    assert "compact_brand = value >= 150 and window.width() <= 1100" in source
     assert "heading.addWidget(window.status, alignment=Qt.AlignmentFlag.AlignVCenter)" in source
     assert "header.addLayout(brand, 0, 0, 1, 2)" in source
     assert "header.addLayout(view_row, 0, 3)" in source
