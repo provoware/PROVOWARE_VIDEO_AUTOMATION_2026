@@ -125,7 +125,7 @@
     {
       "path": "AGENTS.md",
       "mode": "100644",
-      "blob_sha1": "42f92736d76544c8743812e4286806edb5cb9c20",
+      "blob_sha1": "2249a1df82ec395772f83f070e6bd5e24ca010b6",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "81471c479d1fbbdc8c0dd15eb5b603c560ac8f53",
+      "blob_sha1": "7b13759e3066938c9ee88a2c4baf67f07258b475",
       "category": "project_contract",
       "lifecycle": "active"
     },

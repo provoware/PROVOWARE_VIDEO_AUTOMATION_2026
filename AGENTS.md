@@ -114,7 +114,7 @@ Zusätzlich gilt:
 
 ## Gestaffelte Prüfung: Entwicklung, Integration, finale Release-Abnahme
 
-**Während der Entwicklung:** Jeder PR braucht passende automatisierte Tests, Architektur-/Sicherheits-/Datenvertragsprüfungen und nachgewiesene Integrationsfähigkeit. Betroffene Start-, Qt-/GUI-, Rendering-, Speicher- und Wiederanlaufpfade werden mit bestehenden automatisierten Smoke-, Simulations- und Regressionstests abgesichert. Offene Fehler und fehlende reale Prüfungen werden sichtbar dokumentiert, nicht als PASS ausgegeben.
+**Während der Entwicklung:** Jeder PR braucht passende automatisierte Tests, Architektur-/Sicherheits-/Datenvertragsprüfungen und nachgewiesene Integrationsfähigkeit. Betroffene Start-, Qt-/GUI-, Rendering-, Speicher- und Wiederanlaufpfade werden mit bestehenden automatisierten Smoke-, Simulations- und Regressionstests abgesichert. Offene Fehler und fehlende reale Prüfungen werden sichtbar dokumentiert, nicht als PASS ausgegeben. Die eigene Code- und Risikoprüfung genügt; ein externer oder unabhängiger Reviewer und eine fremde GitHub-Approval sind bei diesem Privatprojekt keine Voraussetzung.
 
 **Bei Integration nach `main`:** Nur passende automatische Pflichtprüfungen für den unveränderten PR-Commit und nachvollziehbare Konfliktprüfung. Ein PR mit bekannten kritischen Laufzeit- oder Datenverlustfehlern bleibt gesperrt. Ein erfolgreiches CI-Ergebnis ist eine *Integrationsentscheidung*, keine Releasefreigabe. Es ist **keine** wiederholte vollständige persönliche Kubuntu-/Sichtabnahme für jeden Entwicklungs-PR erforderlich.
 
@@ -135,7 +135,7 @@ Nicht ausgeführte Prüfungen heißen ausdrücklich **offen**. Keine Simulation 
 
 - Branch vom aktuellen `main` erstellen; vor PR-Eröffnung `behind_by = 0` anstreben.
 - Kleine, nachvollziehbare Commits; keine Commitserien nur zum Auslösen von Infrastruktur.
-- PR bleibt Draft, solange automatisierte Pflichtprüfungen, Review oder relevante Integration unvollständig sind; die persönliche Kubuntu-/Sichtabnahme ist erst am eingefrorenen Releasekandidaten Pflicht.
+- PR bleibt Draft, solange zutreffende automatisierte Pflichtprüfungen oder relevante Integrationsvoraussetzungen offen sind; eine fremde Review-Freigabe wird nicht verlangt. Die persönliche Kubuntu-/Sichtabnahme ist erst am eingefrorenen Releasekandidaten Pflicht.
 - Keine automatische Mergefreigabe aufgrund eines einzelnen grünen Signals.
 - Kein weiterer Workflow, Statuskontext oder Infrastrukturpatch, wenn derselbe Nachweis einfacher lokal oder im bestehenden Prüfpfad möglich ist.
 
