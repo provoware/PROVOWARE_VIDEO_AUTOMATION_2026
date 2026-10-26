@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "81471c479d1fbbdc8c0dd15eb5b603c560ac8f53",
+      "blob_sha1": "b2ebdb55e0485ca73789236dfe9ec5cab54dd2c0",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -2687,7 +2687,7 @@
     {
       "path": "src/videobatch_fast/display_formatting.py",
       "mode": "100644",
-      "blob_sha1": "1f6a7f385ecc726e334098f20f2af4533a781c38",
+      "blob_sha1": "6145892b703129666ae53a628e3f2c1e9290009b",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3924,6 +3924,13 @@
       "lifecycle": "development"
     },
     {
+      "blob_sha1": "bcaec5ef311d9a7975f2909dacf3f470a4d73036",
+      "category": "tests",
+      "lifecycle": "development",
+      "mode": "100644",
+      "path": "tests/test_display_formatting.py"
+    },
+    {
       "path": "tests/test_documentation_contract.py",
       "mode": "100644",
       "blob_sha1": "e499ef19aa16981814f562568a7ca7de950967b8",
@@ -4634,7 +4641,7 @@
   "directories": [
     {
       "path": ".",
-      "file_count_recursive": 661
+      "file_count_recursive": 662
     },
     {
       "path": ".githooks",
@@ -4802,7 +4809,7 @@
     },
     {
       "path": "tests",
-      "file_count_recursive": 148
+      "file_count_recursive": 149
     },
     {
       "path": "tests/baselines",
@@ -4821,5 +4828,5 @@
       "file_count_recursive": 2
     }
   ],
-  "file_count": 661
+  "file_count": 662
 }
