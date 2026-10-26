@@ -169,3 +169,86 @@ def test_compact_header_keeps_status_load_meters_zoom_and_menu() -> None:
         'header.addWidget(dashboard, 2, 0, 1, 4)',
     ):
         assert existing_contract in source
+
+
+def test_media_import_actions_stay_above_scrolling_lists_and_keep_callbacks(monkeypatch):
+    """U2: the original import commands remain accessible when the lists scroll."""
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    pytest.importorskip("PySide6")
+    from PySide6.QtCore import Qt
+    from PySide6.QtWidgets import QApplication, QFrame, QVBoxLayout, QWidget
+    from videobatch_fast.qt_source_panel import build_sources_panel
+
+    app = QApplication.instance() or QApplication([])
+
+    class MediaHost(QWidget):
+        def __init__(self):
+            super().__init__()
+            self._responsive_control_rows = []
+            self.calls = []
+            self.main_layout = QVBoxLayout(self)
+
+        def _panel(self, title, hint):
+            frame = QFrame()
+            return frame, QVBoxLayout(frame)
+
+        def _choose_audio(self):
+            self.calls.append("audio")
+
+        def _choose_media(self):
+            self.calls.append("media")
+
+    host = MediaHost()
+    scroll = build_sources_panel(host)
+    host.main_layout.addWidget(host.media_import_bar)
+    host.main_layout.addWidget(scroll, 1)
+    try:
+        host.resize(800, 600)
+        host.show()
+        host.media_import_bar.set_zoom_percent(200)
+        app.processEvents()
+        assert host.media_import_bar.objectName() == "mediaImportToolbar"
+        assert host.media_import_bar.parent() is host
+        assert scroll.widget() is not host.media_import_bar
+        assert host.media_import_bar.isVisibleTo(host)
+        assert len(host._source_import_buttons) == 2
+        audio, media = host._source_import_buttons
+        assert host.media_import_bar.controls == (audio, media)
+        assert audio.accessibleName() == "Audio auswählen …"
+        assert media.accessibleName() == "Bilder/Videos auswählen …"
+        audio.click()
+        media.click()
+        assert host.calls == ["audio", "media"]
+        scroll.verticalScrollBar().setValue(scroll.verticalScrollBar().maximum())
+        app.processEvents()
+        assert host.media_import_bar.isVisibleTo(host)
+        assert host.source_columns.splitter.widget(0) is host.source_columns.audio_card
+        assert host.source_columns.splitter.widget(1) is host.source_columns.media_card
+        remove_buttons = [
+            button for button, full, _short in host._source_action_labels
+            if full == "Entfernen"
+        ]
+        assert len(remove_buttons) == 2
+        assert all(button.parentWidget() is not host.media_import_bar for button in remove_buttons)
+    finally:
+        host.close()
+
+
+def test_media_toolbar_route_contract_and_existing_ordering_are_preserved():
+    source = (ROOT / "src/videobatch_fast/qt_source_panel.py").read_text(encoding="utf-8")
+    main = (ROOT / "src/videobatch_fast/qt_main_layout.py").read_text(encoding="utf-8")
+    routes = (ROOT / "src/videobatch_fast/qt_workspace_layout.py").read_text(encoding="utf-8")
+    assert "outer.addWidget(window.media_import_bar)" in main
+    assert 'import_bar.setVisible(page_key == "media")' in routes
+    assert "window._source_import_buttons.append(add)" in source
+    assert "layout.addWidget(remove, 0, Qt.AlignmentFlag.AlignRight)" in source
+    for contract in (
+        "add.clicked.connect(window._choose_audio if widget is window.audio else window._choose_media)",
+        "remove.clicked.connect(widget.remove_selected)",
+        "sorter.currentIndexChanged.connect(",
+        "window.source_columns.splitter.splitterMoved.connect(",
+        "adopt.clicked.connect(window.audio.apply_view_as_production_order)",
+        "adopt.clicked.connect(window.media.apply_view_as_production_order)",
+        "scroll.setWidget(panel)",
+    ):
+        assert contract in source

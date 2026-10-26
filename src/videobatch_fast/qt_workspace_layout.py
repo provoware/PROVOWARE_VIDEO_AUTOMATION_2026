@@ -213,6 +213,9 @@ def set_workflow_route(window, route: str) -> None:
         finally:
             tabs.blockSignals(False)
 
+    import_bar = getattr(window, "media_import_bar", None)
+    if import_bar is not None:
+        import_bar.setVisible(page_key == "media")
     guide = getattr(window, "workflow_guide", None)
     if guide is not None:
         guide.setVisible(False)
