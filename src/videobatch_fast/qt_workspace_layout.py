@@ -257,6 +257,7 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     window.next_step.setObjectName("nextStep")
     window.next_step.setAccessibleDescription("Der sichtbare Text nennt den aktuell empfohlenen nächsten Arbeitsschritt.")
     window.next_step.setWordWrap(True)
+    window.next_step.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
     layout.addWidget(window.next_step)
 
     window.activity_detail = QLabel("Keine Verarbeitung aktiv · bereit für neue Aufträge")
