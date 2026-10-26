@@ -240,7 +240,9 @@ def build_main_ui(window) -> None:
     outer.addLayout(kpis)
 
     window._responsive_control_rows = []
-    outer.addWidget(build_workflow_stack(window), 1)
+    workflow = build_workflow_stack(window)
+    outer.addWidget(window.media_import_bar)
+    outer.addWidget(workflow, 1)
 
     window.audio.setAccessibleName("Audiodateien")
     window.media.setAccessibleName("Bilder und Videos")
