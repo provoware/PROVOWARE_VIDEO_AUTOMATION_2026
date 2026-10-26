@@ -159,6 +159,8 @@ def test_compact_header_keeps_status_load_meters_zoom_and_menu() -> None:
     assert "dashboard_row = QHBoxLayout(dashboard)" in source
     assert "dashboard_row.addWidget(window.load_dashboard.frame)" in source
     assert "dashboard_row.addWidget(window.progress_dashboard, 1)" in source
+    footer_source = (ROOT / "src/videobatch_fast/qt_workspace_layout.py").read_text(encoding="utf-8")
+    assert "window.next_step.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)" in footer_source
     for existing_contract in (
         'window.status.setAccessibleDescription(',
         'window.view_scale.setAccessibleName("Schrift- und Ansichtsgröße")',
