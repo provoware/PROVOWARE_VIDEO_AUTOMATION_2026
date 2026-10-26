@@ -11,6 +11,7 @@ from videobatch_fast.config import normalize_config
 from videobatch_fast.models import BatchOptions, MediaInfo, PairJob
 from videobatch_fast.naming import safe_stem, unique_output_path
 from videobatch_fast.probe import classify_extension
+from videobatch_fast.runner_process import ProcessExecution, _ProgressState
 
 
 class NamingTests(unittest.TestCase):
@@ -103,6 +104,25 @@ class CommandTests(unittest.TestCase):
         with patch("videobatch_fast.command_builder.ffmpeg_path", return_value="ffmpeg"):
             command = build_command(job, BatchOptions(Path(".")))
         self.assertIn("-stream_loop", command)
+
+
+class RunnerProgressTests(unittest.TestCase):
+    def test_nonfinite_ffmpeg_progress_is_ignored(self):
+        state = _ProgressState(started=0.0, duration=10.0)
+        for invalid in ("nan", "inf", "-inf", "1e999"):
+            self.assertFalse(ProcessExecution._apply_progress_line(f"out_time_us={invalid}", state))
+            self.assertEqual(state.out_time, 0.0)
+            ProcessExecution._apply_progress_line(f"fps={invalid}", state)
+            self.assertEqual(state.fps, 0.0)
+
+        self.assertTrue(ProcessExecution._apply_progress_line("out_time_us=2500000", state))
+        self.assertEqual(state.out_time, 2.5)
+        ProcessExecution._apply_progress_line("fps=24.5", state)
+        self.assertEqual(state.fps, 24.5)
+        self.assertFalse(ProcessExecution._apply_progress_line("out_time_us=nan", state))
+        self.assertEqual(state.out_time, 2.5)
+        ProcessExecution._apply_progress_line("fps=inf", state)
+        self.assertEqual(state.fps, 24.5)
 
 
 class ConfigTests(unittest.TestCase):
