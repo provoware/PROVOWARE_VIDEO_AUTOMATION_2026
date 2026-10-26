@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "231686ea237f4ebc54ba7a850b00f3edf754dd9f",
+      "blob_sha1": "855367764b72b29edb9f45f78c16d0124cc935a0",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -3086,7 +3086,7 @@
     {
       "path": "src/videobatch_fast/qt_main_layout.py",
       "mode": "100644",
-      "blob_sha1": "f95911f7f648a744ae356b43f3d09f3f335d0c37",
+      "blob_sha1": "b659f875eeee0b76a283d8d35708e7d81db77465",
       "category": "application",
       "lifecycle": "active"
     },
@@ -4178,7 +4178,7 @@
     {
       "path": "tests/test_provoware_responsive_grid_contract.py",
       "mode": "100644",
-      "blob_sha1": "bbbbf7c8c298a9b50cbda15577ea492cc6c81745",
+      "blob_sha1": "9de7a60d6c5bf4aab2eeccf3702d25f1497e5529",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4213,7 +4213,7 @@
     {
       "path": "tests/test_qt_responsive_20261020.py",
       "mode": "100644",
-      "blob_sha1": "bd5cf25d3b1f62eb5c349a302a97dd10d48e2d80",
+      "blob_sha1": "68eca9eda75e4ec966059272231244bc05b72743",
       "category": "tests",
       "lifecycle": "development"
     },

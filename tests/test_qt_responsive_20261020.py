@@ -26,7 +26,8 @@ def test_responsive_layout_contract_is_readable_without_horizontal_scrolling():
     assert "window.settings_grid = ResponsiveSettingsPanel()" in main
     assert "window.settings_grid.set_zoom_percent(value)" in main
     assert "window.source_columns.set_zoom_percent(value)" in main
-    assert "adaptiveSettingScroll" in main
+    assert "window.settings_view = window.settings_grid" in main
+    assert "adaptiveSettingScroll" not in main
 
 
 def test_equal_columns_reflow_to_vertical_stack(monkeypatch):
@@ -252,3 +253,50 @@ def test_media_toolbar_route_contract_and_existing_ordering_are_preserved():
         "scroll.setWidget(panel)",
     ):
         assert contract in source
+
+
+def test_u3_output_uses_exactly_one_vertical_scroll_area(monkeypatch):
+    """All six settings groups stay in the outer output scroll viewport."""
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    pytest.importorskip("PySide6")
+    from PySide6.QtWidgets import QApplication, QScrollArea, QWidget, QVBoxLayout
+    from videobatch_fast.qt_adaptive_settings import ResponsiveSettingsPanel
+
+    app = QApplication.instance() or QApplication([])
+    outer = QScrollArea()
+    outer.setWidgetResizable(True)
+    page = QWidget()
+    layout = QVBoxLayout(page)
+    settings = ResponsiveSettingsPanel()
+    window_fields = []
+    for name in ("Auflösung", "Qualität", "Bildeffekt", "Ausgabeordner", "Effektstärke", "Videoblende"):
+        field = QWidget()
+        settings.add_field(name, field)
+        window_fields.append(field)
+    layout.addWidget(settings)
+    outer.setWidget(page)
+    try:
+        outer.resize(800, 350)
+        outer.show()
+        settings.set_zoom_percent(200)
+        app.processEvents()
+        assert len(settings._fields) == 6
+        assert all(field.parent() is not None for field in window_fields)
+        assert not settings.findChildren(QScrollArea)
+        assert not page.findChildren(QScrollArea)
+        assert settings.maximumHeight() > 140
+        assert outer.verticalScrollBar().maximum() >= 0
+    finally:
+        outer.close()
+
+
+def test_u3_real_output_page_retains_all_controls_and_routing():
+    source = (ROOT / "src/videobatch_fast/qt_main_layout.py").read_text(encoding="utf-8")
+    workspace = (ROOT / "src/videobatch_fast/qt_workspace_layout.py").read_text(encoding="utf-8")
+    assert "window.settings_view = window.settings_grid" in source
+    assert "settings_view.setMaximumHeight(140)" not in source
+    assert 'output_scroll.setObjectName("outputPageScroll")' in workspace
+    assert 'effects_page.layout().insertWidget(0, window.settings_view)' in workspace
+    for label in ("Auflösung", "Qualität", "Bildeffekt", "Ausgabeordner", "Effektstärke", "Videoblende"):
+        assert f'window.settings_grid.add_field("{label}"' in source
+    assert "output_scroll.setWidget(effects_page)" in workspace
