@@ -274,6 +274,7 @@ def test_output_page_uses_one_scroll_area_and_preserves_controls(
         location.mkdir(exist_ok=True)
         monkeypatch.setenv(key, str(location))
     pytest.importorskip("PySide6")
+    from PySide6.QtTest import QTest
     from PySide6.QtWidgets import QApplication, QScrollArea
     from videobatch_fast.qt_phase3 import VideoBatchQtPhase3Window
 
@@ -282,11 +283,16 @@ def test_output_page_uses_one_scroll_area_and_preserves_controls(
     try:
         window.resize(*size)
         window.show()
-        # Phase 3 completes legacy startup through two single-shot Qt timers.
-        # Route only after they have run, or the last callback resets to dashboard.
-        app.processEvents()
+        # The Phase-3 completion retries after 10 ms when its parity adapter
+        # is not ready; a pending callback can otherwise reset the route.
+        for _ in range(50):
+            app.processEvents()
+            if getattr(window, "_parity_completion_ready", False):
+                break
+            QTest.qWait(10)
+        assert window._parity_completion_ready
         window.view_scale.setCurrentIndex(window.view_scale.findData(zoom))
-        window.main_tabs.setCurrentIndex(1)
+        window._route_workspace("effects")
         app.processEvents()
         assert window._active_workflow_route == "effects"
 
