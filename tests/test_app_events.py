@@ -87,6 +87,20 @@ def test_progress_coalescing_keeps_latest_sequence_and_terminal_event() -> None:
         buffer.get_nowait()
 
 
+def test_progress_coalescing_keeps_different_operations_separate() -> None:
+    buffer = EventBuffer(maxsize=10)
+    buffer.put(AppEvent("progress", {"snapshot": 1, "job": object(), "operation_id": "run-A"}))
+    buffer.put(AppEvent("progress", {"snapshot": 2, "job": object(), "operation_id": "run-B"}))
+
+    first = buffer.get_nowait()
+    second = buffer.get_nowait()
+    assert (first.operation_id, second.operation_id) == ("run-A", "run-B")
+    assert (first.sequence, second.sequence) == (1, 2)
+    assert (first.payload["snapshot"], second.payload["snapshot"]) == (1, 2)
+    with pytest.raises(queue.Empty):
+        buffer.get_nowait()
+
+
 def test_invalid_event_contract_is_rejected_before_buffering() -> None:
     buffer = EventBuffer(maxsize=10)
     with pytest.raises(AppEventError):
