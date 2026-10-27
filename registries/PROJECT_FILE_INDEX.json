@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "855367764b72b29edb9f45f78c16d0124cc935a0",
+      "blob_sha1": "79997c1a72fdb26aee3c0988bb5cc2f31852d09f",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -3233,7 +3233,7 @@
     {
       "path": "src/videobatch_fast/resource_estimation.py",
       "mode": "100644",
-      "blob_sha1": "4860928cfec57235472999b267574cf583ca0c0d",
+      "blob_sha1": "6f827a1ec382ab4a4efa23e4dc720521de39ba4b",
       "category": "application",
       "lifecycle": "active"
     },
@@ -4122,7 +4122,7 @@
     {
       "path": "tests/test_preflight_media_safety_20261018.py",
       "mode": "100644",
-      "blob_sha1": "184a39b2bfdb9601ee37bbe3108a27d2ffb8c812",
+      "blob_sha1": "c48577380481f2b1333b880077be95cfedc4a090",
       "category": "tests",
       "lifecycle": "development"
     },
