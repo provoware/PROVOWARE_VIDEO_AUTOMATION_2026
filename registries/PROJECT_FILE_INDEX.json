@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "79997c1a72fdb26aee3c0988bb5cc2f31852d09f",
+      "blob_sha1": "a6885ee34c97681205cd887049c56afc47bf3a1e",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -3828,7 +3828,7 @@
     {
       "path": "tests/test_autonomous_reliability_rc25.py",
       "mode": "100644",
-      "blob_sha1": "9a4083d7c5a7642ab9c9b311997e96883a923f76",
+      "blob_sha1": "7700de0514fa2bc415486628be8284eab8edc584",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4122,7 +4122,7 @@
     {
       "path": "tests/test_preflight_media_safety_20261018.py",
       "mode": "100644",
-      "blob_sha1": "c48577380481f2b1333b880077be95cfedc4a090",
+      "blob_sha1": "184a39b2bfdb9601ee37bbe3108a27d2ffb8c812",
       "category": "tests",
       "lifecycle": "development"
     },
