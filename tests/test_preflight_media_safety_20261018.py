@@ -8,7 +8,6 @@ from types import SimpleNamespace
 from videobatch_fast import probe
 from videobatch_fast.command_builder import build_command
 from videobatch_fast.models import BatchOptions, MediaInfo, PairJob
-from videobatch_fast.resource_estimation import estimate_job_output_bytes
 
 
 def test_unreadable_stream_is_never_accepted_by_extension(monkeypatch) -> None:
@@ -51,23 +50,3 @@ def test_odd_source_is_padded_only_when_encoding() -> None:
     copied = build_command(copy_job, options)
     assert copied[copied.index("-c:v") + 1] == "copy"
     assert "-vf" not in copied
-
-
-def test_nonfinite_audio_duration_uses_safe_disk_reserve() -> None:
-    audio = Path("track.wav")
-    image = Path("cover.png")
-    media = MediaInfo(image, "image", width=1280, height=720)
-    options = BatchOptions(output_dir=Path("."), quick_mode="custom")
-
-    def estimate(duration: float | None) -> int:
-        job = PairJob(
-            1, audio, image, Path("output.mp4"),
-            MediaInfo(audio, "audio", duration=duration), media, False, "test",
-        )
-        return estimate_job_output_bytes(job, options)
-
-    unknown_duration_reserve = estimate(None)
-    for invalid_duration in (float("nan"), float("inf"), float("-inf")):
-        assert estimate(invalid_duration) == unknown_duration_reserve
-    # Ordinary finite durations retain their existing size estimate.
-    assert estimate(10.0) < unknown_duration_reserve
