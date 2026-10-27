@@ -370,7 +370,7 @@
     {
       "path": "diagnostics/release_readiness/generate_candidate_quality.py",
       "mode": "100644",
-      "blob_sha1": "e71c039577e5e58effd6f3ff0b02228361e1dfdb",
+      "blob_sha1": "79bc8a73286094cbab8b50afab1a359dbf748079",
       "category": "diagnostics",
       "lifecycle": "active"
     },
@@ -405,7 +405,7 @@
     {
       "path": "diagnostics/release_readiness/test_candidate_quality.py",
       "mode": "100644",
-      "blob_sha1": "f03940640a5b4c33a3914e1a977587a85254d072",
+      "blob_sha1": "6e68118f07a3149f07585b7bc83d73658b00d7cb",
       "category": "diagnostics",
       "lifecycle": "active"
     },
