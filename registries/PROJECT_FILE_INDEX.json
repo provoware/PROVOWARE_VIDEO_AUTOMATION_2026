@@ -384,7 +384,7 @@
     {
       "path": "diagnostics/release_readiness/release_readiness_dashboard.py",
       "mode": "100644",
-      "blob_sha1": "354e0664911cf28b66cf7f67b04b8d88bc732157",
+      "blob_sha1": "0dcb64e0d8b0160e406f45502ee5229e08871541",
       "category": "diagnostics",
       "lifecycle": "active"
     },
@@ -398,7 +398,7 @@
     {
       "path": "diagnostics/release_readiness/selftest.py",
       "mode": "100755",
-      "blob_sha1": "78fea3893a590376aef9298917666623e2c95699",
+      "blob_sha1": "091ded6ab9578d097162db6a50449929a99c97c6",
       "category": "diagnostics",
       "lifecycle": "active"
     },
