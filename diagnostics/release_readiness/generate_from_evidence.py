@@ -119,9 +119,10 @@ def validate(value: Mapping[str, Any]) -> None:
         raise EvidenceContractError("Matrix-PASS-Zahl überschreitet Zielzahl")
     blockers = stable_blockers(value)
     expected_ready = not blockers
-    if bool(value.get("stable_ready")) != expected_ready:
+    ready_value = value.get("stable_ready")
+    if type(ready_value) is not bool or ready_value != expected_ready:
         raise EvidenceContractError(
-            f"stable_ready={value.get('stable_ready')!r} widerspricht {len(blockers)} offenen Gates"
+            f"stable_ready={ready_value!r} muss ein boolescher Wert sein und zu {len(blockers)} offenen Gates passen"
         )
     completed = int(progress.get("completed", 0))
     open_count = int(progress.get("open", 0))
