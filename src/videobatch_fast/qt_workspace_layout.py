@@ -229,6 +229,9 @@ def set_workflow_route(window, route: str) -> None:
     if footer_scroll is not None:
         footer_scroll.setVisible(route in {"dashboard", "media", "effects", "queue"})
     production = route == "queue"
+    primary_actions = getattr(window, "production_action_bar", None)
+    if primary_actions is not None:
+        primary_actions.setVisible(production)
     dashboard = getattr(window, "_compact_header_dashboard", None)
     zoom = getattr(window, "view_scale", None)
     if dashboard is not None and zoom is not None:
@@ -294,6 +297,7 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     window.cancel.setEnabled(False)
     window.start = QPushButton("▶ Videos erstellen")
     window.start.setObjectName("primary")
+    window.start.setAccessibleName("Videos erstellen")
     window.start.setAccessibleDescription("Startet die geprüften Video-Aufträge.")
     window.start.setMinimumWidth(155)
     window.probe_button = QPushButton("▶ Probevideo · max. 10 Sekunden")
@@ -303,7 +307,13 @@ def build_footer(window, outer: QVBoxLayout) -> None:
         "Die Ausgabe landet getrennt im Probevideo-Ordner."
     )
     window.probe_button.setAccessibleName("Kurzes Probevideo aus dem ersten Dateipaar")
-    action_row = ResponsiveControlRow((window.cancel, window.probe_button, window.start))
+    # Start and cancellation must be reachable without scrolling the footer.
+    # Keep the existing button objects and their production callbacks.
+    window.production_action_bar = ResponsiveControlRow((window.cancel, window.start))
+    window.production_action_bar.setObjectName("productionActionBar")
+    window.production_action_bar.setAccessibleName("Produktion starten oder abbrechen")
+    window._responsive_control_rows.append(window.production_action_bar)
+    action_row = ResponsiveControlRow((window.probe_button,))
     window._responsive_control_rows.append(action_row)
     layout.addWidget(action_row)
 
@@ -338,4 +348,5 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     footer_scroll.setMaximumHeight(210)
     footer_scroll.setWidget(footer)
     window.action_footer_scroll = footer_scroll
+    outer.addWidget(window.production_action_bar)
     outer.addWidget(footer_scroll)

@@ -300,3 +300,56 @@ def test_u3_real_output_page_retains_all_controls_and_routing():
     for label in ("Auflösung", "Qualität", "Bildeffekt", "Ausgabeordner", "Effektstärke", "Videoblende"):
         assert f'window.settings_grid.add_field("{label}"' in source
     assert "output_scroll.setWidget(effects_page)" in workspace
+
+
+def test_u4_primary_production_actions_stay_in_viewport_at_high_zoom(monkeypatch, tmp_path):
+    """Start and cancellation must not be buried in the secondary footer scroll."""
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    for key in ("XDG_CONFIG_HOME", "XDG_STATE_HOME", "XDG_DATA_HOME", "XDG_CACHE_HOME"):
+        monkeypatch.setenv(key, str(tmp_path / key.lower()))
+    pytest.importorskip("PySide6")
+    from PySide6.QtCore import QPoint
+    from PySide6.QtWidgets import QApplication, QScrollArea
+    from videobatch_fast.qt_phase3 import VideoBatchQtPhase3Window
+
+    app = QApplication.instance() or QApplication([])
+    app.setStyle("Fusion")
+    window = VideoBatchQtPhase3Window(autoload_project=False)
+    try:
+        window.show()
+        for width, height, zoom in ((1366, 768, 110), (800, 600, 175), (800, 600, 200)):
+            window.view_scale.setCurrentIndex(window.view_scale.findData(zoom))
+            window.resize(width, height)
+            window._route_workspace("queue")
+            app.processEvents()
+            bar = window.production_action_bar
+            assert bar.objectName() == "productionActionBar"
+            assert bar.parent() is not window.action_footer_scroll.widget()
+            assert bar.isVisibleTo(window)
+            assert window.start.isVisibleTo(window)
+            assert window.cancel.isVisibleTo(window)
+            assert bar.mapTo(window, QPoint(0, bar.height())).y() <= window.height()
+            assert window.workflow_stack.height() >= 60
+            assert not bar.findChildren(QScrollArea)
+            assert window.start.accessibleName() == "Videos erstellen"
+            assert window.start.text() == ("▶ Starten" if width <= 900 and zoom >= 175 else "▶ Videos erstellen")
+        window._route_workspace("effects")
+        app.processEvents()
+        assert not window.production_action_bar.isVisibleTo(window)
+    finally:
+        window.close()
+        app.processEvents()
+
+
+def test_u4_footer_keeps_probe_and_results_in_existing_scroll_area():
+    source = (ROOT / "src/videobatch_fast/qt_workspace_layout.py").read_text(encoding="utf-8")
+    main = (ROOT / "src/videobatch_fast/qt_main_layout.py").read_text(encoding="utf-8")
+    assert 'window.production_action_bar.setObjectName("productionActionBar")' in source
+    assert 'outer.addWidget(window.production_action_bar)' in source
+    assert 'primary_actions.setVisible(production)' in source
+    assert 'ResponsiveControlRow((window.cancel, window.start))' in source
+    assert 'ResponsiveControlRow((window.probe_button,))' in source
+    assert "window.open_output.clicked.connect(lambda: open_output_folder(window))" in source
+    assert 'window.show_result_log.clicked.connect(lambda: window.log_toggle.setChecked(True))' in source
+    assert 'footer_scroll.setWidget(footer)' in source
+    assert 'window.start.setText("▶ Starten" if small_large else "▶ Videos erstellen")' in main

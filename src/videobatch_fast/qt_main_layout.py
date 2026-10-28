@@ -267,6 +267,9 @@ def build_main_ui(window) -> None:
         window.status.setStyleSheet(
             "font-size: 17px; padding: 3px 6px; font-weight: 800;" if small_large else ""
         )
+        # Keep the production start and cancel actions side by side at 200%
+        # without changing the accessible command or the connected callback.
+        window.start.setText("▶ Starten" if small_large else "▶ Videos erstellen")
         for button, full, short in getattr(window, "_source_action_labels", []):
             button.setText(short if small_large else full)
         for label_widget, full, short in getattr(window, "_source_header_labels", []):
