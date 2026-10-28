@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "855367764b72b29edb9f45f78c16d0124cc935a0",
+      "blob_sha1": "6dd7052e0335c6cc7bb1c71234b629e72a5e5e48",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -2757,7 +2757,7 @@
     {
       "path": "src/videobatch_fast/instance_lock.py",
       "mode": "100644",
-      "blob_sha1": "2f345d6ea00a8ed8b65df1db56e6b01aef2d0581",
+      "blob_sha1": "5ade1ec698959c9f3b7dce676546ddf87435920f",
       "category": "application",
       "lifecycle": "active"
     },
@@ -4549,7 +4549,7 @@
     {
       "path": "tests/test_ui_ready_handshake_contract.py",
       "mode": "100644",
-      "blob_sha1": "9adb0e1c0ab9ec18f74a7ba8dcafe1f61272631e",
+      "blob_sha1": "738b3f23297b068e2fea87254ab8ea75201987df",
       "category": "tests",
       "lifecycle": "development"
     },
