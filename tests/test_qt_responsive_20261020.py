@@ -325,7 +325,14 @@ def test_u4_primary_production_actions_stay_in_viewport_at_high_zoom(monkeypatch
             bar = window.production_action_bar
             assert bar.objectName() == "productionActionBar"
             assert bar.parent() is not window.action_footer_scroll.widget()
-            assert bar.isVisibleTo(window)
+            assert bar.isVisibleTo(window), (
+                f"production bar hidden at {width}x{height}/{zoom}% "
+                f"route={window._active_workflow_route!r} "
+                f"bar_hidden={bar.isHidden()} bar_visible={bar.isVisible()} "
+                f"parent_hidden={bar.parentWidget().isHidden()} "
+                f"parent_visible={bar.parentWidget().isVisible()} "
+                f"geometry={bar.geometry()}"
+            )
             assert window.start.isVisibleTo(window)
             assert window.cancel.isVisibleTo(window)
             assert bar.mapTo(window, QPoint(0, bar.height())).y() <= window.height()

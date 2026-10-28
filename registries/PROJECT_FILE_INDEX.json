@@ -4213,7 +4213,7 @@
     {
       "path": "tests/test_qt_responsive_20261020.py",
       "mode": "100644",
-      "blob_sha1": "bc6b828381f4c8136a95e7c68952ad8c6b01c9ee",
+      "blob_sha1": "5158bfd1da7939439dbdd67a8f4c37bd5830a81c",
       "category": "tests",
       "lifecycle": "development"
     },
