@@ -3282,7 +3282,7 @@
     {
       "path": "src/videobatch_fast/safe_io.py",
       "mode": "100644",
-      "blob_sha1": "a04593bb0098263127590df8e94b4f0c58514226",
+      "blob_sha1": "194f95d4cc8ece757831ffcb0c16e00d0d35eaf3",
       "category": "application",
       "lifecycle": "active"
     },
@@ -4066,7 +4066,7 @@
     {
       "path": "tests/test_persistence_v1_contract.py",
       "mode": "100644",
-      "blob_sha1": "7e077889f501a1e41959019160704f9c3262085b",
+      "blob_sha1": "9aa5347e3dd4df78e98db9de1ddc4874000c160a",
       "category": "tests",
       "lifecycle": "development"
     },

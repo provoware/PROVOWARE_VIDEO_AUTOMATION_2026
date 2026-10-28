@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import stat
 import sys
+
+import pytest
 from pathlib import Path
 from unittest.mock import patch
 
@@ -15,7 +17,7 @@ if str(SRC) not in sys.path:
 from videobatch_fast.archive_service import recover_archive_transactions  # noqa: E402
 from videobatch_fast.job_journal import SCHEMA_VERSION, recoverable_batches  # noqa: E402
 from videobatch_fast.plugin_approvals import load_approvals  # noqa: E402
-from videobatch_fast.safe_io import atomic_write_json, quarantine_file, read_json  # noqa: E402
+from videobatch_fast.safe_io import SafeIoError, atomic_write_json, quarantine_file, read_json  # noqa: E402
 
 
 INVENTORY = ROOT / "docs" / "archive" / "diagnostics-checkpoints" / "architecture" / "CP-04_PERSISTENCE_INVENTORY.json"
@@ -107,6 +109,45 @@ def test_quarantine_preserves_corrupt_bytes_without_overwrite(tmp_path: Path) ->
     assert quarantined.is_file()
     assert quarantined.read_bytes() == raw
     assert ".corrupt." in quarantined.name
+
+
+def test_quarantine_does_not_overwrite_file_created_after_name_check(tmp_path: Path) -> None:
+    source = tmp_path / "config.json"
+    source.write_bytes(b"broken")
+    collision = tmp_path / "config.corrupt.20261028_220000.json"
+    original_exists = Path.exists
+    injected: list[Path] = []
+
+    def inject_after_check(path: Path) -> bool:
+        existed = original_exists(path)
+        if path == collision and not existed and not injected:
+            path.write_bytes(b"foreign-data")
+            injected.append(path)
+        return existed
+
+    with (
+        patch("videobatch_fast.safe_io.time.strftime", return_value="20261028_220000"),
+        patch.object(Path, "exists", inject_after_check),
+    ):
+        quarantined = quarantine_file(source)
+
+    assert injected
+    assert collision.read_bytes() == b"foreign-data"
+    assert quarantined is not None and quarantined != collision
+    assert quarantined.read_bytes() == b"broken"
+    assert not source.exists()
+
+
+def test_quarantine_unsupported_hardlink_leaves_source_intact(tmp_path: Path) -> None:
+    source = tmp_path / "config.json"
+    source.write_bytes(b"broken")
+
+    with patch("videobatch_fast.safe_io.os.link", side_effect=OSError("unsupported filesystem")):
+        with pytest.raises(SafeIoError):
+            quarantine_file(source)
+
+    assert source.read_bytes() == b"broken"
+    assert not list(tmp_path.glob("config.corrupt.*.json"))
 
 
 def test_plugin_approval_corruption_is_quarantined_and_recreated_safely(tmp_path: Path) -> None:

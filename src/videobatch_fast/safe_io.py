@@ -75,9 +75,17 @@ def quarantine_file(path: Path | str, *, label: str = "corrupt") -> Path | None:
         if candidate.exists() or candidate.is_symlink():
             continue
         try:
-            os.replace(source, candidate)
-            fsync_directory(source.parent)
-            return candidate
+            # Reserve the destination atomically: os.replace could overwrite
+            # a file created by another process after the existence check.
+            os.link(source, candidate, follow_symlinks=False)
+        except FileExistsError:
+            continue
         except OSError as exc:
             raise SafeIoError(f"Beschädigte Datei konnte nicht sicher quarantänisiert werden: {source}: {exc}") from exc
+        try:
+            source.unlink()
+            fsync_directory(source.parent)
+        except OSError as exc:
+            raise SafeIoError(f"Beschädigte Datei konnte nicht sicher quarantänisiert werden: {source}: {exc}") from exc
+        return candidate
     raise SafeIoError(f"Kein freier Quarantänename für {source}")
