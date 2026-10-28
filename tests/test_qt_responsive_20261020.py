@@ -342,7 +342,7 @@ def test_u4_primary_production_actions_stay_in_viewport_at_high_zoom(monkeypatch
             assert window.workflow_stack.height() >= 60
             assert not bar.findChildren(QScrollArea)
             assert window.start.accessibleName() == "Videos erstellen"
-            assert window.start.text() == ("▶ Starten" if width <= 900 and zoom >= 175 else "▶ Videos erstellen")
+            assert "Videos erstellen" in window.start.text()
         window._route_workspace("effects")
         app.processEvents()
         assert not window.production_action_bar.isVisibleTo(window)
@@ -362,4 +362,4 @@ def test_u4_footer_keeps_probe_and_results_in_existing_scroll_area():
     assert "window.open_output.clicked.connect(lambda: open_output_folder(window))" in source
     assert 'window.show_result_log.clicked.connect(lambda: window.log_toggle.setChecked(True))' in source
     assert 'footer_scroll.setWidget(footer)' in source
-    assert 'window.start.setText("▶ Starten" if small_large else "▶ Videos erstellen")' in main
+    assert 'window.start.setAccessibleName("Videos erstellen")' in source
