@@ -317,6 +317,9 @@ def test_u4_primary_production_actions_stay_in_viewport_at_high_zoom(monkeypatch
     window = VideoBatchQtPhase3Window(autoload_project=False)
     try:
         window.show()
+        # Qt may deliver its initial tab selection after show(); settle it
+        # before asserting a deliberately selected production route.
+        app.processEvents()
         for width, height, zoom in ((1366, 768, 110), (800, 600, 175), (800, 600, 200)):
             window.view_scale.setCurrentIndex(window.view_scale.findData(zoom))
             window.resize(width, height)
