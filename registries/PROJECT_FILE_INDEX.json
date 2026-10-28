@@ -3828,7 +3828,7 @@
     {
       "path": "tests/test_autonomous_reliability_rc25.py",
       "mode": "100644",
-      "blob_sha1": "9a4083d7c5a7642ab9c9b311997e96883a923f76",
+      "blob_sha1": "47045f02432bcd16d839ef3a3f2dd8221798ac1e",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4465,7 +4465,7 @@
     {
       "path": "tests/test_retry_queue_resilience.py",
       "mode": "100644",
-      "blob_sha1": "771d2d7f268e23726d77a65c4c467808fe44674d",
+      "blob_sha1": "b197390f1493e5bd1325651f591de512d6f49901",
       "category": "tests",
       "lifecycle": "development"
     },

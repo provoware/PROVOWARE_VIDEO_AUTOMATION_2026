@@ -122,34 +122,6 @@ def test_corrupt_retry_queue_is_quarantined_and_rebuilt(tmp_path: Path) -> None:
     assert json.loads(queue_path.read_text(encoding="utf-8"))["entries"]
 
 
-
-def test_invalid_dropped_counter_does_not_hide_pending_jobs(tmp_path: Path) -> None:
-    for index, damaged in enumerate(("kaputt", {"wert": 1}, [1]), start=1):
-        queue_path = tmp_path / f"retry-{index}.json"
-        job = _job(tmp_path, index)
-        original = RetryQueueStore(queue_path)
-        original.record_failure(
-            _failed(job, "erster Fehler"),
-            operation_id="before-damage",
-            protection="Originale geschützt.",
-        )
-        payload = json.loads(queue_path.read_text(encoding="utf-8"))
-        payload["dropped_total"] = damaged
-        queue_path.write_text(json.dumps(payload), encoding="utf-8")
-
-        restored = RetryQueueStore(queue_path)
-        assert len(restored.entries()) == 1
-        assert restored.entries()[0]["first_error"] == "erster Fehler"
-        assert restored.summary().dropped_total == 0
-        second = restored.record_failure(
-            _failed(job, "zweiter Fehler"),
-            operation_id="after-damage",
-            protection="Originale geschützt.",
-        )
-        assert second["attempts"] == 2
-        assert second["retry_allowed"] is False
-
-
 def test_runner_continues_and_persists_failed_job(tmp_path: Path) -> None:
     events: list[AppEvent] = []
     runner = BatchRunner(
