@@ -184,6 +184,19 @@ def build_workflow_stack(window) -> QStackedWidget:
     return stack
 
 
+def refresh_primary_action_caption(window) -> None:
+    """Preserve Phase-3 check/start semantics with a complete compact label."""
+    start = getattr(window, "start", None)
+    if start is None or start.text() not in {
+        "▶ Prüfen & Videos erstellen", "▶ Prüfen & Starten",
+    }:
+        return
+    zoom = getattr(window, "view_scale", None)
+    percent = int(zoom.currentData() or 110) if zoom is not None else 110
+    compact = percent >= 175 and window.width() <= 900
+    start.setText("▶ Prüfen & Starten" if compact else "▶ Prüfen & Videos erstellen")
+
+
 def set_workflow_route(window, route: str) -> None:
     pages = getattr(window, "_workflow_pages", {})
     previous = getattr(window, "_active_workflow_route", None)
@@ -231,6 +244,7 @@ def set_workflow_route(window, route: str) -> None:
     production = route == "queue"
     primary_actions = getattr(window, "production_action_bar", None)
     if primary_actions is not None:
+        refresh_primary_action_caption(window)
         primary_actions.setVisible(production)
     dashboard = getattr(window, "_compact_header_dashboard", None)
     zoom = getattr(window, "view_scale", None)

@@ -342,7 +342,14 @@ def test_u4_primary_production_actions_stay_in_viewport_at_high_zoom(monkeypatch
             assert window.workflow_stack.height() >= 60
             assert not bar.findChildren(QScrollArea)
             assert window.start.accessibleName() == "Videos erstellen"
-            assert "Videos erstellen" in window.start.text()
+            expected_label = ("▶ Prüfen & Starten" if width <= 900 and zoom >= 175
+                              else "▶ Prüfen & Videos erstellen")
+            assert window.start.text() == expected_label
+            required_width = window.start.fontMetrics().horizontalAdvance(window.start.text())
+            assert window.start.width() + 2 >= required_width, (
+                f"Startbeschriftung abgeschnitten bei {width}x{height}/{zoom}%: "
+                f"{window.start.width()} statt {required_width}px"
+            )
         window._route_workspace("effects")
         app.processEvents()
         assert not window.production_action_bar.isVisibleTo(window)
@@ -363,3 +370,5 @@ def test_u4_footer_keeps_probe_and_results_in_existing_scroll_area():
     assert 'window.show_result_log.clicked.connect(lambda: window.log_toggle.setChecked(True))' in source
     assert 'footer_scroll.setWidget(footer)' in source
     assert 'window.start.setAccessibleName("Videos erstellen")' in source
+    assert 'refresh_primary_action_caption(window)' in source
+    assert 'refresh_primary_action_caption(self)' in (ROOT / "src/videobatch_fast/qt_phase3.py").read_text(encoding="utf-8")
