@@ -342,8 +342,8 @@ def test_u4_primary_production_actions_stay_in_viewport_at_high_zoom(monkeypatch
             assert window.workflow_stack.height() >= 60
             assert not bar.findChildren(QScrollArea)
             assert window.start.accessibleName() == "Videos erstellen"
-            expected_label = ("▶ Prüfen & Starten" if width <= 900 and zoom >= 175
-                              else "▶ Prüfen & Videos erstellen")
+            expected_label = ("▶ Prüfen && Starten" if width <= 900 and zoom >= 175
+                              else "▶ Prüfen && Videos erstellen")
             assert window.start.text() == expected_label
             required_width = window.start.fontMetrics().horizontalAdvance(window.start.text())
             assert window.start.width() + 2 >= required_width, (

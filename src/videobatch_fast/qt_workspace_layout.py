@@ -189,12 +189,14 @@ def refresh_primary_action_caption(window) -> None:
     start = getattr(window, "start", None)
     if start is None or start.text() not in {
         "▶ Prüfen & Videos erstellen", "▶ Prüfen & Starten",
+        "▶ Prüfen && Videos erstellen", "▶ Prüfen && Starten",
     }:
         return
     zoom = getattr(window, "view_scale", None)
     percent = int(zoom.currentData() or 110) if zoom is not None else 110
     compact = percent >= 175 and window.width() <= 900
-    start.setText("▶ Prüfen & Starten" if compact else "▶ Prüfen & Videos erstellen")
+    # Qt renders && as a literal &, not as an accidental keyboard mnemonic.
+    start.setText("▶ Prüfen && Starten" if compact else "▶ Prüfen && Videos erstellen")
 
 
 def set_workflow_route(window, route: str) -> None:
