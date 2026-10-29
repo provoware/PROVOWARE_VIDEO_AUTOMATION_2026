@@ -2925,7 +2925,7 @@
     {
       "path": "src/videobatch_fast/permission_service.py",
       "mode": "100644",
-      "blob_sha1": "51bb166f3f5058f5bbf10098955195139a0fb025",
+      "blob_sha1": "afdb585e36697c0746dea7dff6627e2d35d53b90",
       "category": "application",
       "lifecycle": "active"
     },
@@ -4064,6 +4064,13 @@
       "path": "tests/test_paths_permission_safety.py"
     },
     {
+      "path": "tests/test_permission_service_fallback_safety.py",
+      "mode": "100644",
+      "blob_sha1": "8a2ffbd6e34ed61643946b2d7c8ffd42cb284a7c",
+      "category": "tests",
+      "lifecycle": "development"
+    },
+    {
       "path": "tests/test_persistence_v1_contract.py",
       "mode": "100644",
       "blob_sha1": "7e077889f501a1e41959019160704f9c3262085b",
@@ -4634,7 +4641,7 @@
   "directories": [
     {
       "path": ".",
-      "file_count_recursive": 661
+      "file_count_recursive": 662
     },
     {
       "path": ".githooks",
@@ -4802,7 +4809,7 @@
     },
     {
       "path": "tests",
-      "file_count_recursive": 148
+      "file_count_recursive": 149
     },
     {
       "path": "tests/baselines",
@@ -4821,5 +4828,5 @@
       "file_count_recursive": 2
     }
   ],
-  "file_count": 661
+  "file_count": 662
 }
