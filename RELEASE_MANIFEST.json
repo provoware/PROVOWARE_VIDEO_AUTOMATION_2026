@@ -1,16 +1,11 @@
 {
   "build": "2.8.3-rc24",
   "channel": "rc",
-  "file_count": 545,
-  "files_sha256": "b1f4ff1e0ee247c48e6129c71430f628ffcd2a74786243ca0def5e94d2ddaa83",
+  "file_count": 546,
+  "files_sha256": "7d40f74674bf9d8dd2b02c13c95b1f5b175e9cd9b1c0ae5f942ca3ec6f5d1199",
   "name": "provoware - videoautomation - 2026",
   "representation": "compact",
   "schema_version": 3,
   "version": "2.8.3-rc24",
-  "visual_approval": {
-    "approval_sha256": "",
-    "key_id": "",
-    "valid": false,
-    "visual_contract_sha256": "fb1c9c6629a88a66b8c4681e25b093b596e2ef8a063476a58bb692b045f3dccf"
-  }
+  "visual_approval": {}
 }
