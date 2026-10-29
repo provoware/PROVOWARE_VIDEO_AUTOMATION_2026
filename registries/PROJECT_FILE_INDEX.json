@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "d493e441cb92dabc878da3dc0f628a771cdbb659",
+      "blob_sha1": "50b132de0f1a97d2c23fe18c2e10aa129b61822f",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -3240,7 +3240,7 @@
     {
       "path": "src/videobatch_fast/retry_diagnostics.py",
       "mode": "100644",
-      "blob_sha1": "3ba1a565bd979048febafd8a2b0290d8f25f0ce1",
+      "blob_sha1": "2aa582773297e0e06a7f00f85faa411cdafac45f",
       "category": "application",
       "lifecycle": "active"
     },
@@ -4458,7 +4458,7 @@
     {
       "path": "tests/test_retry_queue_diagnostics.py",
       "mode": "100644",
-      "blob_sha1": "1465738788c136ce5c3357d445d715c76b547a2c",
+      "blob_sha1": "6306afb262f2115252770d0d193b0c3ef5e22f19",
       "category": "tests",
       "lifecycle": "development"
     },
