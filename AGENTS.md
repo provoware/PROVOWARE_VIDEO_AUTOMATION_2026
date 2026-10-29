@@ -178,3 +178,17 @@ Leitsatz: **Kein Agent muss sich erinnern. Kein Agent darf raten. Keine Änderun
 - `STARTEN.sh` und `README.md` bleiben direkt sichtbar; technische Start-/Prüf-/Installationsskripte liegen unter `scripts/`.
 - Die Pfade in `config/`, `registries/`, `scripts/`, `resources/` und `docs/` sind Teil des Versions-, Installer-, CI- und Paketvertrags. Beim Umzug Referenzen und Tests gemeinsam aktualisieren.
 - Historische RC24-Freigaben bleiben unverändert; reine Entwicklungsläufe bedeuten keine Stable-Freigabe.
+
+
+## Draft-PR-Schuldenbremse und Qualitätsvorrang (29.10.2026)
+
+Die GitHub-PR-Bestandsaufnahme gehört **vor die Planung neuer optionaler Arbeiten**. Für offene Draft-PRs je Repository gilt: **0–5 = normal**, **6–10 = P1-Abarbeitung**, **ab 11 = P0-Abarbeitung**. Zielbestand: **höchstens fünf Drafts**. Maßgeblich ist die live über GitHub ermittelte Anzahl; bei API-Fehler/fehlendem Zugang lautet der Status UNBEKANNT, niemals 0.
+
+- Bei Überschreiten der Grenze ist die **bestehende priorisierte To-do/Next Queue** maßgeblich: zuerst offene Arbeiten nach tatsächlichem Nutzen, Risiko, Alter, Blockern und Abhängigkeiten abarbeiten. Neue optionale Features zunächst nur dort vormerken, **keine zusätzlichen Drafts auf Vorrat**.
+- Für jeden Draft den aktuellen HEAD, Zweck, Review, CI, Mergekonflikte, Sicherheitswirkung und Beziehungen (BLOCKS, REQUIRES, DUPLICATE, SUPERSEDES) erfassen. Klassifizieren: MERGE-BEREIT, KORREKTUR, BLOCKIERT, DUPLIKAT, ÜBERHOLT, GEPLANT.
+- **Qualität vor Menge:** Fertigstellen mit minimaler Korrektur und passenden Negativ-/Regressionstests; Review, aktuelle CI, Schutzregeln und Abhängigkeiten vor Merge prüfen. Grün auf einem alten Commit ist kein Integrationsnachweis; grün auf PR-HEAD ersetzt nicht die Main-Nachkontrolle.
+- **Nichts blind schließen oder mergen.** Duplikate/überholte Drafts nur mit Begründung, Quellen-/Nachfolgerverweis und gesichertem Arbeitsinhalt schließen. Unfertige Originalarbeit bleibt erhalten. Von Draft auf reviewbereit nur nach nachweislich erfüllten Projekt-Gates wechseln.
+- Nach jedem Abschluss erneut zählen und in der To-do-Aufgabe dokumentieren: **vorher → nachher**, getesteter HEAD, Ergebnis, offene Blocker, nächste konkrete Handlung. Erst bei ≤5 Drafts wieder regulär optionale neue PRs priorisieren.
+- **Ausnahmen:** P0-Sicherheits- und Datenintegritätsprobleme, zwingende Release-Gates und ein bereits freigegebener eingefrorener Plan haben Vorrang. Diese Regel **hebt keinen Freeze und keine Release-/Merge-Freigabe** auf. Bestehende kanonische/generierte To-do-Ansichten nicht manuell umschreiben; vorhandenen Generator bzw. Aufgaben-Workflow verwenden.
+
+Zugehörige priorisierte GitHub-Aufgabe: https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/issues/294.
