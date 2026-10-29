@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import stat
 import re
 import threading
 import traceback
@@ -181,12 +182,16 @@ def _append_occurrence(path: Path, occurrence: FailureOccurrence) -> None:
         occurrence.as_dict(), ensure_ascii=False, sort_keys=True
     ) + "\n"
     data = payload.encode("utf-8", errors="replace")
-    descriptor = os.open(path, os.O_CREAT | os.O_APPEND | os.O_WRONLY, 0o600)
+    descriptor = os.open(path, os.O_CREAT | os.O_APPEND | os.O_WRONLY | os.O_NOFOLLOW | os.O_NONBLOCK, 0o600)
+    # Refuse special files even when a local path is replaced between checks.
+    # The nonblocking flag prevents a hostile FIFO from blocking before fstat.
     try:
+        if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+            raise OSError("Fehlerprotokoll ist keine reguläre Datei.")
         os.write(descriptor, data)
         os.fsync(descriptor)
         try:
-            os.chmod(path, 0o600)
+            os.fchmod(descriptor, 0o600)
         except OSError:
             pass
     finally:
