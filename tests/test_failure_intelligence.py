@@ -119,6 +119,18 @@ def test_corrupt_ledger_is_quarantined_before_recovery(tmp_path: Path) -> None:
     assert occurrence.fingerprint in recovered["entries"]
 
 
+def test_occurrence_log_symlink_cannot_modify_unrelated_file(tmp_path: Path) -> None:
+    unrelated = tmp_path / "unrelated.txt"
+    unrelated.write_text("Originalinhalt\\n", encoding="utf-8")
+    (tmp_path / "failure_occurrences.jsonl").symlink_to(unrelated)
+
+    with pytest.raises(OSError):
+        _capture(42, tmp_path)
+
+    assert unrelated.read_text(encoding="utf-8") == "Originalinhalt\\n"
+    assert not (tmp_path / "failure_regressions.json").exists()
+
+
 class _RuntimeProbe:
     def __init__(self) -> None:
         self.args: tuple[Any, ...] | None = None
