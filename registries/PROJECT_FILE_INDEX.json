@@ -3254,7 +3254,7 @@
     {
       "path": "src/videobatch_fast/retry_queue.py",
       "mode": "100644",
-      "blob_sha1": "fb24f7eb3a106223686d9ac150f25c0b2aaebe57",
+      "blob_sha1": "23ca55e9ceb2550cfbc67e6f94df9a38300345a5",
       "category": "application",
       "lifecycle": "active"
     },
@@ -4465,7 +4465,7 @@
     {
       "path": "tests/test_retry_queue_resilience.py",
       "mode": "100644",
-      "blob_sha1": "b197390f1493e5bd1325651f591de512d6f49901",
+      "blob_sha1": "b1514616b508cd17de0eb95e5d0c6f3a7f4f2ffa",
       "category": "tests",
       "lifecycle": "development"
     },
