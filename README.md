@@ -14,7 +14,7 @@
 - [Ebene 2 – ausführliche Anleitung](#ebene-2-ausführliche-anleitung)
   - [Voraussetzungen und Download](#voraussetzungen-und-download)
   - [Erstes Video erstellen](#erstes-video-erstellen)
-  - [Bedienung und Vergrößerung](#bedienung-und-vergrößerung)
+  - [Bedienung und Ansicht](#bedienung-und-ansicht)
   - [Projekt und Schnellnotizen](#projekt-und-schnellnotizen)
   - [Sicherung und Rückweg](#sicherung-und-rückweg)
 - [Ebene 3 – Hilfe ohne Vorwissen](#ebene-3-hilfe-ohne-vorwissen)
@@ -98,7 +98,7 @@ Danach den Ordner `PROVOWARE_VIDEO_AUTOMATION_2026` öffnen und die Schritte aus
 
 🟢 **Laien-Tipp:** Verwende zunächst eine sehr kurze Audiodatei und genau ein Bild. Wenn das Ergebnis richtig ist, kannst du weitere Medien hinzufügen. So erkennst du Probleme, bevor ein großer Stapel bearbeitet wird.
 
-### Bedienung und Vergrößerung
+### Bedienung und Ansicht
 
 Die Arbeitsseiten heißen **„1 · Dateien“**, **„2 · Ausgabe“**, **„3 · Produktion“** und **„Dashboard“**. Das Dashboard enthält zusätzliche Werkzeuge und die Schnellnotiz; die genaue Beschriftung kann bei großer Schrift kürzer ausfallen.
 
