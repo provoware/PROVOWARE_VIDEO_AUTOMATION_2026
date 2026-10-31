@@ -1,5 +1,9 @@
-from pathlib import Path
+import io
 import json
+import tarfile
+from pathlib import Path
+
+import pytest
 
 def test_installer_contract_has_fixed_root():
  root=Path(__file__).resolve().parents[1]; data=json.loads((root/'config/contracts/INSTALLER_SYSTEM_CONTRACT.json').read_text())
@@ -19,3 +23,33 @@ def test_multipart_builder_uses_migrated_installer_resources():
     assert (root / "docs/start/AUTOINSTALLATION_save_.md").is_file()
     assert 'source_root / "scripts/install" / name' in builder
     assert 'source_root / "docs/start/AUTOINSTALLATION_save_.md"' in builder
+
+
+@pytest.mark.parametrize("member_name", (
+    "./clip.mp4", "clips/./clip.mp4", "clips//clip.mp4", ".",
+))
+def test_verifier_rejects_noncanonical_tar_members(tmp_path, monkeypatch, member_name):
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[1] / "scripts"))
+    from verify_multipart_installer import verify_archive
+
+    part_path = tmp_path / "part.tar"
+    with tarfile.open(part_path, "w") as archive:
+        member = tarfile.TarInfo(member_name)
+        member.size = 1
+        archive.addfile(member, io.BytesIO(b"x"))
+
+    with pytest.raises(SystemExit, match="^UNSAFE:"):
+        verify_archive(part_path, {"member_count": 1, "unpacked_bytes": 1})
+
+
+def test_verifier_accepts_canonical_tar_member(tmp_path, monkeypatch):
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[1] / "scripts"))
+    from verify_multipart_installer import verify_archive
+
+    part_path = tmp_path / "part.tar"
+    with tarfile.open(part_path, "w") as archive:
+        member = tarfile.TarInfo("clips/clip.mp4")
+        member.size = 1
+        archive.addfile(member, io.BytesIO(b"x"))
+
+    verify_archive(part_path, {"member_count": 1, "unpacked_bytes": 1})
