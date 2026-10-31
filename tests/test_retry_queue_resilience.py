@@ -69,6 +69,34 @@ def test_retry_queue_preserves_original_error_and_blocks_after_limit(tmp_path: P
     assert queue_path.stat().st_mode & 0o777 == 0o600
 
 
+def test_retry_queue_rejects_non_boolean_retry_permission(tmp_path: Path) -> None:
+    """A damaged JSON permission must not make a manual retry eligible."""
+    queue_path = tmp_path / "retry.json"
+    payload = {
+        "entries": [{
+            "job_id": "damaged-flag",
+            "state": "failed",
+            "attempts": 1,
+            "retry_allowed": False,
+        }],
+        "dropped_total": 0,
+    }
+    for invalid in ("false", "true", "1", 1, 0, None, [], {}):
+        payload["entries"][0]["retry_allowed"] = invalid
+        queue_path.write_text(json.dumps(payload), encoding="utf-8")
+        before = queue_path.read_bytes()
+        store = RetryQueueStore(queue_path)
+        assert store.eligible_entries() == ()
+        assert store.summary().retryable == 0
+        assert queue_path.read_bytes() == before
+
+    payload["entries"][0]["retry_allowed"] = True
+    queue_path.write_text(json.dumps(payload), encoding="utf-8")
+    store = RetryQueueStore(queue_path)
+    assert len(store.eligible_entries()) == 1
+    assert store.summary().retryable == 1
+
+
 def test_not_started_job_is_preserved_without_consuming_attempt(tmp_path: Path) -> None:
     queue = RetryQueueStore(tmp_path / "retry.json", max_entries=10, max_attempts=2)
     job = _job(tmp_path, 1)

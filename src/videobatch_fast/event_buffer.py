@@ -26,7 +26,12 @@ class EventBuffer:
         with self._lock:
             sequenced = event.with_sequence(self._next_sequence)
             self._next_sequence += 1
-            if sequenced.name == "progress" and self._items and self._items[-1].name == "progress":
+            if (
+                sequenced.name == "progress"
+                and self._items
+                and self._items[-1].name == "progress"
+                and self._items[-1].operation_id == sequenced.operation_id
+            ):
                 self._items[-1] = sequenced
                 return
             if len(self._items) >= self.maxsize:

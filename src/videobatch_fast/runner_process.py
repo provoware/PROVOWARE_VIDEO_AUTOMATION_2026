@@ -5,6 +5,7 @@ import subprocess
 import threading
 import time
 from dataclasses import dataclass, field
+import math
 from pathlib import Path
 from typing import Callable
 
@@ -212,9 +213,11 @@ class ProcessExecution:
     @staticmethod
     def _parse_float(value: str, default: float | None) -> float:
         try:
-            return float(value)
+            parsed = float(value)
         except ValueError:
             return float(default or 0.0)
+        # FFmpeg may emit nan/inf; never propagate them into progress and ETA.
+        return parsed if math.isfinite(parsed) else float(default or 0.0)
 
     def _update_activity(self, process: subprocess.Popen[str], output: Path, state: _ProgressState, changed: bool) -> None:
         size = self._output_size(output)

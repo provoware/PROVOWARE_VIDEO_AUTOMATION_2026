@@ -25,13 +25,15 @@ class Playlist:
             self.current = 0
 
     def remove(self, indices: list[int]) -> None:
-        for index in sorted(set(indices), reverse=True):
-            if 0 <= index < len(self.items):
-                del self.items[index]
+        removed = {index for index in indices if 0 <= index < len(self.items)}
+        previous_current = self.current
+        for index in sorted(removed, reverse=True):
+            del self.items[index]
         if not self.items:
             self.current = -1
         else:
-            self.current = min(max(0, self.current), len(self.items) - 1)
+            shifted = previous_current - sum(index < previous_current for index in removed)
+            self.current = min(max(0, shifted), len(self.items) - 1)
 
     def next_index(self) -> int | None:
         if not self.items:

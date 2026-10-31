@@ -9,7 +9,8 @@ APP_ID = "VideoBatchFast"
 
 def _xdg(name: str, fallback: Path) -> Path:
     raw = os.environ.get(name, "").strip()
-    return Path(raw).expanduser() if raw else fallback
+    candidate = Path(raw).expanduser() if raw else fallback
+    return candidate if candidate.is_absolute() else fallback
 
 
 def config_dir() -> Path:
