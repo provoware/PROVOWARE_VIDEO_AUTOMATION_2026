@@ -10,7 +10,9 @@ from .qt_theme import SCALE_LEVELS, scaled_style
 from .qt_adaptive_settings import ResponsiveSettingsPanel
 from .dashboard_settings import RESOLUTION_LABELS, QUALITY_LABELS, EFFECT_LABELS
 from .effects import TRANSITIONS
-from .qt_workspace_layout import build_footer, build_workflow_stack, set_workflow_route
+from .qt_workspace_layout import (
+    build_footer, build_workflow_stack, refresh_primary_action_caption, set_workflow_route,
+)
 
 
 def build_main_ui(window) -> None:
@@ -20,7 +22,7 @@ def build_main_ui(window) -> None:
     outer.setContentsMargins(10, 8, 10, 8)
     outer.setSpacing(5)
 
-    # Header is arranged in two rows: text no longer fights load/zoom for one line.
+    # One shared heading row leaves more space for the actual media workspace.
     header = QGridLayout()
     header.setSpacing(5)
     header.setColumnStretch(0, 1)
@@ -31,16 +33,20 @@ def build_main_ui(window) -> None:
     subtitle = QLabel("Kubuntu 26.04 · KDE Plasma · Wayland · Qt 6")
     subtitle.setObjectName("subtitle")
     subtitle.setWordWrap(True)
-    brand.addWidget(title)
-    brand.addWidget(subtitle)
-    header.addLayout(brand, 0, 0, 1, 4)
 
     window.status = QLabel("BEREIT")
     window.status.setObjectName("statusChip")
     window.status.setAccessibleDescription(
         "Aktueller Programmstatus. Der sichtbare Text nennt den momentanen Zustand."
     )
-    header.addWidget(window.status, 1, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+    heading = QHBoxLayout()
+    heading.setSpacing(10)
+    heading.addWidget(title, alignment=Qt.AlignmentFlag.AlignVCenter)
+    heading.addWidget(window.status, alignment=Qt.AlignmentFlag.AlignVCenter)
+    heading.addStretch(1)
+    brand.addLayout(heading)
+    brand.addWidget(subtitle)
+    header.addLayout(brand, 0, 0, 1, 2)
 
     view_label = QLabel("Schrift")
     window.view_scale = QComboBox()
@@ -55,10 +61,13 @@ def build_main_ui(window) -> None:
     for value in SCALE_LEVELS:
         window.view_scale.addItem(f"{value} %", value)
     window.view_scale.setCurrentIndex(window.view_scale.findData(110))
-    header.addWidget(view_label, 1, 2)
-    header.addWidget(window.view_scale, 1, 3)
+    view_row = QHBoxLayout()
+    view_row.setSpacing(5)
+    view_row.addWidget(view_label)
+    view_row.addWidget(window.view_scale)
+    header.addLayout(view_row, 0, 3)
 
-    # Große Schrift: Alle Menüs bleiben über eine einzige Schaltfläche erreichbar.
+    # Large zoom keeps every menu accessible through the existing compact button.
     window.compact_menu = QPushButton("Menü")
     window.compact_menu.setAccessibleName("Alle Programmmenüs öffnen")
     def open_compact_menu() -> None:
@@ -68,19 +77,19 @@ def build_main_ui(window) -> None:
         menu.exec(window.compact_menu.mapToGlobal(QPoint(0, window.compact_menu.height())))
         menu.deleteLater()
     window.compact_menu.clicked.connect(open_compact_menu)
-    header.addWidget(window.compact_menu, 1, 1)
+    header.addWidget(window.compact_menu, 0, 2)
     window.compact_menu.hide()
 
     dashboard = QFrame()
     dashboard.setObjectName("compactStatusDashboard")
     window._compact_header_dashboard = dashboard
-    dashboard_row = QVBoxLayout(dashboard)
+    dashboard_row = QHBoxLayout(dashboard)
     dashboard_row.setContentsMargins(4, 2, 4, 2)
-    dashboard_row.setSpacing(8)
+    dashboard_row.setSpacing(6)
     dashboard_row.addWidget(window.load_dashboard.frame)
 
-    # The existing two progress objects are created in build_footer().
-    # Their compact dashboard container is placed here, not in the tall footer.
+    # Keep both real progress meters, horizontally beside the CPU/RAM/SWAP
+    # indicators instead of reserving a second full-width dashboard row.
     window.progress_dashboard = QWidget()
     window.progress_dashboard.setObjectName("progressDashboard")
     window.progress_dashboard_layout = QGridLayout(window.progress_dashboard)
@@ -88,21 +97,17 @@ def build_main_ui(window) -> None:
     window.progress_dashboard_layout.setHorizontalSpacing(5)
     window.progress_dashboard_layout.setVerticalSpacing(2)
     window.progress_dashboard_layout.setColumnStretch(1, 1)
-    dashboard_row.addWidget(window.progress_dashboard)
+    dashboard_row.addWidget(window.progress_dashboard, 1)
     header.addWidget(dashboard, 2, 0, 1, 4)
     outer.addLayout(header)
 
     # Responsive settings follow the same 120×80 reference logic as the lists.
     # Keep every existing control object and its signal handlers unchanged.
     window.settings_grid = ResponsiveSettingsPanel()
-    settings_view = QScrollArea()
-    settings_view.setObjectName("adaptiveSettingScroll")
-    settings_view.setWidgetResizable(True)
-    settings_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-    settings_view.setMinimumHeight(92)
-    settings_view.setMaximumHeight(140)
-    settings_view.setWidget(window.settings_grid)
-    window.settings_view = settings_view
+    window.settings_grid.setAccessibleName("Grundeinstellungen für die Videoausgabe")
+    # The whole output page already scrolls; a second 140px scroll area
+    # would hide ordinary settings and trap wheel/keyboard navigation.
+    window.settings_view = window.settings_grid
 
     window.resolution = QComboBox()
     for value, label in RESOLUTION_LABELS.items():
@@ -183,7 +188,7 @@ def build_main_ui(window) -> None:
     tabs.setObjectName("mainNavigation")
     tabs.setExpanding(True)
     tabs.setAccessibleName("Arbeitsbereiche")
-    for name in ("1 · Dateien", "2 · Ausgabe", "3 · Produktion", "Dashboard"):
+    for name in ("1 · Dateien", "2 · Ausgabe", "3 · Produktion", "Hilfe / Werkzeuge"):
         tabs.addTab(name)
     window.main_tabs = tabs
     routes = ("media", "effects", "queue", "dashboard")
@@ -233,7 +238,9 @@ def build_main_ui(window) -> None:
     outer.addLayout(kpis)
 
     window._responsive_control_rows = []
-    outer.addWidget(build_workflow_stack(window), 1)
+    workflow = build_workflow_stack(window)
+    outer.addWidget(window.media_import_bar)
+    outer.addWidget(workflow, 1)
 
     window.audio.setAccessibleName("Audiodateien")
     window.media.setAccessibleName("Bilder und Videos")
@@ -254,10 +261,13 @@ def build_main_ui(window) -> None:
         # A compact title keeps all original font choices for the WORK controls;
         # only the decorative brand loses excess height on tiny screens.
         small_large = value >= 175 and window.width() <= 900
+        refresh_primary_action_caption(window)
         # The persistent next-step hint must show more than one line at 800x600.
         # It remains visible while the workflow itself can scroll vertically.
         window.action_footer_scroll.setMinimumHeight(82 if small_large else 52)
-        title.setStyleSheet("font-size: 24px; font-weight: 800;" if small_large else "")
+        # The decorative title stays readable beside status and zoom at 150–200 %.
+        compact_brand = value >= 150 and window.width() <= 1100
+        title.setStyleSheet("font-size: 24px; font-weight: 800;" if compact_brand else "")
         window.status.setStyleSheet(
             "font-size: 17px; padding: 3px 6px; font-weight: 800;" if small_large else ""
         )
@@ -276,15 +286,7 @@ def build_main_ui(window) -> None:
         compact = value >= 150
         window.menuBar().setVisible(not compact)
         window.compact_menu.setVisible(compact)
-        names = (
-            ("1 · Dateien", "2 · Ausgabe", "3 · Start", "Notizen")
-            if compact else
-            ("1 · Dateien", "2 · Ausgabe", "3 · Produktion", "Dashboard")
-        )
-        for index, name in enumerate(names):
-            window.main_tabs.setTabText(index, name)
-        # At extreme zoom the form itself must remain visible above its explanation.
-        window.dashboard_note_hint.setVisible(value < 175)
+        window.main_tabs.setTabText(3, "Hilfe" if compact else "Hilfe / Werkzeuge")
         subtitle.setVisible(value <= 110)
         window.load_dashboard.frame.setVisible(not compact)
         route = getattr(window, "_active_workflow_route", "media")

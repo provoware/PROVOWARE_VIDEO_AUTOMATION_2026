@@ -42,6 +42,12 @@ def canonicalize_ci_status(ci: Mapping[str, Any]) -> dict[str, Any]:
     return normalized
 
 
+def _markdown_table_cell(value: object) -> str:
+    """Prevent diagnostics from creating extra Markdown columns or rows."""
+    text = str(value).replace("\r\n", " ").replace("\r", " ").replace("\n", " ")
+    return text.replace("\\", "\\\\").replace("|", "\\|").replace("`", "\\`")
+
+
 def markdown(result: Mapping[str, Any]) -> str:
     release, summary = result["release"], result["summary"]
     lines = [
@@ -55,7 +61,12 @@ def markdown(result: Mapping[str, Any]) -> str:
         "## Stable-Gates", "", "| Status | Gate | Begründung | Quelle |", "|---|---|---|---|",
     ]
     for gate in result["gates"]:
-        lines.append(f"| {label(gate['status'])} | {gate['label']} | {gate['detail']} | `{gate['source']}` |")
+        lines.append(
+            f"| {_markdown_table_cell(label(str(gate['status'])))} "
+            f"| {_markdown_table_cell(gate['label'])} "
+            f"| {_markdown_table_cell(gate['detail'])} "
+            f"| {_markdown_table_cell(gate['source'])} |"
+        )
     lines.extend(["", "## Widersprüche und Hinweise", ""])
     if result["findings"]:
         lines.extend(f"- **{item['severity'].upper()} · {item['code']}** — {item['message']}" for item in result["findings"])

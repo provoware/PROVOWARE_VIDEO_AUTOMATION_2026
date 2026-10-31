@@ -146,6 +146,12 @@ def test_qt_uses_portable_rules_without_importing_ffmpeg_or_qt_into_core() -> No
     main = (ROOT / "src/videobatch_fast/qt_main_layout.py").read_text(encoding="utf-8")
     assert "from provoware_grid import choose_columns" in source
     assert "from provoware_grid import choose_columns" in adapter
-    assert 'setObjectName("adaptiveSettingScroll")' in main
+    workspace = (ROOT / "src/videobatch_fast/qt_workspace_layout.py").read_text(encoding="utf-8")
+    # U3: one outer scroll page owns navigation; the six settings stay in
+    # the existing responsive grid rather than another 140px scroll area.
+    assert "window.settings_view = window.settings_grid" in main
+    assert 'setObjectName("adaptiveSettingScroll")' not in main
+    assert 'output_scroll.setObjectName("outputPageScroll")' in workspace
+    assert 'effects_layout.insertWidget(0, window.settings_view)' in workspace
     assert "window.settings_grid.set_zoom_percent(value)" in main
     assert "window.source_columns.set_zoom_percent(value)" in main

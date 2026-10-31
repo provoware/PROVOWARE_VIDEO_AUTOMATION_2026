@@ -74,3 +74,29 @@ def test_existing_writable_directory_keeps_contents(tmp_path: Path) -> None:
     paths._prepare_directory(target)
     assert keep.read_bytes() == b"unveraendert"
     assert list(target.iterdir()) == [keep]
+
+@pytest.mark.parametrize(
+    ("variable", "getter", "fallback_parts"),
+    [
+        ("XDG_CONFIG_HOME", paths.config_dir, (".config",)),
+        ("XDG_STATE_HOME", paths.state_dir, (".local", "state")),
+        ("XDG_CACHE_HOME", paths.cache_dir, (".cache",)),
+    ],
+)
+def test_relative_xdg_directory_falls_back_to_home(monkeypatch, variable, getter, fallback_parts) -> None:
+    monkeypatch.setenv(variable, "relative/xdg")
+    assert getter() == Path.home().joinpath(*fallback_parts, paths.APP_ID)
+
+
+@pytest.mark.parametrize(
+    ("variable", "getter"),
+    [
+        ("XDG_CONFIG_HOME", paths.config_dir),
+        ("XDG_STATE_HOME", paths.state_dir),
+        ("XDG_CACHE_HOME", paths.cache_dir),
+    ],
+)
+def test_absolute_xdg_directory_is_respected(tmp_path: Path, monkeypatch, variable, getter) -> None:
+    target = tmp_path / "xdg"
+    monkeypatch.setenv(variable, str(target))
+    assert getter() == target / paths.APP_ID

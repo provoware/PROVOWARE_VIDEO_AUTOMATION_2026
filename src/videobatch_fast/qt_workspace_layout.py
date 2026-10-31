@@ -2,15 +2,12 @@ from __future__ import annotations
 
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtWidgets import (
-    QFrame, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QProgressBar, QPushButton,
+    QFrame, QHBoxLayout, QLabel, QMessageBox, QProgressBar, QPushButton,
     QScrollArea, QStackedWidget, QVBoxLayout, QWidget,
 )
 
-from .project_state import append_project_note, default_project_file, project_notes_file
 from .qt_desktop_actions import open_output_folder
 from .qt_responsive_controls import ResponsiveControlRow
-from .qt_ui_polish import text_label
-from .safe_io import SafeIoError
 
 
 class HelpPanel(QFrame):
@@ -84,7 +81,7 @@ def _overview_page(window) -> QFrame:
     layout = QVBoxLayout(panel)
     layout.setContentsMargins(18, 16, 18, 16)
     layout.setSpacing(10)
-    title = QLabel("Dashboard · Schnellnotiz")
+    title = QLabel("Hilfe und Werkzeuge")
     title.setObjectName("section")
     layout.addWidget(title)
     intro = QLabel(
@@ -114,90 +111,7 @@ def _overview_page(window) -> QFrame:
         row_layout.addWidget(button)
         row_layout.addWidget(hint, 1)
         layout.addWidget(row)
-
-    note_card = QFrame()
-    note_card.setObjectName("sourceCard")
-    note_layout = QVBoxLayout(note_card)
-    note_layout.setContentsMargins(10, 10, 10, 10)
-    note_layout.setSpacing(6)
-    note_title = QLabel("Schnellnotiz zum Projekt")
-    note_title.setObjectName("section")
-    note_layout.addWidget(note_title)
-    note_hint = text_label(
-        "Eine Zeile eingeben und mit Enter oder „Anhängen“ speichern. "
-        "Bestehende Notizen bleiben erhalten.", "panelHint", wrap=True,
-    )
-    window.dashboard_note_hint = note_hint
-    note_layout.addWidget(note_hint)
-    note_input = QLineEdit()
-    note_input.setObjectName("dashboardNoteInput")
-    note_input.setMaxLength(500)
-    note_input.setPlaceholderText("Notiz eingeben …")
-    note_input.setAccessibleName("Neue Projektnotiz")
-    note_input.setAccessibleDescription("Eine Zeile. Mit Enter oder der Schaltfläche zeitgestempelt speichern.")
-    note_input.setToolTip("Enter hängt die Notiz mit Datum und Uhrzeit an die TXT-Datei an.")
-    note_title.setBuddy(note_input)
-    note_button = QPushButton("Notiz anhängen")
-    note_button.setObjectName("secondary")
-    note_button.setAccessibleDescription("Hängt die Eingabe mit Zeitstempel an die feste Projekt-TXT an.")
-    note_row = ResponsiveControlRow((note_input, note_button))
-    window._responsive_control_rows.append(note_row)
-    note_layout.addWidget(note_row)
-    note_status = text_label("Bereit für eine Notiz.", "panelHint", wrap=True)
-    note_status.setAccessibleName("Speicherstatus der Projektnotiz")
-    note_layout.addWidget(note_status)
-    note_file = text_label("", "helperText", wrap=True)
-    note_file.setAccessibleName("Ablageort der Projektnotizen")
-    note_layout.addWidget(note_file)
-    window.dashboard_note_input = note_input
-    window.dashboard_note_button = note_button
-    window.dashboard_note_status = note_status
-    window.dashboard_note_file = note_file
-
-    def refresh_note_file() -> None:
-        path = project_notes_file(getattr(window, "_project_file", None) or default_project_file())
-        note_file.setText(f"TXT-Datei: {path}")
-        note_file.setToolTip(str(path))
-
-    def save_note() -> None:
-        try:
-            target, stamp = append_project_note(
-                getattr(window, "_project_file", None) or default_project_file(), note_input.text(),
-            )
-        except ValueError as exc:
-            note_status.setText(str(exc))
-            note_input.setFocus()
-            return
-        except SafeIoError as exc:
-            note_status.setText("Speicherstatus unklar · TXT-Datei vor erneutem Speichern prüfen.")
-            QMessageBox.warning(
-                panel, "Notiz: Speicherstatus unklar",
-                "Die dauerhafte Dateisynchronisierung ist fehlgeschlagen. "
-                "Der Eintrag könnte bereits in der TXT-Datei stehen. "
-                f"Bitte vor einem erneuten Versuch nachsehen.\n\nGrund: {exc}",
-            )
-            return
-        except OSError as exc:
-            note_status.setText("Nicht gespeichert · Bitte Projektordner und Schreibrechte prüfen.")
-            QMessageBox.warning(
-                panel, "Notiz nicht gespeichert",
-                "Die TXT-Datei konnte nicht ergänzt werden. Die Eingabe bleibt erhalten.\n\n"
-                f"Grund: {exc}",
-            )
-            return
-        note_input.clear()
-        note_status.setText(f"Gespeichert: {stamp} · Eintrag angehängt.")
-        note_file.setText(f"TXT-Datei: {target}")
-        note_input.setFocus()
-
-    window.refresh_dashboard_note_file = refresh_note_file
-    refresh_note_file()
-    note_input.returnPressed.connect(save_note)
-    note_button.clicked.connect(save_note)
-    # The requested one-line note stays near the top, before optional help links.
-    layout.insertWidget(1, note_card)
-
-    tools_hint = QLabel("Hilfe / Werkzeuge")
+    tools_hint = QLabel("Zusätzliche Werkzeuge")
     tools_hint.setObjectName("section")
     layout.addWidget(tools_hint)
     hash_help = QPushButton("Hilfe: SHA-256 und Prüfstatus verstehen")
@@ -245,17 +159,15 @@ def build_workflow_stack(window) -> QStackedWidget:
         "effects": window._settings_panel(),
         "queue": window._queue_panel(),
     }
-    dashboard_scroll = QScrollArea()
-    dashboard_scroll.setObjectName("dashboardPageScroll")
-    dashboard_scroll.setWidgetResizable(True)
-    dashboard_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-    dashboard_scroll.setWidget(pages["dashboard"])
-    pages["dashboard"] = dashboard_scroll
     # Die Alltags-Einstellungen gehören in die Ausgabe-Seite.
     # Eine äußere vertikale Rollebene schützt alle erweiterten Bedienelemente
     # bei 800×600 und 200 % vor dem Abschneiden.
     effects_page = pages["effects"]
-    effects_page.layout().insertWidget(0, window.settings_view)
+    effects_layout = effects_page.layout()
+    effects_layout.insertWidget(0, window.settings_view)
+    basics_heading = QLabel("Grundeinstellungen")
+    basics_heading.setObjectName("section")
+    effects_layout.insertWidget(0, basics_heading)
     output_scroll = QScrollArea()
     output_scroll.setObjectName("outputPageScroll")
     output_scroll.setWidgetResizable(True)
@@ -276,6 +188,21 @@ def build_workflow_stack(window) -> QStackedWidget:
     return stack
 
 
+def refresh_primary_action_caption(window) -> None:
+    """Preserve Phase-3 check/start semantics with a complete compact label."""
+    start = getattr(window, "start", None)
+    if start is None or start.text() not in {
+        "▶ Prüfen & Videos erstellen", "▶ Prüfen & Starten",
+        "▶ Prüfen && Videos erstellen", "▶ Prüfen && Starten",
+    }:
+        return
+    zoom = getattr(window, "view_scale", None)
+    percent = int(zoom.currentData() or 110) if zoom is not None else 110
+    compact = percent >= 175 and window.width() <= 900
+    # Qt renders && as a literal &, not as an accidental keyboard mnemonic.
+    start.setText("▶ Prüfen && Starten" if compact else "▶ Prüfen && Videos erstellen")
+
+
 def set_workflow_route(window, route: str) -> None:
     pages = getattr(window, "_workflow_pages", {})
     previous = getattr(window, "_active_workflow_route", None)
@@ -283,8 +210,6 @@ def set_workflow_route(window, route: str) -> None:
     if page_key in pages:
         window.workflow_stack.setCurrentWidget(pages[page_key])
     window._active_workflow_route = route
-    if page_key == "dashboard" and hasattr(window, "refresh_dashboard_note_file"):
-        window.refresh_dashboard_note_file()
     # New pages always open at their explanatory heading. A previous focus or
     # scroll position must not hide the first line at 175/200 % zoom.
     if route != previous:
@@ -307,6 +232,9 @@ def set_workflow_route(window, route: str) -> None:
         finally:
             tabs.blockSignals(False)
 
+    import_bar = getattr(window, "media_import_bar", None)
+    if import_bar is not None:
+        import_bar.setVisible(page_key == "media")
     guide = getattr(window, "workflow_guide", None)
     if guide is not None:
         guide.setVisible(False)
@@ -320,6 +248,10 @@ def set_workflow_route(window, route: str) -> None:
     if footer_scroll is not None:
         footer_scroll.setVisible(route in {"dashboard", "media", "effects", "queue"})
     production = route == "queue"
+    primary_actions = getattr(window, "production_action_bar", None)
+    if primary_actions is not None:
+        refresh_primary_action_caption(window)
+        primary_actions.setVisible(production)
     dashboard = getattr(window, "_compact_header_dashboard", None)
     zoom = getattr(window, "view_scale", None)
     if dashboard is not None and zoom is not None:
@@ -351,6 +283,7 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     window.next_step.setObjectName("nextStep")
     window.next_step.setAccessibleDescription("Der sichtbare Text nennt den aktuell empfohlenen nächsten Arbeitsschritt.")
     window.next_step.setWordWrap(True)
+    window.next_step.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
     layout.addWidget(window.next_step)
 
     window.activity_detail = QLabel("Keine Verarbeitung aktiv · bereit für neue Aufträge")
@@ -384,6 +317,7 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     window.cancel.setEnabled(False)
     window.start = QPushButton("▶ Videos erstellen")
     window.start.setObjectName("primary")
+    window.start.setAccessibleName("Videos erstellen")
     window.start.setAccessibleDescription("Startet die geprüften Video-Aufträge.")
     window.start.setMinimumWidth(155)
     window.probe_button = QPushButton("▶ Probevideo · max. 10 Sekunden")
@@ -393,7 +327,13 @@ def build_footer(window, outer: QVBoxLayout) -> None:
         "Die Ausgabe landet getrennt im Probevideo-Ordner."
     )
     window.probe_button.setAccessibleName("Kurzes Probevideo aus dem ersten Dateipaar")
-    action_row = ResponsiveControlRow((window.cancel, window.probe_button, window.start))
+    # Start and cancellation must be reachable without scrolling the footer.
+    # Keep the existing button objects and their production callbacks.
+    window.production_action_bar = ResponsiveControlRow((window.cancel, window.start))
+    window.production_action_bar.setObjectName("productionActionBar")
+    window.production_action_bar.setAccessibleName("Produktion starten oder abbrechen")
+    window._responsive_control_rows.append(window.production_action_bar)
+    action_row = ResponsiveControlRow((window.probe_button,))
     window._responsive_control_rows.append(action_row)
     layout.addWidget(action_row)
 
@@ -428,4 +368,5 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     footer_scroll.setMaximumHeight(210)
     footer_scroll.setWidget(footer)
     window.action_footer_scroll = footer_scroll
+    outer.addWidget(window.production_action_bar)
     outer.addWidget(footer_scroll)

@@ -27,7 +27,7 @@ from .qt_legacy_parity import (
     _finish_parity_init, _parity_options, _parity_runtime_state, _parity_start,
 )
 from .qt_legacy_parity_completion import _browse, _finish_completion, persist_parity_on_close
-from .qt_workspace_layout import HelpPanel, set_workflow_route
+from .qt_workspace_layout import HelpPanel, refresh_primary_action_caption, set_workflow_route
 from .qt_phase3_components import DiagnosticsPanel, ProjectPanel, WorkspaceNavigationPanel
 from .qt_theme import APP_STYLE
 from .startup_handshake import signal_ui_ready
@@ -79,6 +79,7 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
         if not self.runner.running and not self.preparing:
             self.start.setEnabled(True)
             self.start.setText("▶ Prüfen & Videos erstellen")
+            refresh_primary_action_caption(self)
 
     def _runtime_state(self) -> None:
         _parity_runtime_state(self)

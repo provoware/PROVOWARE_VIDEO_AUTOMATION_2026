@@ -276,7 +276,7 @@ class MediaImportDialog(QDialog):
         ).start()
 
     def _apply_scan_batch(self, generation: int, records_object: object) -> None:
-        if generation != self._scan_generation:
+        if generation != self._scan_generation or self._scan_cancel.is_set():
             return
         records = list(records_object)
         if records:
