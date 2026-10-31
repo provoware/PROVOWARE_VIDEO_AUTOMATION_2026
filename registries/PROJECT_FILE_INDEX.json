@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "7ac57a167d9579f47289fdc510eebdfd2eb6753e",
+      "blob_sha1": "76246ae44565d4006878a73dfd867e6280c203f5",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -2960,7 +2960,7 @@
     {
       "path": "src/videobatch_fast/playlist.py",
       "mode": "100644",
-      "blob_sha1": "070da58a20497fc38440eabeecaa74a72d3c9762",
+      "blob_sha1": "fd8442352502104bec7fe7e26199384bd7276ef4",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3905,7 +3905,7 @@
     {
       "path": "tests/test_core.py",
       "mode": "100644",
-      "blob_sha1": "25de95d4ff8f9d3c638d384088514c91bf08d44a",
+      "blob_sha1": "0867040500e4a4b7f06393b7c2059ba9a7ebf164",
       "category": "tests",
       "lifecycle": "development"
     },
