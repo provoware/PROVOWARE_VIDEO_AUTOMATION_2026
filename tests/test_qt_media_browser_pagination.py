@@ -53,3 +53,26 @@ def test_cached_missing_media_and_replaced_symlinks_are_not_imported(tmp_path: P
     finally:
         dialog.close()
         app.processEvents()
+
+
+def test_stopped_scan_discards_queued_batches(tmp_path: Path) -> None:
+    """Late worker signals must not revive a scan after Stop was pressed."""
+    app = QApplication.instance() or QApplication([])
+    dialog = MediaImportDialog(None, audio=False, initial_dir=tmp_path)
+    try:
+        dialog._stop_scan()
+        dialog._records.clear()
+        dialog._record_positions.clear()
+        dialog._scan_seen.clear()
+        dialog.status.setText("Scan angehalten")
+        late = DirectoryRecord(path=tmp_path / "late.png", is_dir=False, size=12, modified=0.0)
+
+        dialog._apply_scan_batch(dialog._scan_generation, [late])
+
+        assert dialog._records == []
+        assert dialog._record_positions == {}
+        assert dialog._scan_seen == set()
+        assert dialog.status.text() == "Scan angehalten"
+    finally:
+        dialog.close()
+        app.processEvents()

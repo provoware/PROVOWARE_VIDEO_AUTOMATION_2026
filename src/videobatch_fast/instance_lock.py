@@ -39,7 +39,7 @@ def focus_request_token() -> int:
         if not isinstance(payload, dict) or payload.get("schema_version") != 1:
             return 0
         return max(0, int(payload.get("token", 0)))
-    except (OSError, UnicodeError, ValueError, TypeError):
+    except (OSError, UnicodeError, ValueError, TypeError, OverflowError):
         return 0
 
 

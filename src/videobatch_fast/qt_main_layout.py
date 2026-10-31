@@ -10,7 +10,9 @@ from .qt_theme import SCALE_LEVELS, scaled_style
 from .qt_adaptive_settings import ResponsiveSettingsPanel
 from .dashboard_settings import RESOLUTION_LABELS, QUALITY_LABELS, EFFECT_LABELS
 from .effects import TRANSITIONS
-from .qt_workspace_layout import build_footer, build_workflow_stack, set_workflow_route
+from .qt_workspace_layout import (
+    build_footer, build_workflow_stack, refresh_primary_action_caption, set_workflow_route,
+)
 
 
 def build_main_ui(window) -> None:
@@ -103,8 +105,8 @@ def build_main_ui(window) -> None:
     # Keep every existing control object and its signal handlers unchanged.
     window.settings_grid = ResponsiveSettingsPanel()
     window.settings_grid.setAccessibleName("Grundeinstellungen für die Videoausgabe")
-    # U3: the output page already scrolls. A second 140-pixel scroll area
-    # hid the remaining everyday controls above the advanced section.
+    # The whole output page already scrolls; a second 140px scroll area
+    # would hide ordinary settings and trap wheel/keyboard navigation.
     window.settings_view = window.settings_grid
 
     window.resolution = QComboBox()
@@ -259,6 +261,7 @@ def build_main_ui(window) -> None:
         # A compact title keeps all original font choices for the WORK controls;
         # only the decorative brand loses excess height on tiny screens.
         small_large = value >= 175 and window.width() <= 900
+        refresh_primary_action_caption(window)
         # The persistent next-step hint must show more than one line at 800x600.
         # It remains visible while the workflow itself can scroll vertically.
         window.action_footer_scroll.setMinimumHeight(82 if small_large else 52)
