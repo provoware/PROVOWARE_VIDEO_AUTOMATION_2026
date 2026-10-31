@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "28e11b6770c560735fddbc99ad42918997bd8d88",
+      "blob_sha1": "995edd66efe0d209cd2d02a658b465414321d47f",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -3275,7 +3275,7 @@
     {
       "path": "src/videobatch_fast/retry_queue.py",
       "mode": "100644",
-      "blob_sha1": "23ca55e9ceb2550cfbc67e6f94df9a38300345a5",
+      "blob_sha1": "2d9dc11794019549d54b376e8fe29a78b6b54d77",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3856,7 +3856,7 @@
     {
       "path": "tests/test_autonomous_reliability_rc25.py",
       "mode": "100644",
-      "blob_sha1": "7ac3288ea669bbc73489b24cae58887f929fb40b",
+      "blob_sha1": "cfb15a149640c429334ee037d83872a289a2bb17",
       "category": "tests",
       "lifecycle": "development"
     },

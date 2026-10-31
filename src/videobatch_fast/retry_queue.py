@@ -118,7 +118,11 @@ class RetryQueueStore:
             return self._empty()
         entries = [item for item in payload["entries"] if isinstance(item, dict) and item.get("job_id")]
         data = self._empty()
-        data["dropped_total"] = max(0, int(payload.get("dropped_total", 0) or 0))
+        try:
+            data["dropped_total"] = max(0, int(payload.get("dropped_total", 0) or 0))
+        except (TypeError, ValueError, OverflowError):
+            # Ein beschädigter Zähler darf vorhandene Wiederanlaufaufträge nicht verbergen.
+            data["dropped_total"] = 0
         data["entries"] = entries[-self.max_entries :]
         if len(entries) > self.max_entries:
             data["dropped_total"] += len(entries) - self.max_entries
