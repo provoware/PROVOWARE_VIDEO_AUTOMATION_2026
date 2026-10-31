@@ -72,14 +72,14 @@ chmod +x STARTEN.sh
 
 ## 4. Erstes Video erstellen
 
-**Entwicklungshinweis:** Die folgende Bedienung beschreibt den Entwicklungszweig zu PR #239. Sie ist **noch nicht** Teil des freigegebenen Releasekandidaten 2.8.3-rc24.
+🟠 **Entwicklungsstand:** Die folgende Bedienung beschreibt die jetzt in `main` integrierte Qt-Oberfläche. Sie ist weiterhin **keine abschließend auf dem echten Kubuntu-System freigegebene Stable-Version**.
 
 Das VideoBatch-Fenster bietet vier übersichtliche Bereiche:
 
-1. **1 · Dateien** – Audio, Bilder und Videos auswählen und die Großvorschau nutzen.
-2. **2 · Produktion** – Dateipaare prüfen und fertige Videos erstellen.
-3. **Erweitert** – selten benötigte Prüfung, Sicherheit und ausgeschlossene Programmierordner.
-4. **Hilfe / Werkzeuge** – zusätzliche Funktionen und Diagnose.
+1. **1 · Dateien** – Audio, Bilder und Videos auswählen und Vorschau nutzen.
+2. **2 · Ausgabe** – Bildgröße, Qualität, Effekte und Zielordner festlegen.
+3. **3 · Produktion** – Dateipaare und Aufträge prüfen, Videos erstellen.
+4. **Dashboard** – zusätzliche Werkzeuge, Diagnosewege und Projektnotizen; bei großer Schrift wird die Bezeichnung gekürzt.
 
 **Auflösung, Qualität, Bildeffekt, Effektstärke, Videoblende und Ausgabeordner sind in der aktuellen Entwicklungsoberfläche unmittelbar erreichbar.** Die separate Diashow-Überblendung findest du im Diashow-Bereich. Lange Dateilisten dürfen innerhalb ihrer Liste scrollen; die wichtigsten Schaltflächen müssen erreichbar bleiben.
 
@@ -135,7 +135,7 @@ Das VideoBatch-Fenster bietet vier übersichtliche Bereiche:
 
 ### Schritt 6: Produktion starten
 
-**Aktion:** `2 · Produktion` öffnen, die Paarung kontrollieren und `▶ Prüfen & Videos erstellen` wählen.
+**Aktion:** `3 · Produktion` öffnen, die Paarung kontrollieren und **„Prüfen & Videos erstellen“** wählen. Bei hoher Vergrößerung kann die Schaltfläche **„Prüfen & Starten“** heißen.
 
 **Warum notwendig?** Vor dem Rendern werden Quellen, Pfade, Modus und benötigte Werkzeuge geprüft.
 
@@ -313,11 +313,23 @@ Bei einem ungültigen oder nicht mehr verfügbaren Effekt:
 5. Bei wichtigen Projekten Projektdatei und Medienliste sichern.
 
 
+## Dashboard-Schnellnotiz
+
+🟢 **Optional:** Öffne **„Dashboard“**, schreibe eine kurze Notiz und drücke **Enter** oder **„Notiz anhängen“**. Das Programm schreibt den Text mit lokalem Zeitstempel in `VideoBatch_Notizen.txt` neben das aktive `.vbfast.json`-Projekt. Vorhandene Notizen bleiben erhalten.
+
+🔵 **Projektwechsel:** Nach „Speichern unter“ oder dem Wechsel des Projekts zeigt die Oberfläche den dazugehörigen Notizpfad an. Eine Notiz ist eine separate Textdatei, kein Ersatz für die Sicherung deines Projekts oder deiner Medien.
+
+🟡 **Fehlerfall:** Wenn der Projektordner oder die Notizdatei nicht beschreibbar ist, bleibt dein Text im Eingabefeld stehen. Melde den angezeigten Fehler und versuche nicht, Dateischutz mit `sudo` oder pauschalen Berechtigungen zu umgehen.
+
+**Drei Hilfestufen:** [Kurzer Kopierstart](../README.md#schnellstart), [ausführliche Anleitung](../README.md#ebene-2-ausführliche-anleitung), [Hilfe ohne Vorwissen](../README.md#ebene-3-hilfe-ohne-vorwissen).
+
 ## Verzeichnisstruktur und aktueller Entwicklungsnachweis
 
 Der zentrale Benutzerstarter ist `STARTEN.sh` im Hauptordner. Kommando-Skripte liegen unter `scripts/cli/`, die Installationsskripte unter `scripts/install/`, die technischen Verträge unter `config/contracts/` und die gesperrten Abhängigkeiten unter `config/requirements/`.
 
-Der Entwicklungs-PR [#246](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/246) enthält den erfolgreichen ZIP-Entpacktest mit sieben Hauptordnerdateien auf Commit `2ae2ae5`. Dieser Test bestätigt noch **keine vollständige Offline-Erstinstallation und keinen grafischen Start aus dem entpackten Paket**. Die historische RC24-Freigabe bleibt unverändert; die persönliche Kubuntu-Endabnahme findet erst zum Entwicklungsabschluss statt.
+**Aktueller GitHub-Bestandsabgleich am 31.10.2026:** PR #305 wurde nach fünf bestandenen Pflicht-Workflow-Gruppen und 20 erfolgreichen Statusprüfungen nach `main` integriert (`63e0322bce05718fea4bcf59f86a7662c56aa857`); beide nachfolgenden `main`-Prüfungen bestanden. Damals waren keine weiteren PRs offen. Für spätere Änderungen müssen GitHub-Stand und Prüfungen erneut abgefragt werden.
+
+**Historischer Vergleich:** PR [#246](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/246) auf `2ae2ae5` gehört zur alten Strukturmigration; sein damaliger Entpacktest ist keine aktuelle Releasefreigabe. Die reale Kubuntu-Endabnahme am eingefrorenen Releasekandidaten bleibt offen.
 
 ## Abschlussprüfung
 

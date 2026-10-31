@@ -1,5 +1,22 @@
 # TODO – Stable-Finalisierung 2.8.3-rc24
 
+## Aktueller Stand – 31.10.2026
+
+**Bestandsprüfung:** Zum Abschluss des Dokumentations-PRs [#305](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/305) waren **0 offene PRs und 0 Entwürfe** vorhanden. Der bestätigte `main`-Commit lautet `63e0322bce05718fea4bcf59f86a7662c56aa857`; 2/2 nachgelagerte Pflicht-Prüfabläufe waren grün. **Dieses Ergebnis gilt für diesen Commit, nicht automatisch für spätere Änderungen.**
+
+- [x] 2026-10-31 | Dokumentation | Dreistufige README und veraltete Startbefehle bereinigt | prüfen: PR #305, GitHub-Checks und `main`-Nachkontrolle | fertig wenn: Prüfung auf dem exakten Commit grün und PR integriert.
+- [ ] 2026-10-31 | Release | Finale reale Zielsystemprüfung auf Kubuntu 26.04, KDE Plasma und Wayland durchführen | prüfen: 100/125/150/200 % mit Bildschirmbildern und erreichbaren Bedienfeldern | fertig wenn: alle vier Ansichten und Tastaturwege auf dem eingefrorenen Kandidaten persönlich bestätigt.
+- [ ] 2026-10-31 | Medien | Echte FFmpeg-Ausgabe und vollständigen Langzeitrender auf dem finalen Kandidaten prüfen | prüfen: Anfang/Mitte/Ende, Bild/Ton, Medienintegrität, Protokolle | fertig wenn: nachvollziehbare Endabnahme ohne offene sicherheitskritische Fehler.
+- [ ] 2026-10-31 | Pflege | Historische To-do-Einträge nach tatsächlichem Funktionsstand einzeln abgleichen | prüfen: Code, Tests, verknüpfte Issues und SHA | fertig wenn: jede offene historische Aufgabe als erledigt, weiterhin offen oder überholt mit Beleg eingeordnet ist.
+
+🟠 **Freigabegrenze:** Erfolgreiche Entwicklungstests sind **keine** Stable-Freigabe. Ohne echte Sicht-, Bedien- und Medienabnahme bleibt die Veröffentlichung gesperrt.
+
+### Historischer Entwicklungsplan ab 20.10.2026
+
+Die älteren Abschnitte ab hier bleiben für Nachvollziehbarkeit erhalten. Aussagen wie „PR #253 ist ein Entwurf“ beschreiben nur den **damaligen** Stand und dürfen **nicht** als aktuelle GitHub-Zählung verstanden werden.
+
+---
+
 ## Verbindlicher Entwicklungsplan ab 20.10.2026 – nach dem QA-Audit
 
 **Arbeitsstand:** PR [#253](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/253), aufbauend auf Raster-PR [#252](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/252). Historische RC24- und PR-#240/#246-Nachweise sind keine neue Freigabe. #246 und #251 sind inzwischen in `main` übernommen; die früheren Hinweise „#246 offen“ in der nachfolgenden historischen Arbeitsliste sind überholt.

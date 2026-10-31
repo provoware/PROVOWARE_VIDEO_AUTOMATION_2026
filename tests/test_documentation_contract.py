@@ -118,6 +118,20 @@ def test_readme_three_levels_and_real_entrypoints() -> None:
     assert "Kopien" in readme
 
 
+def test_current_manual_routes_and_dated_todo() -> None:
+    """Keep user-facing Qt navigation current without erasing dated history."""
+    manual = (ROOT / "docs" / "BENUTZERHANDBUCH.md").read_text(encoding="utf-8")
+    todo = (ROOT / "docs" / "TODO.md").read_text(encoding="utf-8")
+    modes = (ROOT / "docs" / "QUICK_MODES.md").read_text(encoding="utf-8")
+    for label in ("1 · Dateien", "2 · Ausgabe", "3 · Produktion", "Dashboard"):
+        assert label in manual
+    assert "2 · Produktion" not in manual
+    assert "VideoBatch_Notizen.txt" in manual
+    assert "## Aktueller Stand – 31.10.2026" in todo
+    assert "Historischer Entwicklungsplan" in todo
+    assert "Historische Funktionsbeschreibung" in modes
+
+
 def contract_tests() -> tuple[tuple[str, Callable[[], None]], ...]:
     return tuple(
         (name, value)
