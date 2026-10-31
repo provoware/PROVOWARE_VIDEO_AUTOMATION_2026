@@ -68,6 +68,26 @@ def test_modified_or_falsely_approved_evidence_is_rejected(snapshot: dict, tampe
     with pytest.raises(ValueError):
         generator.build()
 
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("passed", True),
+        ("failed", True),
+        ("failed", -1),
+        ("failed", 1),
+        ("failed", "0"),
+    ],
+)
+def test_core_regression_rejects_invalid_or_failed_counts(
+    snapshot: dict, field: str, value: object,
+) -> None:
+    changed = copy.deepcopy(snapshot)
+    changed["latest_observed_candidate_ci"]["core_regression"][field] = value
+    save_snapshot(changed)
+    with pytest.raises(ValueError, match="Kern"):
+        generator.build()
+
+
 def test_real_acceptance_is_required_and_release_remains_unapproved(
     snapshot: dict, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
