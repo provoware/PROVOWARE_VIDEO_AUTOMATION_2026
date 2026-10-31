@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "cb8f66c9eb4454b44af9e7092eab83b66fba51bf",
+      "blob_sha1": "ebdee0c7db6661ec565a539640322d195c08d4c2",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -2729,7 +2729,7 @@
     {
       "path": "src/videobatch_fast/event_buffer.py",
       "mode": "100644",
-      "blob_sha1": "572c161d06e3fe092af4cf5e278d39d0b0b6d9f8",
+      "blob_sha1": "42f04ec1eacbc613bfbb98ccc2d1c5779a9a0e89",
       "category": "application",
       "lifecycle": "active"
     },
@@ -2778,7 +2778,7 @@
     {
       "path": "src/videobatch_fast/instance_lock.py",
       "mode": "100644",
-      "blob_sha1": "2f345d6ea00a8ed8b65df1db56e6b01aef2d0581",
+      "blob_sha1": "5ade1ec698959c9f3b7dce676546ddf87435920f",
       "category": "application",
       "lifecycle": "active"
     },
@@ -2937,7 +2937,7 @@
       "lifecycle": "active"
     },
     {
-      "blob_sha1": "7ac5b16b9f15fbaf7d91df3165db0bf0132d2b06",
+      "blob_sha1": "017efd5664af648ef5d9df9699af789c0528852c",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
@@ -3114,7 +3114,7 @@
     {
       "path": "src/videobatch_fast/qt_media_import_dialog.py",
       "mode": "100644",
-      "blob_sha1": "ca755da1af3c8948fe39ba6844e168ee91a89951",
+      "blob_sha1": "8773a25ab9dd3e574c3291753873142eee985d86",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3254,7 +3254,7 @@
     {
       "path": "src/videobatch_fast/resource_estimation.py",
       "mode": "100644",
-      "blob_sha1": "4860928cfec57235472999b267574cf583ca0c0d",
+      "blob_sha1": "6f827a1ec382ab4a4efa23e4dc720521de39ba4b",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3821,7 +3821,7 @@
     {
       "path": "tests/test_app_events.py",
       "mode": "100644",
-      "blob_sha1": "af891d1ab96578d0d20c47b5cb707b9399717715",
+      "blob_sha1": "8c4c8e4339ada35233f93489eac080f995fbbf6c",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -3856,7 +3856,7 @@
     {
       "path": "tests/test_autonomous_reliability_rc25.py",
       "mode": "100644",
-      "blob_sha1": "cfb15a149640c429334ee037d83872a289a2bb17",
+      "blob_sha1": "c85146c7e3ad9a67d3f727605950c01273013f11",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4085,7 +4085,7 @@
       "lifecycle": "development"
     },
     {
-      "blob_sha1": "76dd7dc8545125ebb1f233551c225fcd3f46ad8f",
+      "blob_sha1": "800a49aaaf6b5805a2a6443c5c7a6568907897b0",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",
@@ -4220,7 +4220,7 @@
     {
       "path": "tests/test_qt_media_browser_pagination.py",
       "mode": "100644",
-      "blob_sha1": "ef5c2b613f9a7f0c660756893f7317207202e7fe",
+      "blob_sha1": "6b30c4b1ec8b4e3340b0520eae80dd55ed4641da",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4598,7 +4598,7 @@
     {
       "path": "tests/test_ui_ready_handshake_contract.py",
       "mode": "100644",
-      "blob_sha1": "9adb0e1c0ab9ec18f74a7ba8dcafe1f61272631e",
+      "blob_sha1": "738b3f23297b068e2fea87254ab8ea75201987df",
       "category": "tests",
       "lifecycle": "development"
     },
