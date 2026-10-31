@@ -90,7 +90,7 @@
     {
       "path": ".github/workflows/qt6-phase3-smoke.yml",
       "mode": "100644",
-      "blob_sha1": "ee15fce412304b790582c1862a4f629906b1cfec",
+      "blob_sha1": "2e51d216fda62a313069cf56eb283b09a5bfb2ed",
       "category": "automation",
       "lifecycle": "development"
     },
@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "3c4cfd2f1cb2076186247ac1ca962a1357e111f1",
+      "blob_sha1": "7ac57a167d9579f47289fdc510eebdfd2eb6753e",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -2708,7 +2708,7 @@
     {
       "path": "src/videobatch_fast/display_formatting.py",
       "mode": "100644",
-      "blob_sha1": "1f6a7f385ecc726e334098f20f2af4533a781c38",
+      "blob_sha1": "6145892b703129666ae53a628e3f2c1e9290009b",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3952,6 +3952,13 @@
       "lifecycle": "development"
     },
     {
+      "blob_sha1": "bcaec5ef311d9a7975f2909dacf3f470a4d73036",
+      "category": "tests",
+      "lifecycle": "development",
+      "mode": "100644",
+      "path": "tests/test_display_formatting.py"
+    },
+    {
       "path": "tests/test_documentation_contract.py",
       "mode": "100644",
       "blob_sha1": "e499ef19aa16981814f562568a7ca7de950967b8",
@@ -4697,7 +4704,7 @@
   "directories": [
     {
       "path": ".",
-      "file_count_recursive": 670
+      "file_count_recursive": 671
     },
     {
       "path": ".githooks",
@@ -4865,7 +4872,7 @@
     },
     {
       "path": "tests",
-      "file_count_recursive": 154
+      "file_count_recursive": 155
     },
     {
       "path": "tests/baselines",
@@ -4884,5 +4891,5 @@
       "file_count_recursive": 2
     }
   ],
-  "file_count": 670
+  "file_count": 671
 }
