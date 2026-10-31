@@ -222,11 +222,8 @@ def archive_file(source: Path, project_dir: Path, kind: str, suffix: str = "__ve
             transaction.transaction_id,
         )
     except Exception as exc:
-        if transaction.target.exists() and transaction.state not in {"verified_target", "source_removed", "committed", "source_retained"}:
-            try:
-                transaction.target.unlink()
-            except OSError:
-                pass
+        # Failed exclusive publication may name a competing writer's file.
+        # Retain targets unless ownership can be proven, even on errors.
         if transaction.temp:
             transaction.temp.unlink(missing_ok=True)
         safe = source.exists()
@@ -241,48 +238,10 @@ def archive_file(source: Path, project_dir: Path, kind: str, suffix: str = "__ve
 
 
 def recover_archive_transactions(project_dir: Path) -> list[dict[str, str]]:
-    """Recover or classify unfinished archive transactions without deleting source data."""
-    results: list[dict[str, str]] = []
-    directory = _transaction_dir(Path(project_dir))
-    for journal in sorted(directory.glob("*.json")):
-        try:
-            payload = json.loads(journal.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            results.append({"journal": str(journal), "status": "invalid", "message": "Journal nicht lesbar."})
-            continue
-        state = str(payload.get("state", ""))
-        if state in TERMINAL_STATES:
-            continue
-        source = Path(str(payload.get("source", "")))
-        target = Path(str(payload.get("target", "")))
-        temp = Path(str(payload.get("temp", ""))) if payload.get("temp") else None
-        reservation = Path(str(payload.get("reservation", ""))) if payload.get("reservation") else None
-        expected_size = int(payload.get("expected_size", 0) or 0)
-        expected_hash = str(payload.get("expected_hash", ""))
-        target_valid = False
-        try:
-            _verify_file(target, expected_size, expected_hash)
-            target_valid = True
-        except OSError:
-            target_valid = False
-        if target_valid and source.exists():
-            payload["state"] = "source_retained"
-            payload["message"] = "Wiederaufnahme: gültiges Ziel und Original vorhanden; Original bewusst erhalten."
-        elif target_valid and not source.exists():
-            payload["state"] = "committed"
-            payload["message"] = "Wiederaufnahme: gültiges Ziel bestätigt und Original bereits entfernt."
-        else:
-            if temp:
-                temp.unlink(missing_ok=True)
-            payload["state"] = "failed_safe" if source.exists() else "failed"
-            payload["message"] = "Wiederaufnahme: unvollständiges Ziel bereinigt; Originalstatus geprüft."
-        payload["updated_at"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
-        _atomic_json(journal, payload)
-        if reservation:
-            reservation.unlink(missing_ok=True)
-        results.append({"journal": str(journal), "status": str(payload["state"]), "message": str(payload["message"])})
-    return results
+    """Classify validated journals without following deletion instructions."""
+    from .archive_recovery import recover_transactions
 
+    return recover_transactions(Path(project_dir), _verify_file)
 
 def append_manifest(project_dir: Path, records: list[ArchiveRecord]) -> Path:
     path = Path(project_dir) / "used_files_manifest.json"

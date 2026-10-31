@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import ctypes
+import errno
 import json
 import os
 import tempfile
@@ -63,6 +65,24 @@ def read_json(path: Path | str) -> Any:
     return json.loads(target.read_text(encoding="utf-8"))
 
 
+
+def _rename_without_replacement(source: Path, destination: Path) -> None:
+    """Linux renameat2(RENAME_NOREPLACE) is atomic for source and destination."""
+    libc = ctypes.CDLL(None, use_errno=True)
+    renameat2 = getattr(libc, "renameat2", None)
+    if renameat2 is None:
+        raise OSError(errno.ENOTSUP, "Atomare Umbenennung ohne Überschreiben nicht verfügbar")
+    renameat2.argtypes = (
+        ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_uint
+    )
+    renameat2.restype = ctypes.c_int
+    at_fdcwd = -100
+    no_replace = 1
+    if renameat2(at_fdcwd, os.fsencode(source), at_fdcwd, os.fsencode(destination), no_replace):
+        code = ctypes.get_errno()
+        raise OSError(code, os.strerror(code), str(destination))
+
+
 def quarantine_file(path: Path | str, *, label: str = "corrupt") -> Path | None:
     """Move a suspicious file aside without overwriting an earlier quarantine."""
     source = Path(path).expanduser()
@@ -75,9 +95,11 @@ def quarantine_file(path: Path | str, *, label: str = "corrupt") -> Path | None:
         if candidate.exists() or candidate.is_symlink():
             continue
         try:
-            os.replace(source, candidate)
+            _rename_without_replacement(source, candidate)
             fsync_directory(source.parent)
             return candidate
+        except FileExistsError:
+            continue
         except OSError as exc:
             raise SafeIoError(f"Beschädigte Datei konnte nicht sicher quarantänisiert werden: {source}: {exc}") from exc
     raise SafeIoError(f"Kein freier Quarantänename für {source}")
