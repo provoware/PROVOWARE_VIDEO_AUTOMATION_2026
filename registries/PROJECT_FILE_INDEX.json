@@ -90,7 +90,7 @@
     {
       "path": ".github/workflows/qt6-phase3-smoke.yml",
       "mode": "100644",
-      "blob_sha1": "76c4770d186b346aec9dbb9378360eca55815775",
+      "blob_sha1": "ee15fce412304b790582c1862a4f629906b1cfec",
       "category": "automation",
       "lifecycle": "development"
     },
@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "8fdeff836a30d0fb9a2f63957de36677c76e150c",
+      "blob_sha1": "f72e760c072ccdfc77e9306498e6a6af7197c5ba",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -3289,7 +3289,7 @@
     {
       "path": "src/videobatch_fast/safe_io.py",
       "mode": "100644",
-      "blob_sha1": "a04593bb0098263127590df8e94b4f0c58514226",
+      "blob_sha1": "ed09fe1518f2ea49bc9bedbb97237fb3dd76f698",
       "category": "application",
       "lifecycle": "active"
     },
@@ -4309,6 +4309,13 @@
       "lifecycle": "development"
     },
     {
+      "path": "tests/test_quarantine_no_replace.py",
+      "mode": "100644",
+      "blob_sha1": "56ceb10698e8f8e5d5b1f04ef95a3a07fea9462d",
+      "category": "tests",
+      "lifecycle": "development"
+    },
+    {
       "path": "tests/test_quick_modes_2_2.py",
       "mode": "100644",
       "blob_sha1": "37f5c7821d37046313d33b956d2df9961bfd3861",
@@ -4676,7 +4683,7 @@
   "directories": [
     {
       "path": ".",
-      "file_count_recursive": 667
+      "file_count_recursive": 668
     },
     {
       "path": ".githooks",
@@ -4844,7 +4851,7 @@
     },
     {
       "path": "tests",
-      "file_count_recursive": 153
+      "file_count_recursive": 154
     },
     {
       "path": "tests/baselines",
@@ -4863,5 +4870,5 @@
       "file_count_recursive": 2
     }
   ],
-  "file_count": 667
+  "file_count": 668
 }
