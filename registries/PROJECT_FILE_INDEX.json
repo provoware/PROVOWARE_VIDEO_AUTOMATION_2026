@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "ebdee0c7db6661ec565a539640322d195c08d4c2",
+      "blob_sha1": "3c4cfd2f1cb2076186247ac1ca962a1357e111f1",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -3114,7 +3114,7 @@
     {
       "path": "src/videobatch_fast/qt_media_import_dialog.py",
       "mode": "100644",
-      "blob_sha1": "8773a25ab9dd3e574c3291753873142eee985d86",
+      "blob_sha1": "ca755da1af3c8948fe39ba6844e168ee91a89951",
       "category": "application",
       "lifecycle": "active"
     },
@@ -4220,7 +4220,7 @@
     {
       "path": "tests/test_qt_media_browser_pagination.py",
       "mode": "100644",
-      "blob_sha1": "6b30c4b1ec8b4e3340b0520eae80dd55ed4641da",
+      "blob_sha1": "ef5c2b613f9a7f0c660756893f7317207202e7fe",
       "category": "tests",
       "lifecycle": "development"
     },
