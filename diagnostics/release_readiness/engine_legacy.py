@@ -146,7 +146,7 @@ def integer(document: Mapping[str, Any], *path: str) -> int | None:
         return None
     try:
         return int(value)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return None
 
 

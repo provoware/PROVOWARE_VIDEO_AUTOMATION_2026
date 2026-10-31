@@ -112,6 +112,36 @@ def test_diagnostic_reports_status_errors_paths_and_startability_without_writing
     assert queue.stat().st_mtime_ns == before_stat.st_mtime_ns
 
 
+
+def test_diagnostic_never_treats_non_boolean_retry_flag_as_permission(tmp_path: Path) -> None:
+    audio = tmp_path / "audio.wav"
+    media = tmp_path / "media.png"
+    audio.write_bytes(b"audio")
+    media.write_bytes(b"media")
+    queue = tmp_path / "retry_queue.json"
+    _queue(queue, audio=audio, media=media, missing=tmp_path / "missing.png")
+    payload = json.loads(queue.read_text(encoding="utf-8"))
+
+    for invalid in ("false", "true", "1", 1, 0, None, [], {}):
+        payload["entries"][0]["retry_allowed"] = invalid
+        queue.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+        before = queue.read_bytes()
+
+        report = inspect_retry_queue(queue)
+
+        assert report.queue_valid is True
+        assert report.entries[0].retry_allowed is False
+        assert report.entries[0].startable is False
+        assert any("nicht zum Wiederanlauf" in item for item in report.entries[0].start_blockers)
+        assert queue.read_bytes() == before
+
+    payload["entries"][0]["retry_allowed"] = True
+    queue.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    report = inspect_retry_queue(queue)
+    assert report.entries[0].retry_allowed is True
+    assert report.entries[0].startable is True
+
+
 def test_json_cli_is_read_only_and_machine_readable(tmp_path: Path) -> None:
     audio = tmp_path / "audio.wav"
     media = tmp_path / "media.png"

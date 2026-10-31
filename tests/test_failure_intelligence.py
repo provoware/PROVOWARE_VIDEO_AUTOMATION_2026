@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -118,6 +119,41 @@ def test_corrupt_ledger_is_quarantined_before_recovery(tmp_path: Path) -> None:
     assert recovered["schema_version"] == 1
     assert occurrence.fingerprint in recovered["entries"]
 
+
+def test_occurrence_log_symlink_cannot_modify_unrelated_file(tmp_path: Path) -> None:
+    unrelated = tmp_path / "unrelated.txt"
+    unrelated.write_text("Originalinhalt\\n", encoding="utf-8")
+    (tmp_path / "failure_occurrences.jsonl").symlink_to(unrelated)
+
+    with pytest.raises(OSError):
+        _capture(42, tmp_path)
+
+    assert unrelated.read_text(encoding="utf-8") == "Originalinhalt\\n"
+    assert not (tmp_path / "failure_regressions.json").exists()
+
+
+def test_occurrence_log_hardlink_cannot_modify_original_media(tmp_path: Path) -> None:
+    original = tmp_path / "original_media.mp4"
+    original_bytes = b"original-media-unchanged"
+    original.write_bytes(original_bytes)
+    os.link(original, tmp_path / "failure_occurrences.jsonl")
+
+    with pytest.raises(OSError, match="Hardlink"):
+        _capture(42, tmp_path)
+
+    assert original.read_bytes() == original_bytes
+    assert not (tmp_path / "failure_regressions.json").exists()
+
+
+def test_occurrence_log_fifo_does_not_block_or_write_ledger(tmp_path: Path) -> None:
+    fifo = tmp_path / "failure_occurrences.jsonl"
+    os.mkfifo(fifo)
+
+    with pytest.raises(OSError):
+        _capture(42, tmp_path)
+
+    assert fifo.is_fifo()
+    assert not (tmp_path / "failure_regressions.json").exists()
 
 class _RuntimeProbe:
     def __init__(self) -> None:

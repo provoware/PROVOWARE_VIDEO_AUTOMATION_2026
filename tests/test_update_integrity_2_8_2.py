@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import errno
 import hashlib
 import json
 import os
@@ -12,7 +13,14 @@ import zipfile
 from pathlib import Path
 from unittest.mock import patch
 
-from videobatch_fast.updates import apply_update_package, finish_local_update_first_start, recover_interrupted_update, validate_update_package
+from videobatch_fast.safe_io import SafeIoError
+from videobatch_fast.updates import (
+    _fsync_directory,
+    apply_update_package,
+    finish_local_update_first_start,
+    recover_interrupted_update,
+    validate_update_package,
+)
 
 
 def _release_manifest(files: dict[str, tuple[bytes, int]]) -> bytes:
@@ -59,6 +67,16 @@ def _write_update(package: Path, version_data: bytes, release_data: bytes) -> No
 
 
 class UpdateIntegrityTests(unittest.TestCase):
+    def test_directory_fsync_failures_surface_instead_of_succeeding_silently(self):
+        with tempfile.TemporaryDirectory() as temp:
+            directory = Path(temp)
+            with patch("videobatch_fast.updates.os.open", side_effect=OSError(errno.EACCES, "Zugriff verweigert")):
+                with self.assertRaisesRegex(SafeIoError, "geöffnet"):
+                    _fsync_directory(directory)
+            with patch("videobatch_fast.updates.os.fsync", side_effect=OSError(errno.EIO, "Datenträgerfehler")):
+                with self.assertRaisesRegex(SafeIoError, "synchronisiert"):
+                    _fsync_directory(directory)
+
     def test_duplicate_zip_names_are_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             package = Path(tmp) / "bad.zip"
@@ -179,6 +197,42 @@ class UpdateIntegrityTests(unittest.TestCase):
             self.assertGreaterEqual(calls, 3)
             self.assertEqual((install / "version.txt").read_bytes(), b"old")
             self.assertFalse(list(root.glob("install.backup_*")))
+
+    def test_real_os_fsync_failure_after_exchange_rolls_back_without_false_success(self):
+        with tempfile.TemporaryDirectory() as temp, patch(
+            "videobatch_fast.paths.state_dir", return_value=Path(temp) / "state"
+        ):
+            from videobatch_fast import updates as updater
+
+            root = Path(temp)
+            install, package = self._working_update(root)
+            real_exchange = updater._atomic_exchange_dirs
+            real_fsync = os.fsync
+            exchanged = False
+            injected = False
+
+            def exchange(first, second):
+                nonlocal exchanged
+                real_exchange(first, second)
+                exchanged = True
+
+            def fail_once_after_exchange(descriptor):
+                nonlocal injected
+                if exchanged and not injected:
+                    injected = True
+                    raise OSError(errno.EIO, "Datenträgerfehler nach Aktivierung")
+                return real_fsync(descriptor)
+
+            with patch("videobatch_fast.updates._atomic_exchange_dirs", side_effect=exchange), patch(
+                "videobatch_fast.safe_io.os.fsync", side_effect=fail_once_after_exchange
+            ):
+                result = apply_update_package(package, install, "2.8.1-rc1", timeout=20)
+
+            self.assertTrue(injected, "Datenträgerfehler wurde nicht ausgelöst")
+            self.assertFalse(result.success, result.message)
+            self.assertIn("synchronisiert", result.message)
+            self.assertEqual((install / "version.txt").read_bytes(), b"old")
+            self.assertFalse((root / ".install.update_pending.json").exists())
 
 
 

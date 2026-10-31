@@ -72,6 +72,13 @@ def classify_retry(result: JobResult) -> RetryDecision:
             "Der Auftrag wurde kontrolliert beendet; automatisches Wiederholen würde den Nutzerabbruch missachten.",
         )
 
+    if returncode < 0:
+        return RetryDecision(
+            "environment_blocker",
+            False,
+            "FFmpeg wurde durch ein Signal beendet; Ursache prüfen statt automatisch erneut zu starten.",
+        )
+
     if returncode == 127 or any(marker in text for marker in _HARD_BLOCK_MARKERS):
         return RetryDecision(
             "environment_blocker",
