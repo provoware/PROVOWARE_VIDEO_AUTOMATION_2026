@@ -40,12 +40,20 @@ Only standalone user and release deliverables receive _save_. Source modules, CI
 <!-- release-files:end -->
 
 
-## Entwicklungsprüfung (separat vom historischen RC24-Nachweis)
+## Aktueller Entwicklungsstand – Bestandsaufnahme 31.10.2026
 
-- **Historischer Integrationsstand:** PR #246 (Ordnerstruktur) und PR #251 (Qt-Layout) wurden integriert. PR #252 (Raster) bleibt ein Entwicklungsentwurf. Neuer QA-Bericht: `docs/design/VIDEOBATCH_QA_AUDIT_2026-10-20.md`.
+🟢 **PR-Rückstand am Prüfzeitpunkt:** `0 offen · 0 Entwürfe`. Nach der Integration von PR #264 war `main` auf `b6d715ea65407afc7bb8a9838cea99af19ffb5d6`; **3/3 nachgelagerte GitHub-Workflows** (Release-Vertrag, Merge-Vorprüfung, Kubuntu-/Wayland-Vorschauvertrag) waren erfolgreich. Diese Aussage ist auf **diesen Commit** begrenzt – den Live-Stand immer erneut unter [GitHub-PRs](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pulls) und [GitHub-Prüfungen](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions) kontrollieren.
+
+🟠 **Keine Stable-Freigabe:** Der abschließende reale GUI-/Bedientest auf Kubuntu 26.04/KDE/Wayland bei 100/125/150/200 %, eine echte FFmpeg-Produktion und der geforderte Langzeitrender auf dem **unveränderten Endkandidaten** sind noch nicht als abschließend abgenommen belegt. Der historische RC24-Block oben bleibt davon getrennt.
+
+🔵 **Benutzerweg:** [README mit drei Hilfestufen](../README.md) → [Startanleitung](start/START_HIER_save_.md) → [Fehlerhilfe](manuals/ERROR_HANDLING.md). **Entwicklungsbefehle:** `bash ./scripts/dev/test.sh --docs` bzw. `bash ./scripts/dev/test.sh --core` aus dem Projektstamm.
+
+## Historischer Entwicklungsstand (20.10.2026; nicht mehr aktuell)
+
+- **Historischer Integrationsstand:** PR #246 (Ordnerstruktur) und PR #251 (Qt-Layout) wurden integriert. PR #252 (Raster) war damals noch ein Entwicklungsentwurf; diese Angabe beschreibt nur den 20.10.2026. Neuer QA-Bericht: `docs/design/VIDEOBATCH_QA_AUDIT_2026-10-20.md`.
 - **Letzter vollständig geprüfter Commit vor diesem Dokumentationsupdate:** `2ae2ae51fb1147b46150fe107b97a53e4a65495f` – alle acht GitHub-Prüfläufe erfolgreich.
 - **Entpacktes Benutzerpaket:** ZIP erstellt, Integrität geprüft, **7 Hauptordnerdateien**, interner Kommando-Einstieg über Bash erfolgreich getestet; [Paketprüflauf](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39339430217).
-- **Offen:** vollständige Offline-Erstinstallation und Qt-GUI-Start *aus dem entpackten Paket*, anschließende reale Kubuntu-Endabnahme; keinerlei neue Stable-Freigabe.
+- **Damals offen:** vollständige Offline-Erstinstallation und Qt-GUI-Start *aus dem entpackten Paket*. Spätere GitHub-Tests haben einen Wayland-Paketstart nachgewiesen; die **persönliche reale Kubuntu-Endabnahme** des finalen eingefrorenen Kandidaten bleibt weiterhin offen.
 - **Pfadstandard:** `STARTEN.sh` im Hauptordner, interne Startskripte unter `scripts/cli/`, Installationsskripte unter `scripts/install/`, Verträge unter `config/contracts/`, Sperrdateien unter `config/requirements/`.
 
 Diese Entwicklungsnotiz ist bewusst **nicht** Teil des automatisch aus historischen RC24-Belegen erzeugten Statusblocks.

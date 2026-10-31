@@ -92,6 +92,32 @@ def test_intent_help_is_safe_and_complete() -> None:
     assert "self._start(" not in source[help_start:help_end]
 
 
+def test_readme_three_levels_and_real_entrypoints() -> None:
+    """Keep novice instructions runnable and historical release evidence intact."""
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    for section in ("## Schnellstart", "## Ebene 2 – ausführliche Anleitung",
+                    "## Ebene 3 – Hilfe ohne Vorwissen", "## Abschlussprüfung",
+                    "## Dokumentation"):
+        assert section in readme, section
+    assert readme.count("<!-- release-status:start -->") == 1
+    assert readme.count("<!-- release-status:end -->") == 1
+    assert readme.count("<!-- release-files:start -->") == 1
+    assert readme.count("<!-- release-files:end -->") == 1
+    for command, script in (
+        ("bash ./STARTEN.sh", "STARTEN.sh"),
+        ("bash ./scripts/dev/test.sh --docs", "scripts/dev/test.sh"),
+        ("bash ./scripts/dev/test.sh --core", "scripts/dev/test.sh"),
+        ("bash ./scripts/dev/verify_release.sh", "scripts/dev/verify_release.sh"),
+    ):
+        assert command in readme
+        assert (ROOT / script).is_file(), f"Angegebener Befehl ohne Datei: {script}"
+    assert "bash ./scripts/dev/test.sh --docs" in agents
+    assert "bash ./scripts/dev/verify_release.sh --strict" in agents
+    assert "Stable-Freigabe" in readme
+    assert "Kopien" in readme
+
+
 def contract_tests() -> tuple[tuple[str, Callable[[], None]], ...]:
     return tuple(
         (name, value)

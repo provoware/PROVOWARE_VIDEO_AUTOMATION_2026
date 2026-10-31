@@ -2,6 +2,14 @@
 
 Alle wichtigen Änderungen dieses Projekts werden hier in zusammengefasster, chronologischer Form dokumentiert. Die vollständige frühere Detailhistorie liegt unter `docs/archive/release-history/CHANGELOG_FULL_PRE_FINALIZATION.md`.
 
+## Unveröffentlicht · 31.10.2026 – Dokumentations- und Bestandsabgleich
+
+- `README.md` für Einsteiger in **drei Ebenen** gegliedert: nummerierte und tatsächlich vorhandene Kopierbefehle, ausführlicher Ablauf mit Index, farbig gekennzeichnete Hilfe mit Erklärung technischer Begriffe.
+- Aktuelle Dashboard-Schnellnotiz mit lokaler TXT-Ablage, Datenintegritätsgrenzen und 800×600-/200%-Bedienung dokumentiert; historische Release-Blöcke unverändert erhalten.
+- Fehlende Root-Skripte aus Entwicklungsanleitungen durch echte Pfade `scripts/dev/test.sh`, `scripts/dev/verify_release.sh` und `scripts/dev/build_artifacts.sh` ersetzt.
+- Dokumentationswegweiser und Status um frühere, inzwischen erledigte PR-Verweise bereinigt. Letzter geprüfter produktiver Stand vor diesem Dokumentationspatch: `b6d715ea65407afc7bb8a9838cea99af19ffb5d6`, 0 offene PRs; ein grüner CI-Lauf ist keine Stable-Freigabe.
+- Die vorhandene Dokumentationsprüfung wird um einen Regressionstest für Drei-Ebenen-Aufbau, echte Skriptpfade und unveränderte historische Marker ergänzt. Keine Löschung historischer Beweisdokumente.
+
 ## Unveröffentlicht · Strukturmigration und Informationspflege (20.10.2026)
 
 - Benutzer-Hauptordner auf höchstens acht Dateien reduziert; reales Entwicklungs-ZIP mit sieben Hauptordnerdateien entpackt und den Kommando-Einstieg geprüft.
