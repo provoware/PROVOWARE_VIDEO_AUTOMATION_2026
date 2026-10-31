@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 
 QUALITY_TARGETS = {
     "smart_auto": "Ausgewogene Empfehlung für Qualität und Tempo",
@@ -42,5 +44,11 @@ def format_size(size: int) -> str:
 def format_eta(eta: object, elapsed: float, job_percent: int) -> str:
     if eta is None:
         return "wird berechnet" if elapsed < 15 else "nicht verfügbar"
+    try:
+        seconds = float(eta)
+    except (TypeError, ValueError, OverflowError):
+        return "nicht verfügbar"
+    if not math.isfinite(seconds):
+        return "nicht verfügbar"
     label = "erste Schätzung" if elapsed < 20 or job_percent < 10 else "aktuelle Schätzung"
-    return f"{label} · ca. {format_clock(float(eta))}"
+    return f"{label} · ca. {format_clock(seconds)}"

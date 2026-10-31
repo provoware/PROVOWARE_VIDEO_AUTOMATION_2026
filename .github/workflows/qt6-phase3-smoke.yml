@@ -26,6 +26,7 @@ on:
       - "scripts/qt_desktop_acceptance.py"
       - "scripts/debug_launcher.py"
       - "tests/test_debug_launcher_update_first_start.py"
+      - "tests/test_display_formatting.py"
       - "scripts/build_release_manifest.py"
       - "scripts/build_toolchain_wheelhouse.py"
       - "scripts/startup_check.py"
@@ -152,6 +153,7 @@ jobs:
           set -Eeuo pipefail
           python -m pytest -q \
             tests/test_core.py \
+            tests/test_display_formatting.py \
             tests/test_app_events.py \
             tests/test_runner_app_events.py \
             tests/test_selection_preview_app_events.py \
