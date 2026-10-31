@@ -90,7 +90,7 @@
     {
       "path": ".github/workflows/qt6-phase3-smoke.yml",
       "mode": "100644",
-      "blob_sha1": "b612eabbc15d8b9b704597698fa84936afd4c883",
+      "blob_sha1": "ee15fce412304b790582c1862a4f629906b1cfec",
       "category": "automation",
       "lifecycle": "development"
     },
@@ -125,21 +125,21 @@
     {
       "path": "AGENTS.md",
       "mode": "100644",
-      "blob_sha1": "42f92736d76544c8743812e4286806edb5cb9c20",
+      "blob_sha1": "706e11f1cf0c52f929207c746bfa74e7bae7edab",
       "category": "documentation",
       "lifecycle": "active"
     },
     {
       "path": "README.md",
       "mode": "100644",
-      "blob_sha1": "57d43b5c0bb88ce11d33f893438bacf74fffb1f4",
+      "blob_sha1": "aa5b9585cba9796f6677923eca6debeb89c50520",
       "category": "documentation",
       "lifecycle": "active"
     },
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "4c561d47c8dd867fee1f59fb6deb685647b405cd",
+      "blob_sha1": "72fc9373c7c69ad1121f8fd1f7b31704af0c5952",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -286,7 +286,7 @@
     {
       "path": "debugging/.gitignore",
       "mode": "100644",
-      "blob_sha1": "333a3641d1019f743d3e131340d10d6cf756bb7c",
+      "blob_sha1": "5d54bc06bef060dd2a9b62e57fe37bebf0bf07f3",
       "category": "diagnostics",
       "lifecycle": "active"
     },
@@ -356,35 +356,35 @@
     {
       "path": "diagnostics/release_readiness/engine.py",
       "mode": "100644",
-      "blob_sha1": "d653523af295d7863a35ccd9195e5811ae6b1cbd",
+      "blob_sha1": "e137527fc555ef589b01a950fbd6d4ffd0b6e244",
       "category": "diagnostics",
       "lifecycle": "active"
     },
     {
       "path": "diagnostics/release_readiness/engine_legacy.py",
       "mode": "100644",
-      "blob_sha1": "c6e9c2eac2b52fa6696ffc836bf8c6717e0eaa59",
+      "blob_sha1": "5daa68d400c072b433172492c4b8df24c1f5ce57",
       "category": "diagnostics",
       "lifecycle": "active"
     },
     {
       "path": "diagnostics/release_readiness/generate_candidate_quality.py",
       "mode": "100644",
-      "blob_sha1": "e71c039577e5e58effd6f3ff0b02228361e1dfdb",
+      "blob_sha1": "79bc8a73286094cbab8b50afab1a359dbf748079",
       "category": "diagnostics",
       "lifecycle": "active"
     },
     {
       "path": "diagnostics/release_readiness/generate_from_evidence.py",
       "mode": "100644",
-      "blob_sha1": "4a38f4a084ad168c58dde29146bfcb595a9aa842",
+      "blob_sha1": "f0ea6ef2b730812e591ca4ae9ab25ad997a97df9",
       "category": "diagnostics",
       "lifecycle": "active"
     },
     {
       "path": "diagnostics/release_readiness/release_readiness_dashboard.py",
       "mode": "100644",
-      "blob_sha1": "354e0664911cf28b66cf7f67b04b8d88bc732157",
+      "blob_sha1": "0dcb64e0d8b0160e406f45502ee5229e08871541",
       "category": "diagnostics",
       "lifecycle": "active"
     },
@@ -398,14 +398,28 @@
     {
       "path": "diagnostics/release_readiness/selftest.py",
       "mode": "100755",
-      "blob_sha1": "78fea3893a590376aef9298917666623e2c95699",
+      "blob_sha1": "091ded6ab9578d097162db6a50449929a99c97c6",
       "category": "diagnostics",
       "lifecycle": "active"
     },
     {
       "path": "diagnostics/release_readiness/test_candidate_quality.py",
       "mode": "100644",
-      "blob_sha1": "f03940640a5b4c33a3914e1a977587a85254d072",
+      "blob_sha1": "97f39471c12a4574d5d382afb1135a641c4cc658",
+      "category": "diagnostics",
+      "lifecycle": "active"
+    },
+    {
+      "path": "diagnostics/release_readiness/test_engine_legacy_numeric.py",
+      "mode": "100644",
+      "blob_sha1": "382795acf1ae538ac49736a74c3552c79d5d2500",
+      "category": "diagnostics",
+      "lifecycle": "active"
+    },
+    {
+      "path": "diagnostics/release_readiness/test_evidence_validation.py",
+      "mode": "100644",
+      "blob_sha1": "63d35f3b34aa1554c05e6799d61535e8adbc79ac",
       "category": "diagnostics",
       "lifecycle": "active"
     },
@@ -1511,7 +1525,7 @@
     {
       "path": "registries/CODE_QUALITY_REGISTRY.json",
       "mode": "100644",
-      "blob_sha1": "d85c5f18e8e31e724b430eaec96d0405d795b777",
+      "blob_sha1": "f4be63d68dcc4474abd6e76e4f080dadddcc1180",
       "category": "registry",
       "lifecycle": "active"
     },
@@ -2428,7 +2442,7 @@
     {
       "path": "scripts/verify_release_zip.py",
       "mode": "100644",
-      "blob_sha1": "71145c46dbb63377c74a552ce6f36e3795c7060e",
+      "blob_sha1": "b293f35653ce541c98298f9f2278757a091b4a7a",
       "category": "development",
       "lifecycle": "development"
     },
@@ -2503,9 +2517,16 @@
       "lifecycle": "active"
     },
     {
+      "path": "src/videobatch_fast/archive_recovery.py",
+      "mode": "100644",
+      "blob_sha1": "03ad5d1fbafea1792e751dfc691ad71067c1be09",
+      "category": "application",
+      "lifecycle": "active"
+    },
+    {
       "path": "src/videobatch_fast/archive_service.py",
       "mode": "100644",
-      "blob_sha1": "e3a3d40e2e9229f008455dc68eec7acb355ad7cc",
+      "blob_sha1": "a0882d12f1d3aa2b90a1fdf8d679faed000d8862",
       "category": "application",
       "lifecycle": "active"
     },
@@ -2708,7 +2729,7 @@
     {
       "path": "src/videobatch_fast/event_buffer.py",
       "mode": "100644",
-      "blob_sha1": "42f04ec1eacbc613bfbb98ccc2d1c5779a9a0e89",
+      "blob_sha1": "572c161d06e3fe092af4cf5e278d39d0b0b6d9f8",
       "category": "application",
       "lifecycle": "active"
     },
@@ -2729,7 +2750,7 @@
     {
       "path": "src/videobatch_fast/failure_intelligence.py",
       "mode": "100644",
-      "blob_sha1": "f8fcc46dfc4574b81bffbecf20db4beb65a6b310",
+      "blob_sha1": "1eee0d1287d0851dd3ab144c759ee7574b16f6cd",
       "category": "application",
       "lifecycle": "active"
     },
@@ -2897,7 +2918,7 @@
     {
       "path": "src/videobatch_fast/naming.py",
       "mode": "100644",
-      "blob_sha1": "0e0077a12d60088148d3c72f40f4d381e2e50c46",
+      "blob_sha1": "7a15c3b351ad7d29e524e15565cccd53ca05dde2",
       "category": "application",
       "lifecycle": "active"
     },
@@ -2925,7 +2946,7 @@
     {
       "path": "src/videobatch_fast/permission_service.py",
       "mode": "100644",
-      "blob_sha1": "51bb166f3f5058f5bbf10098955195139a0fb025",
+      "blob_sha1": "afdb585e36697c0746dea7dff6627e2d35d53b90",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3170,7 +3191,7 @@
     {
       "path": "src/videobatch_fast/qt_theme.py",
       "mode": "100644",
-      "blob_sha1": "e5bf9d387a4321349b1b63be3fb0ed7b0e72049a",
+      "blob_sha1": "012cc70388b7e5032169da1871561d9814268cc0",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3233,28 +3254,28 @@
     {
       "path": "src/videobatch_fast/resource_estimation.py",
       "mode": "100644",
-      "blob_sha1": "4860928cfec57235472999b267574cf583ca0c0d",
+      "blob_sha1": "6f827a1ec382ab4a4efa23e4dc720521de39ba4b",
       "category": "application",
       "lifecycle": "active"
     },
     {
       "path": "src/videobatch_fast/retry_diagnostics.py",
       "mode": "100644",
-      "blob_sha1": "3ba1a565bd979048febafd8a2b0290d8f25f0ce1",
+      "blob_sha1": "2aa582773297e0e06a7f00f85faa411cdafac45f",
       "category": "application",
       "lifecycle": "active"
     },
     {
       "path": "src/videobatch_fast/retry_policy.py",
       "mode": "100644",
-      "blob_sha1": "f18f354996ef0c84c337fec6e5f793b0c0102e9a",
+      "blob_sha1": "dc68665e890c62d12c91a08a781b0a35b5f90257",
       "category": "application",
       "lifecycle": "active"
     },
     {
       "path": "src/videobatch_fast/retry_queue.py",
       "mode": "100644",
-      "blob_sha1": "fb24f7eb3a106223686d9ac150f25c0b2aaebe57",
+      "blob_sha1": "2d9dc11794019549d54b376e8fe29a78b6b54d77",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3275,14 +3296,14 @@
     {
       "path": "src/videobatch_fast/runner_process.py",
       "mode": "100644",
-      "blob_sha1": "12cf7b1c13ebfd1ee9dffe638a0b9d647f6c7095",
+      "blob_sha1": "6e48cc6421f9c7f351a951995a3797f3c9ac19ef",
       "category": "application",
       "lifecycle": "active"
     },
     {
       "path": "src/videobatch_fast/safe_io.py",
       "mode": "100644",
-      "blob_sha1": "a04593bb0098263127590df8e94b4f0c58514226",
+      "blob_sha1": "ed09fe1518f2ea49bc9bedbb97237fb3dd76f698",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3499,7 +3520,7 @@
     {
       "path": "src/videobatch_fast/updates.py",
       "mode": "100644",
-      "blob_sha1": "7fe80f74c97b20a58de5bdb759091952de8b7930",
+      "blob_sha1": "6e536c1d281af359977be750fc611a294f6f82c9",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3800,7 +3821,7 @@
     {
       "path": "tests/test_app_events.py",
       "mode": "100644",
-      "blob_sha1": "8c4c8e4339ada35233f93489eac080f995fbbf6c",
+      "blob_sha1": "af891d1ab96578d0d20c47b5cb707b9399717715",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -3808,6 +3829,13 @@
       "path": "tests/test_architecture_v1_collision_contract.py",
       "mode": "100644",
       "blob_sha1": "fff72c7745b2a34dbd92b0ccb27b2578165dbfa9",
+      "category": "tests",
+      "lifecycle": "development"
+    },
+    {
+      "path": "tests/test_archive_recovery_integrity.py",
+      "mode": "100644",
+      "blob_sha1": "b0355f14ffbb6c54b5c32b1f678d314750460d10",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -3828,7 +3856,7 @@
     {
       "path": "tests/test_autonomous_reliability_rc25.py",
       "mode": "100644",
-      "blob_sha1": "9a4083d7c5a7642ab9c9b311997e96883a923f76",
+      "blob_sha1": "c85146c7e3ad9a67d3f727605950c01273013f11",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -3877,7 +3905,7 @@
     {
       "path": "tests/test_core.py",
       "mode": "100644",
-      "blob_sha1": "c0da804491315fa444d908158a15425bcf1e38cd",
+      "blob_sha1": "25de95d4ff8f9d3c638d384088514c91bf08d44a",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -3947,7 +3975,7 @@
     {
       "path": "tests/test_failure_intelligence.py",
       "mode": "100644",
-      "blob_sha1": "35d895386360644e466eacb0d4d8e7aff387a59e",
+      "blob_sha1": "7fed9a1c4796d490f89ef217ca0ab3bc34ad42b2",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4062,6 +4090,13 @@
       "lifecycle": "development",
       "mode": "100644",
       "path": "tests/test_paths_permission_safety.py"
+    },
+    {
+      "path": "tests/test_permission_service_fallback_safety.py",
+      "mode": "100644",
+      "blob_sha1": "8a2ffbd6e34ed61643946b2d7c8ffd42cb284a7c",
+      "category": "tests",
+      "lifecycle": "development"
     },
     {
       "path": "tests/test_persistence_v1_contract.py",
@@ -4213,7 +4248,7 @@
     {
       "path": "tests/test_qt_responsive_20261020.py",
       "mode": "100644",
-      "blob_sha1": "e39d4c4bce3a9fe0096c326ac82fb6246d246043",
+      "blob_sha1": "1d0c7a1c6def93298767ff4f2f1b6b8daa0df28d",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4284,6 +4319,13 @@
       "path": "tests/test_quality_wheelhouse_2_8_3.py",
       "mode": "100644",
       "blob_sha1": "1440b23f75f8b559ec5e27b172a73e1558123e19",
+      "category": "tests",
+      "lifecycle": "development"
+    },
+    {
+      "path": "tests/test_quarantine_no_replace.py",
+      "mode": "100644",
+      "blob_sha1": "56ceb10698e8f8e5d5b1f04ef95a3a07fea9462d",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4456,16 +4498,23 @@
       "lifecycle": "development"
     },
     {
+      "path": "tests/test_reservation_owner_integrity.py",
+      "mode": "100644",
+      "blob_sha1": "d78c1dc5cd2209634abd79ed59d8623576617075",
+      "category": "tests",
+      "lifecycle": "development"
+    },
+    {
       "path": "tests/test_retry_queue_diagnostics.py",
       "mode": "100644",
-      "blob_sha1": "1465738788c136ce5c3357d445d715c76b547a2c",
+      "blob_sha1": "6306afb262f2115252770d0d193b0c3ef5e22f19",
       "category": "tests",
       "lifecycle": "development"
     },
     {
       "path": "tests/test_retry_queue_resilience.py",
       "mode": "100644",
-      "blob_sha1": "b197390f1493e5bd1325651f591de512d6f49901",
+      "blob_sha1": "b1514616b508cd17de0eb95e5d0c6f3a7f4f2ffa",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4561,6 +4610,13 @@
       "lifecycle": "development"
     },
     {
+      "path": "tests/test_update_candidate_selftest_path.py",
+      "mode": "100644",
+      "blob_sha1": "e9590638af78a2eb70428abdb549c3bce332db11",
+      "category": "tests",
+      "lifecycle": "development"
+    },
+    {
       "path": "tests/test_update_integrity_2_8_2.py",
       "mode": "100644",
       "blob_sha1": "51c9f42c8d0b1c2d02b9487a06de7c696ee62313",
@@ -4578,6 +4634,13 @@
       "path": "tests/test_verify_portable_reproducibility.py",
       "mode": "100644",
       "blob_sha1": "54e450f9b357bdf8f69646a99ff9d8a1ad380fcf",
+      "category": "tests",
+      "lifecycle": "development"
+    },
+    {
+      "path": "tests/test_verify_release_zip_integrity.py",
+      "mode": "100644",
+      "blob_sha1": "be90d653a385646a7fd1463ade9ca1fba8ef5841",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4634,7 +4697,7 @@
   "directories": [
     {
       "path": ".",
-      "file_count_recursive": 661
+      "file_count_recursive": 670
     },
     {
       "path": ".githooks",
@@ -4674,11 +4737,11 @@
     },
     {
       "path": "diagnostics",
-      "file_count_recursive": 17
+      "file_count_recursive": 19
     },
     {
       "path": "diagnostics/release_readiness",
-      "file_count_recursive": 16
+      "file_count_recursive": 18
     },
     {
       "path": "diagnostics/root_migration",
@@ -4790,7 +4853,7 @@
     },
     {
       "path": "src",
-      "file_count_recursive": 162
+      "file_count_recursive": 163
     },
     {
       "path": "src/provoware_grid",
@@ -4798,11 +4861,11 @@
     },
     {
       "path": "src/videobatch_fast",
-      "file_count_recursive": 157
+      "file_count_recursive": 158
     },
     {
       "path": "tests",
-      "file_count_recursive": 148
+      "file_count_recursive": 154
     },
     {
       "path": "tests/baselines",
@@ -4821,5 +4884,5 @@
       "file_count_recursive": 2
     }
   ],
-  "file_count": 661
+  "file_count": 670
 }
