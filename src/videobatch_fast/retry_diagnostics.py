@@ -95,7 +95,7 @@ def _entry_diagnostic(item: dict[str, Any], queue_max_attempts: int) -> RetryEnt
     state = str(item.get("state", "unknown") or "unknown")
     attempts = max(0, _safe_int(item.get("attempts"), 0))
     max_attempts = max(1, _safe_int(item.get("max_attempts"), queue_max_attempts or 1))
-    retry_allowed = bool(item.get("retry_allowed")) and attempts < max_attempts
+    retry_allowed = item.get("retry_allowed") is True and attempts < max_attempts
     audio = _path_status(item.get("audio"))
     media = _path_status(item.get("media"))
     raw_sequence = item.get("media_sequence", [])

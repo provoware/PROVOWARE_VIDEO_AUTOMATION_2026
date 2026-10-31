@@ -94,8 +94,10 @@ def build() -> dict:
         raise ValueError("Widersprüchliche Testherkunft")
     if measured.get("offline_quality", {}).get("result") != "passed":
         raise ValueError("Offline-Qualitätsnachweis nicht erfolgreich")
-    if not isinstance(regression.get("passed"), int) or regression["passed"] <= 0:
+    if type(regression.get("passed")) is not int or regression["passed"] <= 0:
         raise ValueError("Keine belegte positive Kern-Testzahl")
+    if type(regression.get("failed")) is not int or regression["failed"] != 0:
+        raise ValueError("Kernregression enthält fehlgeschlagene oder ungültige Tests")
     results = {item["name"]: item["conclusion"] for item in checks}
     failures = sorted(name for name, value in results.items() if value != "success")
     physical_valid = _physical_acceptance_valid(manifest)
