@@ -2,17 +2,21 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
+import sys
 import tempfile
 from unittest.mock import patch
 from pathlib import Path
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QPoint
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 from videobatch_fast.config import load_config
 from videobatch_fast.dashboard_settings import load_settings
+from videobatch_fast.project_state import append_project_note, project_notes_file
+from videobatch_fast.safe_io import SafeIoError
 from videobatch_fast.qt_legacy_parity import (
     _archive_last_results,
     _plugin_scan,
@@ -115,6 +119,130 @@ def main() -> int:
 
         # Real Qt widgets -> single settings model -> BatchOptions -> saved JSON.
         assert window.main_tabs.count() == 4
+        assert window.main_tabs.tabText(3) == "Dashboard"
+        window.main_tabs.setCurrentIndex(3)
+        app.processEvents()
+        notes_path = project_notes_file(window._project_file)
+        assert window.dashboard_note_file.text().endswith(str(notes_path))
+        window.dashboard_note_input.setText("Erste Notiz per Enter")
+        window.dashboard_note_input.returnPressed.emit()
+        assert window.dashboard_note_input.text() == ""
+        assert "Gespeichert:" in window.dashboard_note_status.text()
+        assert notes_path.exists()
+        first = notes_path.read_text(encoding="utf-8").splitlines()
+        assert len(first) == 1 and first[0].startswith("[20")
+        assert first[0].endswith("Erste Notiz per Enter")
+        window.dashboard_note_input.setText("Zweite Notiz per Knopf")
+        window.dashboard_note_button.click()
+        lines = notes_path.read_text(encoding="utf-8").splitlines()
+        assert len(lines) == 2 and lines[0] == first[0]
+        assert lines[1].endswith("Zweite Notiz per Knopf")
+        # A custom project directory gets its own fixed TXT; an unfinished
+        # pre-existing last line is preserved and separated from the new entry.
+        custom_project = temporary_path / "eigener_projektordner" / "projekt.vbfast.json"
+        custom_project.parent.mkdir()
+        custom_notes = project_notes_file(custom_project)
+        custom_notes.write_bytes(b"Alter Eintrag ohne Zeilenumbruch")
+        appended_path, _stamp = append_project_note(custom_project, "Neue Notiz")
+        assert appended_path == custom_notes
+        custom_lines = custom_notes.read_text(encoding="utf-8").splitlines()
+        assert len(custom_lines) == 2
+        assert custom_lines[0] == "Alter Eintrag ohne Zeilenumbruch"
+        assert custom_lines[1].endswith("Neue Notiz")
+        # An interrupted/short write must never leave half of a dated line.
+        limited_project = temporary_path / "begrenzter_speicher" / "projekt.vbfast.json"
+        limited_project.parent.mkdir()
+        limited_notes = project_notes_file(limited_project)
+        previous_notes = b"Bestehende Notiz\n"
+        limited_notes.write_bytes(previous_notes)
+        limited_script = (
+            "import resource, signal, sys\n"
+            "from pathlib import Path\n"
+            "from videobatch_fast.project_state import append_project_note\n"
+            "project = Path(sys.argv[1])\n"
+            "hard = resource.getrlimit(resource.RLIMIT_FSIZE)[1]\n"
+            "resource.setrlimit(resource.RLIMIT_FSIZE, (int(sys.argv[2]), hard))\n"
+            "signal.signal(signal.SIGXFSZ, signal.SIG_IGN)\n"
+            "try:\n"
+            "    append_project_note(project, 'Darf nicht unvollständig gespeichert werden')\n"
+            "except OSError:\n"
+            "    print('EXPECTED_CAPACITY_FAILURE')\n"
+            "else:\n"
+            "    raise AssertionError('Schreiben trotz Dateigrößenlimit erfolgreich')\n"
+        )
+        test_env = dict(os.environ)
+        test_env["PYTHONPATH"] = str(Path(__file__).resolve().parents[1] / "src")
+        limited_run = subprocess.run(
+            [sys.executable, "-c", limited_script, str(limited_project), str(len(previous_notes) + 18)],
+            env=test_env, capture_output=True, text=True, timeout=15, check=True,
+        )
+        assert "EXPECTED_CAPACITY_FAILURE" in limited_run.stdout
+        assert limited_notes.read_bytes() == previous_notes
+        assert not list(limited_notes.parent.glob(".VideoBatch_Notizen.txt.*.tmp"))
+        append_project_note(limited_project, "Nach Fehler erfolgreich wiederholt")
+        recovered = limited_notes.read_text(encoding="utf-8").splitlines()
+        assert recovered[0] == "Bestehende Notiz" and len(recovered) == 2
+        assert recovered[1].endswith("Nach Fehler erfolgreich wiederholt")
+        # A crafted notes link must not append bytes to original media.
+        unsafe_project = temporary_path / "unsicherer_projektordner" / "projekt.vbfast.json"
+        unsafe_project.parent.mkdir()
+        original_media = unsafe_project.parent / "original.mp4"
+        original_media.write_bytes(b"ORIGINAL_MEDIEN_DATEN")
+        unsafe_notes = project_notes_file(unsafe_project)
+        unsafe_notes.symlink_to(original_media)
+        for link_type in ("symlink", "hardlink"):
+            if link_type == "hardlink":
+                unsafe_notes.unlink()
+                os.link(original_media, unsafe_notes)
+            try:
+                append_project_note(unsafe_project, "Darf nicht in Medien landen")
+            except OSError:
+                pass
+            else:
+                raise AssertionError(f"Unsicheres Notizziel wurde geöffnet: {link_type}")
+            assert original_media.read_bytes() == b"ORIGINAL_MEDIEN_DATEN"
+        window.dashboard_note_input.setText("   ")
+        window.dashboard_note_button.click()
+        assert "Bitte zuerst" in window.dashboard_note_status.text()
+        assert notes_path.read_text(encoding="utf-8").splitlines() == lines
+        missing_project = temporary_path / "nicht_vorhanden" / "projekt.vbfast.json"
+        window._project_file = missing_project
+        window.dashboard_note_input.setText("Bei Fehler erhalten")
+        with patch.object(QMessageBox, "warning") as warning:
+            window.dashboard_note_button.click()
+        warning.assert_called_once()
+        assert window.dashboard_note_input.text() == "Bei Fehler erhalten"
+        assert "Nicht gespeichert" in window.dashboard_note_status.text()
+        window.dashboard_note_input.setText("Unsicherer Speicherstatus")
+        with patch("videobatch_fast.qt_workspace_layout.append_project_note", side_effect=SafeIoError("Test")):
+            with patch.object(QMessageBox, "warning") as warning:
+                window.dashboard_note_button.click()
+        warning.assert_called_once()
+        assert window.dashboard_note_input.text() == "Unsicherer Speicherstatus"
+        assert "Speicherstatus unklar" in window.dashboard_note_status.text()
+        window._project_file = notes_path.parent / "aktuelles_projekt.vbfast.json"
+        # Both Save As and project navigation must show the actual target directory.
+        saved_as_project = temporary_path / "gespeichert_unter" / "projekt.vbfast.json"
+        saved_as_project.parent.mkdir()
+        assert window._persist_project_to(saved_as_project, silent=True)
+        assert window.dashboard_note_file.text().endswith(str(project_notes_file(saved_as_project)))
+        window._project_file = notes_path.parent / "aktuelles_projekt.vbfast.json"
+        window._route_workspace("project")
+        assert window.dashboard_note_file.text().endswith(str(notes_path))
+        window._route_workspace("dashboard")
+        window.view_scale.setCurrentIndex(window.view_scale.findData(200))
+        window.resize(800, 600)
+        app.processEvents()
+        assert window.main_tabs.tabText(3) == "Notizen"
+        assert sum(window.main_tabs.tabRect(i).width() for i in range(4)) <= window.main_tabs.width()
+        assert not window.dashboard_note_hint.isVisibleTo(window)
+        input_bottom = window.dashboard_note_input.mapTo(window, QPoint(0, 0)).y() + window.dashboard_note_input.height()
+        footer_top = window.action_footer_scroll.mapTo(window, QPoint(0, 0)).y()
+        assert input_bottom <= footer_top, (input_bottom, footer_top)
+        window.view_scale.setCurrentIndex(window.view_scale.findData(110))
+        window.resize(1360, 820)
+        window.main_tabs.setCurrentIndex(0)
+        app.processEvents()
         window.resolution.setCurrentIndex(window.resolution.findData("1920×1080"))
         window.quality.setCurrentIndex(window.quality.findData("maximum"))
         window.effect.setCurrentIndex(window.effect.findData("vivid"))

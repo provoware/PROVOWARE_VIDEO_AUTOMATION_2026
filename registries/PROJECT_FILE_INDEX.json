@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "a6bbeba4132376f5ed3196e327dc05724c7bc9e1",
+      "blob_sha1": "9312c846137de4cf15ecdd41a1d81569d8341a9d",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -3044,7 +3044,7 @@
     {
       "path": "src/videobatch_fast/project_state.py",
       "mode": "100644",
-      "blob_sha1": "19b58cb6fb41fa8bfe1a1f4562ebd30f6a521b99",
+      "blob_sha1": "f9c950808130751c3f6a7f50d79e7206310b77e0",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3107,7 +3107,7 @@
     {
       "path": "src/videobatch_fast/qt_main_layout.py",
       "mode": "100644",
-      "blob_sha1": "7162e9f9afa207c1a0b3c56e9ed89fc4183d9cd3",
+      "blob_sha1": "77a610963491afe86eb9863c965d19502d951805",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3149,7 +3149,7 @@
     {
       "path": "src/videobatch_fast/qt_phase3.py",
       "mode": "100644",
-      "blob_sha1": "e47caf8b0bed782d0add14e5047bd0031194f993",
+      "blob_sha1": "afb41b09928e8eaef72893511986350625ec4409",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3226,7 +3226,7 @@
     {
       "path": "src/videobatch_fast/qt_workspace_layout.py",
       "mode": "100644",
-      "blob_sha1": "786da7892d52479e4f73d4d984325e635ce55807",
+      "blob_sha1": "74d4e892ddd60e6b6a40aae4e26a7264fcdb6518",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3800,7 +3800,7 @@
     {
       "path": "tests/qt_phase3_smoke.py",
       "mode": "100644",
-      "blob_sha1": "b9b1bc74e27a9812ec18db70262fe37de1ce501b",
+      "blob_sha1": "afc687056f7ea4894983670fee2258fb7289c342",
       "category": "tests",
       "lifecycle": "development"
     },

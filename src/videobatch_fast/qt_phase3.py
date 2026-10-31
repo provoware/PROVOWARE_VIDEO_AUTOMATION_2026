@@ -443,6 +443,7 @@ class VideoBatchQtPhase3Window(VideoBatchQtPhase2Window):
                 )
             return False
         self._project_file = saved
+        self.refresh_dashboard_note_file()
         self._project_state = state
         self._project_dirty = False
         self.project_panel.set_saved(saved)

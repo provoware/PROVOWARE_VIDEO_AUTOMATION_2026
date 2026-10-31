@@ -188,7 +188,7 @@ def build_main_ui(window) -> None:
     tabs.setObjectName("mainNavigation")
     tabs.setExpanding(True)
     tabs.setAccessibleName("Arbeitsbereiche")
-    for name in ("1 · Dateien", "2 · Ausgabe", "3 · Produktion", "Hilfe / Werkzeuge"):
+    for name in ("1 · Dateien", "2 · Ausgabe", "3 · Produktion", "Dashboard"):
         tabs.addTab(name)
     window.main_tabs = tabs
     routes = ("media", "effects", "queue", "dashboard")
@@ -286,7 +286,14 @@ def build_main_ui(window) -> None:
         compact = value >= 150
         window.menuBar().setVisible(not compact)
         window.compact_menu.setVisible(compact)
-        window.main_tabs.setTabText(3, "Hilfe" if compact else "Hilfe / Werkzeuge")
+        names = (
+            ("1 · Dateien", "2 · Ausgabe", "3 · Start", "Notizen")
+            if compact else
+            ("1 · Dateien", "2 · Ausgabe", "3 · Produktion", "Dashboard")
+        )
+        for index, name in enumerate(names):
+            window.main_tabs.setTabText(index, name)
+        window.dashboard_note_hint.setVisible(value < 175)
         subtitle.setVisible(value <= 110)
         window.load_dashboard.frame.setVisible(not compact)
         route = getattr(window, "_active_workflow_route", "media")
