@@ -1595,7 +1595,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "69d0120825977392fc7f3e4c0c937e4ec9840f02",
+      "blob_sha1": "9e8c0d33fb88798c6333aff9cc67920d7c343665",
       "category": "project_contract",
       "lifecycle": "active"
     },
