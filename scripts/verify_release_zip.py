@@ -50,13 +50,18 @@ def verify_archive(archive: zipfile.ZipFile) -> int:
     for info in sorted(infos, key=lambda item: item.filename):
         if info.filename == manifest_name:
             continue
-        data = archive.read(info)
         mode = (info.external_attr >> 16) & 0o777
         if mode not in (0o644, 0o755):
             raise ValueError(f"Nicht kanonischer ZIP-Modus: {info.filename}")
+        digest = hashlib.sha256()
+        size = 0
+        with archive.open(info) as source:
+            for block in iter(lambda: source.read(1024 * 1024), b""):
+                digest.update(block)
+                size += len(block)
         records.append({
-            "path": info.filename[len(root) + 1:], "size": len(data),
-            "sha256": hashlib.sha256(data).hexdigest(), "mode": oct(mode),
+            "path": info.filename[len(root) + 1:], "size": size,
+            "sha256": digest.hexdigest(), "mode": oct(mode),
         })
     if manifest.get("file_count", len(records)) != len(records):
         raise ValueError("ZIP-Dateizahl stimmt nicht mit Release-Manifest überein.")
