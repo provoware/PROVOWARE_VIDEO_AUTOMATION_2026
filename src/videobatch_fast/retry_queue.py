@@ -235,11 +235,11 @@ class RetryQueueStore:
             return tuple(dict(item) for item in self._data["entries"])
 
     def eligible_entries(self) -> tuple[dict[str, Any], ...]:
-        return tuple(item for item in self.entries() if bool(item.get("retry_allowed")))
+        return tuple(item for item in self.entries() if item.get("retry_allowed") is True)
 
     def summary(self) -> RetryQueueSummary:
         entries = self.entries()
-        retryable = sum(bool(item.get("retry_allowed")) for item in entries)
+        retryable = sum(item.get("retry_allowed") is True for item in entries)
         blocked = sum(item.get("state") == "limit_reached" for item in entries)
         failed = sum(item.get("state") in {"failed", "limit_reached"} for item in entries)
         not_started = sum(item.get("state") == "not_started" for item in entries)
