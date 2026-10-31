@@ -183,11 +183,11 @@ def _append_occurrence(path: Path, occurrence: FailureOccurrence) -> None:
     ) + "\n"
     data = payload.encode("utf-8", errors="replace")
     descriptor = os.open(path, os.O_CREAT | os.O_APPEND | os.O_WRONLY | os.O_NOFOLLOW | os.O_NONBLOCK, 0o600)
-    # Refuse special files even when a local path is replaced between checks.
-    # The nonblocking flag prevents a hostile FIFO from blocking before fstat.
+    # O_NONBLOCK prevents FIFO hangs; inspect type and link count on the opened fd.
     try:
-        if not stat.S_ISREG(os.fstat(descriptor).st_mode):
-            raise OSError("Fehlerprotokoll ist keine reguläre Datei.")
+        info = os.fstat(descriptor)
+        if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+            raise OSError("Unsicheres Fehlerprotokoll (Dateityp oder Hardlink).")
         os.write(descriptor, data)
         os.fsync(descriptor)
         try:
