@@ -10,7 +10,9 @@ from .qt_theme import SCALE_LEVELS, scaled_style
 from .qt_adaptive_settings import ResponsiveSettingsPanel
 from .dashboard_settings import RESOLUTION_LABELS, QUALITY_LABELS, EFFECT_LABELS
 from .effects import TRANSITIONS
-from .qt_workspace_layout import build_footer, build_workflow_stack, set_workflow_route
+from .qt_workspace_layout import (
+    build_footer, build_workflow_stack, refresh_primary_action_caption, set_workflow_route,
+)
 
 
 def build_main_ui(window) -> None:
@@ -258,6 +260,7 @@ def build_main_ui(window) -> None:
         # A compact title keeps all original font choices for the WORK controls;
         # only the decorative brand loses excess height on tiny screens.
         small_large = value >= 175 and window.width() <= 900
+        refresh_primary_action_caption(window)
         # The persistent next-step hint must show more than one line at 800x600.
         # It remains visible while the workflow itself can scroll vertically.
         window.action_footer_scroll.setMinimumHeight(82 if small_large else 52)

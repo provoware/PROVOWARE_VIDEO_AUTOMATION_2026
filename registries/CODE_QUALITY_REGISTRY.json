@@ -62,7 +62,7 @@
       "src/videobatch_fast/ui_event_handlers_mixin.py": 315,
       "src/videobatch_fast/event_registry.py": 304,
       "src/videobatch_fast/ui_components.py": 302,
-      "src/videobatch_fast/archive_service.py": 301,
+      "src/videobatch_fast/archive_service.py": 260,
       "src/videobatch_fast/canonical_kpi.py": 295,
       "src/videobatch_fast/canonical_kpi_detail_mixin.py": 294,
       "src/videobatch_fast/workflow_dialogs.py": 282,

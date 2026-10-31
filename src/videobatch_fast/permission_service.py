@@ -57,6 +57,12 @@ def ensure_writable_directory(path: Path, fallback: Path) -> DirectoryAccess:
     if is_writable_directory(requested):
         return DirectoryAccess(requested, True)
     fallback_path = Path(fallback).expanduser()
+    if fallback_path.is_symlink():
+        return DirectoryAccess(
+            requested,
+            False,
+            message=f"Ausweichordner ist ein symbolischer Link: {fallback_path}",
+        )
     try:
         _write_probe(fallback_path)
     except OSError as exc:
