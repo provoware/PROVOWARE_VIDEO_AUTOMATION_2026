@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "72fc9373c7c69ad1121f8fd1f7b31704af0c5952",
+      "blob_sha1": "b72fe42308a146257ea7a08d034c4a4edbed45de",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -2729,7 +2729,7 @@
     {
       "path": "src/videobatch_fast/event_buffer.py",
       "mode": "100644",
-      "blob_sha1": "572c161d06e3fe092af4cf5e278d39d0b0b6d9f8",
+      "blob_sha1": "42f04ec1eacbc613bfbb98ccc2d1c5779a9a0e89",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3821,7 +3821,7 @@
     {
       "path": "tests/test_app_events.py",
       "mode": "100644",
-      "blob_sha1": "af891d1ab96578d0d20c47b5cb707b9399717715",
+      "blob_sha1": "8c4c8e4339ada35233f93489eac080f995fbbf6c",
       "category": "tests",
       "lifecycle": "development"
     },
