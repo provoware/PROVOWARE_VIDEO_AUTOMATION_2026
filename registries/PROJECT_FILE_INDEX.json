@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "96dc20c3aebdb7ccbc08ae00cd33fcf09de2e25e",
+      "blob_sha1": "ef0cc60e367de1c7f783522664da6bf695b2c184",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -4220,7 +4220,7 @@
     {
       "path": "tests/test_provoware_responsive_grid_contract.py",
       "mode": "100644",
-      "blob_sha1": "9de7a60d6c5bf4aab2eeccf3702d25f1497e5529",
+      "blob_sha1": "ea6ee6ad5c7de46522f10ba7ee60cafcd537e022",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4255,7 +4255,7 @@
     {
       "path": "tests/test_qt_responsive_20261020.py",
       "mode": "100644",
-      "blob_sha1": "e74f9010e29cb1d5a16738615c379524464c6716",
+      "blob_sha1": "86e6887914f25144889ba8be45a49a5e0db34d6d",
       "category": "tests",
       "lifecycle": "development"
     },
