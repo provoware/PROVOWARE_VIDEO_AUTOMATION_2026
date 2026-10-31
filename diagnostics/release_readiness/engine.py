@@ -20,25 +20,24 @@ def _release_file_selector(root: Path):
         raise EvidenceError(f"Release-Dateivertrag kann nicht geladen werden: {module_path}")  # noqa: F405
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    selector = getattr(module, "included_release_file", None)
+    selector = getattr(module, "selected_release_files", None)
     if not callable(selector):
-        raise EvidenceError("Release-Dateivertrag enthält included_release_file nicht")  # noqa: F405
+        raise EvidenceError("Release-Dateivertrag enthält selected_release_files nicht")  # noqa: F405
     return selector
 
 
 def _compact_manifest_snapshot(root: Path) -> tuple[int, str]:
     selector = _release_file_selector(root)
     records = []
-    for path in sorted(root.rglob("*")):
-        if selector(root, path):
-            records.append(
-                {
-                    "mode": oct(path.stat().st_mode & 0o777),
-                    "path": path.relative_to(root).as_posix(),
-                    "sha256": sha256_file(path),  # noqa: F405
-                    "size": path.stat().st_size,
-                }
-            )
+    for path in selector(root):
+        records.append(
+            {
+                "mode": "0o755" if path.stat().st_mode & 0o111 else "0o644",
+                "path": path.relative_to(root).as_posix(),
+                "sha256": sha256_file(path),  # noqa: F405
+                "size": path.stat().st_size,
+            }
+        )
     encoded = json.dumps(
         records,
         ensure_ascii=False,

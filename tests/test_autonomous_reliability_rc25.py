@@ -158,6 +158,24 @@ def test_retry_policy_blocks_exhausted_disk_quota(tmp_path: Path) -> None:
     assert decision.safe_fallback_allowed is False
 
 
+def test_signal_terminated_ffmpeg_does_not_start_fallback(tmp_path: Path) -> None:
+    job = _job(tmp_path, fast_path=False)
+    for returncode in (-2, -9, -15):
+        failed = JobResult(job, False, returncode, 0.1, f"FFmpeg endete mit Code {returncode}.")
+        decision = classify_retry(failed)
+        assert decision.category == "environment_blocker"
+        assert decision.safe_fallback_allowed is False
+
+    failed = JobResult(job, False, -15, 0.1, "FFmpeg endete mit Code -15.")
+    options = BatchOptions(output_dir=tmp_path, quick_mode="techno_clean")
+    runner = BatchRunner(lambda _event: None, retry_queue_path=tmp_path / "retry-signals.json")
+    with patch.object(runner, "_execute", return_value=failed) as execute:
+        result = runner._run_job(job, 1, 1, options)
+    assert result.success is False
+    assert result.retried is False
+    assert execute.call_count == 1
+
+
 def test_transient_failure_stays_manual_and_does_not_allow_fallback(tmp_path: Path) -> None:
     result = JobResult(_job(tmp_path), False, 1, 0.1, "Resource temporarily unavailable")
     decision = classify_retry(result)
@@ -223,7 +241,6 @@ def test_retry_queue_keeps_transient_failure_manual_only(tmp_path: Path) -> None
     assert entry["safe_fallback_allowed"] is False
     assert "automatic_retry_allowed" not in entry
     assert queue.eligible_entries()[0]["job_id"] == entry["job_id"]
-
 
 
 def test_retry_queue_preserves_entries_with_damaged_drop_counter(tmp_path: Path) -> None:
