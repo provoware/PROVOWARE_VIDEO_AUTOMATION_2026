@@ -90,7 +90,7 @@
     {
       "path": ".github/workflows/qt6-phase3-smoke.yml",
       "mode": "100644",
-      "blob_sha1": "c416679693ab4c6d47684af500a5efe7e0f7f5eb",
+      "blob_sha1": "163a355708610303fa9c7e2c4b38b4739b5dc688",
       "category": "automation",
       "lifecycle": "development"
     },
@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "69d0120825977392fc7f3e4c0c937e4ec9840f02",
+      "blob_sha1": "9e8c0d33fb88798c6333aff9cc67920d7c343665",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -2904,7 +2904,7 @@
     {
       "path": "src/videobatch_fast/naming.py",
       "mode": "100644",
-      "blob_sha1": "0e0077a12d60088148d3c72f40f4d381e2e50c46",
+      "blob_sha1": "7a15c3b351ad7d29e524e15565cccd53ca05dde2",
       "category": "application",
       "lifecycle": "active"
     },
@@ -4470,6 +4470,13 @@
       "lifecycle": "development"
     },
     {
+      "path": "tests/test_reservation_owner_integrity.py",
+      "mode": "100644",
+      "blob_sha1": "d78c1dc5cd2209634abd79ed59d8623576617075",
+      "category": "tests",
+      "lifecycle": "development"
+    },
+    {
       "path": "tests/test_retry_queue_diagnostics.py",
       "mode": "100644",
       "blob_sha1": "1465738788c136ce5c3357d445d715c76b547a2c",
@@ -4648,7 +4655,7 @@
   "directories": [
     {
       "path": ".",
-      "file_count_recursive": 663
+      "file_count_recursive": 664
     },
     {
       "path": ".githooks",
@@ -4816,7 +4823,7 @@
     },
     {
       "path": "tests",
-      "file_count_recursive": 149
+      "file_count_recursive": 150
     },
     {
       "path": "tests/baselines",
@@ -4835,5 +4842,5 @@
       "file_count_recursive": 2
     }
   ],
-  "file_count": 663
+  "file_count": 664
 }
