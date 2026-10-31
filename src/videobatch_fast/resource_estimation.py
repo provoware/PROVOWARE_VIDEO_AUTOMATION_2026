@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import re
 from collections import defaultdict
 from dataclasses import dataclass
@@ -71,7 +72,9 @@ def estimate_job_output_bytes(job: PairJob, options: BatchOptions) -> int:
     CRF encoding is still in progress.
     """
     selected = processing_options_for_job(job, options)
-    duration = max(1.0, float(job.audio_info.duration or 60.0))
+    raw_duration = float(job.audio_info.duration or 60.0)
+    # Broken probe metadata must not crash or underestimate the disk reserve.
+    duration = max(1.0, raw_duration) if math.isfinite(raw_duration) else 60.0
     pixels = _target_pixels(job, selected.resolution)
     pixel_factor = max(0.55, pixels / float(1280 * 720))
     fps_factor = max(0.75, float(max(1, selected.fps)) / 25.0)

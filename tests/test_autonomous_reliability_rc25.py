@@ -72,6 +72,22 @@ def test_storage_estimate_scales_with_resolution_profile_and_fps(tmp_path: Path)
     assert estimate_job_output_bytes(job, large) > estimate_job_output_bytes(job, small)
 
 
+
+def test_nonfinite_audio_duration_uses_safe_disk_reserve(tmp_path: Path) -> None:
+    job = _job(tmp_path)
+    options = BatchOptions(output_dir=tmp_path)
+    unknown = replace(job, audio_info=replace(job.audio_info, duration=None))
+    expected = estimate_job_output_bytes(unknown, options)
+
+    for invalid in (float("nan"), float("inf"), float("-inf")):
+        malformed = replace(job, audio_info=replace(job.audio_info, duration=invalid))
+        assert estimate_job_output_bytes(malformed, options) == expected
+
+    short = replace(job, audio_info=replace(job.audio_info, duration=10.0))
+    assert estimate_job_output_bytes(short, options) < expected
+
+
+
 def test_fast_copy_estimate_never_drops_below_known_source_size(tmp_path: Path) -> None:
     source_size = 900 * 1024**2
     job = _job(tmp_path, duration=30.0, fast_path=True, media_size=source_size)
