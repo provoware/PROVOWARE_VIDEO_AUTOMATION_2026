@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import time
 from dataclasses import replace
 from pathlib import Path
@@ -69,6 +70,22 @@ def test_storage_estimate_scales_with_resolution_profile_and_fps(tmp_path: Path)
         fps=50,
     )
     assert estimate_job_output_bytes(job, large) > estimate_job_output_bytes(job, small)
+
+
+
+def test_nonfinite_audio_duration_uses_safe_disk_reserve(tmp_path: Path) -> None:
+    job = _job(tmp_path)
+    options = BatchOptions(output_dir=tmp_path)
+    unknown = replace(job, audio_info=replace(job.audio_info, duration=None))
+    expected = estimate_job_output_bytes(unknown, options)
+
+    for invalid in (float("nan"), float("inf"), float("-inf")):
+        malformed = replace(job, audio_info=replace(job.audio_info, duration=invalid))
+        assert estimate_job_output_bytes(malformed, options) == expected
+
+    short = replace(job, audio_info=replace(job.audio_info, duration=10.0))
+    assert estimate_job_output_bytes(short, options) < expected
+
 
 
 def test_fast_copy_estimate_never_drops_below_known_source_size(tmp_path: Path) -> None:
@@ -157,6 +174,24 @@ def test_retry_policy_blocks_exhausted_disk_quota(tmp_path: Path) -> None:
     assert decision.safe_fallback_allowed is False
 
 
+def test_signal_terminated_ffmpeg_does_not_start_fallback(tmp_path: Path) -> None:
+    job = _job(tmp_path, fast_path=False)
+    for returncode in (-2, -9, -15):
+        failed = JobResult(job, False, returncode, 0.1, f"FFmpeg endete mit Code {returncode}.")
+        decision = classify_retry(failed)
+        assert decision.category == "environment_blocker"
+        assert decision.safe_fallback_allowed is False
+
+    failed = JobResult(job, False, -15, 0.1, "FFmpeg endete mit Code -15.")
+    options = BatchOptions(output_dir=tmp_path, quick_mode="techno_clean")
+    runner = BatchRunner(lambda _event: None, retry_queue_path=tmp_path / "retry-signals.json")
+    with patch.object(runner, "_execute", return_value=failed) as execute:
+        result = runner._run_job(job, 1, 1, options)
+    assert result.success is False
+    assert result.retried is False
+    assert execute.call_count == 1
+
+
 def test_transient_failure_stays_manual_and_does_not_allow_fallback(tmp_path: Path) -> None:
     result = JobResult(_job(tmp_path), False, 1, 0.1, "Resource temporarily unavailable")
     decision = classify_retry(result)
@@ -222,6 +257,33 @@ def test_retry_queue_keeps_transient_failure_manual_only(tmp_path: Path) -> None
     assert entry["safe_fallback_allowed"] is False
     assert "automatic_retry_allowed" not in entry
     assert queue.eligible_entries()[0]["job_id"] == entry["job_id"]
+
+
+def test_retry_queue_preserves_entries_with_damaged_drop_counter(tmp_path: Path) -> None:
+    for index, damaged in enumerate(("kaputt", {"wert": 1}, [1]), start=1):
+        queue_path = tmp_path / f"retry-{index}.json"
+        job = _job(tmp_path)
+        original = RetryQueueStore(queue_path)
+        original.record_failure(
+            JobResult(job, False, 1, 0.1, "erster Fehler"),
+            operation_id="before-damage",
+            protection="Originale geschützt.",
+        )
+        payload = json.loads(queue_path.read_text(encoding="utf-8"))
+        payload["dropped_total"] = damaged
+        queue_path.write_text(json.dumps(payload), encoding="utf-8")
+
+        restored = RetryQueueStore(queue_path)
+        assert len(restored.entries()) == 1
+        assert restored.entries()[0]["first_error"] == "erster Fehler"
+        assert restored.summary().dropped_total == 0
+        second = restored.record_failure(
+            JobResult(job, False, 1, 0.1, "zweiter Fehler"),
+            operation_id="after-damage",
+            protection="Originale geschützt.",
+        )
+        assert second["attempts"] == 2
+        assert second["retry_allowed"] is False
 
 
 def test_ffmpeg_diagnostics_preserve_hard_blocker_before_generic_tail(tmp_path: Path) -> None:

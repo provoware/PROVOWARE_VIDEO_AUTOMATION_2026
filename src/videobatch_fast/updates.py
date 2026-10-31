@@ -17,7 +17,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Callable
 
 from .update_validation import UpdateCheck, read_manifest, safe_member, validate_update_package
-from .safe_io import atomic_write_bytes
+from .safe_io import atomic_write_bytes, fsync_directory
 
 
 
@@ -98,14 +98,8 @@ def _write_report(path: Path, payload: dict[str, Any]) -> None:
 
 
 def _fsync_directory(path: Path) -> None:
-    try:
-        fd = os.open(path, os.O_RDONLY)
-        try:
-            os.fsync(fd)
-        finally:
-            os.close(fd)
-    except OSError:
-        pass
+    # Dieselbe geprüfte Fail-Closed-Grenze wie bei atomaren Dateischreibvorgängen.
+    fsync_directory(path)
 
 
 def _atomic_exchange_dirs(first: Path, second: Path) -> None:
@@ -312,7 +306,9 @@ def apply_update_package(
         progress("integrity", "Release-Manifest und Kandidat werden vor dem Selbsttest verglichen.")
         before = _release_manifest_snapshot(candidate)
         tree_before = _candidate_tree_snapshot(candidate)
-        test_script = candidate / "test.sh"
+        test_script = candidate / "scripts/dev/test.sh"
+        if not test_script.is_file():
+            test_script = candidate / "test.sh"
         if not test_script.is_file():
             return UpdateInstallResult(False, check.version, "Kandidat enthält kein test.sh.", report=str(report_path))
         env = {

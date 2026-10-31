@@ -184,6 +184,21 @@ def build_workflow_stack(window) -> QStackedWidget:
     return stack
 
 
+def refresh_primary_action_caption(window) -> None:
+    """Preserve Phase-3 check/start semantics with a complete compact label."""
+    start = getattr(window, "start", None)
+    if start is None or start.text() not in {
+        "▶ Prüfen & Videos erstellen", "▶ Prüfen & Starten",
+        "▶ Prüfen && Videos erstellen", "▶ Prüfen && Starten",
+    }:
+        return
+    zoom = getattr(window, "view_scale", None)
+    percent = int(zoom.currentData() or 110) if zoom is not None else 110
+    compact = percent >= 175 and window.width() <= 900
+    # Qt renders && as a literal &, not as an accidental keyboard mnemonic.
+    start.setText("▶ Prüfen && Starten" if compact else "▶ Prüfen && Videos erstellen")
+
+
 def set_workflow_route(window, route: str) -> None:
     pages = getattr(window, "_workflow_pages", {})
     previous = getattr(window, "_active_workflow_route", None)
@@ -213,6 +228,9 @@ def set_workflow_route(window, route: str) -> None:
         finally:
             tabs.blockSignals(False)
 
+    import_bar = getattr(window, "media_import_bar", None)
+    if import_bar is not None:
+        import_bar.setVisible(page_key == "media")
     guide = getattr(window, "workflow_guide", None)
     if guide is not None:
         guide.setVisible(False)
@@ -226,6 +244,10 @@ def set_workflow_route(window, route: str) -> None:
     if footer_scroll is not None:
         footer_scroll.setVisible(route in {"dashboard", "media", "effects", "queue"})
     production = route == "queue"
+    primary_actions = getattr(window, "production_action_bar", None)
+    if primary_actions is not None:
+        refresh_primary_action_caption(window)
+        primary_actions.setVisible(production)
     dashboard = getattr(window, "_compact_header_dashboard", None)
     zoom = getattr(window, "view_scale", None)
     if dashboard is not None and zoom is not None:
@@ -257,6 +279,7 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     window.next_step.setObjectName("nextStep")
     window.next_step.setAccessibleDescription("Der sichtbare Text nennt den aktuell empfohlenen nächsten Arbeitsschritt.")
     window.next_step.setWordWrap(True)
+    window.next_step.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
     layout.addWidget(window.next_step)
 
     window.activity_detail = QLabel("Keine Verarbeitung aktiv · bereit für neue Aufträge")
@@ -290,6 +313,7 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     window.cancel.setEnabled(False)
     window.start = QPushButton("▶ Videos erstellen")
     window.start.setObjectName("primary")
+    window.start.setAccessibleName("Videos erstellen")
     window.start.setAccessibleDescription("Startet die geprüften Video-Aufträge.")
     window.start.setMinimumWidth(155)
     window.probe_button = QPushButton("▶ Probevideo · max. 10 Sekunden")
@@ -299,7 +323,13 @@ def build_footer(window, outer: QVBoxLayout) -> None:
         "Die Ausgabe landet getrennt im Probevideo-Ordner."
     )
     window.probe_button.setAccessibleName("Kurzes Probevideo aus dem ersten Dateipaar")
-    action_row = ResponsiveControlRow((window.cancel, window.probe_button, window.start))
+    # Start and cancellation must be reachable without scrolling the footer.
+    # Keep the existing button objects and their production callbacks.
+    window.production_action_bar = ResponsiveControlRow((window.cancel, window.start))
+    window.production_action_bar.setObjectName("productionActionBar")
+    window.production_action_bar.setAccessibleName("Produktion starten oder abbrechen")
+    window._responsive_control_rows.append(window.production_action_bar)
+    action_row = ResponsiveControlRow((window.probe_button,))
     window._responsive_control_rows.append(action_row)
     layout.addWidget(action_row)
 
@@ -334,4 +364,5 @@ def build_footer(window, outer: QVBoxLayout) -> None:
     footer_scroll.setMaximumHeight(210)
     footer_scroll.setWidget(footer)
     window.action_footer_scroll = footer_scroll
+    outer.addWidget(window.production_action_bar)
     outer.addWidget(footer_scroll)

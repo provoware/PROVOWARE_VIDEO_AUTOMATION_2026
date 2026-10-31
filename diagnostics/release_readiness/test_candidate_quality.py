@@ -68,6 +68,26 @@ def test_modified_or_falsely_approved_evidence_is_rejected(snapshot: dict, tampe
     with pytest.raises(ValueError):
         generator.build()
 
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("passed", True),
+        ("failed", True),
+        ("failed", -1),
+        ("failed", 1),
+        ("failed", "0"),
+    ],
+)
+def test_core_regression_rejects_invalid_or_failed_counts(
+    snapshot: dict, field: str, value: object,
+) -> None:
+    changed = copy.deepcopy(snapshot)
+    changed["latest_observed_candidate_ci"]["core_regression"][field] = value
+    save_snapshot(changed)
+    with pytest.raises(ValueError, match="Kern"):
+        generator.build()
+
+
 def test_real_acceptance_is_required_and_release_remains_unapproved(
     snapshot: dict, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -108,3 +128,41 @@ def test_versioned_export_path_matches_real_acceptance_validator(
 
     wrong = dict(snapshot["source_release_manifest"], files_sha256="0" * 64)
     assert not generator._physical_acceptance_valid(wrong)
+
+
+def test_compact_manifest_uses_git_tracked_sources(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Untracked files and non-executable permission bits cannot invalidate a Git release."""
+    import subprocess
+
+    monkeypatch.syspath_prepend(str(ROOT))
+    from engine import _compact_manifest_snapshot
+
+    contract = ROOT.parents[1] / "scripts/release_file_contract.py"
+    target = tmp_path / "scripts/release_file_contract.py"
+    target.parent.mkdir()
+    target.write_bytes(contract.read_bytes())
+    tracked = tmp_path / "tracked.txt"
+    tracked.write_text("original\n", encoding="utf-8")
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True, timeout=10)
+    subprocess.run(
+        ["git", "add", "tracked.txt", "scripts/release_file_contract.py"],
+        cwd=tmp_path, check=True, timeout=10,
+    )
+
+    baseline = _compact_manifest_snapshot(tmp_path)
+    assert baseline[0] == 2
+
+    extra = tmp_path / "src" / "untracked.py"
+    extra.parent.mkdir()
+    extra.write_text("untracked\n", encoding="utf-8")
+    assert _compact_manifest_snapshot(tmp_path) == baseline
+
+    tracked.chmod(0o664)
+    assert _compact_manifest_snapshot(tmp_path) == baseline
+
+    tracked.write_text("changed\n", encoding="utf-8")
+    changed = _compact_manifest_snapshot(tmp_path)
+    assert changed[0] == baseline[0]
+    assert changed[1] != baseline[1]

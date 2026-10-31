@@ -1,3 +1,152 @@
+# VideoBatch Fast · Videos aus Audio, Bildern und Clips
+
+Mit VideoBatch Fast erstellst du aus Audiodateien, Bildern und Videoclips fertige Videos auf deinem Rechner. Du wählst die Quellen und einen Ausgabeordner aus; das Programm prüft die Aufträge und verarbeitet sie nacheinander. Programmierkenntnisse brauchst du dafür nicht.
+
+**Der einfache Ablauf:** Dateien auswählen → Ausgabe festlegen → Videos erstellen.
+
+> **Vor dem Einstieg:** Die Anwendung ist für **Kubuntu 26.04 LTS mit KDE Plasma und Wayland** vorgesehen. Sie befindet sich in Entwicklung; eine **Stable-Version** (abschließend freigegebene Version) ist noch nicht veröffentlicht. Beginne mit einem kurzen Testauftrag und Kopien deiner Medien.
+
+[Zum Schnellstart](#schnellstart) · [Erstes Video](#erstes-video-erstellen) · [Hilfe bei Fehlern](#wenn-etwas-nicht-klappt) · [Anleitungen](#dokumentation) · [Technischer Hintergrund](#für-entwicklung-und-prüfung)
+
+## Was du damit machen kannst
+
+- Audio mit Bildern oder Videoclips zu Videos verarbeiten.
+- Mehrere Aufträge sammeln und nacheinander erstellen lassen.
+- Bildgröße, Qualität, Effekte und Blenden einstellen.
+- Quellen in der Vorschau kontrollieren und den Fortschritt verfolgen.
+
+Die Originalmedien werden nicht überschrieben. Die fertigen Videos landen im ausgewählten Ausgabeordner.
+
+## Was du brauchst
+
+- **Kubuntu 26.04 LTS**, KDE Plasma und eine **Wayland-Sitzung**. Wayland ist die verwendete grafische Sitzung; Hinweise dazu stehen in der [Installationsanleitung](docs/start/AUTOINSTALLATION_save_.md).
+- Das **vollständig entpackte Projektpaket** in einem eigenen Ordner.
+- Für den ersten Test **eine kurze Audiodatei und ein Bild oder einen Videoclip**.
+- Einen Ordner, in dem du Dateien speichern darfst, und ausreichend freien Speicherplatz.
+
+Der Starter prüft benötigte Programmteile und Medienwerkzeuge wie FFmpeg, das die Videos erzeugt. Falls etwas fehlt, lies die angezeigte Meldung und die [Installationsanleitung](docs/start/AUTOINSTALLATION_save_.md).
+
+## Schnellstart
+
+### 1. Projekt herunterladen und entpacken
+
+Lade das vollständige Projekt-ZIP herunter und entpacke es in einen neuen Ordner. Auf GitHub findest du den Quellcode über **Code → Download ZIP**. Das ist der aktuelle Entwicklungsstand; ein heruntergeladenes ZIP bedeutet keine Stable-Freigabe.
+
+Öffne den entpackten Ordner. Darin müssen **`STARTEN.sh`**, **`README.md`** sowie die Unterordner **`src`** und **`scripts`** liegen. Starte das Programm erst nach dem Entpacken.
+
+### 2. Terminal in diesem Ordner öffnen
+
+Ein Terminal ist ein Fenster zur Eingabe von Befehlen. Öffne es im Dateimanager im entpackten Projektordner, zum Beispiel über den Eintrag **„Terminal hier öffnen“** im Kontextmenü. Je nach Dateimanager kann die Bezeichnung abweichen.
+
+### 3. Programm starten
+
+Kopiere diesen Befehl ins Terminal und drücke die Eingabetaste:
+
+```bash
+bash ./STARTEN.sh
+```
+
+Damit musst du die Dateiberechtigung des Starters nicht ändern. Der Starter prüft die Voraussetzungen; anschließend sollte sich die Oberfläche öffnen.
+
+<details>
+<summary>Alternative: Starter direkt ausführen</summary>
+
+Mache den Starter einmal ausführbar:
+
+```bash
+chmod +x STARTEN.sh
+```
+
+Danach startest du ihn mit:
+
+```bash
+./STARTEN.sh
+```
+
+Beide Wege verwenden denselben Starter und dieselben Vorprüfungen.
+
+</details>
+
+## Erstes Video erstellen
+
+| Schritt | Das machst du | Daran erkennst du den nächsten Schritt |
+|---|---|---|
+| **1 · Dateien** | Über **„Audio auswählen …“** eine kurze Audiodatei hinzufügen. Über **„Bilder/Videos auswählen …“** ein Bild oder einen Clip ergänzen. | Beide Listen enthalten deine Quellen; die Vorschau zeigt die ausgewählte Datei. |
+| **2 · Ausgabe** | Zunächst die vorgeschlagenen Einstellungen verwenden und einen eigenen **Ausgabeordner** wählen. | Der Zielpfad zeigt auf den gewünschten Ordner. |
+| **3 · Produktion** | Kontrollieren, welche Quellen zusammen verarbeitet werden. **„Prüfen & Videos erstellen“** wählen; bei großer Schrift kann die Schaltfläche **„Prüfen & Starten“** heißen. | Die Vorprüfung läuft, danach siehst du den Fortschritt und die Abschlussmeldung. |
+
+### Abschlussprüfung
+
+Öffne die erzeugte Datei im Ausgabeordner und spiele Anfang, Mitte und Ende ab. Prüfe Bild, Ton und Dateiname. Erst wenn der kurze Test passt, beginne mit größeren Aufträgen.
+
+Die ausführliche [Schritt-für-Schritt-Anleitung](docs/start/START_HIER_save_.md) erklärt auch die Dateiauswahl über mehrere Ordner und die Ergebnisprüfung.
+
+## Ansicht und Bedienung anpassen
+
+- **Größere Schrift:** Über **„Schrift“** kannst du die Ansicht zwischen 80 und 200 Prozent einstellen.
+- **Per Tastatur vergrößern oder verkleinern:** `Strg` + `Alt` + `↑` beziehungsweise `↓`. Mit `Strg` + `Alt` + `0` kehrst du zu 110 Prozent zurück.
+- **Kleine Fenster:** Bereiche ordnen sich bei wenig Platz untereinander an. Scrolle nach unten, um weitere Inhalte zu erreichen.
+- **Menüs bei großer Schrift:** Der Knopf **„Menü“** bündelt die Programmmenüs.
+
+## Wenn etwas nicht klappt
+
+| Problem | Nächster Schritt |
+|---|---|
+| **Das Programm öffnet sich nicht.** | Lies die Terminalmeldung vollständig. Prüfe, ob das ZIP komplett entpackt ist und du den Befehl im Ordner mit `STARTEN.sh` ausführst. |
+| **Die Ausgabe wird blockiert.** | Prüfe die angegebene Ursache, die ausgewählten Quellen und ob du im Ausgabeordner speichern darfst. |
+| **Eine Warnung erscheint.** | Prüfe den genannten Punkt. Richte dich nach dem Meldungstext, nicht nur nach der Farbe. |
+| **Du brauchst Unterstützung.** | Halte die vollständige Meldung und den betroffenen Arbeitsschritt fest. Die [Fehleranleitung](docs/manuals/ERROR_HANDLING.md#protokolle-für-eine-fehlermeldung-sammeln) erklärt, welche Protokolle helfen. |
+
+Starte VideoBatch als normaler Benutzer. Versuche Startfehler nicht mit `sudo`, `chmod -R 777` oder pauschalen Besitzänderungen zu umgehen. Nutze die [Anleitung zur sicheren Fehlerbehebung](docs/manuals/ERROR_HANDLING.md).
+
+## Dokumentation
+
+| Du möchtest … | Hier geht es weiter |
+|---|---|
+| den ersten Start Schritt für Schritt durchführen | [Hier beginnen](docs/start/START_HIER_save_.md) |
+| die Installation verstehen | [Installationsanleitung](docs/start/AUTOINSTALLATION_save_.md) |
+| alle Bedienfunktionen nachlesen | [Benutzerhandbuch](docs/BENUTZERHANDBUCH.md) |
+| einen Fehler beheben | [Fehlerbehebung](docs/manuals/ERROR_HANDLING.md) |
+| Updates und Rückkehr zum vorherigen Stand verstehen | [Update-Anleitung](docs/manuals/UPDATE_SYSTEM.md) |
+| bestimmte Themen oder Dokumente finden | [Dokumentationsindex](docs/DOKUMENTATIONSINDEX.md) |
+
+**Zu Updates:** Vor der Stable-Freigabe erfolgt die Auslieferung als vollständiges Projekt-ZIP. Teil- und Onlineupdates bleiben bis dahin deaktiviert.
+
+## Für Entwicklung und Prüfung
+
+Die folgenden Informationen richten sich an Mitwirkende. Für den ersten Test genügen die Schritte oben.
+
+- [Entwickler-Einstieg](docs/manuals/DEVELOPER_GUIDE.md)
+- [Aktueller Projektstatus](docs/STATUS.md), [offene Aufgaben](docs/TODO.md) und [Änderungen](docs/CHANGELOG.md)
+- [Projektordner verstehen](docs/start/PROJEKTORDNERSTRUKTUR_save_.md) und [Dokumentationsübersicht](docs/DOKUMENTATIONSINDEX.md)
+- [Standard für flexible Oberflächen](docs/design/PROVOWARE_RESPONSIVE_GRID_V1.md) und [HTML-Layoutreferenz](visual_inspection/provoware_grid_reference.html)
+- [GitHub-Prüfläufe](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions): Ergebnisse immer anhand des geprüften Commits einordnen.
+
+<details>
+<summary>Ordner im Repository</summary>
+
+| Ordner oder Datei | Zweck |
+|---|---|
+| `STARTEN.sh` | Hauptstarter für die Anwendung |
+| `src/` | Anwendungscode |
+| `scripts/` | Installation, Prüfungen, Paketbau und Wartung |
+| `tests/` | Automatisierte Tests |
+| `config/` und `registries/` | Technische Verträge und Verzeichnisse |
+| `docs/` | Anleitungen und Projektdokumentation |
+| `docs/archive/` | Historische Berichte und frühere Prüfstände |
+| `.github/workflows/` | Automatisierte GitHub-Prüfungen |
+
+</details>
+
+### Prüfstand und Freigabe
+
+Erfolgreiche automatisierte Prüfungen erlauben die Integration eines Entwicklungsstands. Eine Stable-Freigabe erfordert zusätzlich die reale Endabnahme auf Kubuntu 26.04 / KDE Plasma / Wayland bei 100, 125, 150 und 200 Prozent sowie die vorgesehenen Medien- und Releaseprüfungen. Die vollständige reale Sicht- und Bedienprüfung bleibt offen.
+
+Die nachstehenden Zahlen gehören zum **historischen RC24-Nachweis**. Sie messen weder den aktuellen `main`-Stand noch spätere Änderungen. Die Bezeichnung **RC** bedeutet „Release Candidate“, also eine Vorabversion vor der endgültigen Freigabe.
+
+<details>
+<summary>Historischer RC24-Prüfbericht und offene Freigabepunkte</summary>
+
 <!-- release-status:start -->
 # provoware - videoautomation - 2026 · 2.8.3-rc24
 
@@ -17,132 +166,12 @@
 - Physische Kubuntu-26.04-Plasma-Wayland-Abnahme: Der reale 125-%-Screenshot vom 06.10.2026 zeigte abgeschnittene und überladene Arbeitsbereiche. Der daraus abgeleitete seitengetrennte Qt-Stand muss vor Stable erneut real auf Kubuntu 26.04 / KDE Plasma / Wayland bei 100 %, 125 %, 150 % und 200 % geprüft werden.
 <!-- release-status:end -->
 
-> **Nachweisgrenze:** Die vorstehenden RC24-Zahlen (325 Tests, 496 Release-Dateien) stammen aus dem unveränderten historischen Nachweis. Sie sind **keine** Prüfung der späteren Entwicklungs- und Integrationsstände nach RC24. Historische Entwicklungsbelege für PR #240 sind separat archiviert; neue CI-Ergebnisse werden ausschließlich über den geprüften Commit nachgewiesen. Es gibt keine neue Stable-Freigabe; eine reale Kubuntu-/Wayland-Sichtabnahme bei 100/125/150/200 % fehlt.
+</details>
 
+<details>
+<summary>Technischer Dateistatus der Release-Unterlagen</summary>
 
-## Überblick
-
-VideoBatch Fast ist die lokale Video-Automation für **Kubuntu 26.04 LTS · KDE Plasma · natives Wayland · PySide6/Qt 6**. Der aktuelle Stand ist **2.8.3-rc24**. Der aktuelle Releasekandidat enthält jetzt einen seitengetrennten Qt-Arbeitsbereich als Reaktion auf den realen 125-%-Sichtbefund vom 06.10.2026. Dateien, Ausgabe und Produktion besitzen eigene Arbeitsseiten; Projekt, Hilfe und Diagnose verdrängen den Hauptablauf nicht mehr. Vor Stable ist eine erneute reale Sichtprüfung bei 100 %, 125 %, 150 % und 200 % erforderlich.
-
-## Historischer Entwicklungsnachweis – PR #246 (bereits integriert)
-
-**Damals geprüfter Entwicklungs-PR (inzwischen nach main integriert):** [#246 – Benutzer-Hauptordner und sichere Strukturmigration](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/246). Die früheren parallelen PRs #247, #248 und #250 wurden geschlossen; **#250 wurde ohne Merge** abgelöst und seine benötigten Änderungen wurden geprüft in #246 übernommen.
-
-**Nachweisstand vor dieser Dokumentationsaktualisierung:** Commit [`2ae2ae5`](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/commit/2ae2ae51fb1147b46150fe107b97a53e4a65495f), **acht von acht GitHub-Prüfläufen erfolgreich**. Die Prüfungen enthalten Qt6 mit Wayland-Lebenszyklus, Offline-Runtime, Integrations- und Sicherheitswerkzeuge, FFmpeg, Langrender sowie Release-Verträge. Der reale ZIP-Bau und Entpacktest [GitHub-Lauf 39339430217](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions/runs/39339430217) bestätigte **sieben Hauptordnerdateien** und den Aufruf des entpackten Kommando-Einstiegs. Dieser konkrete Nachweis ist auf `2ae2ae5` begrenzt; nach weiteren Änderungen gelten dessen Ergebnisse nicht automatisch für neue Commits.
-
-**Noch nicht bewiesen:** Vollständige Offline-Erstinstallation und grafischer Qt-Start aus dem frisch entpackten Paket. Ebenso offen bleiben die persönliche Kubuntu-Sichtabnahme bei 100/125/150/200 % sowie die Stable-Freigabe. Die 325 historischen RC24-Tests sind kein Entwicklungs- oder Stable-Nachweis für #246.
-
-## Neuer Rastervertrag V1 – 800 × 600 / 120 × 80 (Entwicklung)
-
-Der verbindlich vorgeschlagene PROVOWARE-Oberflächenstandard verwendet **800 × 600 CSS-Pixel nutzbare Fensterfläche** als minimale Referenz und **120 × 80 (9.600) relative Rasterzellen** als feine Orientierung. **Kein** Element wird dauerhaft auf feste X-/Y-Koordinaten gelegt: Gruppen reagieren auf verfügbare Breite, Schriftgröße und Mindestmaße. Bei Platzmangel erfolgt **automatischer Umbruch und vertikales Scrollen**, statt Beschriftungen oder Schaltflächen abzuschneiden.
-
-- [Fachstandard mit Migrationsplan](docs/design/PROVOWARE_RESPONSIVE_GRID_V1.md)
-- [Maschinenlesbarer Layoutvertrag](config/contracts/PROVOWARE_RESPONSIVE_GRID_V1.json)
-- [Offline-HTML-Layoutreferenz](visual_inspection/provoware_grid_reference.html)
-- [Automatische Vertragsprüfungen](tests/test_provoware_responsive_grid_contract.py)
-- [Plattformneutrales Python-Rasterpaket](src/provoware_grid/README.md) (zusätzlich [CSS-Bausteine](src/provoware_grid/grid-v1.css))
-
-**Qt-Übertragung (Entwicklung):** Die existierenden Audio-/Medienlisten und die sechs Grundeinstellungsgruppen verwenden jetzt dieselbe Spaltenberechnung des unabhängigen PROVOWARE-Pakets. Bei geringer Breite oder großer Schrift ordnen sie sich in eine Spalte um; die Einstellungen bleiben in einem begrenzten, vertikal scrollbaren Abschnitt zugänglich. Die Videoverarbeitung, Datenbank, Start- und Updatefunktionen werden dadurch nicht ersetzt.
-
-
-**Nachweisgrenze:** Die HTML-Seite ist ein optischer Layout-Demonstrator, **kein Ersatz** der Qt-Anwendung. Der Vertrag ist zunächst eine Entwicklungsbasis; real vermessene Browser-Screenshots, Abgleich der Qt-Oberfläche und physische Kubuntu-Abnahme bleiben eigene Prüfschritte. Der bisherige 1024-Pixel-Altvertrag wird nicht unbemerkt überschrieben.
-
-## In Entwicklung: Platzsparende Qt-Oberfläche (20.10.2026)
-
-Die nächste Oberflächenrunde prüft eine gleichmäßige Dateiauswahl auf breiten Bildschirmen. Auf schmalen Fenstern beziehungsweise bei großer Schrift werden die Bereiche automatisch untereinander angeordnet und können **vertikal** gescrollt werden. So bleiben Listen und Schaltflächen lesbar, ohne horizontalen Bildlauf zu erzwingen.
-
-Die CPU-/RAM-/SWAP-Anzeigen und der Video-Fortschritt erhalten einen gemeinsamen, deutlich kompakteren Statusbereich. Die Schrift- und Ansichtsgröße kann von **80 % bis 200 %** eingestellt werden; der neue Ausgangswert ist **110 %**. Kompakte Abstände sollen Platz gewinnen, ohne die Bedienfunktionen zu entfernen.
-
-**Freigabegrenze:** Dies ist eine laufende Entwicklungsänderung. Erst nach vollständigen Qt6-/Wayland- und Größenprüfungen einschließlich kleiner Fenster und 100/125/150/200-%-Sichtprüfung gilt die neue Aufteilung als freigegeben. Die persönliche physische Kubuntu-Endabnahme bleibt separat offen.
-
-## QA-Audit: Entwicklung, keine Freigabe
-
-Die Änderungen zur Unterstützung kleiner Fenster, flexibel angeordneter Schaltflächen und gezielter Rückfalltests werden im [QA-Bericht](docs/design/VIDEOBATCH_QA_AUDIT_2026-10-20.md) dokumentiert. Die Gesamtregression, die 42 grafischen Ansichten und die physische Kubuntu-Abnahme sind noch offen.
-
-## Prüfablauf ohne wiederholte Endabnahmen
-
-1. **Entwickeln:** Änderungen mit passenden automatisierten Tests und Sicherheitsprüfungen absichern. Keine persönliche Vollabnahme nach jeder Oberflächenänderung.
-2. **Integrieren:** Mehrere erfolgreich geprüfte Entwicklungs-PRs ohne bekannte kritische Fehler in `main` zusammenführen. Die GitHub-Prüfung `Release contract sync` prüft dabei mit `--phase integration` ausschließlich aktuelle Dateiverträge und hält historische RC24-Belege getrennt.
-3. **Endabnahme kurz vor Release:** Sobald Funktionen und Erscheinungsbild fertig sind, den Releasekandidaten einfrieren und dann *einmal gebündelt* auf Kubuntu 26.04/KDE/Wayland real starten, bei 100/125/150/200 % bedienen, echte Videos/FFmpeg und den Langzeitrender prüfen. Der separate `--phase release --acceptance-dir <Pfad>`-Vertrag bleibt ohne reale Nachweise strikt gesperrt.
-
-Das historische RC24-Archiv wird nicht als neue Qualitätsmessung wiederverwendet. Die jeweils aktuellen GitHub-Prüfläufe sind anhand ihres Commits nachvollziehbar; es werden keine erfundenen PASS-Werte in den Quellbaum geschrieben.
-
-## Schnellstart
-
-1. Projekt-ZIP vollständig entpacken.
-2. Terminal im Projektordner öffnen.
-3. Falls nötig den Starter ausführbar machen:
-
-```bash
-chmod +x STARTEN.sh
-```
-
-4. VideoBatch starten:
-
-```bash
-./STARTEN.sh
-```
-
-5. Für den ersten Lauf einen **kurzen Testauftrag** verwenden und das Ergebnis am Anfang, in der Mitte und am Ende abspielen.
-
-**Sicherheitsregel:** Bei einem Fehler nicht mit `sudo`, `chmod -R 777` oder rekursiven Besitzänderungen reagieren. Stattdessen `docs/manuals/ERROR_HANDLING.md` verwenden.
-
-## Repository auf einen Blick
-
-| Bereich | Zweck |
-|---|---|
-| `STARTEN.sh` | einziger kanonischer Hauptstarter; interne Kommandoaufrufe unter `scripts/cli/` |
-| `docs/start/START_HIER_save_.md`, `docs/start/AUTOINSTALLATION_save_.md` | Einstieg und Installation |
-| `src/` | Anwendungscode |
-| `scripts/` | Prüf-, Build-, Release- und Wartungsskripte |
-| `tests/` | automatisierte Funktions- und Vertragsprüfungen |
-| `.github/workflows/` | CI- und Merge-Gates |
-| `docs/` | aktuelle Fach- und Projektdokumentation |
-| `docs/reference/` | technische Referenzdokumente, bewusst aus dem Hauptverzeichnis ausgelagert |
-| `docs/archive/` | historische interne Nachweise und alte Prüfstände |
-| `diagnostics/release_readiness/RELEASE_EVIDENCE.json` | historischer RC24-Release-Nachweis (496 Dateien) |
-| `diagnostics/release_readiness/CANDIDATE_PR240_QUALITY_STATUS.json` | getrennte Entwicklungsnachweise (keine Freigabe) |
-| `RELEASE_MANIFEST.json` | kompakter reproduzierbarer Release-Vertrag |
-
-**Ordnungskonzept:** Im Hauptverzeichnis bleiben höchstens acht Dateien; der aktuelle Pakettest zählt sieben. Interne Start- und Installationsskripte liegen unter `scripts/`, Verträge unter `config/`. Technische Hintergrunddokumente gehören nach `docs/reference/`; historische interne Nachweise nach `docs/archive/`.
-
-## Dokumentation
-
-| Aufgabe | Datei |
-|---|---|
-| erster Start und erstes Testvideo | `docs/start/START_HIER_save_.md` |
-| vollständige Bedienung | `docs/BENUTZERHANDBUCH.md` |
-| automatische Installation | `docs/start/AUTOINSTALLATION_save_.md` |
-| Fehler sicher beheben | `docs/manuals/ERROR_HANDLING.md` |
-| Update und Rückfall | `docs/manuals/UPDATE_SYSTEM.md` |
-| aktuelle Entwicklung und offene Nachweise | `docs/STATUS.md`, `docs/TODO.md` |
-| chronologische Änderungen | `docs/CHANGELOG.md` |
-| Projektstruktur verstehen | `docs/start/PROJEKTORDNERSTRUKTUR_save_.md` |
-| Dokumente einordnen | `docs/DOKUMENTATIONSINDEX.md` |
-| Entwickler-Einstieg | `docs/manuals/DEVELOPER_GUIDE.md` |
-| technische Referenzen | `docs/reference/` |
-| Dokumentationsstandard | `docs/DOKUMENTATIONSSTANDARD.md` |
-
-## Sicherheitsprinzipien
-
-- Originalmedien werden nicht überschrieben.
-- Schreibziele werden vor produktiven Vorgängen geprüft.
-- Wiederanlaufzustände werden kontrolliert geladen und nicht stillschweigend gestartet.
-- Projekt- und Qualitätsprüfungen sollen lesend beziehungsweise reproduzierbar bleiben.
-- Stable wird nicht aus CI-Ergebnissen allein abgeleitet. Der Langzeitrender vom 29.09.2026 bleibt gültig; nach dem realen 125-%-Layoutbefund muss der korrigierte Qt-Stand bei 100 %, 125 %, 150 % und 200 % erneut sichtbar geprüft werden.
-
-## Erster Test
-
-1. Wenige Audio-, Bild- oder Videoquellen hinzufügen.
-2. Vorschau und erkannte Quellen kontrollieren.
-3. Einen beschreibbaren Ausgabeordner auswählen.
-4. Produktion starten und Queue bis zum Abschluss beobachten.
-5. Ergebnis vollständig stichprobenartig prüfen.
-6. Erst danach größere Aufträge verwenden.
-
-Für Cache, Mehrfachauswahl, Schnellmodi und weitere Bedienfunktionen ist `docs/BENUTZERHANDBUCH.md` die maßgebliche Anleitung.
-
-## Release- und Dateistatus
+Die folgende Tabelle wird automatisch aus dem Nachweisbestand erzeugt. „Releasefertig“ bezieht sich auf die jeweilige Unterlage und bedeutet keine Stable-Freigabe der gesamten Anwendung. `_save_` kennzeichnet eigenständige Nutzer- und Release-Unterlagen.
 
 <!-- release-files:start -->
 ## Release-Dateistatus
@@ -163,15 +192,4 @@ Only standalone user and release deliverables receive _save_. Source modules, CI
 | `docs/archive/rc24/VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json`<br>Maschinenlesbarer Buildbericht: Aus der kanonischen RELEASE_EVIDENCE.json erzeugt | — |
 <!-- release-files:end -->
 
-**Vor Stable gilt:** Auslieferung als vollständiges Projekt-ZIP. Teil- und Onlineupdates bleiben bis nach der Stable-Freigabe deaktiviert.
-
-## Abschlussprüfung
-
-Ein erster Lauf gilt als erfolgreich, wenn die Oberfläche ohne Fehlermeldung startet, ein kurzer Testauftrag abgeschlossen wird und das erzeugte Ergebnis plausibel abgespielt wurde. **Stable ist noch nicht freigegeben.** Zuerst muss der seitengetrennte UI-Stand auf Kubuntu 26.04 / KDE / Wayland real bei 100 %, 125 %, 150 % und 200 % geprüft werden; erst danach folgt die getrennte reproduzierbare Stable-Promotion mit finaler Paket-, Branch-, Tag- und Release-Prüfung.
-
-## Nächster Schritt
-
-- **Einsteiger:** `docs/start/START_HIER_save_.md`
-- **Nutzer:** `docs/BENUTZERHANDBUCH.md`
-- **Entwickler:** `docs/manuals/DEVELOPER_GUIDE.md`
-- **Aktueller Arbeitsplan:** `docs/TODO.md`
+</details>
