@@ -132,14 +132,14 @@
     {
       "path": "README.md",
       "mode": "100644",
-      "blob_sha1": "57d43b5c0bb88ce11d33f893438bacf74fffb1f4",
+      "blob_sha1": "aa5b9585cba9796f6677923eca6debeb89c50520",
       "category": "documentation",
       "lifecycle": "active"
     },
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "ba7dffff943c99954cd7f60bcda03e7f5ea50914",
+      "blob_sha1": "69d0120825977392fc7f3e4c0c937e4ec9840f02",
       "category": "project_contract",
       "lifecycle": "active"
     },
