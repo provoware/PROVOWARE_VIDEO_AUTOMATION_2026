@@ -90,7 +90,7 @@
     {
       "path": ".github/workflows/qt6-phase3-smoke.yml",
       "mode": "100644",
-      "blob_sha1": "d5a11e57779e16b2c442542dcdabd8efc3f0cde8",
+      "blob_sha1": "76c4770d186b346aec9dbb9378360eca55815775",
       "category": "automation",
       "lifecycle": "development"
     },
@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "6874645b4563f7d4d04f0d7912304c3034eb0869",
+      "blob_sha1": "8fdeff836a30d0fb9a2f63957de36677c76e150c",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -2932,7 +2932,7 @@
     {
       "path": "src/videobatch_fast/permission_service.py",
       "mode": "100644",
-      "blob_sha1": "51bb166f3f5058f5bbf10098955195139a0fb025",
+      "blob_sha1": "afdb585e36697c0746dea7dff6627e2d35d53b90",
       "category": "application",
       "lifecycle": "active"
     },
@@ -4078,6 +4078,13 @@
       "path": "tests/test_paths_permission_safety.py"
     },
     {
+      "path": "tests/test_permission_service_fallback_safety.py",
+      "mode": "100644",
+      "blob_sha1": "8a2ffbd6e34ed61643946b2d7c8ffd42cb284a7c",
+      "category": "tests",
+      "lifecycle": "development"
+    },
+    {
       "path": "tests/test_persistence_v1_contract.py",
       "mode": "100644",
       "blob_sha1": "7e077889f501a1e41959019160704f9c3262085b",
@@ -4669,7 +4676,7 @@
   "directories": [
     {
       "path": ".",
-      "file_count_recursive": 666
+      "file_count_recursive": 667
     },
     {
       "path": ".githooks",
@@ -4837,7 +4844,7 @@
     },
     {
       "path": "tests",
-      "file_count_recursive": 152
+      "file_count_recursive": 153
     },
     {
       "path": "tests/baselines",
@@ -4856,5 +4863,5 @@
       "file_count_recursive": 2
     }
   ],
-  "file_count": 666
+  "file_count": 667
 }
