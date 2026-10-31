@@ -24,6 +24,18 @@ def test_current_ready_marker_schema_is_readable(monkeypatch, tmp_path: Path) ->
     assert payload["startup_status"] == "ready"
 
 
+def test_focus_request_rejects_overflowed_tokens(monkeypatch, tmp_path: Path) -> None:
+    from videobatch_fast import instance_lock
+
+    marker = tmp_path / "focus.json"
+    monkeypatch.setattr(instance_lock, "focus_request_path", lambda: marker)
+    for token in ("1e999", "-1e999"):
+        original = '{"schema_version":1,"token":' + token + '}'
+        marker.write_text(original, encoding="utf-8")
+        assert instance_lock.focus_request_token() == 0
+        assert marker.read_text(encoding="utf-8") == original
+
+
 def test_bootstrap_uses_the_canonical_ready_marker_reader() -> None:
     source = (ROOT / "scripts/bootstrap.py").read_text(encoding="utf-8")
     assert "from videobatch_fast.startup_handshake import read_ready_marker" in source
