@@ -165,6 +165,7 @@ jobs:
             tests/test_project_state_safety.py \
             tests/test_archive_recovery_integrity.py \
             tests/test_reservation_owner_integrity.py \
+            tests/test_permission_service_fallback_safety.py \
             tests/test_verify_release_zip_integrity.py \
             tests/test_pairing_status.py \
             tests/test_probe_render.py \
