@@ -51,6 +51,7 @@ def _source_card(window, label: str, widget: DropList, add_text: str) -> QFrame:
         window._source_action_labels = []
     short = "Audio wählen …" if widget is window.audio else "Medien wählen …"
     window._source_action_labels.append((add, add_text, short))
+    window._source_import_buttons.append(add)
     remove = QPushButton("Entfernen")
     configure_file_buttons(add, remove, label)
     # The full accessible text remains available while 200%-zoom screens
@@ -62,9 +63,9 @@ def _source_card(window, label: str, widget: DropList, add_text: str) -> QFrame:
     window._source_action_labels.append((remove, "Entfernen", "Entf."))
     add.clicked.connect(window._choose_audio if widget is window.audio else window._choose_media)
     remove.clicked.connect(widget.remove_selected)
-    actions = ResponsiveControlRow((add, remove))
-    window._responsive_control_rows.append(actions)
-    layout.addWidget(actions)
+    # Import belongs to the persistent media toolbar. Destructive removal
+    # stays beside its own list, never in the global import controls.
+    layout.addWidget(remove, 0, Qt.AlignmentFlag.AlignRight)
     return card
 
 
@@ -196,10 +197,15 @@ def build_sources_panel(window) -> QWidget:
         "helperText", wrap=True,
     ))
 
-    window.source_columns = ResponsiveSourceColumns(
-        _source_card(window, "Audiodateien", window.audio, "Audio auswählen …"),
-        _source_card(window, "Bilder / Videos", window.media, "Bilder/Videos auswählen …"),
-    )
+    window._source_import_buttons = []
+    audio_card = _source_card(window, "Audiodateien", window.audio, "Audio auswählen …")
+    media_card = _source_card(window, "Bilder / Videos", window.media, "Bilder/Videos auswählen …")
+    # The same import buttons stay above the vertically scrollable lists.
+    window.media_import_bar = ResponsiveControlRow(tuple(window._source_import_buttons))
+    window.media_import_bar.setObjectName("mediaImportToolbar")
+    window.media_import_bar.setAccessibleName("Audio und Bilder/Videos hinzufügen")
+    window._responsive_control_rows.append(window.media_import_bar)
+    window.source_columns = ResponsiveSourceColumns(audio_card, media_card)
     widths = ((1, 1, "gleich"), (3, 2, "Audio breiter"), (2, 3, "Bilder/Videos breiter"))
     window.source_width_button = QPushButton("Listenbreite: gleich")
     window.source_width_button.setAccessibleName("Breite der Audio- und Medienbereiche ändern")

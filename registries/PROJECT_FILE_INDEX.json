@@ -20,7 +20,7 @@
     {
       "path": ".github/workflows/bounded-long-render-rehearsal.yml",
       "mode": "100644",
-      "blob_sha1": "905c9dfca3f5975387c1e9b100b17484462a1c98",
+      "blob_sha1": "4bd50b736c4de365827ccb100bf160cdb4652b86",
       "category": "automation",
       "lifecycle": "development"
     },
@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "ec3085f24b10e874c2c786ae2d28a4e10abeed2f",
+      "blob_sha1": "d493e441cb92dabc878da3dc0f628a771cdbb659",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -3086,7 +3086,7 @@
     {
       "path": "src/videobatch_fast/qt_main_layout.py",
       "mode": "100644",
-      "blob_sha1": "9630632d2ba1bdae9a1d80c39bbff53213503658",
+      "blob_sha1": "0aa0a0645ef684d208466bf7f75f7273c8ba543e",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3128,7 +3128,7 @@
     {
       "path": "src/videobatch_fast/qt_phase3.py",
       "mode": "100644",
-      "blob_sha1": "bcf4df05ac4e91a8ce5c22ed353f11e9070a1568",
+      "blob_sha1": "e47caf8b0bed782d0add14e5047bd0031194f993",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3156,7 +3156,7 @@
     {
       "path": "src/videobatch_fast/qt_source_panel.py",
       "mode": "100644",
-      "blob_sha1": "b04079cea13938ccfe4db19d6dfb44571bfb8b9a",
+      "blob_sha1": "e88d672ec148430dfbdd5121f00e2108f3998750",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3205,7 +3205,7 @@
     {
       "path": "src/videobatch_fast/qt_workspace_layout.py",
       "mode": "100644",
-      "blob_sha1": "2e2852c31d900f3fcb6d0fa5e2482b868f845563",
+      "blob_sha1": "e79af5d63694931c1ba029720c8d314dd25c88d2",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3499,7 +3499,7 @@
     {
       "path": "src/videobatch_fast/updates.py",
       "mode": "100644",
-      "blob_sha1": "af93f2b77dab14c60026b212758961a8f626dcef",
+      "blob_sha1": "7fe80f74c97b20a58de5bdb759091952de8b7930",
       "category": "application",
       "lifecycle": "active"
     },
@@ -4185,7 +4185,7 @@
     {
       "path": "tests/test_provoware_responsive_grid_contract.py",
       "mode": "100644",
-      "blob_sha1": "bbbbf7c8c298a9b50cbda15577ea492cc6c81745",
+      "blob_sha1": "9de7a60d6c5bf4aab2eeccf3702d25f1497e5529",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4220,7 +4220,7 @@
     {
       "path": "tests/test_qt_responsive_20261020.py",
       "mode": "100644",
-      "blob_sha1": "3530183bf1613a24c228bd76c7b8ec711092aab9",
+      "blob_sha1": "e39d4c4bce3a9fe0096c326ac82fb6246d246043",
       "category": "tests",
       "lifecycle": "development"
     },
@@ -4570,7 +4570,7 @@
     {
       "path": "tests/test_update_integrity_2_8_2.py",
       "mode": "100644",
-      "blob_sha1": "d727685a5c8023aa85257b2c6493030e3661f7de",
+      "blob_sha1": "51c9f42c8d0b1c2d02b9487a06de7c696ee62313",
       "category": "tests",
       "lifecycle": "development"
     },
