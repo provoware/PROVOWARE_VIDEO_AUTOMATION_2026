@@ -396,7 +396,7 @@ def test_u3_real_output_page_retains_all_controls_and_routing():
     assert "window.settings_view = window.settings_grid" in source
     assert "settings_view.setMaximumHeight(140)" not in source
     assert 'output_scroll.setObjectName("outputPageScroll")' in workspace
-    assert 'effects_page.layout().insertWidget(0, window.settings_view)' in workspace
+    assert 'effects_layout.insertWidget(0, window.settings_view)' in workspace
     for label in ("Auflösung", "Qualität", "Bildeffekt", "Ausgabeordner", "Effektstärke", "Videoblende"):
         assert f'window.settings_grid.add_field("{label}"' in source
     assert "output_scroll.setWidget(effects_page)" in workspace
