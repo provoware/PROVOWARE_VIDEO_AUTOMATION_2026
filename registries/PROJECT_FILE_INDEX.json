@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "7bdb495fcc288a327e606c989b237cae153d68be",
+      "blob_sha1": "2a8c3db8658ed36df98dcad4a87b3ed42bd56577",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -2729,7 +2729,7 @@
     {
       "path": "src/videobatch_fast/failure_intelligence.py",
       "mode": "100644",
-      "blob_sha1": "f8fcc46dfc4574b81bffbecf20db4beb65a6b310",
+      "blob_sha1": "1eee0d1287d0851dd3ab144c759ee7574b16f6cd",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3947,7 +3947,7 @@
     {
       "path": "tests/test_failure_intelligence.py",
       "mode": "100644",
-      "blob_sha1": "35d895386360644e466eacb0d4d8e7aff387a59e",
+      "blob_sha1": "7fed9a1c4796d490f89ef217ca0ab3bc34ad42b2",
       "category": "tests",
       "lifecycle": "development"
     },
