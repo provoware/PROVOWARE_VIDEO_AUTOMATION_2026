@@ -164,7 +164,32 @@ def run_case(*, contradictory: bool, all_pass: bool, expected_code: int, expecte
         assert before == after, "input evidence mutated"
 
 
+def test_markdown_table_cells_are_single_line() -> None:
+    from release_readiness_dashboard import markdown
+
+    result = {
+        "release": {"name": "VideoBatch", "version": "2.8.3", "channel": "rc"},
+        "summary": {"gates_passed": 0, "gates_total": 2, "errors": 0, "warnings": 2},
+        "overall_status": "yellow",
+        "readiness_percent": 0,
+        "generated_at": "2026-10-27T00:00:00+00:00",
+        "gates": [
+            {"status": "open", "label": "Qualität | CI",
+             "detail": "Fehler\nzweite Zeile | " + chr(96) + "Abbruch" + chr(96),
+             "source": "CI|Job"},
+            {"status": "open", "label": r"A\|B",
+             "detail": "Text\r\nzweite Zeile", "source": "x" + chr(96) + "y"},
+        ],
+        "findings": [],
+    }
+    rendered = markdown(result)
+    assert r"| OFFEN | Qualität \| CI | Fehler zweite Zeile \| \`Abbruch\` | CI\|Job |" in rendered
+    assert r"| OFFEN | A\\\|B | Text zweite Zeile | x\`y |" in rendered
+    assert len([line for line in rendered.splitlines() if line.startswith("| OFFEN |")]) == 2
+
+
 def main() -> int:
+    test_markdown_table_cells_are_single_line()
     run_case(contradictory=True, all_pass=False, expected_code=2, expected_status="red")
     run_case(contradictory=False, all_pass=False, expected_code=1, expected_status="yellow")
     run_case(contradictory=False, all_pass=True, expected_code=0, expected_status="green")
