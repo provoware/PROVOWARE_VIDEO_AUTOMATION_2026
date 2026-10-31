@@ -2503,9 +2503,16 @@
       "lifecycle": "active"
     },
     {
+      "path": "src/videobatch_fast/archive_recovery.py",
+      "mode": "100644",
+      "blob_sha1": "03ad5d1fbafea1792e751dfc691ad71067c1be09",
+      "category": "application",
+      "lifecycle": "active"
+    },
+    {
       "path": "src/videobatch_fast/archive_service.py",
       "mode": "100644",
-      "blob_sha1": "e3a3d40e2e9229f008455dc68eec7acb355ad7cc",
+      "blob_sha1": "a0882d12f1d3aa2b90a1fdf8d679faed000d8862",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3812,6 +3819,13 @@
       "lifecycle": "development"
     },
     {
+      "path": "tests/test_archive_recovery_integrity.py",
+      "mode": "100644",
+      "blob_sha1": "b0355f14ffbb6c54b5c32b1f678d314750460d10",
+      "category": "tests",
+      "lifecycle": "development"
+    },
+    {
       "path": "tests/test_artifact_role_registry.py",
       "mode": "100644",
       "blob_sha1": "18d0005b5e1ba23931382d15105f0c8ba25199b5",
@@ -4821,5 +4835,5 @@
       "file_count_recursive": 2
     }
   ],
-  "file_count": 661
+  "file_count": 663
 }
