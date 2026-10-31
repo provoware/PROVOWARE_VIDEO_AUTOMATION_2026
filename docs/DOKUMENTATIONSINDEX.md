@@ -18,7 +18,9 @@ Dieser Wegweiser ordnet jede aktuelle Anleitung und jeden historischen Nachweis 
 | Schnellmodi auswählen | `docs/QUICK_MODES.md` | Optional |
 | Fehler sicher beheben | `docs/manuals/ERROR_HANDLING.md` | Pflicht bei Fehlern |
 | Updates und Rückfall verstehen | `docs/manuals/UPDATE_SYSTEM.md` | Pflicht bei Updates |
-| aktuelle Änderungen nachlesen | `docs/archive/rc24/RELEASE_NOTES_save_.md` | Empfohlen |
+| aktuelle, noch nicht veröffentlichte Änderungen nachlesen | `docs/CHANGELOG.md` | Empfohlen |
+| Stand und Grenzen der derzeitigen Entwicklung sehen | `docs/STATUS.md` | Empfohlen |
+| historische RC24-Releasehinweise ansehen | `docs/archive/rc24/RELEASE_NOTES_save_.md` | Historisch |
 
 ## 2. Ich möchte entwickeln oder prüfen
 
@@ -115,14 +117,15 @@ Der verbindliche Schreib- und Prüfstandard steht in `docs/DOKUMENTATIONSSTANDAR
 - `docs/archive/release-history/STABLE_GATE_ITERATION_2.8.3-rc24_2026-09-11.md`
 - `docs/archive/release-history/VISUAL_DESKTOP_APPROVAL.md`
 
-Diese Dateien dienen nur noch der Historie. `diagnostics/release_readiness/RELEASE_EVIDENCE.json` dokumentiert ausschließlich den historischen RC24-Nachweis (496 Dateien); für PR #240 liegen die getrennten Entwicklungsnachweise in `CANDIDATE_PR240_CI_EVIDENCE.json` und `CANDIDATE_PR240_QUALITY_STATUS.json` im selben Verzeichnis. Einstieg und ausdrückliche Freigabesperren stehen in `README.md` und `STATUS.md`.
+Diese Dateien dienen nur noch der Historie. `diagnostics/release_readiness/RELEASE_EVIDENCE.json` dokumentiert ausschließlich den historischen RC24-Nachweis (496 Dateien); für PR #240 liegen die getrennten Entwicklungsnachweise in `CANDIDATE_PR240_CI_EVIDENCE.json` und `CANDIDATE_PR240_QUALITY_STATUS.json` im selben Verzeichnis. Einstieg und ausdrückliche Freigabesperren stehen in `README.md` und `docs/STATUS.md`.
 
 
-## Aktuelle Strukturmigration und PR-Status
+## Aktueller Einstieg und PR-Status (31.10.2026)
 
-- **Start:** `STARTEN.sh`; technische Kommandos unter `scripts/cli/`, Installation unter `scripts/install/`.
-- **Aktueller PR:** [#246](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/246); #247, #248 und #250 sind geschlossen (letzterer ohne Merge).
-- **Prüfgrundlage:** Commit `2ae2ae5`, 8/8 GitHub-Workflows bestanden; Benutzer-ZIP entpackt und sieben Hauptordnerdateien gezählt.
-- **Grenze:** Der vollständige grafische Offline-Erststart aus diesem ZIP und die persönliche Kubuntu-Endabnahme stehen aus. Ein neuer Release ist nicht freigegeben.
+- **Schnellstart in drei Ebenen:** [README · direkte Befehle](../README.md#schnellstart), [README · ausführliche Anleitung](../README.md#ebene-2-ausführliche-anleitung) und [README · Hilfe ohne Vorwissen](../README.md#ebene-3-hilfe-ohne-vorwissen).
+- **Benutzerstarter:** `STARTEN.sh` im Projekt-Hauptordner; die echten Entwicklungsbefehle liegen unter `scripts/dev/test.sh` und `scripts/dev/verify_release.sh`. Start- und Installationsskripte liegen zusätzlich unter `scripts/cli/` und `scripts/install/`.
+- **Live-Bestandsaufnahme am 31.10.2026:** 0 offene PRs, 0 Entwürfe. Letzter vollständig integrierter Entwicklungsstand vor dieser Dokumentationsrunde: `b6d715ea65407afc7bb8a9838cea99af19ffb5d6`; drei nachfolgende `main`-Workflows bestanden. Bei späteren Änderungen ist der GitHub-Status neu zu prüfen.
+- **Historischer Vergleich:** PR [#246](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/246) auf Commit `2ae2ae5` war eine frühere Strukturmigration und ist **nicht** der aktuelle offene PR. Die früheren 8/8 Prüfabläufe beweisen ausschließlich den damaligen Stand.
+- **Nicht freigegeben:** Die physische Kubuntu-26.04/KDE/Wayland-Sichtabnahme, tatsächliche FFmpeg-Endausgabe und der abschließende Langzeitrender auf dem **eingefrorenen** Releasekandidaten stehen weiterhin aus. Ein grüner Entwicklungslauf ist keine Stable-Freigabe.
 
-Die jeweils aktuellen Arbeitspunkte werden in `docs/TODO.md` geführt; die Projektübersicht steht in `README.md`.
+Die jeweils aktuellen Aufgaben stehen in `docs/TODO.md`; historische Daten in diesem Dokument sind nach ihrem Datum einzuordnen. Verbindlich sind der tatsächliche Code, aktuelle GitHub-Prüfungen und `docs/STATUS.md`.

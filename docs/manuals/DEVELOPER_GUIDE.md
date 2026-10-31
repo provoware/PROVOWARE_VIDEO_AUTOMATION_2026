@@ -100,11 +100,11 @@ Den Testpfad an die tatsächliche Änderung anpassen.
 ### Schritt 6: Vollständige Tests und Qualitätsprüfung ausführen
 
 ```bash
-./test.sh
-./quality.sh
+bash ./scripts/dev/test.sh --core
+bash ./scripts/dev/test.sh --local
 ```
 
-`test.sh` verwendet temporäre Verzeichnisse für XDG-Zustand, Coverage, Diagnosen und visuelle Kandidaten. Änderungen an manifestierten Projektdateien gelten als Fehler.
+`scripts/dev/test.sh` verwendet temporäre Verzeichnisse für XDG-Zustand, Coverage, Diagnosen und visuelle Kandidaten. Änderungen an manifestierten Projektdateien gelten als Fehler.
 
 **Warum notwendig?** Ein lokaler Modultest beweist nicht, dass Architektur, Persistenz, Sicherheit und andere Module unverändert funktionieren.
 
@@ -133,7 +133,7 @@ Visuelle Prüfungen nur in einer temporären Kopie oder über den vorgesehenen W
 ### Schritt 9: Build-Artefakte ausdrücklich erzeugen
 
 ```bash
-./build_artifacts.sh
+bash ./scripts/dev/build_artifacts.sh
 ```
 
 **Warum notwendig?** Buildprodukte sollen nur durch einen bewusst gestarteten, protokollierten Vorgang entstehen.
@@ -245,7 +245,9 @@ Uncommittete Dateien nur gezielt zurücksetzen. Keine pauschalen Löschbefehle v
 
 Der zentrale Benutzerstarter ist `STARTEN.sh` im Hauptordner. Kommando-Skripte liegen unter `scripts/cli/`, die Installationsskripte unter `scripts/install/`, die technischen Verträge unter `config/contracts/` und die gesperrten Abhängigkeiten unter `config/requirements/`.
 
-Der Entwicklungs-PR [#246](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/246) enthält den erfolgreichen ZIP-Entpacktest mit sieben Hauptordnerdateien auf Commit `2ae2ae5`. Dieser Test bestätigt noch **keine vollständige Offline-Erstinstallation und keinen grafischen Start aus dem entpackten Paket**. Die historische RC24-Freigabe bleibt unverändert; die persönliche Kubuntu-Endabnahme findet erst zum Entwicklungsabschluss statt.
+**Stand 31.10.2026:** Im GitHub-Repository sind alle bis dahin offenen PRs integriert (0 offen, 0 Entwürfe). Der letzte erfolgreich geprüfte Merge vor dieser Dokumentationsüberarbeitung ist `b6d715ea65407afc7bb8a9838cea99af19ffb5d6`; auf diesem Commit waren die nachgelagerten Release-, Merge- und Kubuntu-/Wayland-Vorschauprüfungen erfolgreich. Neue Entwicklungs-Commits müssen immer **eigenständig** geprüft werden.
+
+**Historischer Referenzstand:** PR [#246](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/246) und Commit `2ae2ae5` dokumentieren die frühere Root-Strukturmigration und den damaligen Entpacktest. Das ist keine aktuelle Freigabe. Die reale Zielsystem-Endabnahme auf einem eingefrorenen Kandidaten steht weiterhin aus.
 
 ## Abschlussprüfung
 

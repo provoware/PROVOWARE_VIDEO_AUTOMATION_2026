@@ -121,7 +121,7 @@ Beide Varianten verwenden denselben zentralen Starter und umgehen keine Vorprüf
 
 1. Links `3 · Produktion` öffnen.
 2. Paarung kurz kontrollieren.
-3. `▶ 3 · Videos erstellen` wählen.
+3. **„Prüfen & Videos erstellen“** wählen (bei großer Schrift **„Prüfen & Starten“**).
 4. Vorprüfung und Queue-Status beobachten.
 5. Abschlussmeldung abwarten.
 
@@ -138,6 +138,14 @@ Beide Varianten verwenden denselben zentralen Starter und umgehen keine Vorprüf
 **Kann entfallen?** Vor Veröffentlichung oder Archivierung: nein.
 
 **Erwartetes Ergebnis:** Anfang, Mitte und Ende wurden ohne auffällige Bild- oder Tonfehler geprüft; Dateiname und Inhalt entsprechen dem vorgesehenen Auftrag.
+
+## Dashboard-Schnellnotiz
+
+🟢 **Optional:** Auf der Seite „Dashboard“ kannst du kurze Projektnotizen eingeben. **Enter** oder **„Notiz anhängen“** speichert die Notiz mit Datum und Uhrzeit in `VideoBatch_Notizen.txt` neben dem aktiven `.vbfast.json`-Projekt. Der Dateipfad und die Erfolgsmeldung sind im Dashboard sichtbar.
+
+🟡 **Bei einem Speicherfehler** bleibt dein eingegebener Text stehen. Lies die Meldung, kontrolliere den angezeigten Projektordner und versuche die Speicherung erst danach erneut. Das ist **kein Befehl zum Ändern deiner Originalmedien**.
+
+Die drei Erklärungsebenen mit konkreten kopierbaren Befehlen, ausführlichen Schritten und einer besonders einfachen Hilfe stehen in der [README](../../README.md#schnellstart).
 
 ## Gelbe oder rote Meldungen
 
