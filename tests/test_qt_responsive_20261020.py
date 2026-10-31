@@ -372,3 +372,41 @@ def test_u4_footer_keeps_probe_and_results_in_existing_scroll_area():
     assert 'window.start.setAccessibleName("Videos erstellen")' in source
     assert 'refresh_primary_action_caption(window)' in source
     assert 'refresh_primary_action_caption(self)' in (ROOT / "src/videobatch_fast/qt_phase3.py").read_text(encoding="utf-8")
+
+
+def test_button_text_contrast_in_live_hover_states(monkeypatch) -> None:
+    """Normal-size text stays readable in normal and pointer hover states."""
+    import pytest
+
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    pytest.importorskip("PySide6")
+    from PySide6.QtCore import QPoint
+    from PySide6.QtTest import QTest
+    from PySide6.QtGui import QPalette
+    from PySide6.QtWidgets import QApplication, QPushButton
+    from videobatch_fast.qt_theme import scaled_style
+
+    def luminance(color):
+        channels = (color.redF(), color.greenF(), color.blueF())
+        linear = [v / 12.92 if v <= 0.04045 else ((v + 0.055) / 1.055) ** 2.4 for v in channels]
+        return sum(value * weight for value, weight in zip(linear, (0.2126, 0.7152, 0.0722)))
+
+    app = QApplication.instance() or QApplication([])
+    button = QPushButton("Dateien auswählen")
+    try:
+        for scale in (80, 110, 200):
+            button.setStyleSheet(scaled_style(scale))
+            button.show()
+            app.processEvents()
+            for hovered in (False, True):
+                QTest.mouseMove(button, button.rect().center() if hovered else QPoint(-10, -10))
+                button.repaint()
+                app.processEvents()
+                foreground = luminance(button.palette().color(QPalette.ColorRole.ButtonText))
+                # QSS hover colors are painted by the style, not stored in the palette.
+                rendered = button.grab().toImage()
+                background = luminance(rendered.pixelColor(rendered.width() // 2, rendered.height() - 10))
+                ratio = (max(foreground, background) + 0.05) / (min(foreground, background) + 0.05)
+                assert ratio >= 4.5, (scale, hovered, ratio)
+    finally:
+        button.close()
