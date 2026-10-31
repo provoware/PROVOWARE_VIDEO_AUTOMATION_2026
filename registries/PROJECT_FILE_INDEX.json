@@ -1511,7 +1511,7 @@
     {
       "path": "registries/CODE_QUALITY_REGISTRY.json",
       "mode": "100644",
-      "blob_sha1": "d85c5f18e8e31e724b430eaec96d0405d795b777",
+      "blob_sha1": "f4be63d68dcc4474abd6e76e4f080dadddcc1180",
       "category": "registry",
       "lifecycle": "active"
     },
