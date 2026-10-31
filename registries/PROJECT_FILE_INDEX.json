@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "555d0e30fb70a1a644edb1a394e0b1af945114d2",
+      "blob_sha1": "72fc9373c7c69ad1121f8fd1f7b31704af0c5952",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -3254,7 +3254,7 @@
     {
       "path": "src/videobatch_fast/resource_estimation.py",
       "mode": "100644",
-      "blob_sha1": "4860928cfec57235472999b267574cf583ca0c0d",
+      "blob_sha1": "6f827a1ec382ab4a4efa23e4dc720521de39ba4b",
       "category": "application",
       "lifecycle": "active"
     },
@@ -3856,7 +3856,7 @@
     {
       "path": "tests/test_autonomous_reliability_rc25.py",
       "mode": "100644",
-      "blob_sha1": "cfb15a149640c429334ee037d83872a289a2bb17",
+      "blob_sha1": "c85146c7e3ad9a67d3f727605950c01273013f11",
       "category": "tests",
       "lifecycle": "development"
     },
