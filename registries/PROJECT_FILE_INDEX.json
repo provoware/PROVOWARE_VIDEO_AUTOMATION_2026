@@ -90,7 +90,7 @@
     {
       "path": ".github/workflows/qt6-phase3-smoke.yml",
       "mode": "100644",
-      "blob_sha1": "bb1d2e475e610681a5562255be31f1eb8015d0c6",
+      "blob_sha1": "d5a11e57779e16b2c442542dcdabd8efc3f0cde8",
       "category": "automation",
       "lifecycle": "development"
     },
@@ -3506,7 +3506,7 @@
     {
       "path": "src/videobatch_fast/updates.py",
       "mode": "100644",
-      "blob_sha1": "7fe80f74c97b20a58de5bdb759091952de8b7930",
+      "blob_sha1": "6e536c1d281af359977be750fc611a294f6f82c9",
       "category": "application",
       "lifecycle": "active"
     },
@@ -4582,6 +4582,13 @@
       "lifecycle": "development"
     },
     {
+      "path": "tests/test_update_candidate_selftest_path.py",
+      "mode": "100644",
+      "blob_sha1": "e9590638af78a2eb70428abdb549c3bce332db11",
+      "category": "tests",
+      "lifecycle": "development"
+    },
+    {
       "path": "tests/test_update_integrity_2_8_2.py",
       "mode": "100644",
       "blob_sha1": "51c9f42c8d0b1c2d02b9487a06de7c696ee62313",
@@ -4662,7 +4669,7 @@
   "directories": [
     {
       "path": ".",
-      "file_count_recursive": 665
+      "file_count_recursive": 666
     },
     {
       "path": ".githooks",
@@ -4830,7 +4837,7 @@
     },
     {
       "path": "tests",
-      "file_count_recursive": 151
+      "file_count_recursive": 152
     },
     {
       "path": "tests/baselines",
@@ -4849,5 +4856,5 @@
       "file_count_recursive": 2
     }
   ],
-  "file_count": 665
+  "file_count": 666
 }
