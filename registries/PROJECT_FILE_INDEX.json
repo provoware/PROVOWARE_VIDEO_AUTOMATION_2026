@@ -4648,7 +4648,7 @@
   "directories": [
     {
       "path": ".",
-      "file_count_recursive": 661
+      "file_count_recursive": 663
     },
     {
       "path": ".githooks",
@@ -4804,7 +4804,7 @@
     },
     {
       "path": "src",
-      "file_count_recursive": 162
+      "file_count_recursive": 163
     },
     {
       "path": "src/provoware_grid",
@@ -4812,11 +4812,11 @@
     },
     {
       "path": "src/videobatch_fast",
-      "file_count_recursive": 157
+      "file_count_recursive": 158
     },
     {
       "path": "tests",
-      "file_count_recursive": 148
+      "file_count_recursive": 149
     },
     {
       "path": "tests/baselines",
