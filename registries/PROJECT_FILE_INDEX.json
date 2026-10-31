@@ -356,7 +356,7 @@
     {
       "path": "diagnostics/release_readiness/engine.py",
       "mode": "100644",
-      "blob_sha1": "d653523af295d7863a35ccd9195e5811ae6b1cbd",
+      "blob_sha1": "e137527fc555ef589b01a950fbd6d4ffd0b6e244",
       "category": "diagnostics",
       "lifecycle": "active"
     },
@@ -405,7 +405,7 @@
     {
       "path": "diagnostics/release_readiness/test_candidate_quality.py",
       "mode": "100644",
-      "blob_sha1": "6e68118f07a3149f07585b7bc83d73658b00d7cb",
+      "blob_sha1": "97f39471c12a4574d5d382afb1135a641c4cc658",
       "category": "diagnostics",
       "lifecycle": "active"
     },
