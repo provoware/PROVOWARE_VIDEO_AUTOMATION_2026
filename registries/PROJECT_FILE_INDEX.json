@@ -125,21 +125,21 @@
     {
       "path": "AGENTS.md",
       "mode": "100644",
-      "blob_sha1": "4d86391271ec691bb0fbe359a40c5cc607f48e9c",
+      "blob_sha1": "df7d1c297f346e0bd8820df59eb6f70907305a72",
       "category": "documentation",
       "lifecycle": "active"
     },
     {
       "path": "README.md",
       "mode": "100644",
-      "blob_sha1": "aa5b9585cba9796f6677923eca6debeb89c50520",
+      "blob_sha1": "011b343e6fb41d485bd08d4c55e6b7ae2184dcb5",
       "category": "documentation",
       "lifecycle": "active"
     },
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "9312c846137de4cf15ecdd41a1d81569d8341a9d",
+      "blob_sha1": "4a6cde6e53061373255b4ad738626c98793f4d1a",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -461,7 +461,7 @@
     {
       "path": "docs/CHANGELOG.md",
       "mode": "100644",
-      "blob_sha1": "f5c689dbbc6a3d301154d5d3e110ebb19e2f738b",
+      "blob_sha1": "369fd3d9f64318408ab2b2b32ab5d6f9f1507008",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -496,7 +496,7 @@
     {
       "path": "docs/DOKUMENTATIONSINDEX.md",
       "mode": "100644",
-      "blob_sha1": "e9c918378d59e3f59f7f95c3f3493e59c05df12c",
+      "blob_sha1": "418d401da6bf8a485f3e9d60dc6365902390be57",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -622,7 +622,7 @@
     {
       "path": "docs/STATUS.md",
       "mode": "100644",
-      "blob_sha1": "b87d10f0efb3abba6765d211d419688729cd2561",
+      "blob_sha1": "6bcdaeb8d9d45ba7888944c7caa2b116499f484b",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -1406,7 +1406,7 @@
     {
       "path": "docs/manuals/DEVELOPER_GUIDE.md",
       "mode": "100644",
-      "blob_sha1": "633a718645dac26fe65971a7651e1a2e1a51aae6",
+      "blob_sha1": "9749c2bd5b496a38c032ebe7d2a3bf1d40ac4e36",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -1497,7 +1497,7 @@
     {
       "path": "docs/start/START_HIER_save_.md",
       "mode": "100644",
-      "blob_sha1": "8ff402c3470262048f8827ea0e7615ed9349bd1a",
+      "blob_sha1": "120414e30eddda16a12e60912618d8a608a301c8",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -3961,7 +3961,7 @@
     {
       "path": "tests/test_documentation_contract.py",
       "mode": "100644",
-      "blob_sha1": "e499ef19aa16981814f562568a7ca7de950967b8",
+      "blob_sha1": "7ef10c3e9bf38a26c889fe6430128349b6d6468e",
       "category": "tests",
       "lifecycle": "development"
     },
