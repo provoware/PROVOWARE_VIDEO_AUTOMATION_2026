@@ -1,7 +1,6 @@
 """Quarantine must not overwrite a competing target or unlink a replacement source."""
 from __future__ import annotations
 import errno
-import os
 from pathlib import Path
 from unittest.mock import patch
 
@@ -18,7 +17,7 @@ def test_concurrent_target_creation_preserves_both_files(tmp_path: Path) -> None
 
     def inject(path: Path) -> bool:
         found = original(path)
-        if path == victim and not found and not victim.exists():
+        if path == victim and not found and not original(victim):
             victim.write_bytes(b"foreign")
         return found
 
@@ -55,7 +54,6 @@ def test_unsupported_atomic_rename_does_not_delete_source(tmp_path: Path) -> Non
 def test_source_replacement_before_atomic_rename_is_not_deleted(tmp_path: Path) -> None:
     source = tmp_path / "bad.json"
     source.write_bytes(b"old")
-    from videobatch_fast.safe_io import _rename_without_replacement
     def swap_then_fail(a: Path, b: Path) -> None:
         a.rename(tmp_path / "old-file")
         a.write_bytes(b"replacement")
