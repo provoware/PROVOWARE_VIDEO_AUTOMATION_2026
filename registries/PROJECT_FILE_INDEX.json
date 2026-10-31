@@ -377,7 +377,7 @@
     {
       "path": "diagnostics/release_readiness/generate_from_evidence.py",
       "mode": "100644",
-      "blob_sha1": "4a38f4a084ad168c58dde29146bfcb595a9aa842",
+      "blob_sha1": "f0ea6ef2b730812e591ca4ae9ab25ad997a97df9",
       "category": "diagnostics",
       "lifecycle": "active"
     },
@@ -413,6 +413,13 @@
       "path": "diagnostics/release_readiness/test_engine_legacy_numeric.py",
       "mode": "100644",
       "blob_sha1": "382795acf1ae538ac49736a74c3552c79d5d2500",
+      "category": "diagnostics",
+      "lifecycle": "active"
+    },
+    {
+      "path": "diagnostics/release_readiness/test_evidence_validation.py",
+      "mode": "100644",
+      "blob_sha1": "63d35f3b34aa1554c05e6799d61535e8adbc79ac",
       "category": "diagnostics",
       "lifecycle": "active"
     },
@@ -4690,7 +4697,7 @@
   "directories": [
     {
       "path": ".",
-      "file_count_recursive": 669
+      "file_count_recursive": 670
     },
     {
       "path": ".githooks",
@@ -4730,11 +4737,11 @@
     },
     {
       "path": "diagnostics",
-      "file_count_recursive": 18
+      "file_count_recursive": 19
     },
     {
       "path": "diagnostics/release_readiness",
-      "file_count_recursive": 17
+      "file_count_recursive": 18
     },
     {
       "path": "diagnostics/root_migration",
@@ -4877,5 +4884,5 @@
       "file_count_recursive": 2
     }
   ],
-  "file_count": 669
+  "file_count": 670
 }
