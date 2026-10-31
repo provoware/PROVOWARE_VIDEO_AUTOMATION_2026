@@ -104,6 +104,7 @@ def build_main_ui(window) -> None:
     # Responsive settings follow the same 120×80 reference logic as the lists.
     # Keep every existing control object and its signal handlers unchanged.
     window.settings_grid = ResponsiveSettingsPanel()
+    window.settings_grid.setAccessibleName("Grundeinstellungen für die Videoausgabe")
     # The whole output page already scrolls; a second 140px scroll area
     # would hide ordinary settings and trap wheel/keyboard navigation.
     window.settings_view = window.settings_grid

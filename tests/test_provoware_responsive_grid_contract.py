@@ -152,6 +152,6 @@ def test_qt_uses_portable_rules_without_importing_ffmpeg_or_qt_into_core() -> No
     assert "window.settings_view = window.settings_grid" in main
     assert 'setObjectName("adaptiveSettingScroll")' not in main
     assert 'output_scroll.setObjectName("outputPageScroll")' in workspace
-    assert 'effects_page.layout().insertWidget(0, window.settings_view)' in workspace
+    assert 'effects_layout.insertWidget(0, window.settings_view)' in workspace
     assert "window.settings_grid.set_zoom_percent(value)" in main
     assert "window.source_columns.set_zoom_percent(value)" in main

@@ -113,6 +113,106 @@ def test_main_window_uses_800_by_600_contract() -> None:
     assert 'footer_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)' in footer
 
 
+@pytest.mark.parametrize("size, zoom", [
+    ((1366, 768), 110),
+    ((1024, 768), 175),
+    ((800, 600), 200),
+])
+def test_output_page_uses_one_scroll_area_and_preserves_controls(
+    monkeypatch, tmp_path, size: tuple[int, int], zoom: int
+) -> None:
+    """U3 guards the real output-widget hierarchy, routes, and saved values."""
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    for key, folder in (
+        ("HOME", "home"), ("XDG_CONFIG_HOME", "config"),
+        ("XDG_STATE_HOME", "state"), ("XDG_DATA_HOME", "data"),
+        ("XDG_CACHE_HOME", "cache"),
+    ):
+        location = tmp_path / folder
+        location.mkdir(exist_ok=True)
+        monkeypatch.setenv(key, str(location))
+    pytest.importorskip("PySide6")
+    from PySide6.QtTest import QTest
+    from PySide6.QtWidgets import QApplication, QScrollArea
+    from videobatch_fast.qt_phase3 import VideoBatchQtPhase3Window
+
+    app = QApplication.instance() or QApplication([])
+    window = VideoBatchQtPhase3Window(autoload_project=False)
+    try:
+        window.resize(*size)
+        window.show()
+        # The Phase-3 completion retries after 10 ms when its parity adapter
+        # is not ready; a pending callback can otherwise reset the route.
+        for _ in range(50):
+            app.processEvents()
+            if getattr(window, "_parity_completion_ready", False):
+                break
+            QTest.qWait(10)
+        assert window._parity_completion_ready
+        window.view_scale.setCurrentIndex(window.view_scale.findData(zoom))
+        window._route_workspace("effects")
+        app.processEvents()
+        assert window._active_workflow_route == "effects"
+
+        output_page = window._workflow_pages["effects"]
+        assert isinstance(output_page, QScrollArea)
+        assert window.settings_view is window.settings_grid
+        assert window.settings_grid.isVisibleTo(window), (
+            window._active_workflow_route,
+            window.main_tabs.currentIndex(),
+            window.workflow_stack.currentWidget().objectName(),
+            window.settings_grid.isHidden(),
+            output_page.isHidden(),
+        )
+        assert output_page.verticalScrollBar().value() == 0
+
+        # No second QScrollArea may surround everyday settings.
+        ancestor = window.settings_grid.parentWidget()
+        scrolls = []
+        while ancestor is not None:
+            if isinstance(ancestor, QScrollArea):
+                scrolls.append(ancestor)
+            ancestor = ancestor.parentWidget()
+        assert scrolls == [output_page]
+        assert len(window.settings_grid._fields) == 6
+
+        values = (
+            window.resolution.currentData(), window.quality.currentData(),
+            window.effect.currentData(), window.output.text(),
+            window.effect_intensity.value(), window.transition.currentData(),
+            window.fade_seconds.value(), window.verification.currentText(),
+        )
+        assert all(control.isVisibleTo(window) for control in (
+            window.resolution, window.quality, window.effect, window.output,
+            window.effect_intensity, window.transition, window.fade_seconds,
+            window.verification,
+        ))
+        assert output_page.widget().layout().itemAt(0).widget().text() == "Grundeinstellungen"
+        assert window.resolution.mapTo(window, window.resolution.rect().topLeft()).y() < window.height()
+
+        # Expanded expert controls remain reachable via the *same* scrollbar.
+        window.exclusions_toggle.setChecked(True)
+        window.details_toggle.setChecked(True)
+        app.processEvents()
+        assert window.media_exclusions.isVisibleTo(window)
+        assert window.safety_details.isVisibleTo(window)
+        output_page.verticalScrollBar().setValue(output_page.verticalScrollBar().maximum())
+        app.processEvents()
+        window.main_tabs.setCurrentIndex(2)
+        window.main_tabs.setCurrentIndex(1)
+        app.processEvents()
+        assert output_page.verticalScrollBar().value() == 0
+        assert values == (
+            window.resolution.currentData(), window.quality.currentData(),
+            window.effect.currentData(), window.output.text(),
+            window.effect_intensity.value(), window.transition.currentData(),
+            window.fade_seconds.value(), window.verification.currentText(),
+        )
+    finally:
+        window.close()
+        app.processEvents()
+
+
 @pytest.mark.parametrize("zoom", [80, 100, 110, 125, 150, 175, 200])
 def test_action_controls_wrap_and_preserve_buttons(monkeypatch, zoom: int) -> None:
     monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
@@ -296,7 +396,7 @@ def test_u3_real_output_page_retains_all_controls_and_routing():
     assert "window.settings_view = window.settings_grid" in source
     assert "settings_view.setMaximumHeight(140)" not in source
     assert 'output_scroll.setObjectName("outputPageScroll")' in workspace
-    assert 'effects_page.layout().insertWidget(0, window.settings_view)' in workspace
+    assert 'effects_layout.insertWidget(0, window.settings_view)' in workspace
     for label in ("Auflösung", "Qualität", "Bildeffekt", "Ausgabeordner", "Effektstärke", "Videoblende"):
         assert f'window.settings_grid.add_field("{label}"' in source
     assert "output_scroll.setWidget(effects_page)" in workspace

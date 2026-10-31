@@ -163,7 +163,11 @@ def build_workflow_stack(window) -> QStackedWidget:
     # Eine äußere vertikale Rollebene schützt alle erweiterten Bedienelemente
     # bei 800×600 und 200 % vor dem Abschneiden.
     effects_page = pages["effects"]
-    effects_page.layout().insertWidget(0, window.settings_view)
+    effects_layout = effects_page.layout()
+    effects_layout.insertWidget(0, window.settings_view)
+    basics_heading = QLabel("Grundeinstellungen")
+    basics_heading.setObjectName("section")
+    effects_layout.insertWidget(0, basics_heading)
     output_scroll = QScrollArea()
     output_scroll.setObjectName("outputPageScroll")
     output_scroll.setWidgetResizable(True)
