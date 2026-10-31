@@ -1,6 +1,8 @@
 # Automatische Schnellmodi
 
-VideoBatch Fast 2.2.0-rc1 bietet 13 automatische Modi. Ein Modus ist keine lose Effektauswahl, sondern ein geprüftes Paket aus:
+🟠 **Historische Funktionsbeschreibung:** Die folgenden 13 Schnellmodi wurden ursprünglich für den Stand **2.2.0-rc1** beschrieben. Das aktuelle Repository trägt **2.8.3-rc24** und befindet sich in Entwicklung. Prüfe deshalb vor der Verwendung, welche Modi die laufende Oberfläche tatsächlich anbietet; frühere Beschreibungen sind keine neue Stable-Freigabe.
+
+Ein Schnellmodus ist keine lose Effektauswahl, sondern kombiniert nach der ursprünglichen Modusbeschreibung:
 
 - visuellem Look,
 - kurzer Ein- oder Ausblendung,
