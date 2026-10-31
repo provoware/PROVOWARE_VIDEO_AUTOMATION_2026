@@ -90,7 +90,7 @@
     {
       "path": ".github/workflows/qt6-phase3-smoke.yml",
       "mode": "100644",
-      "blob_sha1": "163a355708610303fa9c7e2c4b38b4739b5dc688",
+      "blob_sha1": "bb1d2e475e610681a5562255be31f1eb8015d0c6",
       "category": "automation",
       "lifecycle": "development"
     },
@@ -2428,7 +2428,7 @@
     {
       "path": "scripts/verify_release_zip.py",
       "mode": "100644",
-      "blob_sha1": "71145c46dbb63377c74a552ce6f36e3795c7060e",
+      "blob_sha1": "b293f35653ce541c98298f9f2278757a091b4a7a",
       "category": "development",
       "lifecycle": "development"
     },
@@ -4603,6 +4603,13 @@
       "lifecycle": "development"
     },
     {
+      "path": "tests/test_verify_release_zip_integrity.py",
+      "mode": "100644",
+      "blob_sha1": "be90d653a385646a7fd1463ade9ca1fba8ef5841",
+      "category": "tests",
+      "lifecycle": "development"
+    },
+    {
       "path": "tests/test_version_contract_2_8_3_rc7.py",
       "mode": "100644",
       "blob_sha1": "7d71be3da878b5d91ccdaf9f116266e6ee4d560b",
@@ -4655,7 +4662,7 @@
   "directories": [
     {
       "path": ".",
-      "file_count_recursive": 664
+      "file_count_recursive": 665
     },
     {
       "path": ".githooks",
@@ -4823,7 +4830,7 @@
     },
     {
       "path": "tests",
-      "file_count_recursive": 150
+      "file_count_recursive": 151
     },
     {
       "path": "tests/baselines",
@@ -4842,5 +4849,5 @@
       "file_count_recursive": 2
     }
   ],
-  "file_count": 664
+  "file_count": 665
 }
