@@ -173,6 +173,7 @@ jobs:
             tests/test_ab_channel_installer_rc15.py \
             tests/test_ab_channel_hardening_rc16.py \
             tests/test_update_integrity_2_8_2.py \
+            tests/test_update_candidate_selftest_path.py \
             tests/test_debug_runtime_contract.py \
             tests/test_debug_launcher_update_first_start.py \
             tests/test_ui_ready_handshake_contract.py \
