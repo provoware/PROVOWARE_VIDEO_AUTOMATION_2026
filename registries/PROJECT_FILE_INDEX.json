@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "4a6cde6e53061373255b4ad738626c98793f4d1a",
+      "blob_sha1": "1021327e64509d467d82d60082a22fa874a36a5d",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -440,7 +440,7 @@
     {
       "path": "docs/BENUTZERHANDBUCH.md",
       "mode": "100644",
-      "blob_sha1": "e65314aadea0c861a156d897c63c71fc4dbdce21",
+      "blob_sha1": "e4168b4320d9c9adb062eaf361e18fcf78265a5a",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -601,7 +601,7 @@
     {
       "path": "docs/QUICK_MODES.md",
       "mode": "100644",
-      "blob_sha1": "437c4d96e5df74a8228627766235901feb58ba1f",
+      "blob_sha1": "bf9ea4bb1639722427dc848ba0c361020341f69e",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -629,7 +629,7 @@
     {
       "path": "docs/TODO.md",
       "mode": "100644",
-      "blob_sha1": "98fff5f4df7f2408ac95f1f67b23041ae9fb977d",
+      "blob_sha1": "de6d3c18a5935ea70b264fcee2b9ebaf2604ba50",
       "category": "documentation",
       "lifecycle": "active"
     },
@@ -3961,7 +3961,7 @@
     {
       "path": "tests/test_documentation_contract.py",
       "mode": "100644",
-      "blob_sha1": "7ef10c3e9bf38a26c889fe6430128349b6d6468e",
+      "blob_sha1": "0d1b34ef2ecb519a933259c2bd31e30dfc91f368",
       "category": "tests",
       "lifecycle": "development"
     },
