@@ -11,6 +11,7 @@ from videobatch_fast.config import normalize_config
 from videobatch_fast.models import BatchOptions, MediaInfo, PairJob
 from videobatch_fast.naming import safe_stem, unique_output_path
 from videobatch_fast.probe import classify_extension
+from videobatch_fast.playlist import Playlist
 from videobatch_fast.runner_process import ProcessExecution, _ProgressState
 
 
@@ -104,6 +105,32 @@ class CommandTests(unittest.TestCase):
         with patch("videobatch_fast.command_builder.ffmpeg_path", return_value="ffmpeg"):
             command = build_command(job, BatchOptions(Path(".")))
         self.assertIn("-stream_loop", command)
+
+
+class PlaylistRemovalTests(unittest.TestCase):
+    def test_keeps_current_item_when_earlier_item_removed(self):
+        playlist = Playlist(items=[Path("a.wav"), Path("b.wav"), Path("c.wav")], current=1)
+        playlist.remove([0])
+        self.assertEqual(playlist.items[playlist.current], Path("b.wav"))
+        self.assertEqual(playlist.current, 0)
+
+    def test_keeps_current_item_after_multiple_earlier_removals(self):
+        playlist = Playlist(items=[Path(f"{i}.wav") for i in range(5)], current=3)
+        playlist.remove([0, 1, 1, 20, -1])
+        self.assertEqual(playlist.items[playlist.current], Path("3.wav"))
+        self.assertEqual(playlist.current, 1)
+
+    def test_removed_current_selects_next_or_previous(self):
+        playlist = Playlist(items=[Path("a.wav"), Path("b.wav"), Path("c.wav")], current=1)
+        playlist.remove([1])
+        self.assertEqual(playlist.items[playlist.current], Path("c.wav"))
+        playlist.remove([1])
+        self.assertEqual(playlist.items[playlist.current], Path("a.wav"))
+
+    def test_removing_all_clears_selection(self):
+        playlist = Playlist(items=[Path("a.wav")], current=0)
+        playlist.remove([0])
+        self.assertEqual(playlist.current, -1)
 
 
 class RunnerProgressTests(unittest.TestCase):
