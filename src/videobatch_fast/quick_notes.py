@@ -24,11 +24,12 @@ def default_note_path() -> Path:
 
 def append_quick_note(note: str, *, target: Path | None = None) -> Path:
     """Notiz exakt einmal am Dateiende anhängen, kein Löschen oder Ersetzen."""
+    # Vor strip() prüfen: sonst verschwinden Zeilenumbrüche am Rand unbemerkt.
+    if any(ord(ch) < 32 or 0x7F <= ord(ch) <= 0x9F or ch in "\u2028\u2029" for ch in note):
+        raise ValueError("Bitte nur eine Zeile ohne Steuerzeichen eingeben.")
     clean = note.strip()
     if not clean or len(clean.encode("utf-8")) > MAX_NOTE_BYTES:
         raise ValueError("Bitte 1 bis 1.024 Byte Text eingeben.")
-    if any(ord(ch) < 32 or ord(ch) == 127 or ch in "\u2028\u2029" for ch in clean):
-        raise ValueError("Bitte nur eine Zeile ohne Steuerzeichen eingeben.")
 
     path = target if target is not None else default_note_path()
     path.parent.mkdir(parents=True, exist_ok=True)
