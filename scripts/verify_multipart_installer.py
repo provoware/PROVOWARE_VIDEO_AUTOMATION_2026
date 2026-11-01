@@ -40,7 +40,8 @@ def verify_archive(path: Path, part: dict) -> None:
         seen: set[str] = set()
         for member in members:
             pure = PurePosixPath(member.name)
-            if member.name in seen or member.name.startswith("/") or ".." in pure.parts or "." in pure.parts:
+            if (member.name in seen or member.name.startswith("/") or ".." in pure.parts
+                    or not pure.parts or pure.as_posix() != member.name):
                 raise SystemExit("UNSAFE:" + member.name)
             seen.add(member.name)
             if member.issym() or member.islnk() or member.isdev() or member.isfifo() or not (member.isfile() or member.isdir()):
