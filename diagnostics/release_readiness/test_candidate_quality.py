@@ -68,6 +68,14 @@ def test_modified_or_falsely_approved_evidence_is_rejected(snapshot: dict, tampe
     with pytest.raises(ValueError):
         generator.build()
 
+def test_unknown_check_cannot_replace_required_gate(snapshot: dict) -> None:
+    changed = copy.deepcopy(snapshot)
+    changed["checks"][0]["name"] = "Erfundene Erfolgsprüfung"
+    save_snapshot(changed)
+    with pytest.raises(ValueError, match="Pflichtprüfungen"):
+        generator.build()
+
+
 @pytest.mark.parametrize(
     ("field", "value"),
     [
