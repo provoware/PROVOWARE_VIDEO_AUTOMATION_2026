@@ -188,7 +188,7 @@ def build_main_ui(window) -> None:
     tabs.setObjectName("mainNavigation")
     tabs.setExpanding(True)
     tabs.setAccessibleName("Arbeitsbereiche")
-    for name in ("1 · Dateien", "2 · Ausgabe", "3 · Produktion", "Dashboard"):
+    for name in ("1 · Dateien", "2 · Ausgabe", "3 · Produktion", "Übersicht"):
         tabs.addTab(name)
     window.main_tabs = tabs
     routes = ("media", "effects", "queue", "dashboard")
@@ -287,9 +287,9 @@ def build_main_ui(window) -> None:
         window.menuBar().setVisible(not compact)
         window.compact_menu.setVisible(compact)
         names = (
-            ("1 · Dateien", "2 · Ausgabe", "3 · Start", "Notizen")
+            ("1 · Dateien", "2 · Ausgabe", "3 · Start", "Übersicht")
             if compact else
-            ("1 · Dateien", "2 · Ausgabe", "3 · Produktion", "Dashboard")
+            ("1 · Dateien", "2 · Ausgabe", "3 · Produktion", "Übersicht")
         )
         for index, name in enumerate(names):
             window.main_tabs.setTabText(index, name)

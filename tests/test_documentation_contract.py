@@ -123,7 +123,7 @@ def test_current_manual_routes_and_dated_todo() -> None:
     manual = (ROOT / "docs" / "BENUTZERHANDBUCH.md").read_text(encoding="utf-8")
     todo = (ROOT / "docs" / "TODO.md").read_text(encoding="utf-8")
     modes = (ROOT / "docs" / "QUICK_MODES.md").read_text(encoding="utf-8")
-    for label in ("1 · Dateien", "2 · Ausgabe", "3 · Produktion", "Dashboard"):
+    for label in ("1 · Dateien", "2 · Ausgabe", "3 · Produktion", "Übersicht"):
         assert label in manual
     assert "2 · Produktion" not in manual
     assert "VideoBatch_Notizen.txt" in manual

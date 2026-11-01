@@ -84,7 +84,7 @@ def _overview_page(window) -> QFrame:
     layout = QVBoxLayout(panel)
     layout.setContentsMargins(18, 16, 18, 16)
     layout.setSpacing(10)
-    title = QLabel("Dashboard · Schnellnotiz")
+    title = QLabel("Übersicht · Schnellnotiz")
     title.setObjectName("section")
     layout.addWidget(title)
     intro = QLabel(

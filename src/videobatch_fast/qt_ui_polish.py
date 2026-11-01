@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QAbstractItemView, QLabel, QPushButton, QTableWidget, QTableWidgetItem,
@@ -171,9 +171,6 @@ def install_workflow_shortcuts(window) -> None:
     window._workflow_shortcuts = []
 
     def activate(route: str, target) -> None:
-        if route == "global_settings":
-            target.setFocus()
-            return
         handler = getattr(window, "_route_workspace", None)
         if callable(handler):
             handler(route)
@@ -181,11 +178,13 @@ def install_workflow_shortcuts(window) -> None:
             pages = getattr(window, "_workflow_pages", {})
             if route in pages:
                 window.workflow_stack.setCurrentWidget(pages[route])
-        target.setFocus()
+        # Routing schedules a scroll-to-top. Focus afterwards so its visibility
+        # handler reveals the requested field instead of being reset again.
+        QTimer.singleShot(0, target.setFocus)
 
     for sequence, route, target in (
         ("Alt+1", "media", window.audio),
-        ("Alt+2", "global_settings", window.output),
+        ("Alt+2", "effects", window.output),
         ("Alt+3", "queue", window.start),
     ):
         shortcut = QShortcut(QKeySequence(sequence), window)
