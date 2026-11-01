@@ -119,7 +119,7 @@ def main() -> int:
 
         # Real Qt widgets -> single settings model -> BatchOptions -> saved JSON.
         assert window.main_tabs.count() == 4
-        assert window.main_tabs.tabText(3) == "Dashboard"
+        assert window.main_tabs.tabText(3) == "Übersicht"
         window.main_tabs.setCurrentIndex(3)
         app.processEvents()
         notes_path = project_notes_file(window._project_file)
@@ -233,7 +233,7 @@ def main() -> int:
         window.view_scale.setCurrentIndex(window.view_scale.findData(200))
         window.resize(800, 600)
         app.processEvents()
-        assert window.main_tabs.tabText(3) == "Notizen"
+        assert window.main_tabs.tabText(3) == "Übersicht"
         assert sum(window.main_tabs.tabRect(i).width() for i in range(4)) <= window.main_tabs.width()
         assert not window.dashboard_note_hint.isVisibleTo(window)
         input_bottom = window.dashboard_note_input.mapTo(window, QPoint(0, 0)).y() + window.dashboard_note_input.height()

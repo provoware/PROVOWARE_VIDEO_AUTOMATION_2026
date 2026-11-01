@@ -8,6 +8,43 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 
 
+@pytest.mark.parametrize("zoom", [100, 150, 200])
+def test_output_shortcut_opens_page_before_focusing(monkeypatch, tmp_path, zoom):
+    """Alt+2 must work from another page, including the small-screen layout."""
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    for key in ("XDG_CONFIG_HOME", "XDG_STATE_HOME", "XDG_DATA_HOME", "XDG_CACHE_HOME"):
+        monkeypatch.setenv(key, str(tmp_path / key.lower()))
+    from PySide6.QtCore import Qt, QPoint
+    from PySide6.QtTest import QTest
+    from PySide6.QtWidgets import QApplication
+    from videobatch_fast.qt_phase3 import VideoBatchQtPhase3Window
+
+    app = QApplication.instance() or QApplication([])
+    window = VideoBatchQtPhase3Window(autoload_project=False)
+    try:
+        window.show()
+        QTest.qWait(120)
+        window.view_scale.setCurrentIndex(window.view_scale.findData(zoom))
+        window.resize(800, 600)
+        for route in ("media", "queue", "dashboard"):
+            window._route_workspace(route)
+            window.activateWindow()
+            QTest.qWait(30)
+            QTest.keyClick(window, Qt.Key.Key_2, Qt.KeyboardModifier.AltModifier)
+            QTest.qWait(30)
+            assert window._active_workflow_route == "effects"
+            assert window.output.isVisibleTo(window)
+            assert app.focusWidget() is window.output
+            position = window.output.mapTo(window, QPoint(0, 0))
+            assert 0 <= position.y() < window.height()
+            assert position.y() + window.output.height() <= window.height()
+            assert window.main_tabs.tabText(3) == "Übersicht"
+        assert (window.width(), window.height()) == (800, 600)
+    finally:
+        window._project_dirty = False
+        window.close()
+
+
 def test_responsive_layout_contract_is_readable_without_horizontal_scrolling():
     source = (ROOT / "src/videobatch_fast/qt_source_panel.py").read_text(encoding="utf-8")
     main = (ROOT / "src/videobatch_fast/qt_main_layout.py").read_text(encoding="utf-8")

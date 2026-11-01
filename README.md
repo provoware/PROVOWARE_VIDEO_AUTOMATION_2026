@@ -100,7 +100,7 @@ Danach den Ordner `PROVOWARE_VIDEO_AUTOMATION_2026` öffnen und die Schritte aus
 
 ### Bedienung und Ansicht
 
-Die Arbeitsseiten heißen **„1 · Dateien“**, **„2 · Ausgabe“**, **„3 · Produktion“** und **„Dashboard“**. Das Dashboard enthält zusätzliche Werkzeuge und die Schnellnotiz; die genaue Beschriftung kann bei großer Schrift kürzer ausfallen.
+Die Arbeitsseiten heißen **„1 · Dateien“**, **„2 · Ausgabe“**, **„3 · Produktion“** und **„Übersicht“**. Die Übersicht enthält zusätzliche Werkzeuge und die Schnellnotiz; der Bereich heißt bei jeder Schriftgröße gleich.
 
 - Die Schrift lässt sich über **„Schrift“** zwischen 80 % und 200 % einstellen.
 - **Strg + Alt + Pfeil hoch/runter** vergrößert bzw. verkleinert. **Strg + Alt + 0** stellt 110 % wieder her.
@@ -113,7 +113,7 @@ Die Arbeitsseiten heißen **„1 · Dateien“**, **„2 · Ausgabe“**, **„3
 
 **💾 Schnellspeicher im Dashboard:** In der Karte „Quellen & Projekt“ eine kurze Notiz in die einzeilige Eingabe schreiben und mit **Enter** oder **Notiz speichern** sichern. Der Eintrag wird mit Zeitstempel an die feste Datei `SCHNELLSPEICHER.txt` **angehängt** – bestehende Einträge bleiben erhalten. Beim Start aus dem Quellprojekt liegt sie im Projekt-Hauptverzeichnis. Bei installierter Ausführung erfolgt die Speicherung im lokalen Anwendungsdatenordner (Linux: `~/.local/share/provoware-video-automation/` oder `$XDG_DATA_HOME/provoware-video-automation/`). Der Status unter der Eingabe zeigt den tatsächlichen Speicherpfad. Leere, mehrzeilige oder zu lange Notizen werden abgewiesen; bei Fehlern bleibt die Eingabe erhalten. Die private Datei wird nicht in Git eingecheckt.
 
-Auf der Seite **„Dashboard“** kannst du eine kurze Notiz eingeben und mit **Enter** oder **„Notiz anhängen“** speichern. Das Programm ergänzt einen lokalen Zeitstempel und zeigt den Speicherstatus sowie den gewählten Dateipfad.
+Auf der Seite **„Übersicht“** kannst du eine kurze Notiz eingeben und mit **Enter** oder **„Notiz anhängen“** speichern. Das Programm ergänzt einen lokalen Zeitstempel und zeigt den Speicherstatus sowie den gewählten Dateipfad.
 
 Die Datei heißt **`VideoBatch_Notizen.txt`** und liegt im Ordner des **aktiven** `.vbfast.json`-Projekts. Sie wird nicht für jede Notiz neu erstellt: Weitere Notizen werden an den bisherigen Inhalt angehängt. Nach einem Projektwechsel oder **„Speichern unter“** wird der zugehörige Notizpfad aktualisiert.
 
