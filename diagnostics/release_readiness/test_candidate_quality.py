@@ -166,3 +166,26 @@ def test_compact_manifest_uses_git_tracked_sources(
     changed = _compact_manifest_snapshot(tmp_path)
     assert changed[0] == baseline[0]
     assert changed[1] != baseline[1]
+
+
+@pytest.mark.parametrize(
+    "failure", [FileNotFoundError("tracked file missing"), RuntimeError("Git index unavailable")],
+)
+def test_compact_manifest_read_errors_fail_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: Exception,
+) -> None:
+    """An unreadable release source must yield a red finding, not a traceback."""
+    monkeypatch.syspath_prepend(str(ROOT))
+    import engine
+
+    def broken_snapshot(_root: Path) -> tuple[int, str]:
+        raise failure
+
+    monkeypatch.setattr(engine, "_compact_manifest_snapshot", broken_snapshot)
+    findings: list[engine.Finding] = []
+    manifest = {"representation": "compact", "file_count": 1, "files_sha256": "0" * 64}
+    assert engine.validate_manifest(tmp_path, manifest, findings) is False
+    assert len(findings) == 1
+    assert findings[0].code == "MANIFEST_COMPACT_INVALID"
+    assert findings[0].severity == "error"
+    assert str(failure) in findings[0].message
