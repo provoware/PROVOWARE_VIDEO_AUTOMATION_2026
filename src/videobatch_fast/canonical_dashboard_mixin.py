@@ -3,6 +3,7 @@ from __future__ import annotations
 from tkinter import Canvas, StringVar, TclError, ttk
 
 from .canonical_dashboard_layout import layout_canonical_dashboard
+from .quick_notes import append_quick_note
 from .canonical_shell_contract import CANONICAL_THEME_LABELS, FONT_PROFILES
 from .theme import COLORS
 
@@ -174,8 +175,36 @@ class CanonicalDashboardMixin:
             style="Accent.TButton",
             command=lambda: self._show_dashboard_view("assistant"),
         ).grid(row=1, column=0, columnspan=2, sticky="ew", pady=(5, 0))
+        # Einzeilige Schnellnotiz: fester Zielname, nur anhängen, keine Originalmedien ändern.
+        note_bar = ttk.Frame(card, style="ShellCard.TFrame")
+        note_bar.grid(row=6, column=0, sticky="ew", pady=(9, 0))
+        note_bar.columnconfigure(0, weight=1)
+        self._dashboard_note_text = StringVar(value="")
+        note_entry = ttk.Entry(note_bar, textvariable=self._dashboard_note_text)
+        note_entry.grid(row=0, column=0, sticky="ew", padx=(0, 5))
+        note_entry.configure(width=24)
+        note_entry.bind("<Return>", self._save_dashboard_note)
+        ttk.Button(note_bar, text="Notiz speichern", command=self._save_dashboard_note).grid(
+            row=0, column=1, sticky="e"
+        )
+        self._dashboard_note_feedback = StringVar(value="Kurze Notiz eingeben und Enter drücken.")
+        note_feedback = ttk.Label(
+            card, textvariable=self._dashboard_note_feedback, style="Hint.TLabel", justify="left"
+        )
+        note_feedback.grid(row=7, column=0, sticky="ew", pady=(3, 0))
+        self._dashboard_wrapped_labels.append(note_feedback)
         card.bind("<Configure>", self._update_dashboard_wraplengths, add="+")
         return card
+
+    def _save_dashboard_note(self, _event=None):
+        try:
+            target = append_quick_note(self._dashboard_note_text.get())
+        except (OSError, ValueError) as error:
+            self._dashboard_note_feedback.set(f"Nicht gespeichert: {error}")
+            return "break"
+        self._dashboard_note_text.set("")
+        self._dashboard_note_feedback.set(f"Gespeichert: {target}")
+        return "break"
 
     def _build_dashboard_queue_card(self, parent):
         card = ttk.Frame(parent, style="ShellCard.TFrame", padding=(14, 12))

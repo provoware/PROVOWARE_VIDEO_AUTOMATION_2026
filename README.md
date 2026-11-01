@@ -111,6 +111,8 @@ Die Arbeitsseiten heißen **„1 · Dateien“**, **„2 · Ausgabe“**, **„3
 
 ### Projekt und Schnellnotizen
 
+**💾 Schnellspeicher im Dashboard:** In der Karte „Quellen & Projekt“ eine kurze Notiz in die einzeilige Eingabe schreiben und mit **Enter** oder **Notiz speichern** sichern. Der Eintrag wird mit Zeitstempel an die feste Datei `SCHNELLSPEICHER.txt` **angehängt** – bestehende Einträge bleiben erhalten. Beim Start aus dem Quellprojekt liegt sie im Projekt-Hauptverzeichnis. Bei installierter Ausführung erfolgt die Speicherung im lokalen Anwendungsdatenordner (Linux: `~/.local/share/provoware-video-automation/` oder `$XDG_DATA_HOME/provoware-video-automation/`). Der Status unter der Eingabe zeigt den tatsächlichen Speicherpfad. Leere, mehrzeilige oder zu lange Notizen werden abgewiesen; bei Fehlern bleibt die Eingabe erhalten. Die private Datei wird nicht in Git eingecheckt.
+
 Auf der Seite **„Dashboard“** kannst du eine kurze Notiz eingeben und mit **Enter** oder **„Notiz anhängen“** speichern. Das Programm ergänzt einen lokalen Zeitstempel und zeigt den Speicherstatus sowie den gewählten Dateipfad.
 
 Die Datei heißt **`VideoBatch_Notizen.txt`** und liegt im Ordner des **aktiven** `.vbfast.json`-Projekts. Sie wird nicht für jede Notiz neu erstellt: Weitere Notizen werden an den bisherigen Inhalt angehängt. Nach einem Projektwechsel oder **„Speichern unter“** wird der zugehörige Notizpfad aktualisiert.
