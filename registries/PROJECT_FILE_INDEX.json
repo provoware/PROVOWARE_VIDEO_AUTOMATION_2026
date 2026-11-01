@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "1021327e64509d467d82d60082a22fa874a36a5d",
+      "blob_sha1": "dc0a1f51e05947be891b84b01fd81973df46d983",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -2442,7 +2442,7 @@
     {
       "path": "scripts/verify_release_zip.py",
       "mode": "100644",
-      "blob_sha1": "b293f35653ce541c98298f9f2278757a091b4a7a",
+      "blob_sha1": "413467dbb9678fffd358575efac015e5dd9bbc8e",
       "category": "development",
       "lifecycle": "development"
     },
@@ -4647,7 +4647,7 @@
     {
       "path": "tests/test_verify_release_zip_integrity.py",
       "mode": "100644",
-      "blob_sha1": "be90d653a385646a7fd1463ade9ca1fba8ef5841",
+      "blob_sha1": "a1a834653bd3dddde25cf59a66aed3737ae5a317",
       "category": "tests",
       "lifecycle": "development"
     },
