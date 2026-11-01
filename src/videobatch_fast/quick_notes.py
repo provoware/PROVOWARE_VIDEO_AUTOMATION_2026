@@ -1,8 +1,10 @@
 """Projektübergreifender Einzeilenspeicher ohne frei wählbare Schreibziele."""
 from __future__ import annotations
 
+import fcntl
 import os
 import stat
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -39,6 +41,16 @@ def append_quick_note(note: str, *, target: Path | None = None) -> Path:
     flags = os.O_WRONLY | os.O_APPEND | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0)
     descriptor = os.open(path, flags, 0o600)
     try:
+        # Größenprüfung und Anhängen zwischen mehreren Programmfenstern atomar koordinieren.
+        deadline = time.monotonic() + 2.0
+        while True:
+            try:
+                fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except BlockingIOError:
+                if time.monotonic() >= deadline:
+                    raise TimeoutError("Notizdatei ist gerade belegt; bitte erneut versuchen.")
+                time.sleep(0.05)
         info = os.fstat(descriptor)
         if not stat.S_ISREG(info.st_mode):
             raise ValueError("Notizdatei ist keine normale Datei.")
