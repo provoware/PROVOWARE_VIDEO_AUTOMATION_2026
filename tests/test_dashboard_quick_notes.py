@@ -2,7 +2,6 @@
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
 from videobatch_fast.quick_notes import append_quick_note, NOTE_FILENAME
 
