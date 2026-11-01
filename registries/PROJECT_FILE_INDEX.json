@@ -139,7 +139,7 @@
     {
       "path": "RELEASE_MANIFEST.json",
       "mode": "100644",
-      "blob_sha1": "dc0a1f51e05947be891b84b01fd81973df46d983",
+      "blob_sha1": "dc39f63a8aa167b543acd1a3b08b5971feef0887",
       "category": "project_contract",
       "lifecycle": "active"
     },
@@ -2414,7 +2414,7 @@
     {
       "path": "scripts/verify_multipart_installer.py",
       "mode": "100644",
-      "blob_sha1": "a7ce1246930a280f317f5b050b88b979a91e3135",
+      "blob_sha1": "7ed3e94435f654c1b4bf09395e523e4f4f9a7df1",
       "category": "development",
       "lifecycle": "development"
     },
@@ -4073,7 +4073,7 @@
     {
       "path": "tests/test_multipart_installer.py",
       "mode": "100644",
-      "blob_sha1": "7b04c4547882d663a88abfe717c07862063ef718",
+      "blob_sha1": "2bfdbe883af6442683348afc83ace01412df3d2a",
       "category": "tests",
       "lifecycle": "development"
     },
