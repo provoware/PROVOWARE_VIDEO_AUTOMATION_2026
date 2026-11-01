@@ -4105,7 +4105,7 @@
       "path": "tests/test_compact_responsive_ui_contract.py"
     },
     {
-      "blob_sha1": "0867040500e4a4b7f06393b7c2059ba9a7ebf164",
+      "blob_sha1": "3c813c90f150ef38db0d09ed09f756b8b691f8cb",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",
@@ -4784,7 +4784,7 @@
       "path": "tests/test_stable_release_2_8.py"
     },
     {
-      "blob_sha1": "c625205be2f03a449e9e6f1969318dfbe2359b69",
+      "blob_sha1": "91c52a349e9031cd209d33a3f6d314c642008558",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",
