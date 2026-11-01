@@ -38,5 +38,26 @@ class QuickNoteTests(unittest.TestCase):
             self.assertEqual(original.read_text(encoding="utf-8"), "geschützt")
 
 
+    def test_control_characters_at_edges_and_c1_separators_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / NOTE_FILENAME
+            append_quick_note("Vorhanden", target=target)
+            original = target.read_bytes()
+            for value in (
+                "\nNotiz", "Notiz\n", "\rNotiz", "Notiz\t",
+                "Notiz\x85Fortsetzung", "Notiz\u2028Fortsetzung", "Notiz\u2029Fortsetzung",
+            ):
+                with self.subTest(value=repr(value)), self.assertRaises(ValueError):
+                    append_quick_note(value, target=target)
+                self.assertEqual(target.read_bytes(), original)
+
+    def test_unicode_note_remains_valid(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / NOTE_FILENAME
+            append_quick_note("ÄÖÜ 🧑‍💻", target=target)
+            self.assertIn("ÄÖÜ 🧑‍💻".encode("utf-8"), target.read_bytes())
+
+
+
 if __name__ == "__main__":
     unittest.main()
