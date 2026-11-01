@@ -2,6 +2,12 @@
 
 Alle wichtigen Änderungen dieses Projekts werden hier in zusammengefasster, chronologischer Form dokumentiert. Die vollständige frühere Detailhistorie liegt unter `docs/archive/release-history/CHANGELOG_FULL_PRE_FINALIZATION.md`.
 
+## Unveröffentlicht · 01.11.2026 – Verlässliche Navigation
+
+- Alt+2 öffnet zuerst die Ausgabeseite und setzt den Fokus erst nach dem geplanten Scroll-Rücksetzen. Das Ausgabefeld bleibt bei 800×600 und 100/150/200 % tatsächlich sichtbar.
+- Die vierte Arbeitsseite heißt bei jeder Schriftgröße „Übersicht“; Anleitung und bestehender Qt-Prüfpfad wurden angepasst.
+- Drei neue Qt-Regressionen, zwölf echte Seitenwechsel mit Bildschirmaufnahmen und der bestehende Phase-3-Starttest erfolgreich. Technische Offscreen-Prüfung unter Qt 6.9.1, keine reale Kubuntu-/Wayland-Freigabe.
+
 ## Unveröffentlicht · 31.10.2026 – Dokumentations- und Bestandsabgleich
 
 - `README.md` für Einsteiger in **drei Ebenen** gegliedert: nummerierte und tatsächlich vorhandene Kopierbefehle, ausführlicher Ablauf mit Index, farbig gekennzeichnete Hilfe mit Erklärung technischer Begriffe.

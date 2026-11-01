@@ -79,7 +79,7 @@ Das VideoBatch-Fenster bietet vier übersichtliche Bereiche:
 1. **1 · Dateien** – Audio, Bilder und Videos auswählen und Vorschau nutzen.
 2. **2 · Ausgabe** – Bildgröße, Qualität, Effekte und Zielordner festlegen.
 3. **3 · Produktion** – Dateipaare und Aufträge prüfen, Videos erstellen.
-4. **Dashboard** – zusätzliche Werkzeuge, Diagnosewege und Projektnotizen; bei großer Schrift wird die Bezeichnung gekürzt.
+4. **Übersicht** – zusätzliche Werkzeuge, Diagnosewege und Projektnotizen; der Name bleibt bei großer Schrift unverändert.
 
 **Auflösung, Qualität, Bildeffekt, Effektstärke, Videoblende und Ausgabeordner sind in der aktuellen Entwicklungsoberfläche unmittelbar erreichbar.** Die separate Diashow-Überblendung findest du im Diashow-Bereich. Lange Dateilisten dürfen innerhalb ihrer Liste scrollen; die wichtigsten Schaltflächen müssen erreichbar bleiben.
 
@@ -315,7 +315,7 @@ Bei einem ungültigen oder nicht mehr verfügbaren Effekt:
 
 ## Dashboard-Schnellnotiz
 
-🟢 **Optional:** Öffne **„Dashboard“**, schreibe eine kurze Notiz und drücke **Enter** oder **„Notiz anhängen“**. Das Programm schreibt den Text mit lokalem Zeitstempel in `VideoBatch_Notizen.txt` neben das aktive `.vbfast.json`-Projekt. Vorhandene Notizen bleiben erhalten.
+🟢 **Optional:** Öffne **„Übersicht“**, schreibe eine kurze Notiz und drücke **Enter** oder **„Notiz anhängen“**. Das Programm schreibt den Text mit lokalem Zeitstempel in `VideoBatch_Notizen.txt` neben das aktive `.vbfast.json`-Projekt. Vorhandene Notizen bleiben erhalten.
 
 🔵 **Projektwechsel:** Nach „Speichern unter“ oder dem Wechsel des Projekts zeigt die Oberfläche den dazugehörigen Notizpfad an. Eine Notiz ist eine separate Textdatei, kein Ersatz für die Sicherung deines Projekts oder deiner Medien.
 

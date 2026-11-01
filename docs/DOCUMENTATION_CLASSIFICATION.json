@@ -244,6 +244,9 @@
     },
     "toolchain_wheelhouse/README.md": {
       "category": "technical"
+    },
+    "docs/QA_NAVIGATION_20261101.md": {
+      "category": "technical"
     }
   },
   "excluded_relative_links": [],

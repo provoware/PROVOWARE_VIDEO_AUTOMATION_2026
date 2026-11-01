@@ -1,7 +1,7 @@
 {
   "directories": [
     {
-      "file_count_recursive": 673,
+      "file_count_recursive": 674,
       "path": "."
     },
     {
@@ -53,7 +53,7 @@
       "path": "diagnostics/root_migration"
     },
     {
-      "file_count_recursive": 153,
+      "file_count_recursive": 154,
       "path": "docs"
     },
     {
@@ -189,7 +189,7 @@
       "path": "visual_inspection"
     }
   ],
-  "file_count": 673,
+  "file_count": 674,
   "files": [
     {
       "blob_sha1": "2d03e169a3b5388838745e9ae92de4d88b340b72",
@@ -318,14 +318,14 @@
       "path": "AGENTS.md"
     },
     {
-      "blob_sha1": "f54343c5a125a201dc03f618a6ef6478cb6d6e2a",
+      "blob_sha1": "92196ba60bbb68d54f781727448f0a08c932c720",
       "category": "documentation",
       "lifecycle": "active",
       "mode": "100644",
       "path": "README.md"
     },
     {
-      "blob_sha1": "9bf327ccf4ffc88c33e967b07f9cbcbac3f7b2ac",
+      "blob_sha1": "6c01d2aecbfa1c7f61ed4d4fa63d92e4c6aa5d26",
       "category": "project_contract",
       "lifecycle": "active",
       "mode": "100644",
@@ -626,7 +626,7 @@
       "path": "docs/ARCHITEKTUR.md"
     },
     {
-      "blob_sha1": "e4168b4320d9c9adb062eaf361e18fcf78265a5a",
+      "blob_sha1": "4a15008261cdc70167e00557ab5ecd8d3541014b",
       "category": "documentation",
       "lifecycle": "active",
       "mode": "100644",
@@ -647,7 +647,7 @@
       "path": "docs/CALENDAR_TASK_OVERVIEW.md"
     },
     {
-      "blob_sha1": "369fd3d9f64318408ab2b2b32ab5d6f9f1507008",
+      "blob_sha1": "3fff9e06077a26741d264537ef229079297e61e5",
       "category": "documentation",
       "lifecycle": "active",
       "mode": "100644",
@@ -675,7 +675,7 @@
       "path": "docs/DATEI_UND_ORDNERINDEX.md"
     },
     {
-      "blob_sha1": "21a2c07c1cfcf1b1c4134db0e772581332ace73a",
+      "blob_sha1": "66288bd7ed89c061fbff5feece34e534a4ee5caa",
       "category": "documentation",
       "lifecycle": "active",
       "mode": "100644",
@@ -778,6 +778,13 @@
       "lifecycle": "active",
       "mode": "100644",
       "path": "docs/PLUGIN_SIGNING.md"
+    },
+    {
+      "blob_sha1": "5dba1187589c38f90aea0685150955eab12a4f45",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/QA_NAVIGATION_20261101.md"
     },
     {
       "blob_sha1": "7fce81eb3244cf9d4b07f0a165bc5fcf7ac8f513",
@@ -3293,7 +3300,7 @@
       "path": "src/videobatch_fast/qt_legacy_settings.py"
     },
     {
-      "blob_sha1": "77a610963491afe86eb9863c965d19502d951805",
+      "blob_sha1": "7d15545f626d2945bb1443df3c05cdd23fd73601",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
@@ -3398,7 +3405,7 @@
       "path": "src/videobatch_fast/qt_ui.py"
     },
     {
-      "blob_sha1": "8fd14404ed29786ad2c162261be803bb92c1a8e8",
+      "blob_sha1": "e3c62589eaf033cdbba4436185d09a85f0038924",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
@@ -3412,7 +3419,7 @@
       "path": "src/videobatch_fast/qt_workflow_dialogs.py"
     },
     {
-      "blob_sha1": "74d4e892ddd60e6b6a40aae4e26a7264fcdb6518",
+      "blob_sha1": "d2cd7cb311d2e98aa4cd7a2468bb03a5c828de90",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
@@ -3993,7 +4000,7 @@
       "path": "tests/qt_phase3_keyboard_matrix.py"
     },
     {
-      "blob_sha1": "afc687056f7ea4894983670fee2258fb7289c342",
+      "blob_sha1": "49e2c4271c9285d8a4b28ea67ed9079ea46b1d77",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",
@@ -4161,7 +4168,7 @@
       "path": "tests/test_display_formatting.py"
     },
     {
-      "blob_sha1": "0d1b34ef2ecb519a933259c2bd31e30dfc91f368",
+      "blob_sha1": "f61885e16912f6857c6bd063e23a7c831c6edbf4",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",
@@ -4455,7 +4462,7 @@
       "path": "tests/test_qt_phase3_contract.py"
     },
     {
-      "blob_sha1": "86e6887914f25144889ba8be45a49a5e0db34d6d",
+      "blob_sha1": "eb21135100a072e2a82993b77a37c61ca93d7354",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",
