@@ -318,6 +318,41 @@
       "path": "AGENTS.md"
     },
     {
+      "blob_sha1": "2dddf944073cde99d95637ef1cf8ddfd0e3a5987",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "Nutzer-Input-Agents.md"
+    },
+    {
+      "blob_sha1": "92196ba60bbb68d54f781727448f0a08c932c720",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "README.md"
+    },
+    {
+      "blob_sha1": "951e1211c6f6eb894499051f96afd5ad589ae83b",
+      "category": "project_contract",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "RELEASE_MANIFEST.json"
+    },
+    {
+      "blob_sha1": "073dd38900e900db9e15519d3724e79d00f2d16a",
+      "category": "entrypoint",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "STARTEN.sh"
+    },
+    {
+      "blob_sha1": "5679c3d971fe0ecbf25dea343bc83d3833fb7b17",
+      "category": "project_contract",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "VERSION.json"
+    },
+    {
       "blob_sha1": "c367e8ce457a945cb05dfe6f398d9050b17f36f1",
       "category": "project_contract",
       "lifecycle": "active",
@@ -337,13 +372,6 @@
       "lifecycle": "active",
       "mode": "100644",
       "path": "config/contracts/INSTALLER_SYSTEM_CONTRACT.json"
-    },
-    {
-      "blob_sha1": "cbf4a286bbd131c7bfec8c41711401d309dcff57",
-      "category": "project_contract",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "config/contracts/manifest.json"
     },
     {
       "blob_sha1": "de494aa8c52820239ae8762bbaa851f2d6c41b7b",
@@ -386,6 +414,13 @@
       "lifecycle": "active",
       "mode": "100644",
       "path": "config/contracts/TOOLCHAIN_CONTRACT.json"
+    },
+    {
+      "blob_sha1": "cbf4a286bbd131c7bfec8c41711401d309dcff57",
+      "category": "project_contract",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "config/contracts/manifest.json"
     },
     {
       "blob_sha1": "74b2b48f5abefbf482367e7128688235176f8915",
@@ -472,41 +507,6 @@
       "path": "diagnostics/release_readiness/CANDIDATE_PR240_QUALITY_STATUS.json"
     },
     {
-      "blob_sha1": "d8664c50ae51786c18a74c6c078460382a5bc20e",
-      "category": "diagnostics",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "diagnostics/release_readiness/ci_status.example.json"
-    },
-    {
-      "blob_sha1": "5daa68d400c072b433172492c4b8df24c1f5ce57",
-      "category": "diagnostics",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "diagnostics/release_readiness/engine_legacy.py"
-    },
-    {
-      "blob_sha1": "e137527fc555ef589b01a950fbd6d4ffd0b6e244",
-      "category": "diagnostics",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "diagnostics/release_readiness/engine.py"
-    },
-    {
-      "blob_sha1": "79bc8a73286094cbab8b50afab1a359dbf748079",
-      "category": "diagnostics",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "diagnostics/release_readiness/generate_candidate_quality.py"
-    },
-    {
-      "blob_sha1": "f0ea6ef2b730812e591ca4ae9ab25ad997a97df9",
-      "category": "diagnostics",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "diagnostics/release_readiness/generate_from_evidence.py"
-    },
-    {
       "blob_sha1": "c9fd5fe01ce9db899bebf9d7ffd1d7cb8829d6f2",
       "category": "diagnostics",
       "lifecycle": "active",
@@ -540,6 +540,41 @@
       "lifecycle": "active",
       "mode": "100644",
       "path": "diagnostics/release_readiness/RELEASE_EVIDENCE.json"
+    },
+    {
+      "blob_sha1": "d8664c50ae51786c18a74c6c078460382a5bc20e",
+      "category": "diagnostics",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "diagnostics/release_readiness/ci_status.example.json"
+    },
+    {
+      "blob_sha1": "e137527fc555ef589b01a950fbd6d4ffd0b6e244",
+      "category": "diagnostics",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "diagnostics/release_readiness/engine.py"
+    },
+    {
+      "blob_sha1": "5daa68d400c072b433172492c4b8df24c1f5ce57",
+      "category": "diagnostics",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "diagnostics/release_readiness/engine_legacy.py"
+    },
+    {
+      "blob_sha1": "79bc8a73286094cbab8b50afab1a359dbf748079",
+      "category": "diagnostics",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "diagnostics/release_readiness/generate_candidate_quality.py"
+    },
+    {
+      "blob_sha1": "f0ea6ef2b730812e591ca4ae9ab25ad997a97df9",
+      "category": "diagnostics",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "diagnostics/release_readiness/generate_from_evidence.py"
     },
     {
       "blob_sha1": "0dcb64e0d8b0160e406f45502ee5229e08871541",
@@ -598,6 +633,272 @@
       "path": "docs/ARCHITEKTUR.md"
     },
     {
+      "blob_sha1": "4a15008261cdc70167e00557ab5ecd8d3541014b",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/BENUTZERHANDBUCH.md"
+    },
+    {
+      "blob_sha1": "8dddbbad14e78869a6391711e268cf7387ade84c",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/CALENDAR_NOTES.md"
+    },
+    {
+      "blob_sha1": "3ce3b9067e7b00d6751bd660da16a1d0816ae95d",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/CALENDAR_TASK_OVERVIEW.md"
+    },
+    {
+      "blob_sha1": "3fff9e06077a26741d264537ef229079297e61e5",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/CHANGELOG.md"
+    },
+    {
+      "blob_sha1": "9052da9fae0617b5bfc518ffb75da14ddb2e3886",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/CODE_QUALITY_PIPELINE.md"
+    },
+    {
+      "blob_sha1": "2a05453cc3012abf441557225704df4f389dd5bd",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/DATA_INTEGRITY_HARDENING.md"
+    },
+    {
+      "blob_sha1": "7a6447f9088e1a3f3340d8ccc557760c83b92f32",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/DATEI_UND_ORDNERINDEX.md"
+    },
+    {
+      "blob_sha1": "f95788348922c1c86ffcf148baae75cd6683ba4e",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/DOCUMENTATION_CLASSIFICATION.json"
+    },
+    {
+      "blob_sha1": "418d401da6bf8a485f3e9d60dc6365902390be57",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/DOKUMENTATIONSINDEX.md"
+    },
+    {
+      "blob_sha1": "7718d871a9929d84aa4db683feb4b62e74e95357",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/DOKUMENTATIONSSTANDARD.md"
+    },
+    {
+      "blob_sha1": "6023597f3fb9c66c26c5bb47a0e31d730dea9bec",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/FAST_EFFECTS.md"
+    },
+    {
+      "blob_sha1": "9f28e5066316002ae6fa281a9568a0e3a8f5ff7a",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/KUBUNTU_26_04_QT_ABNAHME.md"
+    },
+    {
+      "blob_sha1": "efd00d9ebf9f9e28ee18b0d57f6ac9963d224f6c",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/KUBUNTU_26_04_WAYLAND.md"
+    },
+    {
+      "blob_sha1": "3a25aa2d5d01800d104c1a484c8a7c2b59d288a5",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/LONG_RENDER_2.8.3-rc24.md"
+    },
+    {
+      "blob_sha1": "5e393ced235eb4abe65f2b7eae9f6e7b49824ecd",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/OFFLINE_QUALITY_ENVIRONMENT.md"
+    },
+    {
+      "blob_sha1": "9d78db7d54283c8cdf0259dde8a2501fc4b98ac8",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/OPTIMIERUNGSPROTOKOLL.md"
+    },
+    {
+      "blob_sha1": "fa1714e95788b497656f266ce683b3e400b18686",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/PHASE2_FREEZE.md"
+    },
+    {
+      "blob_sha1": "4363a7aca231cab2be82ba9ed80a969b6e5d7203",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/PLUGIN_APPROVALS.md"
+    },
+    {
+      "blob_sha1": "a2e0776dc2d074efdead66684efbc65246fe41f3",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/PLUGIN_APPROVAL_MANAGEMENT.md"
+    },
+    {
+      "blob_sha1": "4f3a194967f4034b5a99eb2815e68847fb857341",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/PLUGIN_OS_ISOLATION.md"
+    },
+    {
+      "blob_sha1": "3dccb718dea034f04331189201e8cc9ea4bc64a2",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/PLUGIN_PERMISSIONS.md"
+    },
+    {
+      "blob_sha1": "cc74c2bcdab16bc8076b0ceb449a80e3d5007ead",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/PLUGIN_SIGNING.md"
+    },
+    {
+      "blob_sha1": "5dba1187589c38f90aea0685150955eab12a4f45",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/QA_NAVIGATION_20261101.md"
+    },
+    {
+      "blob_sha1": "7fce81eb3244cf9d4b07f0a165bc5fcf7ac8f513",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/QT6_PHASE2_MIGRATION_MATRIX.md"
+    },
+    {
+      "blob_sha1": "bf9ea4bb1639722427dc848ba0c361020341f69e",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/QUICK_MODES.md"
+    },
+    {
+      "blob_sha1": "acdfdc98904876e4edb3c2d4d0e5c3014679499e",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/REPRODUCIBLE_UPDATE_PIPELINE.md"
+    },
+    {
+      "blob_sha1": "245bb1761b415b3bcc021fe04f319ee77d4f22c1",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md"
+    },
+    {
+      "blob_sha1": "6bcdaeb8d9d45ba7888944c7caa2b116499f484b",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/STATUS.md"
+    },
+    {
+      "blob_sha1": "de6d3c18a5935ea70b264fcee2b9ebaf2604ba50",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/TODO.md"
+    },
+    {
+      "blob_sha1": "f69ccbab463704e02ba51f1fe27e58c2936f3144",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/VIDEOBATCH_CP_UX_IMPLEMENTIERUNGSSTAND_2026.md"
+    },
+    {
+      "blob_sha1": "8c7c299a9c5cd02a8cd41eb433e34e6a9c316fd3",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/VIDEOBATCH_CP_UX_LAIENPRUEFUNG_2026.md"
+    },
+    {
+      "blob_sha1": "57e96244e6a76b407810abaa78b5b12a089ec373",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/VISUAL_DESKTOP_APPROVAL.md"
+    },
+    {
+      "blob_sha1": "b1ed271c0d315ae783a20d460f9f902023927d13",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/VISUAL_INSPECTION_HTML.md"
+    },
+    {
+      "blob_sha1": "ce6c735e3395d29144ad9ba0449dfba85e7a00d3",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/VISUAL_REGRESSION.md"
+    },
+    {
+      "blob_sha1": "4e28535f823d51a4e3eb5969255d5d133f17794b",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/WORKSPACE_2X2_AND_DEBUGGING.md"
+    },
+    {
+      "blob_sha1": "0b2b5c760f9a995b01528f41f6bfa6b70e7296a5",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/WORKSPACE_LAYOUT_PROFILES.md"
+    },
+    {
+      "blob_sha1": "2915ab79010353894be3295c94322fe4f33cbe03",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/WORKSPACE_VISUAL_REGRESSION.md"
+    },
+    {
+      "blob_sha1": "04b2012df736bae80d52d67dd77ac00bc7e76a3c",
+      "category": "historical",
+      "lifecycle": "historical",
+      "mode": "100644",
+      "path": "docs/archive/diagnostics-checkpoints/README.md"
+    },
+    {
       "blob_sha1": "500b8a2c4e14af81c0945db4178ded427b295226",
       "category": "historical",
       "lifecycle": "historical",
@@ -619,6 +920,13 @@
       "path": "docs/archive/diagnostics-checkpoints/checkpoint2/CHECKPOINT2_RESULT.json"
     },
     {
+      "blob_sha1": "4951d8927c1af83721425a3a24b65ae55ee18475",
+      "category": "historical",
+      "lifecycle": "historical",
+      "mode": "100644",
+      "path": "docs/archive/diagnostics-checkpoints/checkpoint2/FINAL_GATE_TRIGGER.json"
+    },
+    {
       "blob_sha1": "fa652fa6f13743ad94d0542a9879edd486d51a9e",
       "category": "historical",
       "lifecycle": "historical",
@@ -638,13 +946,6 @@
       "lifecycle": "historical",
       "mode": "100644",
       "path": "docs/archive/diagnostics-checkpoints/checkpoint2/FINAL_GATE_TRIGGER_4.json"
-    },
-    {
-      "blob_sha1": "4951d8927c1af83721425a3a24b65ae55ee18475",
-      "category": "historical",
-      "lifecycle": "historical",
-      "mode": "100644",
-      "path": "docs/archive/diagnostics-checkpoints/checkpoint2/FINAL_GATE_TRIGGER.json"
     },
     {
       "blob_sha1": "9f548b1273eafecf33067863087ecd6c03b6806c",
@@ -673,13 +974,6 @@
       "lifecycle": "historical",
       "mode": "100644",
       "path": "docs/archive/diagnostics-checkpoints/checkpoint3/POST_MAIN_FINAL_GATE.json"
-    },
-    {
-      "blob_sha1": "04b2012df736bae80d52d67dd77ac00bc7e76a3c",
-      "category": "historical",
-      "lifecycle": "historical",
-      "mode": "100644",
-      "path": "docs/archive/diagnostics-checkpoints/README.md"
     },
     {
       "blob_sha1": "009243f481b63e95ab369a58cd8b78a6bb39279e",
@@ -731,6 +1025,13 @@
       "path": "docs/archive/rc24/VideoBatch_Fast_2.8.3-rc24_BUILD_REPORT_save_.json"
     },
     {
+      "blob_sha1": "346c5a1ceacb8b0b71fd94b404dd3d6780b14496",
+      "category": "historical",
+      "lifecycle": "historical",
+      "mode": "100644",
+      "path": "docs/archive/reference-layouts/README.md"
+    },
+    {
       "blob_sha1": "e77f81e65b546362d46615d532ce4367647fee59",
       "category": "historical",
       "lifecycle": "historical",
@@ -743,13 +1044,6 @@
       "lifecycle": "historical",
       "mode": "100644",
       "path": "docs/archive/reference-layouts/mustervorlage_orientierung_design_layout.png"
-    },
-    {
-      "blob_sha1": "346c5a1ceacb8b0b71fd94b404dd3d6780b14496",
-      "category": "historical",
-      "lifecycle": "historical",
-      "mode": "100644",
-      "path": "docs/archive/reference-layouts/README.md"
     },
     {
       "blob_sha1": "9ab7808a380e8b5b780806947f04cb1bc1e43012",
@@ -1228,6 +1522,20 @@
       "path": "docs/archive/release-history/VIDEOBATCH_BILDVERGLEICH_CHECKLISTE_2026-08-07.txt"
     },
     {
+      "blob_sha1": "e00e92602703135f4e06379ca96a509cf34aacce",
+      "category": "historical",
+      "lifecycle": "historical",
+      "mode": "100644",
+      "path": "docs/archive/release-history/VISUAL_DESKTOP_APPROVAL.md"
+    },
+    {
+      "blob_sha1": "8ede9af7b5da1beb9a6bffa8869585cb373b644e",
+      "category": "historical",
+      "lifecycle": "historical",
+      "mode": "100644",
+      "path": "docs/archive/release-history/VISUAL_LAYOUT_ANALYSIS_2_4.md"
+    },
+    {
       "blob_sha1": "3a0c2eb0f40c1e59fdab2fcbe1f6a0140e8f408a",
       "category": "historical",
       "lifecycle": "historical",
@@ -1247,69 +1555,6 @@
       "lifecycle": "historical",
       "mode": "100644",
       "path": "docs/archive/release-history/VideoBatch_Fast_2.8.3-rc23_BUILD_REPORT.json"
-    },
-    {
-      "blob_sha1": "e00e92602703135f4e06379ca96a509cf34aacce",
-      "category": "historical",
-      "lifecycle": "historical",
-      "mode": "100644",
-      "path": "docs/archive/release-history/VISUAL_DESKTOP_APPROVAL.md"
-    },
-    {
-      "blob_sha1": "8ede9af7b5da1beb9a6bffa8869585cb373b644e",
-      "category": "historical",
-      "lifecycle": "historical",
-      "mode": "100644",
-      "path": "docs/archive/release-history/VISUAL_LAYOUT_ANALYSIS_2_4.md"
-    },
-    {
-      "blob_sha1": "4a15008261cdc70167e00557ab5ecd8d3541014b",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/BENUTZERHANDBUCH.md"
-    },
-    {
-      "blob_sha1": "8dddbbad14e78869a6391711e268cf7387ade84c",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/CALENDAR_NOTES.md"
-    },
-    {
-      "blob_sha1": "3ce3b9067e7b00d6751bd660da16a1d0816ae95d",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/CALENDAR_TASK_OVERVIEW.md"
-    },
-    {
-      "blob_sha1": "3fff9e06077a26741d264537ef229079297e61e5",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/CHANGELOG.md"
-    },
-    {
-      "blob_sha1": "9052da9fae0617b5bfc518ffb75da14ddb2e3886",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/CODE_QUALITY_PIPELINE.md"
-    },
-    {
-      "blob_sha1": "2a05453cc3012abf441557225704df4f389dd5bd",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/DATA_INTEGRITY_HARDENING.md"
-    },
-    {
-      "blob_sha1": "7a6447f9088e1a3f3340d8ccc557760c83b92f32",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/DATEI_UND_ORDNERINDEX.md"
     },
     {
       "blob_sha1": "cd080b22b10a59eb38b384b6ae617654d44af038",
@@ -1340,13 +1585,6 @@
       "path": "docs/design/VIDEOBATCH_DESIGN_TOKENS.json"
     },
     {
-      "blob_sha1": "5a24179dc004cc7b4461c029516883dc80e50477",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/design/VIDEOBATCH_GRAPHICS_MANIFEST_POSTER.svg"
-    },
-    {
       "blob_sha1": "6c59a77b7cebe41e39befb148f81c9f03f061bfd",
       "category": "documentation",
       "lifecycle": "active",
@@ -1354,60 +1592,18 @@
       "path": "docs/design/VIDEOBATCH_GRAPHICS_MANIFEST.md"
     },
     {
+      "blob_sha1": "5a24179dc004cc7b4461c029516883dc80e50477",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/design/VIDEOBATCH_GRAPHICS_MANIFEST_POSTER.svg"
+    },
+    {
       "blob_sha1": "e1a2c4ddd7de807337d19e7e52969f65b2c948c6",
       "category": "documentation",
       "lifecycle": "active",
       "mode": "100644",
       "path": "docs/design/VIDEOBATCH_QA_AUDIT_2026-10-20.md"
-    },
-    {
-      "blob_sha1": "f95788348922c1c86ffcf148baae75cd6683ba4e",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/DOCUMENTATION_CLASSIFICATION.json"
-    },
-    {
-      "blob_sha1": "418d401da6bf8a485f3e9d60dc6365902390be57",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/DOKUMENTATIONSINDEX.md"
-    },
-    {
-      "blob_sha1": "7718d871a9929d84aa4db683feb4b62e74e95357",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/DOKUMENTATIONSSTANDARD.md"
-    },
-    {
-      "blob_sha1": "6023597f3fb9c66c26c5bb47a0e31d730dea9bec",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/FAST_EFFECTS.md"
-    },
-    {
-      "blob_sha1": "9f28e5066316002ae6fa281a9568a0e3a8f5ff7a",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/KUBUNTU_26_04_QT_ABNAHME.md"
-    },
-    {
-      "blob_sha1": "efd00d9ebf9f9e28ee18b0d57f6ac9963d224f6c",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/KUBUNTU_26_04_WAYLAND.md"
-    },
-    {
-      "blob_sha1": "3a25aa2d5d01800d104c1a484c8a7c2b59d288a5",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/LONG_RENDER_2.8.3-rc24.md"
     },
     {
       "blob_sha1": "9749c2bd5b496a38c032ebe7d2a3bf1d40ac4e36",
@@ -1429,83 +1625,6 @@
       "lifecycle": "active",
       "mode": "100644",
       "path": "docs/manuals/UPDATE_SYSTEM.md"
-    },
-    {
-      "blob_sha1": "5e393ced235eb4abe65f2b7eae9f6e7b49824ecd",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/OFFLINE_QUALITY_ENVIRONMENT.md"
-    },
-    {
-      "blob_sha1": "9d78db7d54283c8cdf0259dde8a2501fc4b98ac8",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/OPTIMIERUNGSPROTOKOLL.md"
-    },
-    {
-      "blob_sha1": "fa1714e95788b497656f266ce683b3e400b18686",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/PHASE2_FREEZE.md"
-    },
-    {
-      "blob_sha1": "a2e0776dc2d074efdead66684efbc65246fe41f3",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/PLUGIN_APPROVAL_MANAGEMENT.md"
-    },
-    {
-      "blob_sha1": "4363a7aca231cab2be82ba9ed80a969b6e5d7203",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/PLUGIN_APPROVALS.md"
-    },
-    {
-      "blob_sha1": "4f3a194967f4034b5a99eb2815e68847fb857341",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/PLUGIN_OS_ISOLATION.md"
-    },
-    {
-      "blob_sha1": "3dccb718dea034f04331189201e8cc9ea4bc64a2",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/PLUGIN_PERMISSIONS.md"
-    },
-    {
-      "blob_sha1": "cc74c2bcdab16bc8076b0ceb449a80e3d5007ead",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/PLUGIN_SIGNING.md"
-    },
-    {
-      "blob_sha1": "5dba1187589c38f90aea0685150955eab12a4f45",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/QA_NAVIGATION_20261101.md"
-    },
-    {
-      "blob_sha1": "7fce81eb3244cf9d4b07f0a165bc5fcf7ac8f513",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/QT6_PHASE2_MIGRATION_MATRIX.md"
-    },
-    {
-      "blob_sha1": "bf9ea4bb1639722427dc848ba0c361020341f69e",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/QUICK_MODES.md"
     },
     {
       "blob_sha1": "aae35ae9be8d15e2314155c921af05552dc6802c",
@@ -1564,20 +1683,6 @@
       "path": "docs/reference/VISUAL_APPROVAL_NORMALIZATION.md"
     },
     {
-      "blob_sha1": "acdfdc98904876e4edb3c2d4d0e5c3014679499e",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/REPRODUCIBLE_UPDATE_PIPELINE.md"
-    },
-    {
-      "blob_sha1": "245bb1761b415b3bcc021fe04f319ee77d4f22c1",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/STABLE_ACCEPTANCE_EVIDENCE.md"
-    },
-    {
       "blob_sha1": "52e87fde50e0ad32ef3bba1cedeb4859281d0155",
       "category": "documentation",
       "lifecycle": "active",
@@ -1599,95 +1704,11 @@
       "path": "docs/start/START_HIER_save_.md"
     },
     {
-      "blob_sha1": "6bcdaeb8d9d45ba7888944c7caa2b116499f484b",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/STATUS.md"
-    },
-    {
-      "blob_sha1": "de6d3c18a5935ea70b264fcee2b9ebaf2604ba50",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/TODO.md"
-    },
-    {
-      "blob_sha1": "f69ccbab463704e02ba51f1fe27e58c2936f3144",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/VIDEOBATCH_CP_UX_IMPLEMENTIERUNGSSTAND_2026.md"
-    },
-    {
-      "blob_sha1": "8c7c299a9c5cd02a8cd41eb433e34e6a9c316fd3",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/VIDEOBATCH_CP_UX_LAIENPRUEFUNG_2026.md"
-    },
-    {
-      "blob_sha1": "57e96244e6a76b407810abaa78b5b12a089ec373",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/VISUAL_DESKTOP_APPROVAL.md"
-    },
-    {
-      "blob_sha1": "b1ed271c0d315ae783a20d460f9f902023927d13",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/VISUAL_INSPECTION_HTML.md"
-    },
-    {
-      "blob_sha1": "ce6c735e3395d29144ad9ba0449dfba85e7a00d3",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/VISUAL_REGRESSION.md"
-    },
-    {
-      "blob_sha1": "4e28535f823d51a4e3eb5969255d5d133f17794b",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/WORKSPACE_2X2_AND_DEBUGGING.md"
-    },
-    {
-      "blob_sha1": "0b2b5c760f9a995b01528f41f6bfa6b70e7296a5",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/WORKSPACE_LAYOUT_PROFILES.md"
-    },
-    {
-      "blob_sha1": "2915ab79010353894be3295c94322fe4f33cbe03",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "docs/WORKSPACE_VISUAL_REGRESSION.md"
-    },
-    {
-      "blob_sha1": "2dddf944073cde99d95637ef1cf8ddfd0e3a5987",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "Nutzer-Input-Agents.md"
-    },
-    {
       "blob_sha1": "3ee0b10676fe12890651222175dbf82c404929be",
       "category": "project_contract",
       "lifecycle": "active",
       "mode": "100644",
       "path": "pyproject.toml"
-    },
-    {
-      "blob_sha1": "92196ba60bbb68d54f781727448f0a08c932c720",
-      "category": "documentation",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "README.md"
     },
     {
       "blob_sha1": "3058e3483ee170f6acf839219fcc571e7210753b",
@@ -1807,13 +1828,6 @@
       "lifecycle": "active",
       "mode": "100644",
       "path": "registries/WORKSPACE_LAYOUT_REGISTRY.json"
-    },
-    {
-      "blob_sha1": "951e1211c6f6eb894499051f96afd5ad589ae83b",
-      "category": "project_contract",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "RELEASE_MANIFEST.json"
     },
     {
       "blob_sha1": "525c479cde6091737777e00fe1303ac5b022d104",
@@ -2166,18 +2180,18 @@
       "path": "scripts/debug_launcher.py"
     },
     {
-      "blob_sha1": "f6b2c6159750a691d4f9fddd8add83292542b911",
-      "category": "development",
-      "lifecycle": "development",
-      "mode": "100755",
-      "path": "scripts/dev/build_artifacts.sh"
-    },
-    {
       "blob_sha1": "4b5ca8bed4cf2055446ea813b25d1efc4f32f36d",
       "category": "development",
       "lifecycle": "development",
       "mode": "100755",
       "path": "scripts/dev/FEHLERLABOR.sh"
+    },
+    {
+      "blob_sha1": "f6b2c6159750a691d4f9fddd8add83292542b911",
+      "category": "development",
+      "lifecycle": "development",
+      "mode": "100755",
+      "path": "scripts/dev/build_artifacts.sh"
     },
     {
       "blob_sha1": "265d7734bda5890e79004d350591de95a9f5093b",
@@ -2250,13 +2264,6 @@
       "path": "scripts/generate_test_media.py"
     },
     {
-      "blob_sha1": "826b74ecd43a746c3e96b5ab00115fcc32771e3c",
-      "category": "development",
-      "lifecycle": "development",
-      "mode": "100644",
-      "path": "scripts/install_kubuntu_26_04_wayland.sh"
-    },
-    {
       "blob_sha1": "d6b6ce705a3a364dc4f9dd49b55ad5f3d9279089",
       "category": "development",
       "lifecycle": "development",
@@ -2269,6 +2276,13 @@
       "lifecycle": "development",
       "mode": "100644",
       "path": "scripts/install/setup.sh"
+    },
+    {
+      "blob_sha1": "826b74ecd43a746c3e96b5ab00115fcc32771e3c",
+      "category": "development",
+      "lifecycle": "development",
+      "mode": "100644",
+      "path": "scripts/install_kubuntu_26_04_wayland.sh"
     },
     {
       "blob_sha1": "a1631f2da39ebef736ff0db1727ea2acf5068fd4",
@@ -2362,13 +2376,6 @@
       "path": "scripts/register_plugin_public_key.py"
     },
     {
-      "blob_sha1": "b6e13d88ee75c021d97e02226f17a4a261a1ff2f",
-      "category": "development",
-      "lifecycle": "development",
-      "mode": "100644",
-      "path": "scripts/release_file_contract.py"
-    },
-    {
       "blob_sha1": "c96c165b3f77d429ad6cffbafd56e9f9284813a1",
       "category": "development",
       "lifecycle": "development",
@@ -2388,6 +2395,13 @@
       "lifecycle": "development",
       "mode": "100755",
       "path": "scripts/release/stable_release.sh"
+    },
+    {
+      "blob_sha1": "b6e13d88ee75c021d97e02226f17a4a261a1ff2f",
+      "category": "development",
+      "lifecycle": "development",
+      "mode": "100644",
+      "path": "scripts/release_file_contract.py"
     },
     {
       "blob_sha1": "c9d8c76bddcc9b8b5142ff2cd485d86682f6d639",
@@ -2481,18 +2495,18 @@
       "path": "scripts/test_workspace_layout_profiles_gui.py"
     },
     {
-      "blob_sha1": "2c280334f9c6c17aa5e7808f9249ae116e3d33a3",
-      "category": "development",
-      "lifecycle": "development",
-      "mode": "100644",
-      "path": "scripts/toolchain_common.py"
-    },
-    {
       "blob_sha1": "de138707a5a055cc321eb56a148d3945880a1fa0",
       "category": "development",
       "lifecycle": "development",
       "mode": "100644",
       "path": "scripts/toolchain.py"
+    },
+    {
+      "blob_sha1": "2c280334f9c6c17aa5e7808f9249ae116e3d33a3",
+      "category": "development",
+      "lifecycle": "development",
+      "mode": "100644",
+      "path": "scripts/toolchain_common.py"
     },
     {
       "blob_sha1": "629b9e281b2e883ee8006c8996c753191225f342",
@@ -2642,6 +2656,13 @@
       "path": "scripts/verify_visual_isolated.py"
     },
     {
+      "blob_sha1": "db41b87aba0581b5cddf159a83aa1295be3c81cc",
+      "category": "application",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "src/provoware_grid/README.md"
+    },
+    {
       "blob_sha1": "f771121ceaa63bf8776ff681b9ca42bd086fb217",
       "category": "application",
       "lifecycle": "active",
@@ -2670,13 +2691,6 @@
       "path": "src/provoware_grid/grid-v1.css"
     },
     {
-      "blob_sha1": "db41b87aba0581b5cddf159a83aa1295be3c81cc",
-      "category": "application",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "src/provoware_grid/README.md"
-    },
-    {
       "blob_sha1": "d5c3817e0725c49f107fbd93b5b77482f9336184",
       "category": "application",
       "lifecycle": "active",
@@ -2691,18 +2705,18 @@
       "path": "src/videobatch_fast/__main__.py"
     },
     {
-      "blob_sha1": "357fb5878260fde8d790585526324ba635e62016",
-      "category": "application",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "src/videobatch_fast/app_events.py"
-    },
-    {
       "blob_sha1": "4ec52895531e34dc636a7a9541b69544a5eca99b",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
       "path": "src/videobatch_fast/app.py"
+    },
+    {
+      "blob_sha1": "357fb5878260fde8d790585526324ba635e62016",
+      "category": "application",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "src/videobatch_fast/app_events.py"
     },
     {
       "blob_sha1": "03ad5d1fbafea1792e751dfc691ad71067c1be09",
@@ -2782,6 +2796,13 @@
       "path": "src/videobatch_fast/canonical_help_status_mixin.py"
     },
     {
+      "blob_sha1": "594779935cf7444c50ed2902b4265fea2ebfb2c7",
+      "category": "application",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "src/videobatch_fast/canonical_kpi.py"
+    },
+    {
       "blob_sha1": "c4ec37f68ca13e529ed741756d4bac167e5aa166",
       "category": "application",
       "lifecycle": "active",
@@ -2801,13 +2822,6 @@
       "lifecycle": "active",
       "mode": "100644",
       "path": "src/videobatch_fast/canonical_kpi_state.py"
-    },
-    {
-      "blob_sha1": "594779935cf7444c50ed2902b4265fea2ebfb2c7",
-      "category": "application",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "src/videobatch_fast/canonical_kpi.py"
     },
     {
       "blob_sha1": "05d3108e48c092bf6a6615336ce6aae7799b394e",
@@ -3069,18 +3083,18 @@
       "path": "src/videobatch_fast/media_import_dialog.py"
     },
     {
-      "blob_sha1": "f5bbb32ec5815d93ff569d80966da10a9c108660",
-      "category": "application",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "src/videobatch_fast/media_index_preferences.py"
-    },
-    {
       "blob_sha1": "2168e93033abb34add13d54c3ed9cf75c641c0d0",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
       "path": "src/videobatch_fast/media_index.py"
+    },
+    {
+      "blob_sha1": "f5bbb32ec5815d93ff569d80966da10a9c108660",
+      "category": "application",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "src/videobatch_fast/media_index_preferences.py"
     },
     {
       "blob_sha1": "2e1903252753106d588cc2f11b802c7d9d1f1701",
@@ -3216,18 +3230,18 @@
       "path": "src/videobatch_fast/preview_service.py"
     },
     {
-      "blob_sha1": "1dec6091319a743527e48258acb0ad53757c0add",
-      "category": "application",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "src/videobatch_fast/probe_render.py"
-    },
-    {
       "blob_sha1": "be24f5d028d9b7c7dda75390c36757dadceff841",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
       "path": "src/videobatch_fast/probe.py"
+    },
+    {
+      "blob_sha1": "1dec6091319a743527e48258acb0ad53757c0add",
+      "category": "application",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "src/videobatch_fast/probe_render.py"
     },
     {
       "blob_sha1": "f9c950808130751c3f6a7f50d79e7206310b77e0",
@@ -3265,18 +3279,18 @@
       "path": "src/videobatch_fast/qt_legacy_calendar.py"
     },
     {
-      "blob_sha1": "169253cdd286915d51de0f8f37ded6abe10710f9",
-      "category": "application",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "src/videobatch_fast/qt_legacy_parity_completion.py"
-    },
-    {
       "blob_sha1": "829c8a5fb5d167163543a03da9b5505dbfb96fc9",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
       "path": "src/videobatch_fast/qt_legacy_parity.py"
+    },
+    {
+      "blob_sha1": "169253cdd286915d51de0f8f37ded6abe10710f9",
+      "category": "application",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "src/videobatch_fast/qt_legacy_parity_completion.py"
     },
     {
       "blob_sha1": "0d70f8ae72f046aa8e0d69a2919e78ee5ffb2706",
@@ -3314,6 +3328,13 @@
       "path": "src/videobatch_fast/qt_media_list.py"
     },
     {
+      "blob_sha1": "d32a0713c61d722a2e95f0977998c895e69b34c0",
+      "category": "application",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "src/videobatch_fast/qt_phase2.py"
+    },
+    {
       "blob_sha1": "63d1b47db52ac89cf8ff0847df964071e8700cbb",
       "category": "application",
       "lifecycle": "active",
@@ -3328,11 +3349,11 @@
       "path": "src/videobatch_fast/qt_phase2_selection_preview.py"
     },
     {
-      "blob_sha1": "d32a0713c61d722a2e95f0977998c895e69b34c0",
+      "blob_sha1": "afb41b09928e8eaef72893511986350625ec4409",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
-      "path": "src/videobatch_fast/qt_phase2.py"
+      "path": "src/videobatch_fast/qt_phase3.py"
     },
     {
       "blob_sha1": "741da8ca624e151fcb6996659eaa55394cdb625c",
@@ -3340,13 +3361,6 @@
       "lifecycle": "active",
       "mode": "100644",
       "path": "src/videobatch_fast/qt_phase3_components.py"
-    },
-    {
-      "blob_sha1": "afb41b09928e8eaef72893511986350625ec4409",
-      "category": "application",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "src/videobatch_fast/qt_phase3.py"
     },
     {
       "blob_sha1": "2cad02156e5b768cf097ff7b4af594d2a4d00205",
@@ -3391,18 +3405,18 @@
       "path": "src/videobatch_fast/qt_thumbnail_cache.py"
     },
     {
-      "blob_sha1": "e3c62589eaf033cdbba4436185d09a85f0038924",
-      "category": "application",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "src/videobatch_fast/qt_ui_polish.py"
-    },
-    {
       "blob_sha1": "86f81b37e03ef51214c264bed95d3e3ca214bb20",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
       "path": "src/videobatch_fast/qt_ui.py"
+    },
+    {
+      "blob_sha1": "e3c62589eaf033cdbba4436185d09a85f0038924",
+      "category": "application",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "src/videobatch_fast/qt_ui_polish.py"
     },
     {
       "blob_sha1": "21d1ee7e70f6ad282b93a2bcb24669c0fffd8e24",
@@ -3475,6 +3489,13 @@
       "path": "src/videobatch_fast/retry_queue.py"
     },
     {
+      "blob_sha1": "45bbe651fb8aae84146110f934dabce70aa1f400",
+      "category": "application",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "src/videobatch_fast/runner.py"
+    },
+    {
       "blob_sha1": "3467a8b775b3cd43c6903974d1079c990b7cc0f1",
       "category": "application",
       "lifecycle": "active",
@@ -3487,13 +3508,6 @@
       "lifecycle": "active",
       "mode": "100644",
       "path": "src/videobatch_fast/runner_process.py"
-    },
-    {
-      "blob_sha1": "45bbe651fb8aae84146110f934dabce70aa1f400",
-      "category": "application",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "src/videobatch_fast/runner.py"
     },
     {
       "blob_sha1": "ed09fe1518f2ea49bc9bedbb97237fb3dd76f698",
@@ -3531,6 +3545,13 @@
       "path": "src/videobatch_fast/selection_summary.py"
     },
     {
+      "blob_sha1": "dbb1f1bf5c8e589c5ddef3407be477e4102b0aa3",
+      "category": "application",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "src/videobatch_fast/slideshow.py"
+    },
+    {
       "blob_sha1": "95d1eb21a735c2aa06d507cc1f5440d759864b98",
       "category": "application",
       "lifecycle": "active",
@@ -3543,13 +3564,6 @@
       "lifecycle": "active",
       "mode": "100644",
       "path": "src/videobatch_fast/slideshow_sequence.py"
-    },
-    {
-      "blob_sha1": "dbb1f1bf5c8e589c5ddef3407be477e4102b0aa3",
-      "category": "application",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "src/videobatch_fast/slideshow.py"
     },
     {
       "blob_sha1": "2a283e7362f23c7b2a39d1ecaa9ea43b9084ac2d",
@@ -3592,6 +3606,13 @@
       "lifecycle": "active",
       "mode": "100644",
       "path": "src/videobatch_fast/thumbnail_grid.py"
+    },
+    {
+      "blob_sha1": "8e328ff971eb2833a26a2cdd297cdf84a9a1c9f5",
+      "category": "application",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "src/videobatch_fast/ui.py"
     },
     {
       "blob_sha1": "e6a6e58d185ac95011a9d18860ef1e898dcf347e",
@@ -3699,13 +3720,6 @@
       "path": "src/videobatch_fast/ui_workspace_shell_layout_mixin.py"
     },
     {
-      "blob_sha1": "8e328ff971eb2833a26a2cdd297cdf84a9a1c9f5",
-      "category": "application",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "src/videobatch_fast/ui.py"
-    },
-    {
       "blob_sha1": "afb464a34cb742639c1842de5044a7d4e8458636",
       "category": "application",
       "lifecycle": "active",
@@ -3788,13 +3802,6 @@
       "lifecycle": "active",
       "mode": "100644",
       "path": "src/videobatch_fast/workflow_layout.py"
-    },
-    {
-      "blob_sha1": "073dd38900e900db9e15519d3724e79d00f2d16a",
-      "category": "entrypoint",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "STARTEN.sh"
     },
     {
       "blob_sha1": "b18a896e1ba31cc16ff365880cddf6700b32758a",
@@ -4252,18 +4259,18 @@
       "path": "tests/test_long_render_contract.py"
     },
     {
-      "blob_sha1": "aa7a8d29c61e045a5b2ffdc29093a6cb958f4d75",
-      "category": "tests",
-      "lifecycle": "development",
-      "mode": "100644",
-      "path": "tests/test_media_index_preferences.py"
-    },
-    {
       "blob_sha1": "5fd0febf6bc0f678545d79970fa0ef24cb787605",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",
       "path": "tests/test_media_index.py"
+    },
+    {
+      "blob_sha1": "aa7a8d29c61e045a5b2ffdc29093a6cb958f4d75",
+      "category": "tests",
+      "lifecycle": "development",
+      "mode": "100644",
+      "path": "tests/test_media_index_preferences.py"
     },
     {
       "blob_sha1": "a0d309ad05bcef03406ba934b1f8a1a55be09cce",
@@ -4406,18 +4413,18 @@
       "path": "tests/test_project_file_index_20261018.py"
     },
     {
-      "blob_sha1": "696fa8f3697f1f7c50fd74a6763b62369e9f8784",
-      "category": "tests",
-      "lifecycle": "development",
-      "mode": "100644",
-      "path": "tests/test_project_state_safety.py"
-    },
-    {
       "blob_sha1": "0e2a1749789bc7f7a804f27a84883f05718997ca",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",
       "path": "tests/test_project_state.py"
+    },
+    {
+      "blob_sha1": "696fa8f3697f1f7c50fd74a6763b62369e9f8784",
+      "category": "tests",
+      "lifecycle": "development",
+      "mode": "100644",
+      "path": "tests/test_project_state_safety.py"
     },
     {
       "blob_sha1": "61ea17f114ad15c3afbaf2486ee2545532880351",
@@ -4616,18 +4623,18 @@
       "path": "tests/test_rc24_selected_media_crash.py"
     },
     {
-      "blob_sha1": "5795fc568a40d396c2755010b903a79c8be60071",
-      "category": "tests",
-      "lifecycle": "development",
-      "mode": "100644",
-      "path": "tests/test_real_ffmpeg_smoke.py"
-    },
-    {
       "blob_sha1": "05ae8d0ba7bb968f67bf31deebb85fc0af4527c5",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",
       "path": "tests/test_real_ffmpeg.py"
+    },
+    {
+      "blob_sha1": "5795fc568a40d396c2755010b903a79c8be60071",
+      "category": "tests",
+      "lifecycle": "development",
+      "mode": "100644",
+      "path": "tests/test_real_ffmpeg_smoke.py"
     },
     {
       "blob_sha1": "5c755038a609a49bf07af42bc9e187b1bf16dcc4",
@@ -4894,13 +4901,6 @@
       "lifecycle": "active",
       "mode": "100644",
       "path": "toolchain_wheelhouse/README.md"
-    },
-    {
-      "blob_sha1": "5679c3d971fe0ecbf25dea343bc83d3833fb7b17",
-      "category": "project_contract",
-      "lifecycle": "active",
-      "mode": "100644",
-      "path": "VERSION.json"
     },
     {
       "blob_sha1": "b755a527e9eec7cf4e901c02cf084ba71b0080c9",
