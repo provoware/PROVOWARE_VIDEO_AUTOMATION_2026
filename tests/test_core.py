@@ -5,6 +5,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from PIL import Image
+
 from videobatch_fast.command_builder import build_command, can_use_fast_copy
 from videobatch_fast.effects import speed_summary
 from videobatch_fast.config import normalize_config
@@ -13,6 +15,7 @@ from videobatch_fast.naming import safe_stem, unique_output_path
 from videobatch_fast.probe import classify_extension
 from videobatch_fast.playlist import Playlist
 from videobatch_fast.runner_process import ProcessExecution, _ProgressState
+from videobatch_fast.slideshow_sequence import ORDER_CAPTURE_DATE, capture_timestamp, order_images
 
 
 class NamingTests(unittest.TestCase):
@@ -35,6 +38,19 @@ class ProbeTests(unittest.TestCase):
         self.assertEqual(classify_extension(Path("a.wav")), "audio")
         self.assertEqual(classify_extension(Path("a.png")), "image")
         self.assertEqual(classify_extension(Path("a.mp4")), "video")
+
+
+class SlideshowCaptureDateTests(unittest.TestCase):
+    def test_out_of_range_exif_date_uses_file_mtime(self):
+        with tempfile.TemporaryDirectory() as directory:
+            image = Path(directory) / "ancient.jpg"
+            exif = Image.Exif()
+            exif[36867] = "0001:01:01 00:00:00"
+            Image.new("RGB", (8, 8)).save(image, exif=exif)
+
+            # strptime akzeptiert das Jahr, timestamp() wirft aber ValueError.
+            self.assertEqual(capture_timestamp(image), image.stat().st_mtime)
+            self.assertEqual(order_images([image], ORDER_CAPTURE_DATE), [image])
 
 
 class CommandTests(unittest.TestCase):

@@ -325,7 +325,7 @@
       "path": "README.md"
     },
     {
-      "blob_sha1": "14af8bcf4bd017cc14294bb45b3af9147048b57f",
+      "blob_sha1": "f66524be830d9c73ad360cfb68732ae9697ab34e",
       "category": "project_contract",
       "lifecycle": "active",
       "mode": "100644",
@@ -3552,7 +3552,7 @@
       "path": "src/videobatch_fast/slideshow_editor.py"
     },
     {
-      "blob_sha1": "4c287a21c9bddc021dbdd811d5a74118604229c9",
+      "blob_sha1": "1aa7933331b947204a37a6ee156ffcf296fe4e9b",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
@@ -4105,7 +4105,7 @@
       "path": "tests/test_compact_responsive_ui_contract.py"
     },
     {
-      "blob_sha1": "0867040500e4a4b7f06393b7c2059ba9a7ebf164",
+      "blob_sha1": "262fd80fb6fd89a235683e1d43acb2ae2253daca",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",
