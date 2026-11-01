@@ -41,6 +41,31 @@ def test_existing_instance_focus_request_roundtrip(tmp_path: Path, monkeypatch: 
     assert focus_request_token() == token
 
 
+def test_instance_lock_releases_descriptor_on_chmod_or_fsync_error(tmp_path: Path) -> None:
+    import errno
+    import fcntl
+
+    from videobatch_fast.instance_lock import ApplicationLock
+
+    path = tmp_path / "application.lock"
+    for operation in ("chmod", "fsync"):
+        lock = ApplicationLock(path)
+        with mock.patch(
+            f"videobatch_fast.instance_lock.os.{operation}",
+            side_effect=OSError(errno.EIO, f"simulierter {operation}-Fehler"),
+        ):
+            with pytest.raises(OSError, match=f"simulierter {operation}-Fehler") as failure:
+                lock.acquire()
+        # The retained traceback keeps local file objects alive unless acquire closed them.
+        assert failure.value.__traceback__ is not None
+        assert lock._handle is None
+        with path.open("a+", encoding="utf-8") as competitor:
+            fcntl.flock(competitor.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            fcntl.flock(competitor.fileno(), fcntl.LOCK_UN)
+        with ApplicationLock(path):
+            pass
+
+
 def test_runtime_marker_is_repaired_without_reinstall(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     contract = load_contract(ROOT)
     target = tmp_path / "runtime"
