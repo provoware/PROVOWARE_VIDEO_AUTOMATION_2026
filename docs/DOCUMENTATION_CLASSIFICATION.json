@@ -100,6 +100,12 @@
     "docs/PLUGIN_SIGNING.md": {
       "category": "technical"
     },
+    "docs/PROVOWARE_TIMEOUT_STANDARD.md": {
+      "category": "technical"
+    },
+    "docs/QA_NAVIGATION_20261101.md": {
+      "category": "technical"
+    },
     "docs/QT6_PHASE2_MIGRATION_MATRIX.md": {
       "category": "technical"
     },
@@ -246,9 +252,6 @@
       "category": "technical"
     },
     "toolchain_wheelhouse/README.md": {
-      "category": "technical"
-    },
-    "docs/QA_NAVIGATION_20261101.md": {
       "category": "technical"
     }
   },
