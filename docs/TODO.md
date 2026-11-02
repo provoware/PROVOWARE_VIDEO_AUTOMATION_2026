@@ -202,3 +202,17 @@ Diese Arbeiten bleiben bis zur realen Zielsystemabnahme zurückgestellt:
 ## Abschlussregel
 
 **Der Langzeitrender bleibt fachlich grün; die physische UI-Sichtabnahme ist nach dem realen 125-%-Befund und der daraus folgenden Layoutkorrektur offen.** Stable darf erst nach der neuen 100/125/150/200-%-Abnahme promotet werden. Vorhandene Evidenz wird nicht rückwirkend umgedeutet oder künstlich aktualisiert.
+
+## NI-20261102-04 – Abschlussstatus, Farbrollen und Größensteuerung
+
+**Quelle:** Nutzerauftrag vom 02.11.2026 nach Oberflächenaudit (VideoAudit_002/003), Ausgangsstand `bc08e8f`. REQUIRES: bestehende Qt-Oberfläche; kein Umbau des Start- oder Renderpfads. Ausgangsbestand: 1 offener Draft (#323, anderer Scope). Ziel: derselbe Ablauf mit verlässlichem Ergebnis und lesbaren, konsistenten Themes. Nutzer-Endabnahme bleibt letzter Schritt.
+
+- [x] 2026-11-02 | P1 · Ergebnis | Abschlussstatus nach Erfolg, Teilfehler und Abbruch erhalten, bewusste neue Eingabe/neue Prüfung hebt Ergebnis auf | prüfen: echte Qt-Widgets, Paarung und Diashow, Folgeaktualisierung | fertig wenn: Status, Hinweis und Tabelle nicht zur Bereitschaft zurückspringen.
+- [x] 2026-11-02 | P1 · Gestaltung | Gemeinsame Farbrollen und ein synchronisierter gespeicherter globaler Größenwert | prüfen: vier Themes, 80–200 %, Neustart, Fokus, Fortschritt und Zustände | fertig wenn: keine allgemeinen Fensterfarbregeln Hauptaktion/Fehler überlagern und beide Größenanzeigen denselben Wert führen.
+- [x] 2026-11-02 | P1 · Oberfläche | Echte Qt-Fenster aufnehmen und Tastatur-/Größenmatrix prüfen | prüfen: vorhandene 42-Fälle- und Tastaturprüfung, Theme-Bilder, Soll/Ist | fertig wenn: technisch erreichbare Bedienelemente nachgewiesen, Sichtbefunde dokumentiert; physische Kubuntu-Endabnahme ausdrücklich weiter offen.
+
+**Soll/Ist vor Gestaltungspatch:** Struktur und Anordnung bleiben Drei-Schritt-Ablauf mit geschlossenen Zusatzdocks. Maße und Proportionen: Ausgangsmatrix 42 Kombinationen/126 Bilder technisch bestanden; 800×600/200 % zeigt große Schalter und stark begrenzten, vertikal rollbaren Arbeitsraum. Keine neuen Pixel-Sollmaße. Typografie: zwei widersprechende globale Größenregler → ein gespeicherter Wert. Farben: allgemeine Fensterüberschreibung → semantische Rollen einschließlich Fokus und Fortschritt. Abstände: bestehende Layoutwerte erhalten. Zustände: Abschluss darf nicht zu BEREIT springen. Clipping/Überlagerung: vor und nach Korrektur dieselbe vorhandene Geometrie- und Fokusprüfung; tatsächliche neue Befunde separat dokumentieren. Kein Stable-Nachweis.
+
+**Nachweis NI-20261102-04:** Technische Qt-Prüfung und bekannte Altfehler siehe `docs/UI_AUDIT_20261102.md`. Native Kubuntu-Endabnahme bleibt offen.
+
+- [ ] 2026-11-02 | P1 · Integration NI-20261102-04 | Aktuellen Entwicklungs-PR nach erfolgreichen Pflichtprüfungen integrieren und main separat nachprüfen | prüfen: unveränderter PR-HEAD, kein Konflikt, Tests/Manifest/Index | fertig wenn: geprüfte Übernahme und Main-Nachkontrolle dokumentiert.

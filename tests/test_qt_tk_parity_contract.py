@@ -274,7 +274,7 @@ def test_extracted_legacy_appearance_applies_theme_and_font_scale(tmp_path: Path
         apply_theme(window)
 
         assert "#f2f0d8" in app.styleSheet()
-        assert abs(app.font().pointSizeF() - 12.0) < 0.01
+        assert abs(app.font().pointSizeF() - 14.4) < 0.01
     finally:
         app.setStyleSheet(original_style)
         app.setFont(original_font)

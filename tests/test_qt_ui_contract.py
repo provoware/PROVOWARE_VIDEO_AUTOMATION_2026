@@ -80,7 +80,7 @@ def test_qt_theme_exposes_high_visibility_accessibility_contract() -> None:
         "width: 16px;",
         "QToolTip {",
         "SCALE_LEVELS = (80, 100, 110, 125, 150, 175, 200)",
-        "def scaled_style(percent: int) -> str:",
+        'def scaled_style(percent: int, theme: str = "neon_gravity") -> str:',
         "QPushButton#secondary {",
         "QPushButton#quietDanger {",
         'QLabel#statusChip[state="warning"]',
@@ -256,7 +256,7 @@ def test_main_workspace_supports_global_scaling_without_page_scroll_or_three_col
         "set_workflow_route(window, route)",
         "guide.setVisible(False)",
         'footer.setVisible(route in {"dashboard", "media", "effects", "queue"})',
-        "app.setStyleSheet(scaled_style(value))",
+        "apply_theme(window, value)",
         'view_label.setBuddy(window.view_scale)',
         '("Ctrl+Alt+Up", 1)',
         '("Ctrl+Alt+Down", -1)',
@@ -312,7 +312,8 @@ def test_accessibility_scaling_composes_with_the_selected_theme() -> None:
     layout = QT_MAIN_LAYOUT.read_text(encoding="utf-8")
     appearance = QT_LEGACY_APPEARANCE.read_text(encoding="utf-8")
 
-    assert 'window.setStyleSheet(_THEME_OVERRIDES.get(theme, ""))' in appearance
+    assert 'scaled_style(scale, theme)' in appearance
+    assert '_THEME_OVERRIDES' not in appearance
     assert "app.setStyleSheet(APP_STYLE" not in appearance
     assert "QKeySequence.StandardKey.ZoomIn" not in layout
     assert "QKeySequence.StandardKey.ZoomOut" not in layout

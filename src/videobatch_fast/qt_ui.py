@@ -35,7 +35,7 @@ from .qt_source_panel import build_sources_panel
 from .qt_system_load_dashboard import SystemLoadDashboard
 from .qt_ui_polish import (
     configure_job_table, configure_output_button, field_label, install_workflow_shortcuts,
-    job_table_item, text_label, update_status_chip,
+    job_table_item, text_label, update_status_chip, refresh_workflow_hint,
 )
 
 class VideoBatchQtWindow(QMainWindow):
@@ -59,6 +59,7 @@ class VideoBatchQtWindow(QMainWindow):
         self._probe_pending = False
         self._probe_active = False
         self._probe_file: Path | None = None
+        self._completion_status: tuple[str, str, str] | None = None
         self._settings_warning = ""
         try:
             self.dashboard_settings = load_settings()
@@ -91,6 +92,12 @@ class VideoBatchQtWindow(QMainWindow):
         self._media_index_worker: threading.Thread | None = None
         self._media_rescan_pending = False
         QTimer.singleShot(300, self._refresh_media_index_async)
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        handler = getattr(self, "_apply_view_scale", None)
+        if handler is not None:
+            handler()
 
     def _media_index_notice(self, message: str) -> None:
         self._write_log("Mediensuche: " + message)
@@ -295,11 +302,11 @@ class VideoBatchQtWindow(QMainWindow):
         return panel
 
     def _connect(self) -> None:
-        self.audio.changed.connect(self._refresh)
-        self.media.changed.connect(self._refresh)
+        self.audio.changed.connect(self._inputs_changed)
+        self.media.changed.connect(self._inputs_changed)
         self.clear.clicked.connect(self._clear_lists)
         self.output_button.clicked.connect(self._choose_output)
-        self.output.textChanged.connect(self._refresh)
+        self.output.textChanged.connect(self._inputs_changed)
         self.settings_save_timer = QTimer(self)
         self.settings_save_timer.setSingleShot(True)
         self.settings_save_timer.setInterval(400)
@@ -319,6 +326,19 @@ class VideoBatchQtWindow(QMainWindow):
         self.open_probe_button.clicked.connect(self._open_probe)
         self.cancel.clicked.connect(self._cancel)
         install_workflow_shortcuts(self)
+
+    def _inputs_changed(self, *_args) -> None:
+        self._completion_status = None
+        self._refresh()
+
+    def _restore_completion_status(self) -> bool:
+        if self._completion_status is None or self.runner.running or self.preparing:
+            return False
+        status, hint, activity = self._completion_status
+        self._status(status)
+        self.next_step.setText(hint)
+        self.activity_detail.setText(activity)
+        return True
 
     def _browse_media_exclusion(self) -> None:
         selected = QFileDialog.getExistingDirectory(
@@ -430,6 +450,7 @@ class VideoBatchQtWindow(QMainWindow):
         self.activity_detail.setText("Keine Verarbeitung aktiv · bereit für neue Aufträge")
 
     def _refresh(self, *, preserve_results: bool = False) -> None:
+        preserve_results = preserve_results or self._completion_status is not None
         audios, media = self.audio.production_paths(), self.media.production_paths()
         pairing = pairing_status(len(audios), len(media), self.output.text())
         self.pairing_summary_label.setText(
@@ -468,23 +489,9 @@ class VideoBatchQtWindow(QMainWindow):
         self.step_output.setText("2 · Ausgabe ✓" if output_ready else "2 · Ausgabe")
         self.step_start.setText("3 · Start bereit" if ready else "3 · Start")
 
-        if self.runner.running:
-            self.next_step.setText("Produktion läuft. Fortschritt und Abbrechen bleiben hier immer sichtbar.")
-        elif self.preparing:
-            self.next_step.setText("Dateien werden geprüft. Danach startet die Verarbeitung automatisch.")
-        elif not audios and not media:
-            self.next_step.setText("Nächster Schritt: 1 · Audiodateien und passende Bilder/Videos auswählen.")
-        elif not audios:
-            self.next_step.setText("Nächster Schritt: 1 · Mindestens eine Audiodatei hinzufügen.")
-        elif len(audios) != len(media):
-            self.next_step.setText("Nächster Schritt: " + pairing.explanation)
-        elif not output_ready:
-            self.next_step.setText("Nächster Schritt: einen Ausgabeordner oben wählen.")
-        else:
-            self.next_step.setText(f"Bereit: {jobs} Video(s). Nächster Schritt: 3 · Videos erstellen.")
-
-        if not self.runner.running and not self.preparing:
-            self._status("BEREIT" if ready or not self.table.rowCount() else "PRÜFEN")
+        if self._restore_completion_status():
+            return
+        refresh_workflow_hint(self, ready, audios, media, jobs, output_ready, pairing)
 
     def _runtime_state(self) -> None:
         missing = [name for name in ("ffmpeg", "ffprobe") if shutil.which(name) is None]
@@ -619,6 +626,10 @@ class VideoBatchQtWindow(QMainWindow):
             self.activity_detail.setText("Abgebrochen · Vorbereitung sicher beendet")
             self.kpi_values["active"].setText("Nein")
             self.cancel.setEnabled(False)
+            self._completion_status = (
+                "ABGEBROCHEN", "Vorbereitung abgebrochen. Nächster Schritt: Dateien und Ausgabe prüfen.",
+                "Abgebrochen · Vorbereitung sicher beendet",
+            )
             self._status("ABGEBROCHEN")
             self._write_log("Vorbereitung verworfen; kein Stapel wird gestartet.")
             self._refresh()
@@ -661,6 +672,10 @@ class VideoBatchQtWindow(QMainWindow):
                         )
                         if response != QMessageBox.StandardButton.Yes:
                             self._probe_pending = False
+                            self._completion_status = (
+                                "ABGEBROCHEN", "Nicht gestartet. Nächster Schritt: Hinweise und Dateien prüfen.",
+                                "Abgebrochen · Produktion nach Hinweisen nicht gestartet",
+                            )
                             self._status("ABGEBROCHEN")
                             self._write_log("Produktion nach Hinweisen nicht gestartet.")
                             self._refresh()
@@ -694,12 +709,17 @@ class VideoBatchQtWindow(QMainWindow):
                         self._probe_active = False
                         self._show_start_error(f"{type(exc).__name__}: {exc}", "Start")
         self._drain_events()
+        self._restore_completion_status()
         prepare_alive = bool(self.prepare_thread and self.prepare_thread.is_alive())
         if self.close_after_stop and not self.runner.running and not prepare_alive:
             self.close_after_stop = False
             self.close()
 
     def _show_start_error(self, message: str, phase: str) -> None:
+        reason, solution = explain_runtime_problem(message)
+        self._completion_status = (
+            "FEHLER", f"{reason} Nächster Schritt: {solution}", f"{phase}: {reason}",
+        )
         self._status("FEHLER")
         self._write_log(message)
         self.job_progress.setValue(0)
@@ -708,7 +728,6 @@ class VideoBatchQtWindow(QMainWindow):
         self.kpi_values["active"].setText("Nein")
         self.cancel.setEnabled(False)
         self._refresh()
-        reason, solution = explain_runtime_problem(message)
         self.next_step.setText(f"{reason} Nächster Schritt: {solution}")
         self.activity_detail.setText(f"{phase}: {reason}")
 
@@ -778,7 +797,11 @@ class VideoBatchQtWindow(QMainWindow):
         failed = int(payload.get("failures", 0))
         open_ = int(payload.get("unprocessed", 0))
         cancelled = bool(payload.get("cancelled"))
-        self._status("ABGEBROCHEN" if cancelled else ("FERTIG" if not failed and not open_ else "FERTIG MIT HINWEIS"))
+        status = "ABGEBROCHEN" if cancelled else ("FERTIG" if not failed and not open_ else "FERTIG MIT HINWEIS")
+        summary = f"{ok} erfolgreich · {failed} Fehler · {open_} offen"
+        action = "Ergebnisprotokoll prüfen." if failed or open_ or cancelled else "Ausgabeordner öffnen und Video prüfen."
+        self._completion_status = (status, f"{status}: {summary}. Nächster Schritt: {action}", f"Beendet · {summary}")
+        self._status(status)
         if not failed and not open_ and not cancelled:
             self.progress.setValue(100)
         self.progress.setFormat("Abgeschlossen · %p %")
@@ -808,6 +831,7 @@ class VideoBatchQtWindow(QMainWindow):
                     "Probevideo nicht erfolgreich. Fehlerdetails unter "
                     "„Technische Meldungen anzeigen“ prüfen."
                 )
+            self._completion_status = (status, self.next_step.text(), self.activity_detail.text())
 
     def _load_jobs(self) -> None:
         self.table.setRowCount(len(self.jobs))
@@ -852,6 +876,8 @@ class VideoBatchQtWindow(QMainWindow):
             self.log.appendPlainText(message.strip())
 
     def _status(self, text: str) -> None:
+        if text == "PRÜFT":
+            self._completion_status = None
         update_status_chip(self.status, text)
 
     def closeEvent(self, event: QCloseEvent) -> None:

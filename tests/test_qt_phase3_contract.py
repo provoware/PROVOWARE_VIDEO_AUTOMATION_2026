@@ -272,7 +272,7 @@ def test_beginner_main_flow_has_global_controls_and_clear_navigation() -> None:
     assert "mainWorkspaceScroll" not in _text(SRC / "qt_main_layout.py")
     assert "QSplitter" not in _text(SRC / "qt_main_layout.py")
     assert "self.log.setVisible(False)" in source
-    assert "self.output.textChanged.connect(self._refresh)" in source
+    assert "self.output.textChanged.connect(self._inputs_changed)" in source
     assert "ready = files_ready and output_ready" in source
 
 

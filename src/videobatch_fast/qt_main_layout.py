@@ -6,7 +6,8 @@ from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import QApplication, QComboBox, QDoubleSpinBox, QSlider, QFrame, QHBoxLayout, QGridLayout, QLabel, QVBoxLayout, QWidget, QLineEdit, QPushButton, QTabBar, QScrollArea, QMenu
 
-from .qt_theme import SCALE_LEVELS, scaled_style
+from .qt_theme import SCALE_LEVELS
+from .qt_legacy_appearance import apply_theme
 from .qt_adaptive_settings import ResponsiveSettingsPanel
 from .dashboard_settings import RESOLUTION_LABELS, QUALITY_LABELS, EFFECT_LABELS
 from .effects import TRANSITIONS
@@ -36,6 +37,7 @@ def build_main_ui(window) -> None:
 
     window.status = QLabel("BEREIT")
     window.status.setObjectName("statusChip")
+    window.status.setWordWrap(True)
     window.status.setAccessibleDescription(
         "Aktueller Programmstatus. Der sichtbare Text nennt den momentanen Zustand."
     )
@@ -254,9 +256,7 @@ def build_main_ui(window) -> None:
 
     def apply_scale() -> None:
         value = int(window.view_scale.currentData() or 100)
-        app = QApplication.instance()
-        if app is not None:
-            app.setStyleSheet(scaled_style(value))
+        apply_theme(window, value)
         window.table.verticalHeader().setDefaultSectionSize(round(38 * value / 100))
         # A compact title keeps all original font choices for the WORK controls;
         # only the decorative brand loses excess height on tiny screens.
@@ -267,6 +267,7 @@ def build_main_ui(window) -> None:
         window.action_footer_scroll.setMinimumHeight(82 if small_large else 52)
         # The decorative title stays readable beside status and zoom at 150–200 %.
         compact_brand = value >= 150 and window.width() <= 1100
+        title.setText("VideoBatch" if small_large else "VideoBatch 2026")
         title.setStyleSheet("font-size: 24px; font-weight: 800;" if compact_brand else "")
         window.status.setStyleSheet(
             "font-size: 17px; padding: 3px 6px; font-weight: 800;" if small_large else ""
@@ -316,6 +317,7 @@ def build_main_ui(window) -> None:
     reset = QShortcut(QKeySequence("Ctrl+Alt+0"), window)
     reset.activated.connect(lambda: window.view_scale.setCurrentIndex(window.view_scale.findData(110)))
     window._scale_shortcuts.append(reset)
+    window._apply_view_scale = apply_scale
     apply_scale()
 
     # Bei großer Schrift müssen auch zunächst unterhalb des Fensters liegende

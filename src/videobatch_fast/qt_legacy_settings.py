@@ -109,7 +109,7 @@ def build_settings_tab(window: Any, *, combo_factory: ComboFactory) -> QWidget:
         str(cfg.get("theme", "neon_gravity")),
     )
     window.parity_font_scale = QSpinBox()
-    window.parity_font_scale.setRange(100, 200)
+    window.parity_font_scale.setRange(80, 200)
     window.parity_font_scale.setSuffix(" %")
     window.parity_font_scale.setSingleStep(10)
     window.parity_font_scale.setValue(int(cfg.get("font_scale", 105)))

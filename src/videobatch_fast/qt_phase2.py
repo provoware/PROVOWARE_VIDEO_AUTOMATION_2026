@@ -162,6 +162,8 @@ class VideoBatchQtPhase2Window(SelectionPreviewMixin, VideoBatchQtWindow):
 
     def _refresh(self, *, preserve_results: bool = False) -> None:
         super()._refresh(preserve_results=preserve_results)
+        if self._restore_completion_status():
+            return
         if not hasattr(self, "slideshow"):
             return
 
