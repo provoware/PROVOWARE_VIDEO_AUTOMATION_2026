@@ -220,6 +220,8 @@ Dort findest du zusätzliche Werkzeuge und die **Schnellnotiz**. Sie ist praktis
 | Lokale Qualitätsprüfung | `bash ./scripts/dev/verify_release.sh` |
 | Strenge Prüfung des finalen Kandidaten | `bash ./scripts/dev/verify_release.sh --strict` |
 
+**Nachweis-Schutz:** Ein als bestanden markierter Offline-Qualitätslauf gilt nur mit positiven, ganzzahligen GitHub-Job- und Prüflaufnummern als gültiger Kandidatennachweis. Fehlende oder verfälschte Nummern werden kontrolliert zurückgewiesen; dies ist keine Releasefreigabe.
+
 **Hinweis:** Entwicklungstests können eine vorbereitete Prüf-Umgebung benötigen. Keine Testausführung und kein grünes GitHub-Signal ersetzt die finale persönliche Abnahme. Für das Vorgehen gelten [AGENTS.md](AGENTS.md), der [Entwicklerleitfaden](docs/manuals/DEVELOPER_GUIDE.md), der [Projektstatus](docs/STATUS.md), [offene Aufgaben](docs/TODO.md) und die [Änderungen](docs/CHANGELOG.md). Die [GitHub-Prüfungen](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/actions) zeigen, **welcher Commit** tatsächlich getestet wurde.
 
 <details>

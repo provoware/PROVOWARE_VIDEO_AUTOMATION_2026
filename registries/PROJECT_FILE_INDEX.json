@@ -325,7 +325,7 @@
       "path": "Nutzer-Input-Agents.md"
     },
     {
-      "blob_sha1": "17a96459bff6d619c742ba09821f6614e015b268",
+      "blob_sha1": "6f5e3519b6ae0604488eef9f9b25319f780b9cf7",
       "category": "documentation",
       "lifecycle": "active",
       "mode": "100644",
@@ -563,7 +563,7 @@
       "path": "diagnostics/release_readiness/engine_legacy.py"
     },
     {
-      "blob_sha1": "3454836f9a35b3d66ee8150b31ece87959d5586e",
+      "blob_sha1": "f0cca192bd6331cd1e3b65570f5f5861d76441ae",
       "category": "diagnostics",
       "lifecycle": "active",
       "mode": "100644",
@@ -598,7 +598,7 @@
       "path": "diagnostics/release_readiness/selftest.py"
     },
     {
-      "blob_sha1": "b8dbe5f3119d18950809dcb1b51501cd8ba67b9a",
+      "blob_sha1": "448dcaabe32924ad138e1169c2366dd6bb50a886",
       "category": "diagnostics",
       "lifecycle": "active",
       "mode": "100644",
@@ -836,7 +836,7 @@
       "path": "docs/STATUS.md"
     },
     {
-      "blob_sha1": "c6e21269dc22b39e06064dc2e3926d48145a188c",
+      "blob_sha1": "f3f8c40fbfe5ea8b3c86f5171da0ea4d142cf363",
       "category": "documentation",
       "lifecycle": "active",
       "mode": "100644",

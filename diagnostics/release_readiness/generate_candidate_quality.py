@@ -110,6 +110,10 @@ def build() -> dict:
     offline_quality = measured.get("offline_quality")
     if not isinstance(offline_quality, dict) or offline_quality.get("result") != "passed":
         raise ValueError("Offline-Qualitätsnachweis nicht erfolgreich")
+    for field in ("job_id", "workflow_run_id"):
+        value = offline_quality.get(field)
+        if type(value) is not int or value <= 0:
+            raise ValueError(f"Offline-Qualitätsnachweis ohne gültige {field}-Nummer")
     if type(regression.get("passed")) is not int or regression["passed"] <= 0:
         raise ValueError("Keine belegte positive Kern-Testzahl")
     if type(regression.get("failed")) is not int or regression["failed"] != 0:
