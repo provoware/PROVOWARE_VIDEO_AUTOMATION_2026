@@ -71,14 +71,14 @@ def build() -> dict:
     if not isinstance(source, str) or re.fullmatch(r"[0-9a-f]{40}", source) is None:
         raise ValueError("Ungültiger vollständiger Kandidaten-Commit")
     names = [item.get("name") for item in checks if isinstance(item, dict)]
-    if len(names) != 8 or len(set(names)) != 8:
+    if len(names) != 8 or any(not isinstance(name, str) for name in names) or len(set(names)) != 8:
         raise ValueError("Die acht Prüfnamen müssen eindeutig sein")
     if set(names) != REQUIRED_CHECK_NAMES:
         raise ValueError("Die acht benannten Pflichtprüfungen müssen vollständig vorliegen")
     for item in checks:
         if item.get("source_commit") != source:
             raise ValueError("Ein Prüfnachweis gehört zu einem anderen Commit")
-        if item.get("conclusion") not in {"success", "failure", "cancelled", "timed_out"}:
+        if not isinstance(item.get("conclusion"), str) or item["conclusion"] not in {"success", "failure", "cancelled", "timed_out"}:
             raise ValueError("Unbekanntes oder unvollständiges Prüfergebnis")
         run_id = item.get("run_id")
         if type(run_id) is not int or run_id < 1:

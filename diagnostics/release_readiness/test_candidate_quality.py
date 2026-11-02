@@ -248,6 +248,25 @@ def test_compact_manifest_invalid_selector_module_is_red(
     assert findings[0].severity == "error"
 
 
+@pytest.mark.parametrize(
+    ("field", "invalid"),
+    [
+        ("name", []),
+        ("name", {}),
+        ("conclusion", []),
+        ("conclusion", {}),
+    ],
+)
+def test_unhashable_check_fields_fail_with_clear_error(
+    snapshot: dict, field: str, invalid: object,
+) -> None:
+    changed = copy.deepcopy(snapshot)
+    changed["checks"][0][field] = invalid
+    save_snapshot(changed)
+    with pytest.raises(ValueError, match="Prüf"):
+        generator.build()
+
+
 def test_unknown_check_cannot_replace_required_gate(snapshot: dict) -> None:
     changed = copy.deepcopy(snapshot)
     changed["checks"][0]["name"] = "Erfundene Erfolgsprüfung"
