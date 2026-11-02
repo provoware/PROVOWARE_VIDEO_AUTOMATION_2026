@@ -1,7 +1,7 @@
 {
   "directories": [
     {
-      "file_count_recursive": 674,
+      "file_count_recursive": 675,
       "path": "."
     },
     {
@@ -189,7 +189,7 @@
       "path": "visual_inspection"
     }
   ],
-  "file_count": 674,
+  "file_count": 675,
   "files": [
     {
       "blob_sha1": "2d03e169a3b5388838745e9ae92de4d88b340b72",
@@ -311,11 +311,18 @@
       "path": ".release/stable-2.8.3.json"
     },
     {
-      "blob_sha1": "df7d1c297f346e0bd8820df59eb6f70907305a72",
+      "blob_sha1": "934d067f081c3cbdbe9d8952025c5debb1dca462",
       "category": "documentation",
       "lifecycle": "active",
       "mode": "100644",
       "path": "AGENTS.md"
+    },
+    {
+      "blob_sha1": "2dddf944073cde99d95637ef1cf8ddfd0e3a5987",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "Nutzer-Input-Agents.md"
     },
     {
       "blob_sha1": "92196ba60bbb68d54f781727448f0a08c932c720",
@@ -325,7 +332,7 @@
       "path": "README.md"
     },
     {
-      "blob_sha1": "14af8bcf4bd017cc14294bb45b3af9147048b57f",
+      "blob_sha1": "951e1211c6f6eb894499051f96afd5ad589ae83b",
       "category": "project_contract",
       "lifecycle": "active",
       "mode": "100644",
@@ -675,7 +682,7 @@
       "path": "docs/DATEI_UND_ORDNERINDEX.md"
     },
     {
-      "blob_sha1": "66288bd7ed89c061fbff5feece34e534a4ee5caa",
+      "blob_sha1": "f95788348922c1c86ffcf148baae75cd6683ba4e",
       "category": "documentation",
       "lifecycle": "active",
       "mode": "100644",
