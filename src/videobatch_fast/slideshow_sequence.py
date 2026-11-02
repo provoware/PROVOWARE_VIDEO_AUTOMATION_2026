@@ -39,7 +39,11 @@ def _capture_datetime(path: Path) -> datetime | None:
 def capture_timestamp(path: Path) -> float:
     captured = _capture_datetime(path)
     if captured is not None:
-        return captured.timestamp()
+        try:
+            return captured.timestamp()
+        except (OverflowError, OSError, ValueError):
+            # Ungültige EXIF-Jahreszahlen dürfen die Diashow-Sortierung nicht abbrechen.
+            pass
     try:
         return path.stat().st_mtime
     except OSError:

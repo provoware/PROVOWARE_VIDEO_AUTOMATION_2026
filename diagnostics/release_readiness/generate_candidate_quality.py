@@ -19,6 +19,19 @@ OUTPUT = ROOT / "CANDIDATE_PR240_QUALITY_STATUS.json"
 RELEASE_MANIFEST = ROOT.parents[1] / "RELEASE_MANIFEST.json"
 ACCEPTANCE_DIR = ROOT / "CANDIDATE_PR240_ACCEPTANCE"
 
+# Die acht benannten Prüfgates sind Teil des historischen PR240-Nachweisvertrags.
+# Eine beliebige achte Erfolgsprüfung darf kein fehlendes Pflichtgate ersetzen.
+REQUIRED_CHECK_NAMES = frozenset({
+    "CP-09 FFmpeg evidence audit",
+    "Release contract sync",
+    "PR ancestry guard",
+    "Bounded resumable long-render rehearsal",
+    "Repository merge preflight",
+    "Kubuntu 26.04 Wayland preview contract",
+    "Qt6 Phase 3 orchestrated validation",
+    "Trusted PR ancestry guard",
+})
+
 
 def _physical_acceptance_valid(snapshot: dict) -> bool:
     """Reuse the existing manifest-bound physical acceptance validator."""
@@ -60,6 +73,8 @@ def build() -> dict:
     names = [item.get("name") for item in checks if isinstance(item, dict)]
     if len(names) != 8 or len(set(names)) != 8:
         raise ValueError("Die acht Prüfnamen müssen eindeutig sein")
+    if set(names) != REQUIRED_CHECK_NAMES:
+        raise ValueError("Die acht benannten Pflichtprüfungen müssen vollständig vorliegen")
     for item in checks:
         if item.get("source_commit") != source:
             raise ValueError("Ein Prüfnachweis gehört zu einem anderen Commit")

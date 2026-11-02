@@ -55,19 +55,23 @@ class ApplicationLock:
         handle = self.path.open("a+", encoding="utf-8")
         try:
             os.chmod(self.path, 0o600)
-            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError as exc:
+            try:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError as exc:
+                handle.seek(0)
+                owner = handle.read().strip() or "unbekannt"
+                raise InstanceAlreadyRunning(
+                    f"VideoBatch läuft bereits. Sperrdatei: {self.path} · Besitzer: {owner}"
+                ) from exc
             handle.seek(0)
-            owner = handle.read().strip() or "unbekannt"
+            handle.truncate()
+            handle.write(f"pid={os.getpid()}\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        except BaseException:
+            # Closing the descriptor also releases a flock acquired before a failed fsync.
             handle.close()
-            raise InstanceAlreadyRunning(
-                f"VideoBatch läuft bereits. Sperrdatei: {self.path} · Besitzer: {owner}"
-            ) from exc
-        handle.seek(0)
-        handle.truncate()
-        handle.write(f"pid={os.getpid()}\n")
-        handle.flush()
-        os.fsync(handle.fileno())
+            raise
         self._handle = handle
         return self
 

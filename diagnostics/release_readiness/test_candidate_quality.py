@@ -213,3 +213,23 @@ def test_compact_manifest_invalid_selector_module_is_red(
     assert len(findings) == 1
     assert findings[0].code == "MANIFEST_COMPACT_INVALID"
     assert findings[0].severity == "error"
+
+
+def test_unknown_check_cannot_replace_required_gate(snapshot: dict) -> None:
+    changed = copy.deepcopy(snapshot)
+    changed["checks"][0]["name"] = "Erfundene Erfolgsprüfung"
+    save_snapshot(changed)
+    with pytest.raises(ValueError, match="Pflichtprüfungen"):
+        generator.build()
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("passed", True),
+        ("failed", True),
+        ("failed", -1),
+        ("failed", 1),
+        ("failed", "0"),
+    ],
+)
