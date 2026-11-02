@@ -107,7 +107,8 @@ def build() -> dict:
         raise ValueError("Kern-Testnachweis fehlt")
     if regression.get("source_commit") not in (None, measured_source):
         raise ValueError("Widersprüchliche Testherkunft")
-    if measured.get("offline_quality", {}).get("result") != "passed":
+    offline_quality = measured.get("offline_quality")
+    if not isinstance(offline_quality, dict) or offline_quality.get("result") != "passed":
         raise ValueError("Offline-Qualitätsnachweis nicht erfolgreich")
     if type(regression.get("passed")) is not int or regression["passed"] <= 0:
         raise ValueError("Keine belegte positive Kern-Testzahl")
@@ -138,7 +139,7 @@ def build() -> dict:
             "job_id": regression["job_id"],
             "workflow_run_id": regression["workflow_run_id"],
         },
-        "quality_tools": measured["offline_quality"],
+        "quality_tools": offline_quality,
         "blocking_checks": sorted(failures),
         "physical_ui_acceptance": "passed" if physical_valid else "open",
         "release_approved": False,

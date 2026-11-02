@@ -88,6 +88,15 @@ def test_core_regression_rejects_invalid_or_failed_counts(
         generator.build()
 
 
+@pytest.mark.parametrize("invalid", [None, [], "passed", 17, {"result": "failed"}])
+def test_invalid_offline_quality_evidence_fails_closed(snapshot: dict, invalid: object) -> None:
+    changed = copy.deepcopy(snapshot)
+    changed["latest_observed_candidate_ci"]["offline_quality"] = invalid
+    save_snapshot(changed)
+    with pytest.raises(ValueError, match="Offline-Qualitätsnachweis"):
+        generator.build()
+
+
 def test_real_acceptance_is_required_and_release_remains_unapproved(
     snapshot: dict, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
