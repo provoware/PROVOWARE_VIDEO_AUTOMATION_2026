@@ -1,11 +1,5 @@
 # TODO – Stable-Finalisierung 2.8.3-rc24
 
-## 2026-11-02 · PR #323 – Nachweis-Herkunft absichern
-
-- [x] 2026-11-02 | P1 · Integrität | Fehlende, nichtnumerische oder nichtpositive GitHub-Job-/Laufnummern im Offline-Qualitätsnachweis kontrolliert zurückweisen | prüfen: 14 neue Negativfälle plus vorhandene Positivfälle | fertig wenn: ungültige IDs einen ValueError auslösen statt einen grünen Nachweis zu erzeugen.
-- [ ] 2026-11-02 | P1 · Prüfung | Release-contract-sync am endgültigen PR-HEAD kontrollieren und Integrationskonflikte erneut bewerten | prüfen: aktueller GitHub-Prüflauf, HEAD-SHA, Hauptzweig unverändert | fertig wenn: aktueller Commit grün, konfliktfrei und als Draft dokumentiert ist.
-
-
 ## NI-20261102-03 – PR-Konsolidierung (02.11.2026)
 
 **Auftrag:** Geprüfte Änderungen aus #316 (Startsperre), #315 (Pflichtnachweise), #314 (EXIF), #313 (Schnellnotiz) und #320 (Zeitlimit-Standard) im gemeinsamen Zweig `integration/pr313-320-consolidated-20261102` bündeln. Diese Iteration ist **keine Stable-Freigabe**. Der bereits integrierte #318 bleibt unverändert.
