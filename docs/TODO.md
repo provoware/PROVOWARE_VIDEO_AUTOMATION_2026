@@ -192,3 +192,10 @@ Diese Arbeiten bleiben bis zur realen Zielsystemabnahme zurückgestellt:
 ## Abschlussregel
 
 **Der Langzeitrender bleibt fachlich grün; die physische UI-Sichtabnahme ist nach dem realen 125-%-Befund und der daraus folgenden Layoutkorrektur offen.** Stable darf erst nach der neuen 100/125/150/200-%-Abnahme promotet werden. Vorhandene Evidenz wird nicht rückwirkend umgedeutet oder künstlich aktualisiert.
+
+## NI-20261102-02 – begrenzte Prüfungen und sicherer Stillstand (P1)
+
+- [x] 2026-11-02 | Standard | Gemeinsamen PROVOWARE-Timeoutvertrag mit projektspezifischen Ausnahmen dokumentieren | prüfen: `docs/PROVOWARE_TIMEOUT_STANDARD.md`, AGENTS und README | fertig wenn: Grenzarten, Fehlerzustand und Quellschutz beschrieben sind.
+- [ ] 2026-11-02 | Ist-Aufnahme | Qt-/KDE-Dialog-, FFmpeg-, subprocess-, CI- und Wayland-Prüfpfade auf fehlende/ungeeignete Zeitgrenzen untersuchen | prüfen: reale Kommandos und vorhandene Tests | fertig wenn: jeder betroffene Pfad ein begründetes Profil besitzt.
+- [ ] 2026-11-02 | Implementierung | Stillstandswächter je relevantem Prozess mit monotonic, echtem Fortschritt, sicheren Prozessgruppen und negativen Kill-/Crash-Tests ergänzen | prüfen: keine Originaldatei verlieren, keine Fremdprozesse beenden | fertig wenn: Hänger sicher erkannt, begrenzt wiederholt und nachvollziehbar protokolliert werden.
+- [ ] 2026-11-02 | Freigabe | Regression und CI auf exaktem SHA plus bestehende Zielsystem-Gates | prüfen: Build, Wayland, FFmpeg, Wiederanlauf | fertig wenn: keine Regression, Nutzer-Endabnahme weiterhin zuletzt.

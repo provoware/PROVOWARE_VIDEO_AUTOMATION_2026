@@ -295,3 +295,8 @@ Only standalone user and release deliverables receive _save_. Source modules, CI
 <!-- release-files:end -->
 
 </details>
+
+
+### Zeitgrenzen für Prüfungen und hängende Aktionen
+
+Der [PROVOWARE-Timeoutvertrag](docs/PROVOWARE_TIMEOUT_STANDARD.md) unterscheidet kurze Befehle, fehlenden echten Fortschritt und legitime Langzeitrender. Bei Fehlern bleiben Originale erhalten; Wiederholungen werden begrenzt und protokolliert. **Die Regel ist dokumentiert; laufzeitweite automatische Wächter sind noch kein fertig geprüftes Produktmerkmal.** Die bestehenden Freigabe- und Zielsystemschranken gelten unverändert.
