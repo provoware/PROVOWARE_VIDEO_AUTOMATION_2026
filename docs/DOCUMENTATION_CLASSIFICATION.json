@@ -4,6 +4,9 @@
     "AGENTS.md": {
       "category": "technical"
     },
+    "Nutzer-Input-Agents.md": {
+      "category": "technical"
+    },
     "README.md": {
       "category": "active",
       "required_sections": [
