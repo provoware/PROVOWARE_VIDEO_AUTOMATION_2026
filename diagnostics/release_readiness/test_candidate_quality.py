@@ -88,6 +88,18 @@ def test_core_regression_rejects_invalid_or_failed_counts(
         generator.build()
 
 
+@pytest.mark.parametrize("field", ["job_id", "workflow_run_id"])
+@pytest.mark.parametrize("invalid", [None, 0, -1, True, "123", [], {}])
+def test_core_regression_requires_positive_numeric_github_ids(
+    snapshot: dict, field: str, invalid: object,
+) -> None:
+    changed = copy.deepcopy(snapshot)
+    changed["latest_observed_candidate_ci"]["core_regression"][field] = invalid
+    save_snapshot(changed)
+    with pytest.raises(ValueError, match="Kern-Testnachweis"):
+        generator.build()
+
+
 @pytest.mark.parametrize("invalid", [None, [], "passed", 17, {"result": "failed"}])
 def test_invalid_offline_quality_evidence_fails_closed(snapshot: dict, invalid: object) -> None:
     changed = copy.deepcopy(snapshot)

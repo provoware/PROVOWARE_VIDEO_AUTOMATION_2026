@@ -118,6 +118,10 @@ def build() -> dict:
         raise ValueError("Keine belegte positive Kern-Testzahl")
     if type(regression.get("failed")) is not int or regression["failed"] != 0:
         raise ValueError("Kernregression enthält fehlgeschlagene oder ungültige Tests")
+    for field in ("job_id", "workflow_run_id"):
+        value = regression.get(field)
+        if type(value) is not int or value <= 0:
+            raise ValueError(f"Kern-Testnachweis ohne gültige {field}-Nummer")
     results = {item["name"]: item["conclusion"] for item in checks}
     failures = sorted(name for name, value in results.items() if value != "success")
     physical_valid = _physical_acceptance_valid(manifest)
