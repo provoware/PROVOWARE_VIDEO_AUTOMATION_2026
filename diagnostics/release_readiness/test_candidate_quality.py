@@ -30,6 +30,33 @@ def save_snapshot(payload: dict) -> None:
     generator.INPUT.write_text(json.dumps(payload), encoding="utf-8")
 
 
+@pytest.mark.parametrize("invalid", [None, [], "invalid", 17])
+def test_non_object_candidate_evidence_fails_with_clear_error(
+    snapshot: dict, invalid: object,
+) -> None:
+    generator.INPUT.write_text(json.dumps(invalid), encoding="utf-8")
+    with pytest.raises(ValueError, match="Kandidaten-Nachweis"):
+        generator.build()
+
+
+@pytest.mark.parametrize("invalid", ["{", "[]", '{"kind":"invalid"}', None])
+def test_cli_invalid_evidence_reports_error_without_traceback(
+    snapshot: dict, monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str], invalid: str | None,
+) -> None:
+    if invalid is None:
+        generator.INPUT.unlink()
+    else:
+        generator.INPUT.write_text(invalid, encoding="utf-8")
+    monkeypatch.setattr(sys, "argv", ["generator", "--check"])
+    assert generator.main() == 2
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "Kandidaten-Nachweis" in captured.err
+    assert "Traceback" not in captured.err
+    assert not generator.OUTPUT.exists()
+
+
 def test_report_is_reproducible_but_not_release_approval(
     snapshot: dict, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -88,6 +115,39 @@ def test_core_regression_rejects_invalid_or_failed_counts(
         generator.build()
 
 
+@pytest.mark.parametrize("field", ["job_id", "workflow_run_id"])
+@pytest.mark.parametrize("invalid", [None, 0, -1, True, "123", [], {}])
+def test_core_regression_requires_positive_numeric_github_ids(
+    snapshot: dict, field: str, invalid: object,
+) -> None:
+    changed = copy.deepcopy(snapshot)
+    changed["latest_observed_candidate_ci"]["core_regression"][field] = invalid
+    save_snapshot(changed)
+    with pytest.raises(ValueError, match="Kern-Testnachweis"):
+        generator.build()
+
+
+@pytest.mark.parametrize("invalid", [None, [], "passed", 17, {"result": "failed"}])
+def test_invalid_offline_quality_evidence_fails_closed(snapshot: dict, invalid: object) -> None:
+    changed = copy.deepcopy(snapshot)
+    changed["latest_observed_candidate_ci"]["offline_quality"] = invalid
+    save_snapshot(changed)
+    with pytest.raises(ValueError, match="Offline-Qualitätsnachweis"):
+        generator.build()
+
+
+@pytest.mark.parametrize("field", ["job_id", "workflow_run_id"])
+@pytest.mark.parametrize("invalid", [None, 0, -1, True, "123", [], {}])
+def test_offline_quality_requires_positive_numeric_github_ids(
+    snapshot: dict, field: str, invalid: object,
+) -> None:
+    changed = copy.deepcopy(snapshot)
+    changed["latest_observed_candidate_ci"]["offline_quality"][field] = invalid
+    save_snapshot(changed)
+    with pytest.raises(ValueError, match="Offline-Qualitätsnachweis"):
+        generator.build()
+
+
 def test_real_acceptance_is_required_and_release_remains_unapproved(
     snapshot: dict, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -128,6 +188,16 @@ def test_versioned_export_path_matches_real_acceptance_validator(
 
     wrong = dict(snapshot["source_release_manifest"], files_sha256="0" * 64)
     assert not generator._physical_acceptance_valid(wrong)
+
+
+@pytest.mark.parametrize("invalid", [None, [], 42, "invalid"])
+def test_non_object_release_manifest_fails_closed(
+    snapshot: dict, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, invalid: object,
+) -> None:
+    manifest_path = tmp_path / "release_manifest.json"
+    manifest_path.write_text(json.dumps(invalid), encoding="utf-8")
+    monkeypatch.setattr(generator, "RELEASE_MANIFEST", manifest_path)
+    assert generator._physical_acceptance_valid(snapshot["source_release_manifest"]) is False
 
 
 def test_compact_manifest_uses_git_tracked_sources(
@@ -213,6 +283,25 @@ def test_compact_manifest_invalid_selector_module_is_red(
     assert len(findings) == 1
     assert findings[0].code == "MANIFEST_COMPACT_INVALID"
     assert findings[0].severity == "error"
+
+
+@pytest.mark.parametrize(
+    ("field", "invalid"),
+    [
+        ("name", []),
+        ("name", {}),
+        ("conclusion", []),
+        ("conclusion", {}),
+    ],
+)
+def test_unhashable_check_fields_fail_with_clear_error(
+    snapshot: dict, field: str, invalid: object,
+) -> None:
+    changed = copy.deepcopy(snapshot)
+    changed["checks"][0][field] = invalid
+    save_snapshot(changed)
+    with pytest.raises(ValueError, match="Prüf"):
+        generator.build()
 
 
 def test_unknown_check_cannot_replace_required_gate(snapshot: dict) -> None:
