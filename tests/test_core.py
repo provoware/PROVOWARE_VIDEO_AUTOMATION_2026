@@ -201,7 +201,7 @@ class ConfigTests(unittest.TestCase):
     def test_config_normalizes_unknown_values(self):
         cfg = normalize_config({"profile": "slowest", "font_scale": 900, "codec": "bad"})
         self.assertEqual(cfg["profile"], "fast")
-        self.assertEqual(cfg["font_scale"], 160)
+        self.assertEqual(cfg["font_scale"], 200)
         self.assertEqual(cfg["codec"], "libx264")
         cfg2 = normalize_config({"visual_effect": "unknown", "transition": "bad"})
         self.assertEqual(cfg2["visual_effect"], "none")

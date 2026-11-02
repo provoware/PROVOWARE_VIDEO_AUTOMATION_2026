@@ -253,6 +253,9 @@
     },
     "toolchain_wheelhouse/README.md": {
       "category": "technical"
+    },
+    "docs/UI_AUDIT_20261102.md": {
+      "category": "technical"
     }
   },
   "excluded_relative_links": [],

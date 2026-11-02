@@ -204,9 +204,31 @@ def update_status_chip(label: QLabel, text: str) -> None:
         state = "warning"
     elif normalized == "FERTIG":
         state = "success"
-    else:
+    elif normalized == "BEREIT":
         state = "ready"
+    else:
+        state = "unknown"
     label.setProperty("state", state)
     label.setText(text)
     label.style().unpolish(label)
     label.style().polish(label)
+
+
+def refresh_workflow_hint(window, ready, audios, media, jobs, output_ready, pairing) -> None:
+    if window.runner.running:
+        window.next_step.setText("Produktion läuft. Fortschritt und Abbrechen bleiben hier immer sichtbar.")
+    elif window.preparing:
+        window.next_step.setText("Dateien werden geprüft. Danach startet die Verarbeitung automatisch.")
+    elif not audios and not media:
+        window.next_step.setText("Nächster Schritt: 1 · Audiodateien und passende Bilder/Videos auswählen.")
+    elif not audios:
+        window.next_step.setText("Nächster Schritt: 1 · Mindestens eine Audiodatei hinzufügen.")
+    elif len(audios) != len(media):
+        window.next_step.setText("Nächster Schritt: " + pairing.explanation)
+    elif not output_ready:
+        window.next_step.setText("Nächster Schritt: 2 · Ausgabe öffnen und einen Ordner wählen.")
+    else:
+        window.next_step.setText(f"Bereit: {jobs} Video(s). Nächster Schritt: 3 · Videos erstellen.")
+
+    if not window.runner.running and not window.preparing:
+        window._status("BEREIT" if ready or not window.table.rowCount() else "PRÜFEN")

@@ -1,7 +1,7 @@
 {
   "directories": [
     {
-      "file_count_recursive": 676,
+      "file_count_recursive": 678,
       "path": "."
     },
     {
@@ -53,7 +53,7 @@
       "path": "diagnostics/root_migration"
     },
     {
-      "file_count_recursive": 155,
+      "file_count_recursive": 156,
       "path": "docs"
     },
     {
@@ -169,7 +169,7 @@
       "path": "src/videobatch_fast"
     },
     {
-      "file_count_recursive": 156,
+      "file_count_recursive": 157,
       "path": "tests"
     },
     {
@@ -189,7 +189,7 @@
       "path": "visual_inspection"
     }
   ],
-  "file_count": 676,
+  "file_count": 678,
   "files": [
     {
       "blob_sha1": "2d03e169a3b5388838745e9ae92de4d88b340b72",
@@ -276,7 +276,7 @@
       "path": ".github/workflows/pr-ancestry-target-guard.yml"
     },
     {
-      "blob_sha1": "2e51d216fda62a313069cf56eb283b09a5bfb2ed",
+      "blob_sha1": "4bf214eae9d8e1f8027ec137d7ec134099549db6",
       "category": "automation",
       "lifecycle": "development",
       "mode": "100644",
@@ -325,14 +325,14 @@
       "path": "Nutzer-Input-Agents.md"
     },
     {
-      "blob_sha1": "17a96459bff6d619c742ba09821f6614e015b268",
+      "blob_sha1": "2f5cfd32218a661bf9ea5047944d09085c468d8c",
       "category": "documentation",
       "lifecycle": "active",
       "mode": "100644",
       "path": "README.md"
     },
     {
-      "blob_sha1": "61c60d049033760c7ca92537d59f71cee5ae5e85",
+      "blob_sha1": "f219d42ea98766dda47932cd024c2c4c199d817c",
       "category": "project_contract",
       "lifecycle": "active",
       "mode": "100644",
@@ -682,7 +682,7 @@
       "path": "docs/DATEI_UND_ORDNERINDEX.md"
     },
     {
-      "blob_sha1": "59d93ae5419724baf4d9cc66be4c04b6e4429569",
+      "blob_sha1": "4b356a3e4fb7f2b1c42b501c66fd6da3a6d60b33",
       "category": "documentation",
       "lifecycle": "active",
       "mode": "100644",
@@ -836,11 +836,18 @@
       "path": "docs/STATUS.md"
     },
     {
-      "blob_sha1": "c6e21269dc22b39e06064dc2e3926d48145a188c",
+      "blob_sha1": "25449bd2b939d5b5480f5729684b764a9ef34ba2",
       "category": "documentation",
       "lifecycle": "active",
       "mode": "100644",
       "path": "docs/TODO.md"
+    },
+    {
+      "blob_sha1": "86abc37ee8b3bdffb08cb38831dc7ee3a3629751",
+      "category": "documentation",
+      "lifecycle": "active",
+      "mode": "100644",
+      "path": "docs/UI_AUDIT_20261102.md"
     },
     {
       "blob_sha1": "f69ccbab463704e02ba51f1fe27e58c2936f3144",
@@ -2887,7 +2894,7 @@
       "path": "src/videobatch_fast/command_builder.py"
     },
     {
-      "blob_sha1": "b0d3be3646f539f72b1dd6f44121512a51bcaf2a",
+      "blob_sha1": "3f1e050d8e3855d2796059777350ec355104c3cb",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
@@ -3272,7 +3279,7 @@
       "path": "src/videobatch_fast/qt_desktop_actions.py"
     },
     {
-      "blob_sha1": "e60aa2f2b42b84164fb59c68e103aacb2c368d77",
+      "blob_sha1": "c30c899418bad5fdd062c6eed87ecfb039116b00",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
@@ -3307,14 +3314,14 @@
       "path": "src/videobatch_fast/qt_legacy_playlist.py"
     },
     {
-      "blob_sha1": "cda5b8a16298dea1692356693840cfe13ce0dd83",
+      "blob_sha1": "89ba3b44ee44b84adcd4cff7d026af387a3faefa",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
       "path": "src/videobatch_fast/qt_legacy_settings.py"
     },
     {
-      "blob_sha1": "7d15545f626d2945bb1443df3c05cdd23fd73601",
+      "blob_sha1": "5a7d52f09bf9c9ea222c1d5df511588da50ee93a",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
@@ -3335,7 +3342,7 @@
       "path": "src/videobatch_fast/qt_media_list.py"
     },
     {
-      "blob_sha1": "d32a0713c61d722a2e95f0977998c895e69b34c0",
+      "blob_sha1": "53880af114f9ed1768b59aead20af04c0e16e905",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
@@ -3398,7 +3405,7 @@
       "path": "src/videobatch_fast/qt_system_load_dashboard.py"
     },
     {
-      "blob_sha1": "012cc70388b7e5032169da1871561d9814268cc0",
+      "blob_sha1": "de52bcc2bc519f7d165e01b2a8fd53f5b7837da2",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
@@ -3412,14 +3419,14 @@
       "path": "src/videobatch_fast/qt_thumbnail_cache.py"
     },
     {
-      "blob_sha1": "86f81b37e03ef51214c264bed95d3e3ca214bb20",
+      "blob_sha1": "37bae38ce01ba00cf70b62b4a1b8fc8bdfe52060",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
       "path": "src/videobatch_fast/qt_ui.py"
     },
     {
-      "blob_sha1": "e3c62589eaf033cdbba4436185d09a85f0038924",
+      "blob_sha1": "e1a58937e0ff5d2a103949302b1622de59e89549",
       "category": "application",
       "lifecycle": "active",
       "mode": "100644",
@@ -4119,7 +4126,7 @@
       "path": "tests/test_compact_responsive_ui_contract.py"
     },
     {
-      "blob_sha1": "5974a69fa9ce460d93d05df117e9a2aed922ffc8",
+      "blob_sha1": "2423419f9990f806c340aa8b711caa5db0d67400",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",
@@ -4469,7 +4476,7 @@
       "path": "tests/test_qt_phase2_contract.py"
     },
     {
-      "blob_sha1": "ef5c7ed716fc9bd0c84951a062c537abcd9ad804",
+      "blob_sha1": "cd49843dfc48e24f2c8eceb6a5ccd0449532dce6",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",
@@ -4490,6 +4497,13 @@
       "path": "tests/test_qt_runtime_toolchain_contract.py"
     },
     {
+      "blob_sha1": "f042de286be638f184de090d8217525691e18bf4",
+      "category": "tests",
+      "lifecycle": "development",
+      "mode": "100644",
+      "path": "tests/test_qt_status_appearance.py"
+    },
+    {
       "blob_sha1": "faeb1e059adbbededdfaa7293d98d8a6fe6a9788",
       "category": "tests",
       "lifecycle": "development",
@@ -4497,14 +4511,14 @@
       "path": "tests/test_qt_thumbnail_cache.py"
     },
     {
-      "blob_sha1": "a407df272125523b348a02deaa455cc99234b6d0",
+      "blob_sha1": "d0bbdd9314ec4b34c22e048100738751b7adfb16",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",
       "path": "tests/test_qt_tk_parity_contract.py"
     },
     {
-      "blob_sha1": "058810cac9d5de1d20f4a4740db4f10ede9da018",
+      "blob_sha1": "28268498d6837220a7c64ce9e35552aa9474084c",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",

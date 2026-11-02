@@ -161,6 +161,7 @@ class VideoBatchQtPhase2Window(SelectionPreviewMixin, VideoBatchQtWindow):
         )
 
     def _refresh(self, *, preserve_results: bool = False) -> None:
+        preserve_results = preserve_results or self._completion_status is not None
         super()._refresh(preserve_results=preserve_results)
         if not hasattr(self, "slideshow"):
             return
@@ -230,6 +231,8 @@ class VideoBatchQtPhase2Window(SelectionPreviewMixin, VideoBatchQtWindow):
             else:
                 self.next_step.setText(f"Bereit: {jobs} Diashow-Video(s). Nächster Schritt: 3 · Videos erstellen.")
             self._status("BEREIT" if ready else "PRÜFEN")
+        # Die Auftragsbereitschaft aktualisieren, ohne das Abschlussergebnis zu verlieren.
+        self._restore_completion_status()
 
     def _start(self) -> None:
         if not hasattr(self, "slideshow") or self.slideshow.assignment_mode != SLIDESHOW_MODE_ALL_IMAGES:

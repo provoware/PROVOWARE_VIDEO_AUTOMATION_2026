@@ -247,9 +247,9 @@ APP_STYLE += VISUAL_HIERARCHY_STYLE
 SCALE_LEVELS = (80, 100, 110, 125, 150, 175, 200)
 
 
-def scaled_style(percent: int) -> str:
-    scale = min(SCALE_LEVELS, key=lambda value: abs(value - int(percent))) / 100.0
-    return APP_STYLE + f"""
+def scaled_style(percent: int, theme: str = "neon_gravity") -> str:
+    scale = max(80, min(200, int(percent))) / 100.0
+    return APP_STYLE + palette_style(theme) + f"""
 QWidget {{ font-size: {12 * scale:.1f}pt; }}
 QLabel#title {{ font-size: {22 * scale:.1f}pt; }}
 QLabel#section {{ font-size: {13 * scale:.1f}pt; }}
@@ -264,4 +264,49 @@ QProgressBar#loadMeter {{ min-height: {round(16 * scale)}px; max-height: {round(
 QWidget#progressDashboard QProgressBar {{ min-height: {round(18 * scale)}px; max-height: {round(18 * scale)}px; font-size: {10 * scale:.1f}pt; }}
 QScrollBar:vertical {{ width: {round(16 * scale)}px; }}
 QScrollBar:horizontal {{ height: {round(16 * scale)}px; }}
+"""
+
+
+THEME_PALETTES = {
+    "neon_gravity": ("#10141b", "#171d27", "#05080d", "#eef4ff", "#b8c9dc", "#7f98b8", "#ffffff"),
+    "acid_paper": ("#f2f0d8", "#fffde8", "#ffffff", "#1b2415", "#47523e", "#66735f", "#172536"),
+    "toxic_candy": ("#1b1020", "#28152f", "#140a18", "#fff0fb", "#d4b9d3", "#b18ab4", "#ffffff"),
+    "ultraviolet": ("#151126", "#201936", "#0e0a1d", "#f2edff", "#c8bfdf", "#998bbd", "#ffffff"),
+}
+
+
+def palette_style(theme: str) -> str:
+    """Surface roles share one scope; explicit semantic states retain priority."""
+    bg, panel, field, text, muted, border, focus = THEME_PALETTES.get(theme, THEME_PALETTES["neon_gravity"])
+    return f"""
+QWidget {{ background: {bg}; color: {text}; }}
+QMainWindow {{ background: {bg}; }}
+QLabel {{ background: transparent; }}
+QFrame#panel, QFrame#card, QFrame#workflowGuide, QFrame#actionFooter,
+QFrame#dashboardControls, QFrame#compactStatusDashboard, QFrame#loadDashboard,
+QFrame#sourceCard, QFrame#overviewStep {{ background: {panel}; border-color: {border}; }}
+QLabel#subtitle, QLabel#kpiLabel, QLabel#panelHint, QLabel#helperText,
+QLabel#loadLabel {{ color: {muted}; }}
+QLabel#fieldLabel, QLabel#guideTitle, QCheckBox {{ color: {text}; }}
+QLabel#stepChip {{ background: {panel}; color: {text}; border-color: {border}; }}
+QLabel#stepChip[active="true"] {{ background: #ffbf3f; color: #161006; }}
+QLabel#statusChip[state="unknown"] {{ background: {panel}; color: {text}; border-color: {border}; }}
+QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QListWidget, QTableWidget,
+QPlainTextEdit, QTextEdit {{ background: {field}; color: {text}; border-color: {border}; }}
+QHeaderView::section {{ background: {panel}; color: {text}; }}
+QTableWidget {{ alternate-background-color: {panel}; gridline-color: {border}; }}
+QToolButton, QPushButton#secondary {{ background: {panel}; color: {text}; border-color: {border}; }}
+QToolButton:hover, QPushButton#secondary:hover {{ background: {field}; color: {text}; }}
+QToolButton:checked {{ background: #ffbf3f; color: #161006; }}
+QPushButton:disabled, QPushButton#primary:disabled, QPushButton#danger:disabled {{ background: {panel}; color: {muted}; border-color: {border}; }}
+QPushButton:focus, QToolButton:focus, QLineEdit:focus, QComboBox:focus,
+QSpinBox:focus, QDoubleSpinBox:focus, QSlider:focus, QTabBar::tab:focus,
+QListWidget:focus, QTableWidget:focus, QPlainTextEdit:focus, QTextEdit:focus,
+QCheckBox:focus {{ border: 3px solid {focus}; }}
+QProgressBar {{ background: #0c121a; color: #ffffff; selection-color: #ffffff; }}
+QProgressBar::chunk {{ background: #00758c; }}
+QProgressBar#jobProgress::chunk {{ background: #705000; }}
+QScrollBar:vertical, QScrollBar:horizontal {{ background: {panel}; }}
+QScrollBar::handle:vertical, QScrollBar::handle:horizontal {{ background: {border}; }}
+QToolTip {{ background: {panel}; color: {text}; border-color: {border}; }}
 """
