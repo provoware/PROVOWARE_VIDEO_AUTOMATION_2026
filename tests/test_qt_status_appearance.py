@@ -175,7 +175,7 @@ def test_slideshow_start_readiness_after_completion(window, tmp_path):
         stream.setnchannels(1)
         stream.setsampwidth(1)
         stream.setframerate(8000)
-        stream.writeframes(b"\\x80" * 8000)
+        stream.writeframes(bytes([128]) * 8000)
     images = []
     for number in (1, 2):
         path = tmp_path / f"bild-{number}.png"

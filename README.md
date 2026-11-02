@@ -114,6 +114,7 @@ Die Arbeitsseiten heißen **„1 · Dateien“**, **„2 · Ausgabe“**, **„3
 - Nach Erfolg, Teilfehler, Abbruch oder fehlgeschlagenem Start bleiben Abschlussstatus und Lösungshinweis sichtbar. Neue Quelldateien, ein anderes Ausgabeziel oder eine neue Startprüfung beginnen wieder den nächsten Arbeitsschritt.
 - **Schrift** und die Größenanzeige unter **Einstellungen** steuern denselben gespeicherten Wert von **80 bis 200 %**. Auch 175 und 200 % bleiben nach einem Neustart erhalten.
 - Alle vier Farbthemen verwenden gemeinsame Farbrollen: Hauptaktion, Fehler, Hinweise und Tastaturfokus bleiben unterscheidbar. Unbekannte Zustände werden neutral angezeigt.
+- **Diashow (Entwicklungsstand #324):** Nach einem abgeschlossenen Auftrag soll die Startbereitschaft für eine Audiodatei mit mehreren Bildern erneut berechnet werden, während Abschlussmeldung und Hinweis erhalten bleiben. Eine echte Qt-Rückfallprüfung mit zwei Bildern ist ergänzt; die neue GitHub- und Manifestprüfung steht noch aus.
 - Die technische Prüfung verwendet echte Qt-Fenster mit künstlicher Bildschirmausgabe. Sie ersetzt weiterhin keine abschließende Kubuntu-/Wayland-Prüfung. Nachweise und bekannte alte Testprobleme stehen im [Oberflächen-Prüfbericht](docs/UI_AUDIT_20261102.md).
 
 ### Projekt und Schnellnotizen

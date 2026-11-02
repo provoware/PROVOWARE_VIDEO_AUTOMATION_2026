@@ -215,4 +215,5 @@ Diese Arbeiten bleiben bis zur realen Zielsystemabnahme zurückgestellt:
 
 **Nachweis NI-20261102-04:** Technische Qt-Prüfung und bekannte Altfehler siehe `docs/UI_AUDIT_20261102.md`. Native Kubuntu-Endabnahme bleibt offen.
 
+- [ ] 2026-11-02 | P0 · Diashow-Rückfall #324 | Nach Abschluss Startbereitschaft bei 1 Audio + mehreren Bildern erneut berechnen, ohne Abschlussstatus/Hinweis zu verlieren; Quellkorrektur und echter Qt-Test im PR ergänzt | prüfen: Qt-Regression auf neuem HEAD, Projektdateiindex, Release-Manifest und GitHub-Pflichtprüfungen | fertig wenn: alle passenden Prüfungen erfolgreich und Übernahme nach main nachkontrolliert sind.
 - [ ] 2026-11-02 | P1 · Integration NI-20261102-04 | Aktuellen Entwicklungs-PR nach erfolgreichen Pflichtprüfungen integrieren und main separat nachprüfen | prüfen: unveränderter PR-HEAD, kein Konflikt, Tests/Manifest/Index | fertig wenn: geprüfte Übernahme und Main-Nachkontrolle dokumentiert.
