@@ -598,7 +598,7 @@
       "path": "diagnostics/release_readiness/selftest.py"
     },
     {
-      "blob_sha1": "f164cec99c17712fe2c2c5c8fb92af66845dced9",
+      "blob_sha1": "148ef1f470ec72882561bb8ed24033a3cba90a85",
       "category": "diagnostics",
       "lifecycle": "active",
       "mode": "100644",

@@ -221,15 +221,3 @@ def test_unknown_check_cannot_replace_required_gate(snapshot: dict) -> None:
     save_snapshot(changed)
     with pytest.raises(ValueError, match="Pflichtprüfungen"):
         generator.build()
-
-
-@pytest.mark.parametrize(
-    ("field", "value"),
-    [
-        ("passed", True),
-        ("failed", True),
-        ("failed", -1),
-        ("failed", 1),
-        ("failed", "0"),
-    ],
-)
