@@ -189,3 +189,27 @@ def test_compact_manifest_read_errors_fail_closed(
     assert findings[0].code == "MANIFEST_COMPACT_INVALID"
     assert findings[0].severity == "error"
     assert str(failure) in findings[0].message
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "def selected_release_files(:\n    pass\n",
+        "import provoware_missing_release_contract_dependency_2026\n",
+    ],
+)
+def test_compact_manifest_invalid_selector_module_is_red(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, source: str,
+) -> None:
+    """A broken release contract must produce a red finding, not crash the dashboard."""
+    monkeypatch.syspath_prepend(str(ROOT))
+    import engine
+
+    contract = tmp_path / "scripts" / "release_file_contract.py"
+    contract.parent.mkdir()
+    contract.write_text(source, encoding="utf-8")
+    findings: list[engine.Finding] = []
+    manifest = {"representation": "compact", "file_count": 1, "files_sha256": "0" * 64}
+    assert engine.validate_manifest(tmp_path, manifest, findings) is False
+    assert len(findings) == 1
+    assert findings[0].code == "MANIFEST_COMPACT_INVALID"
+    assert findings[0].severity == "error"
