@@ -62,6 +62,8 @@ def _physical_acceptance_valid(snapshot: dict) -> bool:
 
 def build() -> dict:
     evidence = json.loads(INPUT.read_text(encoding="utf-8"))
+    if not isinstance(evidence, dict):
+        raise ValueError("Kandidaten-Nachweis muss ein JSON-Objekt sein")
     if evidence.get("kind") != "development_candidate_ci_evidence":
         raise ValueError("Unbekannter Kandidaten-Nachweistyp")
     checks = evidence.get("checks")

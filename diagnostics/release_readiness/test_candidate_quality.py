@@ -30,6 +30,15 @@ def save_snapshot(payload: dict) -> None:
     generator.INPUT.write_text(json.dumps(payload), encoding="utf-8")
 
 
+@pytest.mark.parametrize("invalid", [None, [], "invalid", 17])
+def test_non_object_candidate_evidence_fails_with_clear_error(
+    snapshot: dict, invalid: object,
+) -> None:
+    generator.INPUT.write_text(json.dumps(invalid), encoding="utf-8")
+    with pytest.raises(ValueError, match="Kandidaten-Nachweis"):
+        generator.build()
+
+
 def test_report_is_reproducible_but_not_release_approval(
     snapshot: dict, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
