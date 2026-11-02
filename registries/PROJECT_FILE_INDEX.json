@@ -549,7 +549,7 @@
       "path": "diagnostics/release_readiness/ci_status.example.json"
     },
     {
-      "blob_sha1": "e137527fc555ef589b01a950fbd6d4ffd0b6e244",
+      "blob_sha1": "c0450a0b2622ebb46cc7632b1ba3bcc37e9ac612",
       "category": "diagnostics",
       "lifecycle": "active",
       "mode": "100644",
@@ -598,7 +598,7 @@
       "path": "diagnostics/release_readiness/selftest.py"
     },
     {
-      "blob_sha1": "97f39471c12a4574d5d382afb1135a641c4cc658",
+      "blob_sha1": "9b16369fb89274ec553288f5e2328ae9ea08bbcc",
       "category": "diagnostics",
       "lifecycle": "active",
       "mode": "100644",

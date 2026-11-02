@@ -52,7 +52,8 @@ def validate_manifest(root: Path, manifest: Mapping[str, Any], findings: list[Fi
         return _LEGACY_VALIDATE_MANIFEST(root, manifest, findings)
     try:
         actual_count, actual_digest = _compact_manifest_snapshot(root)
-    except EvidenceError as exc:  # noqa: F405
+    except (OSError, RuntimeError, SyntaxError, ImportError) as exc:
+        # Missing files and Git index failures are invalid evidence, not dashboard crashes.
         findings.append(Finding("error", "MANIFEST_COMPACT_INVALID", str(exc), ("manifest",)))  # noqa: F405
         return False
     valid = True
