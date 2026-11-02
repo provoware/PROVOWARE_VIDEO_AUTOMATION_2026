@@ -1,8 +1,12 @@
 """Isolierte Tests des festen Notizspeichers."""
+import fcntl
+import os
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
+from videobatch_fast import quick_notes
 from videobatch_fast.quick_notes import append_quick_note, NOTE_FILENAME
 
 
@@ -57,6 +61,48 @@ class QuickNoteTests(unittest.TestCase):
             append_quick_note("ÄÖÜ 🧑‍💻", target=target)
             self.assertIn("ÄÖÜ 🧑‍💻".encode("utf-8"), target.read_bytes())
 
+
+
+
+    def test_exclusive_lock_is_held_before_capacity_check(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / NOTE_FILENAME
+            original_fstat = os.fstat
+
+            def check_lock(descriptor):
+                competing = os.open(target, os.O_WRONLY)
+                try:
+                    with self.assertRaises(BlockingIOError):
+                        fcntl.flock(competing, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                finally:
+                    os.close(competing)
+                return original_fstat(descriptor)
+
+            with patch.object(quick_notes.os, "fstat", side_effect=check_lock):
+                append_quick_note("Sicher", target=target)
+
+    def test_busy_lock_times_out_without_changing_existing_notes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / NOTE_FILENAME
+            append_quick_note("Vorhanden", target=target)
+            before = target.read_bytes()
+            with (
+                patch.object(quick_notes.fcntl, "flock", side_effect=BlockingIOError),
+                patch.object(quick_notes.time, "monotonic", side_effect=[0.0, 3.0]),
+            ):
+                with self.assertRaisesRegex(TimeoutError, "belegt"):
+                    append_quick_note("Zweite", target=target)
+            self.assertEqual(target.read_bytes(), before)
+
+    def test_capacity_limit_keeps_existing_notes_intact(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / NOTE_FILENAME
+            with patch.object(quick_notes, "MAX_FILE_BYTES", 100):
+                append_quick_note("x" * 60, target=target)
+                before = target.read_bytes()
+                with self.assertRaises(ValueError):
+                    append_quick_note("z" * 60, target=target)
+                self.assertEqual(target.read_bytes(), before)
 
 
 if __name__ == "__main__":

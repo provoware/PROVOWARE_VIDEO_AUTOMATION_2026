@@ -1,5 +1,15 @@
 # TODO – Stable-Finalisierung 2.8.3-rc24
 
+## NI-20261102-03 – PR-Konsolidierung (02.11.2026)
+
+**Auftrag:** Geprüfte Änderungen aus #316 (Startsperre), #315 (Pflichtnachweise), #314 (EXIF), #313 (Schnellnotiz) und #320 (Zeitlimit-Standard) im gemeinsamen Zweig `integration/pr313-320-consolidated-20261102` bündeln. Diese Iteration ist **keine Stable-Freigabe**. Der bereits integrierte #318 bleibt unverändert.
+
+- [ ] 2026-11-02 | P0 · Integration | Funktionskorrekturen aus #316, #315, #314, #313 erhalten und gegenseitige Tests zusammenführen | prüfen: neue Regressionen, Branch-Vergleich, unveränderte Originaldaten | fertig wenn: jede Quelländerung nachvollziehbar und funktionsfähig ist.
+- [ ] 2026-11-02 | P1 · Vertragsregeln | #320 übernehmen, nur dokumentierte Timeout-Regeln; ausstehende Laufzeit-Watchdogs nicht als fertig markieren | prüfen: Dokumentationsvertrag, eindeutige Begrenzung von Render-, Kopier- und Prüfvorgängen | fertig wenn: Regeln konsistent und Dokumentationsprüfungen erfolgreich.
+- [ ] 2026-11-02 | P0 · Nachweise | PROJECT_FILE_INDEX.json und RELEASE_MANIFEST.json ausschließlich aus dem gemeinsamen endgültigen Dateibaum erneuern | prüfen: Index --check --git-index, Manifest --check --json, Release contract sync, Fresh-extract, Qt-Core | fertig wenn: alle passenden aktuellen Pflichtprüfungen auf demselben unveränderten Commit grün sind.
+- [ ] 2026-11-02 | P0 · Abschluss | Integrations-PR konfliktfrei nach main übernehmen, neue main-Prüfungen kontrollieren und erst danach alte PRs mit Integrationsverweis schließen | prüfen: Ausgangs- und Ziel-SHA, 0 verlorene Änderungen, aktueller main-Status | fertig wenn: geprüfte Übernahme und dokumentierte Main-Nachkontrolle vorliegen.
+
+
 ## Aktueller Stand – 31.10.2026
 
 **Bestandsprüfung:** Zum Abschluss des Dokumentations-PRs [#305](https://github.com/provoware/PROVOWARE_VIDEO_AUTOMATION_2026/pull/305) waren **0 offene PRs und 0 Entwürfe** vorhanden. Der bestätigte `main`-Commit lautet `63e0322bce05718fea4bcf59f86a7662c56aa857`; 2/2 nachgelagerte Pflicht-Prüfabläufe waren grün. **Dieses Ergebnis gilt für diesen Commit, nicht automatisch für spätere Änderungen.**

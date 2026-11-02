@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import errno
+import fcntl
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
+
+from PIL import Image
 
 from videobatch_fast.command_builder import build_command, can_use_fast_copy
 from videobatch_fast.effects import speed_summary
@@ -13,6 +17,8 @@ from videobatch_fast.naming import safe_stem, unique_output_path
 from videobatch_fast.probe import classify_extension
 from videobatch_fast.playlist import Playlist
 from videobatch_fast.runner_process import ProcessExecution, _ProgressState
+from videobatch_fast.instance_lock import ApplicationLock
+from videobatch_fast.slideshow_sequence import ORDER_CAPTURE_DATE, capture_timestamp, order_images
 
 
 class NamingTests(unittest.TestCase):
@@ -35,6 +41,19 @@ class ProbeTests(unittest.TestCase):
         self.assertEqual(classify_extension(Path("a.wav")), "audio")
         self.assertEqual(classify_extension(Path("a.png")), "image")
         self.assertEqual(classify_extension(Path("a.mp4")), "video")
+
+
+class SlideshowCaptureDateTests(unittest.TestCase):
+    def test_out_of_range_exif_date_uses_file_mtime(self):
+        with tempfile.TemporaryDirectory() as directory:
+            image = Path(directory) / "ancient.jpg"
+            exif = Image.Exif()
+            exif[36867] = "0001:01:01 00:00:00"
+            Image.new("RGB", (8, 8)).save(image, exif=exif)
+
+            # strptime akzeptiert das Jahr, timestamp() wirft aber ValueError.
+            self.assertEqual(capture_timestamp(image), image.stat().st_mtime)
+            self.assertEqual(order_images([image], ORDER_CAPTURE_DATE), [image])
 
 
 class CommandTests(unittest.TestCase):
@@ -150,6 +169,32 @@ class RunnerProgressTests(unittest.TestCase):
         self.assertEqual(state.out_time, 2.5)
         ProcessExecution._apply_progress_line("fps=inf", state)
         self.assertEqual(state.fps, 24.5)
+
+
+class InstanceLockTests(unittest.TestCase):
+    def test_failed_acquisition_closes_descriptor_and_releases_flock(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "application.lock"
+            for operation in ("chmod", "fsync"):
+                lock = ApplicationLock(path)
+                with patch(
+                    f"videobatch_fast.instance_lock.os.{operation}",
+                    side_effect=OSError(errno.EIO, f"simulierter {operation}-Fehler"),
+                ):
+                    try:
+                        lock.acquire()
+                    except OSError as error:
+                        failure = error
+                    else:
+                        self.fail(f"{operation} should fail")
+                # Retain the traceback: without explicit close it retains the lock handle.
+                self.assertIsNotNone(failure.__traceback__)
+                self.assertIsNone(lock._handle)
+                with path.open("a+", encoding="utf-8") as competitor:
+                    fcntl.flock(competitor.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    fcntl.flock(competitor.fileno(), fcntl.LOCK_UN)
+                with ApplicationLock(path):
+                    pass
 
 
 class ConfigTests(unittest.TestCase):

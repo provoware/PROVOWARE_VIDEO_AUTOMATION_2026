@@ -295,3 +295,7 @@ Only standalone user and release deliverables receive _save_. Source modules, CI
 <!-- release-files:end -->
 
 </details>
+
+## ⏱️ Zeitlimit- und Stillstandsstandard (NI-20261102-02)
+
+Die [PROVOWARE-Zeitbudgetregel](docs/PROVOWARE_TIMEOUT_STANDARD.md) unterscheidet kurze Prüfungen, unterbrochene Kopien und legitime lange FFmpeg-Renders. Nie eigenmächtig einen produktiven Render nach fünf Minuten abbrechen. Echte Fortschrittsdaten und sichere verifizierte Wiederaufnahme sind Voraussetzung, sonst Fehlerzustand mit Originalschutz. Laufzeitweite vollständige Umsetzung bleibt separat zu prüfen; alle bisherigen Freeze-/Freigaberegeln gelten unverändert.
