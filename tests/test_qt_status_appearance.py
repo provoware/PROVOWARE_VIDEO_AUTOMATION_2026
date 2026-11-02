@@ -164,3 +164,44 @@ def test_resize_reflows_long_status_after_zoom(window):
     window.resize(1366, 768)
     QApplication.processEvents()
     assert window.findChild(QLabel, "title").text() == "VideoBatch 2026"
+
+def test_slideshow_start_readiness_after_completion(window, tmp_path):
+    """A finished slideshow must not leave the 1:1 start gate disabled."""
+    import wave
+    from PySide6.QtGui import QImage
+
+    audio = tmp_path / "ton.wav"
+    with wave.open(str(audio), "wb") as stream:
+        stream.setnchannels(1)
+        stream.setsampwidth(1)
+        stream.setframerate(8000)
+        stream.writeframes(b"\\x80" * 8000)
+    images = []
+    for number in (1, 2):
+        path = tmp_path / f"bild-{number}.png"
+        image = QImage(2, 2, QImage.Format.Format_RGB32)
+        image.fill(0xff336699)
+        assert image.save(str(path))
+        images.append(path)
+
+    window.audio.add_paths([audio])
+    window.media.add_paths(images)
+    window.output.setText(str(tmp_path))
+    window.slideshow.assignment.setCurrentIndex(1)
+    window._refresh()
+    assert window.start.isEnabled()
+    assert window.kpi_values["jobs"].text() == "1"
+
+    window.table.setRowCount(1)
+    window._finish_batch(dict(successes=1, failures=0,
+                              unprocessed=0, cancelled=False))
+    completion_hint = window.next_step.text()
+    for _ in range(2):
+        window._refresh()
+        QApplication.processEvents()
+        assert window.start.isEnabled()
+        assert window.step_start.text() == "3 · Start bereit"
+        assert window.kpi_values["jobs"].text() == "1"
+        assert window.status.text() == "FERTIG"
+        assert window.next_step.text() == completion_hint
+        assert window.table.rowCount() == 1
