@@ -563,7 +563,7 @@
       "path": "diagnostics/release_readiness/engine_legacy.py"
     },
     {
-      "blob_sha1": "b9c98b8e28cd1af318e3df2a9a4af4bd3733744a",
+      "blob_sha1": "a0044ffe9dae9eab5016d07931c1c8f987b961da",
       "category": "diagnostics",
       "lifecycle": "active",
       "mode": "100644",
@@ -598,7 +598,7 @@
       "path": "diagnostics/release_readiness/selftest.py"
     },
     {
-      "blob_sha1": "f6756da6fabada3ebde5186eb4f2f978b50c29e4",
+      "blob_sha1": "4a25043d747ca22f19fb15cbf3480cbe6250e5b9",
       "category": "diagnostics",
       "lifecycle": "active",
       "mode": "100644",

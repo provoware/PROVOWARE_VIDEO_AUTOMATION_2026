@@ -164,7 +164,11 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
-    rendered = json.dumps(build(), ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    try:
+        rendered = json.dumps(build(), ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    except (OSError, UnicodeError, ValueError) as exc:
+        print(f"Kandidaten-Nachweis kann nicht verarbeitet werden: {exc}", file=sys.stderr)
+        return 2
     if args.check:
         if not OUTPUT.is_file() or OUTPUT.read_text(encoding="utf-8") != rendered:
             print("Kandidaten-Qualitätsbericht fehlt oder weicht vom Nachweis ab")

@@ -39,6 +39,24 @@ def test_non_object_candidate_evidence_fails_with_clear_error(
         generator.build()
 
 
+@pytest.mark.parametrize("invalid", ["{", "[]", '{"kind":"invalid"}', None])
+def test_cli_invalid_evidence_reports_error_without_traceback(
+    snapshot: dict, monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str], invalid: str | None,
+) -> None:
+    if invalid is None:
+        generator.INPUT.unlink()
+    else:
+        generator.INPUT.write_text(invalid, encoding="utf-8")
+    monkeypatch.setattr(sys, "argv", ["generator", "--check"])
+    assert generator.main() == 2
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "Kandidaten-Nachweis" in captured.err
+    assert "Traceback" not in captured.err
+    assert not generator.OUTPUT.exists()
+
+
 def test_report_is_reproducible_but_not_release_approval(
     snapshot: dict, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
