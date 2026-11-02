@@ -172,6 +172,16 @@ def test_versioned_export_path_matches_real_acceptance_validator(
     assert not generator._physical_acceptance_valid(wrong)
 
 
+@pytest.mark.parametrize("invalid", [None, [], 42, "invalid"])
+def test_non_object_release_manifest_fails_closed(
+    snapshot: dict, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, invalid: object,
+) -> None:
+    manifest_path = tmp_path / "release_manifest.json"
+    manifest_path.write_text(json.dumps(invalid), encoding="utf-8")
+    monkeypatch.setattr(generator, "RELEASE_MANIFEST", manifest_path)
+    assert generator._physical_acceptance_valid(snapshot["source_release_manifest"]) is False
+
+
 def test_compact_manifest_uses_git_tracked_sources(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:

@@ -39,6 +39,8 @@ def _physical_acceptance_valid(snapshot: dict) -> bool:
     try:
         raw = RELEASE_MANIFEST.read_bytes()
         current = json.loads(raw)
+        if not isinstance(current, dict):
+            return False
         candidate_dir = ACCEPTANCE_DIR / str(current["version"])
         if not all((candidate_dir / name).is_file() for name in required):
             return False
