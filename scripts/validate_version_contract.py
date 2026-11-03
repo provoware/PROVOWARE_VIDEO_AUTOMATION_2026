@@ -67,7 +67,7 @@ def validate(root: Path = ROOT) -> list[str]:
             errors.append(f"{relative} ist unlesbar: {exc}")
             continue
         candidates = [data.get("version"), data.get("build"), data.get("baseline_version"), data.get("release_target")]
-        present = [str(value) for value in candidates if value not in {None, ""}]
+        present = [str(value) for value in candidates if value is not None and value != ""]
         if present and any(value != build for value in present):
             errors.append(f"{relative}: Buildbezug weicht ab: {', '.join(present)}; erwartet {build}.")
 

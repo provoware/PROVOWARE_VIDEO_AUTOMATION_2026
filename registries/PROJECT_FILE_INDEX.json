@@ -332,7 +332,7 @@
       "path": "README.md"
     },
     {
-      "blob_sha1": "57d0b4996a5f52f63f50856bbe4d7a59a9093274",
+      "blob_sha1": "9923f802ffc21b96acecf854472bf23e6ce74027",
       "category": "project_contract",
       "lifecycle": "active",
       "mode": "100644",
@@ -2607,7 +2607,7 @@
       "path": "scripts/validate_text_resources.py"
     },
     {
-      "blob_sha1": "9b592208c485b78de1a774090f69e1cbe8d3731d",
+      "blob_sha1": "f2dcaefa45619ce24c61fbd3c986998ae0f692ec",
       "category": "development",
       "lifecycle": "development",
       "mode": "100644",
@@ -4889,7 +4889,7 @@
       "path": "tests/test_verify_release_zip_integrity.py"
     },
     {
-      "blob_sha1": "7d71be3da878b5d91ccdaf9f116266e6ee4d560b",
+      "blob_sha1": "a98f72bbb6fb10983d7923048d4e0213b9397f50",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",

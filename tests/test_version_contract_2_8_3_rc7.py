@@ -42,3 +42,26 @@ def test_unified_contract_id_uses_current_build() -> None:
     build = json.loads((ROOT / "VERSION.json").read_text(encoding="utf-8"))["build"]
     contract = (ROOT / "TOOLCHAIN_CONTRACT.json").read_text(encoding="utf-8")
     assert build in contract
+
+def test_version_contract_reports_nested_build_fields(tmp_path: Path, monkeypatch) -> None:
+    """Malformed nested JSON values must be reported, not crash the validator."""
+    from scripts import validate_version_contract as module
+
+    monkeypatch.setattr(module, "CURRENT_JSON_FILES", ("registries/NESTED.json",))
+    (tmp_path / "VERSION.json").write_text(
+        json.dumps({"version": "1.2.3", "build": "1.2.3"}), encoding="utf-8"
+    )
+    (tmp_path / "pyproject.toml").write_text('version = "1.2.3"\n', encoding="utf-8")
+    contract = tmp_path / "config/contracts/TOOLCHAIN_CONTRACT.json"
+    contract.parent.mkdir(parents=True)
+    contract.write_text(
+        json.dumps({"contract_id": "toolchain/1.2.3", "release_target": "1.2.3"}),
+        encoding="utf-8",
+    )
+    nested = tmp_path / "registries/NESTED.json"
+    nested.parent.mkdir(parents=True)
+    for value in (["1.2.3"], {"nested": "1.2.3"}):
+        nested.write_text(json.dumps({"version": value}), encoding="utf-8")
+        errors = module.validate(tmp_path)
+        assert len(errors) == 1
+        assert "registries/NESTED.json: Buildbezug weicht ab" in errors[0]

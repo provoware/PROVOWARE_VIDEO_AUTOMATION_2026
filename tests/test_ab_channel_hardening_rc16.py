@@ -7,6 +7,7 @@ import os
 import sys
 import tarfile
 from copy import deepcopy
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -192,10 +193,16 @@ def test_channel_contract_requires_expiry_and_key_binding() -> None:
         "signing_key_id": ab_contract.key_id(public_key),
         "channels": {"stable": {"available": False}, "rc": {"available": False}},
     }
-    ab_contract.validate_channel_index(payload, expected_key_id=payload["signing_key_id"])
+    fixed_now = datetime(2026, 8, 4, tzinfo=timezone.utc)
+    ab_contract.validate_channel_index(payload, expected_key_id=payload["signing_key_id"], now=fixed_now)
+    with pytest.raises(ab_contract.ContractError):
+        ab_contract.validate_channel_index(
+            payload, expected_key_id=payload["signing_key_id"],
+            now=datetime(2026, 11, 3, tzinfo=timezone.utc),
+        )
     payload["signing_key_id"] = "falsch"
     with pytest.raises(ab_contract.ContractError):
-        ab_contract.validate_channel_index(payload, expected_key_id=ab_contract.key_id(public_key))
+        ab_contract.validate_channel_index(payload, expected_key_id=ab_contract.key_id(public_key), now=fixed_now)
 
 
 def test_legacy_slot_snapshot_is_normalized_for_rollback(tmp_path: Path) -> None:
