@@ -202,7 +202,7 @@ def test_channel_contract_requires_expiry_and_key_binding() -> None:
         )
     payload["signing_key_id"] = "falsch"
     with pytest.raises(ab_contract.ContractError):
-        ab_contract.validate_channel_index(payload, expected_key_id=ab_contract.key_id(public_key))
+        ab_contract.validate_channel_index(payload, expected_key_id=ab_contract.key_id(public_key), now=fixed_now)
 
 
 def test_legacy_slot_snapshot_is_normalized_for_rollback(tmp_path: Path) -> None:
