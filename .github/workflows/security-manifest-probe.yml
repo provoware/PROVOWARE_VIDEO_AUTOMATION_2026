@@ -1,0 +1,37 @@
+name: Temporary security manifest fingerprint probe
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/security-manifest-probe.yml
+permissions:
+  contents: read
+jobs:
+  fingerprint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - name: Checkout exact PR revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Python 3.12
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Resolve fingerprint of final files without temporary workflow
+        shell: bash
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+          PYTHONUTF8: '1'
+          PYTHONPATH: src:scripts
+        run: |
+          set -Eeuo pipefail
+          git rm --cached -- .github/workflows/security-manifest-probe.yml
+          python - <<'PY'
+          import json
+          from build_release_manifest import build_payload
+          payload = build_payload(compact=True)
+          print('FINAL_RELEASE_MANIFEST=' + json.dumps(payload, sort_keys=True, separators=(',', ':')))
+          PY
