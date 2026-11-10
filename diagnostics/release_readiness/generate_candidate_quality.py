@@ -39,6 +39,8 @@ def _physical_acceptance_valid(snapshot: dict) -> bool:
     try:
         raw = RELEASE_MANIFEST.read_bytes()
         current = json.loads(raw)
+        if not isinstance(current, dict):
+            return False
         candidate_dir = ACCEPTANCE_DIR / str(current["version"])
         if not all((candidate_dir / name).is_file() for name in required):
             return False
@@ -62,6 +64,8 @@ def _physical_acceptance_valid(snapshot: dict) -> bool:
 
 def build() -> dict:
     evidence = json.loads(INPUT.read_text(encoding="utf-8"))
+    if not isinstance(evidence, dict):
+        raise ValueError("Kandidaten-Nachweis muss ein JSON-Objekt sein")
     if evidence.get("kind") != "development_candidate_ci_evidence":
         raise ValueError("Unbekannter Kandidaten-Nachweistyp")
     checks = evidence.get("checks")
@@ -71,14 +75,14 @@ def build() -> dict:
     if not isinstance(source, str) or re.fullmatch(r"[0-9a-f]{40}", source) is None:
         raise ValueError("Ungültiger vollständiger Kandidaten-Commit")
     names = [item.get("name") for item in checks if isinstance(item, dict)]
-    if len(names) != 8 or len(set(names)) != 8:
+    if len(names) != 8 or any(not isinstance(name, str) for name in names) or len(set(names)) != 8:
         raise ValueError("Die acht Prüfnamen müssen eindeutig sein")
     if set(names) != REQUIRED_CHECK_NAMES:
         raise ValueError("Die acht benannten Pflichtprüfungen müssen vollständig vorliegen")
     for item in checks:
         if item.get("source_commit") != source:
             raise ValueError("Ein Prüfnachweis gehört zu einem anderen Commit")
-        if item.get("conclusion") not in {"success", "failure", "cancelled", "timed_out"}:
+        if not isinstance(item.get("conclusion"), str) or item["conclusion"] not in {"success", "failure", "cancelled", "timed_out"}:
             raise ValueError("Unbekanntes oder unvollständiges Prüfergebnis")
         run_id = item.get("run_id")
         if type(run_id) is not int or run_id < 1:
@@ -107,12 +111,21 @@ def build() -> dict:
         raise ValueError("Kern-Testnachweis fehlt")
     if regression.get("source_commit") not in (None, measured_source):
         raise ValueError("Widersprüchliche Testherkunft")
-    if measured.get("offline_quality", {}).get("result") != "passed":
+    offline_quality = measured.get("offline_quality")
+    if not isinstance(offline_quality, dict) or offline_quality.get("result") != "passed":
         raise ValueError("Offline-Qualitätsnachweis nicht erfolgreich")
+    for field in ("job_id", "workflow_run_id"):
+        value = offline_quality.get(field)
+        if type(value) is not int or value <= 0:
+            raise ValueError(f"Offline-Qualitätsnachweis ohne gültige {field}-Nummer")
     if type(regression.get("passed")) is not int or regression["passed"] <= 0:
         raise ValueError("Keine belegte positive Kern-Testzahl")
     if type(regression.get("failed")) is not int or regression["failed"] != 0:
         raise ValueError("Kernregression enthält fehlgeschlagene oder ungültige Tests")
+    for field in ("job_id", "workflow_run_id"):
+        value = regression.get(field)
+        if type(value) is not int or value <= 0:
+            raise ValueError(f"Kern-Testnachweis ohne gültige {field}-Nummer")
     results = {item["name"]: item["conclusion"] for item in checks}
     failures = sorted(name for name, value in results.items() if value != "success")
     physical_valid = _physical_acceptance_valid(manifest)
@@ -138,7 +151,7 @@ def build() -> dict:
             "job_id": regression["job_id"],
             "workflow_run_id": regression["workflow_run_id"],
         },
-        "quality_tools": measured["offline_quality"],
+        "quality_tools": offline_quality,
         "blocking_checks": sorted(failures),
         "physical_ui_acceptance": "passed" if physical_valid else "open",
         "release_approved": False,
@@ -151,7 +164,11 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
-    rendered = json.dumps(build(), ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    try:
+        rendered = json.dumps(build(), ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    except (OSError, UnicodeError, ValueError) as exc:
+        print(f"Kandidaten-Nachweis kann nicht verarbeitet werden: {exc}", file=sys.stderr)
+        return 2
     if args.check:
         if not OUTPUT.is_file() or OUTPUT.read_text(encoding="utf-8") != rendered:
             print("Kandidaten-Qualitätsbericht fehlt oder weicht vom Nachweis ab")
