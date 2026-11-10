@@ -297,7 +297,7 @@
       "path": ".github/workflows/stable-promotion.yml"
     },
     {
-      "blob_sha1": "0698552c20cd341daa938d7370454fc80e2a1fb9",
+      "blob_sha1": "8c2a18583502b55ca8be307eddfe98c806921a6c",
       "category": "documentation",
       "lifecycle": "active",
       "mode": "100644",
@@ -332,7 +332,7 @@
       "path": "README.md"
     },
     {
-      "blob_sha1": "57d0b4996a5f52f63f50856bbe4d7a59a9093274",
+      "blob_sha1": "7c2205cee158cc03fccc1791ec861858ce3d740e",
       "category": "project_contract",
       "lifecycle": "active",
       "mode": "100644",
