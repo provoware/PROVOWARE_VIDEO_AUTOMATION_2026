@@ -4028,7 +4028,7 @@
       "path": "tests/qt_phase3_smoke.py"
     },
     {
-      "blob_sha1": "8aa5972095d28c0caf66097fba648ebff0a45bbb",
+      "blob_sha1": "d7b22ac85c0addd41d686d0628757efe67694490",
       "category": "tests",
       "lifecycle": "development",
       "mode": "100644",
